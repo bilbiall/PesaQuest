@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pesa City — How It Works</title>
+<meta name="description" content="A plain-language guide to Pesa City: how it works, why it was built, and what a player's day actually looks like — written for the Moski team.">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:        #1C1C18;
+  --ink-mid:    #4A4A44;
+  --ink-faint:  #8A8A82;
+  --ground:     #F7F6F2;
+  --panel:      #EEEDE8;
+  --panel-hi:   #E4E3DD;
+  --rule:       #D8D7D0;
+  --green:      #0C8F5A;
+  --green-light:#D6EFE4;
+  --gold:       #9A6C00;
+  --gold-light: #FBF0D3;
+  --rust:       #8B3A1A;
+  --rust-light: #FAEAE3;
+  --blue:       #1A5CA8;
+  --blue-light: #DDE9F7;
+}
+
+html {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 10px;
+}
+
+h1, h2, h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  text-wrap: balance;
+  font-weight: normal;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+h1 { font-size: 38px; }
+h2 { font-size: 24px; }
+h3 { font-size: 18px; font-weight: bold; }
+
+p { max-width: 62ch; color: var(--ink-mid); }
+p + p { margin-top: 14px; }
+
+strong { color: var(--ink); font-weight: 600; }
+
+.page-header {
+  background: var(--ink);
+  color: #F7F6F2;
+  padding: 56px 40px 48px;
+}
+
+.page-header .eyebrow { color: rgba(247,246,242,0.45); margin-bottom: 16px; }
+.page-header h1 { color: #F7F6F2; font-size: 42px; max-width: 16ch; }
+.page-header .subtitle {
+  margin-top: 16px;
+  font-size: 16px;
+  color: rgba(247,246,242,0.65);
+  max-width: 52ch;
+  line-height: 1.6;
+}
+
+.page-header .meta-row {
+  margin-top: 32px;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border-radius: 100px;
+  border: 1px solid rgba(247,246,242,0.2);
+  color: rgba(247,246,242,0.7);
+}
+
+.meta-chip.green { border-color: #0C8F5A; color: #38C87E; background: rgba(12,143,90,0.15); }
+
+.body-wrap { max-width: 720px; margin: 0 auto; padding: 0 40px; }
+
+.section { padding: 64px 40px; max-width: 720px; margin: 0 auto; }
+.section + .section { padding-top: 0; }
+
+.section-band {
+  background: var(--panel);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 56px 40px;
+  margin: 0 0;
+}
+
+.section-band > * { max-width: 640px; margin-left: auto; margin-right: auto; }
+
+.section-title { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+
+.prose { display: flex; flex-direction: column; gap: 16px; }
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 28px;
+  font-size: 14px;
+}
+
+.compare-col { background: var(--ground); padding: 0; }
+
+.compare-head {
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--rule);
+}
+
+.compare-head.old { color: var(--rust); background: var(--rust-light); }
+.compare-head.new { color: var(--green); background: var(--green-light); }
+
+.compare-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-mid);
+  line-height: 1.5;
+}
+
+.compare-item:last-child { border-bottom: none; }
+
+.compare-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.compare-dot.old { background: var(--rust); opacity: 0.5; }
+.compare-dot.new { background: var(--green); }
+
+.system-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.sys-card {
+  background: var(--ground);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.sys-card-icon { font-size: 28px; line-height: 1; margin-bottom: 10px; }
+.sys-card h3 { font-size: 15px; margin-bottom: 6px; }
+.sys-card p { font-size: 13px; color: var(--ink-mid); max-width: none; line-height: 1.6; }
+
+.sys-card-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+
+.tag-green  { background: var(--green-light); color: var(--green); }
+.tag-gold   { background: var(--gold-light);  color: var(--gold); }
+.tag-rust   { background: var(--rust-light);  color: var(--rust); }
+.tag-blue   { background: var(--blue-light);  color: var(--blue); }
+
+.objective-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 28px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.obj-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--ground);
+}
+
+.obj-row:last-child { border-bottom: none; }
+
+.obj-num {
+  font-family: Georgia, serif;
+  font-size: 22px;
+  color: var(--rule);
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.obj-text { font-size: 14px; color: var(--ink-mid); line-height: 1.6; }
+.obj-text strong { color: var(--ink); }
+
+.journey-intro {
+  background: var(--ink);
+  color: rgba(247,246,242,0.85);
+  padding: 32px 40px;
+  max-width: none;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.journey-intro .eyebrow { color: #38C87E; margin-bottom: 12px; }
+.journey-intro h2 { color: #F7F6F2; font-size: 28px; margin-bottom: 16px; }
+.journey-intro p { max-width: 60ch; color: rgba(247,246,242,0.7); }
+
+.journey-body { max-width: none; padding: 0 40px 64px; background: var(--ground); }
+.journey-inner { max-width: 700px; margin: 0 auto; }
+
+.moment {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0 28px;
+  padding: 36px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.moment:last-child { border-bottom: none; }
+
+.moment-location { padding-top: 4px; }
+
+.moment-where {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+
+.moment-place { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+.moment-time { font-size: 11px; color: var(--ink-faint); margin-top: 6px; font-style: italic; }
+
+.moment-title {
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: bold;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.moment-text { font-size: 14px; color: var(--ink-mid); line-height: 1.7; max-width: none; }
+.moment-text + .moment-text { margin-top: 10px; }
+
+.moment-learn {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--green);
+  background: var(--green-light);
+  font-size: 13px;
+  color: var(--ink-mid);
+  line-height: 1.6;
+  border-radius: 0 4px 4px 0;
+}
+
+.moment-learn-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.moment-event {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--gold);
+  background: var(--gold-light);
+  font-size: 13px;
+  color: var(--ink-mid);
+  line-height: 1.6;
+  border-radius: 0 4px 4px 0;
+}
+
+.moment-event-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.moment-cost {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--rust);
+  background: var(--rust-light);
+  font-size: 13px;
+  color: var(--ink-mid);
+  line-height: 1.6;
+  border-radius: 0 4px 4px 0;
+}
+
+.moment-cost-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.moment-body::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 2px;
+  background: var(--rule);
+  margin-bottom: 12px;
+}
+
+.principle-list { display: flex; flex-direction: column; gap: 24px; margin-top: 28px; }
+.principle { display: grid; grid-template-columns: 3px 1fr; gap: 0 18px; }
+.principle-rule { background: var(--green); border-radius: 2px; }
+.principle-content h3 { font-size: 15px; margin-bottom: 6px; }
+.principle-content p { font-size: 14px; max-width: none; }
+
+.roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 28px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.road-row { display: flex; gap: 0; border-bottom: 1px solid var(--rule); }
+.road-row:last-child { border-bottom: none; }
+
+.road-phase {
+  width: 120px;
+  flex-shrink: 0;
+  padding: 14px 16px;
+  border-right: 1px solid var(--rule);
+  background: var(--panel);
+}
+
+.road-phase-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 3px;
+}
+
+.road-phase-name { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+
+.road-content { padding: 14px 16px; flex: 1; font-size: 13px; color: var(--ink-mid); line-height: 1.55; }
+
+.road-status {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+
+.status-done     { background: var(--green-light); color: var(--green); }
+.status-building { background: var(--gold-light);  color: var(--gold); }
+.status-next     { background: var(--panel-hi);    color: var(--ink-faint); }
+
+.page-footer {
+  background: var(--panel);
+  border-top: 1px solid var(--rule);
+  padding: 32px 40px;
+  font-size: 13px;
+  color: var(--ink-faint);
+  line-height: 1.6;
+}
+
+.page-footer p { max-width: none; }
+
+@media (max-width: 680px) {
+  .page-header { padding: 40px 24px 36px; }
+  .page-header h1 { font-size: 30px; }
+  .section { padding: 48px 24px; }
+  .section-band { padding: 40px 24px; }
+  .system-grid { grid-template-columns: 1fr; }
+  .compare { grid-template-columns: 1fr; }
+  .compare-col:first-child { border-bottom: 1px solid var(--rule); }
+  .moment { grid-template-columns: 1fr; gap: 8px; }
+  .moment-location { display: flex; gap: 16px; align-items: baseline; }
+  .journey-body { padding: 0 24px 48px; }
+  .journey-intro { padding: 28px 24px; }
+  .road-row { flex-direction: column; }
+  .road-phase { width: auto; border-right: none; border-bottom: 1px solid var(--rule); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <span class="eyebrow">PesaQuest · Moski NGO · Internal Guide</span>
+  <h1>Pesa City is the Game.</h1>
+  <p class="subtitle">A plain-language explanation of how our game world works, why we built it this way, and what your players actually experience — for everyone on the Moski team.</p>
+  <div class="meta-row">
+    <span class="meta-chip green">Live Build — June 2026</span>
+    <span class="meta-chip">For: Programme Staff &amp; Educators</span>
+    <span class="meta-chip">Not required: Technical background</span>
+  </div>
+</header>
+
+<section class="section">
+  <div class="section-title">
+    <span class="eyebrow">The Concept</span>
+    <h2>What is Pesa City?</h2>
+  </div>
+  <div class="prose">
+    <p>Pesa City is the world inside PesaQuest. It is a simulated neighbourhood — a city on the player's phone screen — where every building, every road, and every person represents a real financial decision waiting to happen.</p>
+    <p>When a player opens the game, they do not see a menu. They do not see a list of lessons. They walk into a city as a person with a career, a starting balance, and a goal. Everything that happens from that moment — getting a job, building savings, being hit with an unexpected bill, finding a side hustle — happens inside this city.</p>
+    <p><strong>Pesa City is not a feature of the game. It is the game.</strong> All other parts of PesaQuest — the career system, the bank, the scenarios, the quests, the financial events — flow through and into the city. To understand the game, you only need to understand the city.</p>
+  </div>
+</section>
+
+<div class="section-band">
+  <div class="section-title">
+    <span class="eyebrow">Our Purpose</span>
+    <h2>What We Are Trying to Achieve</h2>
+  </div>
+  <p style="margin-bottom: 0;">The game exists to teach young Kenyans that financial success is not determined by income alone — it is determined by <strong>decisions made under pressure</strong>. These are the specific outcomes we are building toward:</p>
+  <div class="objective-list" style="margin-top: 24px;">
+    <div class="obj-row">
+      <div class="obj-num">01</div>
+      <div class="obj-text"><strong>Increase daily engagement and return visits.</strong> The city changes every time a player comes back — new events, salary arrivals, quest countdowns. There is always a reason to log in tomorrow.</div>
+    </div>
+    <div class="obj-row">
+      <div class="obj-num">02</div>
+      <div class="obj-text"><strong>Make financial surprises feel normal — not shocking.</strong> Life contains unexpected costs. Players who have handled them in the game are less panicked when they face them in reality.</div>
+    </div>
+    <div class="obj-row">
+      <div class="obj-num">03</div>
+      <div class="obj-text"><strong>Show that assets generate income.</strong> A player who owns property in the game receives rental income. A player with stocks receives dividends. The game demonstrates compound wealth before the player ever opens a real savings account.</div>
+    </div>
+    <div class="obj-row">
+      <div class="obj-num">04</div>
+      <div class="obj-text"><strong>Tie every lesson to a career identity.</strong> A teacher in the game gets tutoring opportunities. A tech worker gets freelance gigs. A driver faces fuel price increases. Events match who you are — so the lesson feels personal.</div>
+    </div>
+    <div class="obj-row">
+      <div class="obj-num">05</div>
+      <div class="obj-text"><strong>Teach through discovery, not instruction.</strong> No pop-up lectures. No quizzes. The player figures out that completing a course → getting a job → earning a salary → buying the phone is the path — by trying, failing, and trying again.</div>
+    </div>
+    <div class="obj-row">
+      <div class="obj-num">06</div>
+      <div class="obj-text"><strong>Create sessions lasting 20–30 minutes or more.</strong> Shallow engagement produces shallow learning. The city is designed to hold a player's attention long enough for real decisions to feel real.</div>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="section-title">
+    <span class="eyebrow">The Design Decision</span>
+    <h2>Why We Changed the Approach</h2>
+  </div>
+  <div class="prose">
+    <p>PesaQuest began as a scenario-by-scenario game — the player would choose a scenario, make a financial decision, see the result, and the game would end. Each session was a single, standalone event.</p>
+    <p>This worked as a proof of concept, but it had a ceiling. Players completed a scenario and left. There was no reason to return. There was no sense of a life unfolding. The financial lessons were correct but they felt distant — like a worksheet rather than a situation.</p>
+    <p>Pesa City solves this by connecting everything into one continuous world. Scenarios become events that happen to your character. Decisions have consequences that carry forward. Your career shapes what happens to you. Your balance grows or shrinks across sessions, not just within one.</p>
+  </div>
+  <div class="compare">
+    <div class="compare-col">
+      <div class="compare-head old">Before — Scenario Mode</div>
+      <div class="compare-item"><div class="compare-dot old"></div><div>One-off decision, then game ends</div></div>
+      <div class="compare-item"><div class="compare-dot old"></div><div>Same events for every player</div></div>
+      <div class="compare-item"><div class="compare-dot old"></div><div>No career identity or context</div></div>
+      <div class="compare-item"><div class="compare-dot old"></div><div>No persistent balance or progress</div></div>
+      <div class="compare-item"><div class="compare-dot old"></div><div>No reason to return tomorrow</div></div>
+      <div class="compare-item"><div class="compare-dot old"></div><div>Lessons felt abstract</div></div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-head new">Now — Pesa City</div>
+      <div class="compare-item"><div class="compare-dot new"></div><div>Decisions carry across every session</div></div>
+      <div class="compare-item"><div class="compare-dot new"></div><div>Events matched to player's career and assets</div></div>
+      <div class="compare-item"><div class="compare-dot new"></div><div>Career chosen by quiz, shapes your entire experience</div></div>
+      <div class="compare-item"><div class="compare-dot new"></div><div>Balance, net worth, and credit score persist</div></div>
+      <div class="compare-item"><div class="compare-dot new"></div><div>Quests, salary arrivals, and events pull you back</div></div>
+      <div class="compare-item"><div class="compare-dot new"></div><div>Lessons are lived, not read</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-band">
+  <div class="section-title">
+    <span class="eyebrow">How It Works</span>
+    <h2>The Four Systems Inside Pesa City</h2>
+  </div>
+  <p>Four interconnected systems run the game. Each one was designed to feel like real life, not like a game mechanic. Here is what each one does and why it matters.</p>
+  <div class="system-grid" style="margin-top: 28px;">
+    <div class="sys-card">
+      <div class="sys-card-tag tag-blue">Identity</div>
+      <div class="sys-card-icon">🎯</div>
+      <h3>The Career Quiz</h3>
+      <p>Before entering the city, every player takes a five-question personality quiz. Their answers determine their career field — technology, healthcare, finance, education, engineering, and more. This is not cosmetic. It shapes every event, every opportunity, and every financial challenge they will face for their entire time in the game. A doctor will face professional license fees and private consultation income. A tech worker will face freelance gigs and certification costs. Career is identity.</p>
+    </div>
+    <div class="sys-card">
+      <div class="sys-card-tag tag-green">Challenges</div>
+      <div class="sys-card-icon">⚔️</div>
+      <h3>Quests</h3>
+      <p>Quests are the game's main storyline — timed financial goals that give the player direction. The journey runs 6 quests deep: get a phone → complete a course → land a job → make your first investment → buy property → register a business. Each quest has a countdown clock to create urgency without punishment. Quests are never fully direct — the player discovers the path themselves.</p>
+    </div>
+    <div class="sys-card">
+      <div class="sys-card-tag tag-gold">Surprises</div>
+      <div class="sys-card-icon">🌍</div>
+      <h3>World Events</h3>
+      <p>Life is unpredictable. The event engine fires contextual financial situations at the player based on who they are. A driver might get a passenger referral bonus one day and a fuel price spike the next. Events also trigger when visiting districts — a 30% chance of a "street encounter" on every arrive. No two players have the same game.</p>
+    </div>
+    <div class="sys-card">
+      <div class="sys-card-tag tag-rust">Education</div>
+      <div class="sys-card-icon">💡</div>
+      <h3>Hustle Tips</h3>
+      <p>Attached to each quest is a rotating set of five hints — written in Kenyan youth voice, never preachy. Tips do not tell the player what to do. They gesture toward it. The player reads, discovers, acts — and only later realises the tip showed them the way. 30 tips across 6 quests, covering devices, skills, jobs, investing, property, and business.</p>
+    </div>
+  </div>
+</div>
+
+<div class="journey-intro">
+  <span class="eyebrow">The Player Experience</span>
+  <h2>A Day in Pesa City — Amina's Story</h2>
+  <p>This is a complete walkthrough of one player session, from the moment Amina opens the app to the moment she closes it. Every detail here is real — this is how the game actually plays. Read it to understand what your players are experiencing.</p>
+  <p style="margin-top: 12px; font-size: 13px;"><strong style="color: rgba(247,246,242,0.9);">Amina, 22.</strong> Recent graduate from Nairobi. Chose the Technology career path in her quiz. On her third day playing. Balance: KES 4,200. Quest 1 active: Get Connected. Full journey ahead: 6 quests from first device to first business.</p>
+</div>
+
+<div class="journey-body">
+<div class="journey-inner">
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Home Screen → Pesa City</div>
+      <div class="moment-time">Session begins</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">She opens the app and walks into the city.</div>
+      <p class="moment-text">Amina taps the PesaQuest icon. The old "Play" button used to take her to a scenario screen. Now it takes her directly into Pesa City — her city, with her character already standing at the Central Plaza fountain where she left him yesterday.</p>
+      <p class="moment-text">After three seconds, a notification card slides up. Her character's phone buzzed — a tech community group is looking for someone to help set up Wi-Fi at a small office. She picks "take the job" for KES 2,000. Her balance ticks up to KES 6,200. She did not know this was a financial literacy lesson about taking calculated opportunities.</p>
+      <div class="moment-event">
+        <span class="moment-event-label">World Event fired (career-matched)</span>
+        The event engine saw that Amina is a technology worker in chapter 1. It pulled a relevant "freelance gig" event from the scenario library. She will not see this same event again for at least two weeks.
+      </div>
+    </div>
+  </div>
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Pesa City Sidebar</div>
+      <div class="moment-time">~2 minutes in</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">She reads her active quest — and a tip she didn't ask for.</div>
+      <p class="moment-text">On the right side of her screen, the sidebar shows her current quest: <strong>⚔️ Get Connected — acquire your first device.</strong> The timer shows 18 game days left. An amber warning bar has appeared — she's past the halfway mark and still has no phone.</p>
+      <p class="moment-text">Below the quest card, a tip rotates in: <em>"A device isn't a flex — it's your earning tool. M-Pesa agent, gig apps, social selling, job applications. Every hustle starts with connectivity."</em> She thinks: right, but I still don't have enough money.</p>
+      <div class="moment-learn">
+        <span class="moment-learn-label">Financial Lesson (invisible)</span>
+        Amina is connecting the idea that income-generating tools have priority over luxury purchases. She has not been told this. She is reasoning toward it herself.
+      </div>
+    </div>
+  </div>
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Map → Opportunity Hub</div>
+      <div class="moment-time">~5 minutes in</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">She walks her character to the Opportunity Hub.</div>
+      <p class="moment-text">Amina taps the Opportunity Hub building. Her stickman character walks across the city, arrives, does a small celebration, and the Hub panel slides up. Inside she finds two tabs: <strong>Courses</strong> and <strong>Jobs</strong> (locked, with a padlock).</p>
+      <div class="moment-learn">
+        <span class="moment-learn-label">Discovery moment</span>
+        Amina has not been told that courses unlock jobs. She sees the padlock and deduces it. She taps Courses. The game has just taught her that education precedes employment, without saying so.
+      </div>
+    </div>
+  </div>
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Opportunity Hub → Jobs Tab</div>
+      <div class="moment-time">~8 minutes in</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">She enrols in a course, completes it, and gets a job.</div>
+      <p class="moment-text">Four courses appear. Because her quiz identified her as a technology professional, <em>Digital Skills for the Workplace</em> is highlighted and relevant. It costs nothing. She taps "Enrol" then "Mark Complete". The Jobs tab unlocks. She applies for a Tech Support role: <strong>KES 42,000/month.</strong> Confirmed: <em>"You're employed!"</em></p>
+      <div class="moment-learn">
+        <span class="moment-learn-label">Financial Lesson (invisible)</span>
+        Amina has just acted out the invest-in-yourself → unlock-opportunities → earn-income sequence. She experienced it as a game. She will remember it as intuition.
+      </div>
+    </div>
+  </div>
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Pesa City → Mama Mboga Market</div>
+      <div class="moment-time">~14 minutes in</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">Her salary arrives. She goes to the market to buy the phone.</div>
+      <p class="moment-text">A notification: <em>KES 42,000 salary credited.</em> Balance: KES 48,200. She walks to the Marketplace, finds the electronics section, and buys a starter smartphone for KES 8,500. The screen fills with a cinematic badge moment. <strong>Quest 1 Complete: Get Connected.</strong> Quest 2 appears immediately: <em>Level Up Your Skills — 45 days.</em></p>
+      <div class="moment-learn">
+        <span class="moment-learn-label">Financial Lesson (invisible)</span>
+        She bought the phone after earning income, not before. She did not take a loan. The game gently rewarded the correct sequence without telling her it was right.
+      </div>
+    </div>
+  </div>
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Walking to Bank — Street Encounter</div>
+      <div class="moment-time">~20 minutes in</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">A street encounter fires on the way. Then an unexpected cost.</div>
+      <p class="moment-text">As she walks her character to the Equity Square bank, a "street encounter" event fires — a 30% chance that happens on every district visit. A community member is selling second-hand books on money management. She buys one for KES 300 and earns a small XP bonus.</p>
+      <p class="moment-text">Inside the bank, a new event fires — a cost. A family member needs emergency medical support. She chooses to contribute KES 5,000. Her balance drops. The result screen: <em>"Tough but right. Emergency support is part of life — and part of why we keep savings."</em> She opens a savings pot immediately.</p>
+      <div class="moment-cost">
+        <span class="moment-cost-label">Real-life simulation</span>
+        Emergency family costs are one of the most common financial shocks for young Kenyan adults. The game surfaces it as a teaching moment: savings exist for emergencies you did not plan for.
+      </div>
+    </div>
+  </div>
+
+  <div class="moment">
+    <div class="moment-location">
+      <div class="moment-where">Where</div>
+      <div class="moment-place">Session end — Pesa City Plaza</div>
+      <div class="moment-time">~28 minutes in</div>
+    </div>
+    <div class="moment-body">
+      <div class="moment-title">She closes the app. The city remembers everything.</div>
+      <p class="moment-text">Amina has had enough for today. She closes the game. Her balance — KES 34,700 — is saved. Her job is saved. Her badge is saved. Quest 2 countdown has started. When she opens the app tomorrow, a "While You Were Away" summary shows anything that happened offline.</p>
+      <p class="moment-text">She has played for 28 minutes. She has made five financial decisions. She has learned about income sequencing, emergency savings, career investment, opportunity costs, and the 50/30/20 rule — not by reading about them, but by <em>doing</em> them. She thinks she just played a fun city game.</p>
+      <div class="moment-learn">
+        <span class="moment-learn-label">What she actually learned</span>
+        Education precedes employment. Income-generating purchases come before lifestyle purchases. Unexpected costs are normal — savings absorb them. Street encounters are random, life is not predictable, and you must always have a buffer.
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<section class="section">
+  <div class="section-title">
+    <span class="eyebrow">The Educational Philosophy</span>
+    <h2>Why This Approach Works</h2>
+  </div>
+  <div class="principle-list">
+    <div class="principle">
+      <div class="principle-rule"></div>
+      <div class="principle-content">
+        <h3>Discovery beats instruction.</h3>
+        <p>When a player discovers that courses unlock jobs — because they see a padlock and figure it out — that lesson sticks in a way no diagram achieves. Pesa City is engineered around discovery at every step.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-rule"></div>
+      <div class="principle-content">
+        <h3>Personalisation creates investment.</h3>
+        <p>A teacher in the game gets teaching events. A farmer gets agriculture events. When the game mirrors your real career, the stakes feel real. You are rehearsing your actual financial future.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-rule"></div>
+      <div class="principle-content">
+        <h3>Failure is safe here.</h3>
+        <p>In real life, spending your salary before saving costs you your future. In Pesa City, it costs you a quest badge. The game lets players make the wrong decision and experience the consequence in a space where consequences are recoverable.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-rule"></div>
+      <div class="principle-content">
+        <h3>Continuity creates habits.</h3>
+        <p>A player who returns tomorrow to check their salary has internalised the habit of financial awareness. The game is not trying to teach a lesson — it is trying to build a behaviour that transfers to their real financial life.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-rule"></div>
+      <div class="principle-content">
+        <h3>Tips educate without lecturing.</h3>
+        <p>Every quest comes with five rotating tips, written in the voice of a knowledgeable Nairobi peer — not an NGO. Tips hint at mechanics without revealing them. The format matters as much as the content.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-band">
+  <div class="section-title">
+    <span class="eyebrow">Where We Are Now</span>
+    <h2>What Is Built, What Is Coming</h2>
+  </div>
+  <p>This is a plain-language summary of the build status for the programme team. The technical team tracks the full detail separately.</p>
+  <div class="roadmap" style="margin-top: 24px;">
+    <div class="road-row">
+      <div class="road-phase">
+        <div class="road-phase-label">Phase 1–7</div>
+        <div class="road-phase-name">The City</div>
+      </div>
+      <div class="road-content">
+        <span class="road-status status-done">Complete</span><br>
+        The full Pesa City map, character walking, all seven districts, the quest system, career quiz, career-based jobs and courses, the badge celebration system, mobile-friendly layout, sound framework, and contextual tip cards. <strong>This is what players use today.</strong>
+      </div>
+    </div>
+    <div class="road-row">
+      <div class="road-phase">
+        <div class="road-phase-label">Phase 8–9</div>
+        <div class="road-phase-name">Live Events + District Activation</div>
+      </div>
+      <div class="road-content">
+        <span class="road-status status-done">Complete (awaiting server deploy)</span><br>
+        The event engine reads the player's career, assets, life chapter, and spending habits — and fires the right financial scenario at the right moment. Events also trigger during district visits (30% chance of a "street encounter" on arrive). <strong>Fun World</strong> is live with the 50/30/20 rule and entertainment budget calculator. <strong>Community Centre</strong> is live with a Dreams Board and city stats. Quest chain runs 6 deep: Get Connected → Skills → First Hustle → Investment → Property → Business. <strong>Activates after the server database update.</strong>
+      </div>
+    </div>
+    <div class="road-row">
+      <div class="road-phase">
+        <div class="road-phase-label">Phase 10</div>
+        <div class="road-phase-name">Retention</div>
+      </div>
+      <div class="road-content">
+        <span class="road-status status-next">Up Next</span><br>
+        Daily login bonuses, streak rewards, time-sensitive opportunities that expire if a player does not return, and an enhanced "While You Were Away" summary. This phase makes the city feel alive even when the player is offline.
+      </div>
+    </div>
+    <div class="road-row">
+      <div class="road-phase">
+        <div class="road-phase-label">Phase 11</div>
+        <div class="road-phase-name">World Expansion</div>
+      </div>
+      <div class="road-content">
+        <span class="road-status status-next">Planned</span><br>
+        Unlocking Kiambu Estates (property purchase, rental income) and Jua Kali Car Yard (vehicle financing, transport gigs) as fully playable districts. Lifestyle weighting — the event engine will know if the player spends like a saver or a spender and adjust accordingly.
+      </div>
+    </div>
+    <div class="road-row">
+      <div class="road-phase">
+        <div class="road-phase-label">Phase 12</div>
+        <div class="road-phase-name">Sound + Art</div>
+      </div>
+      <div class="road-content">
+        <span class="road-status status-next">Planned</span><br>
+        City sound effects and ambient background music per district (all code is ready — MP3 files need to be uploaded). Real artwork for the city map. Both are design assets — the game is fully playable without them, but they significantly increase immersion.
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="section-title">
+    <span class="eyebrow">For the Programme Team</span>
+    <h2>How to Know If It Is Working</h2>
+  </div>
+  <div class="prose">
+    <p>The game's educational success is not measured by quiz scores. It is measured by behaviour. Look for these signs in your cohorts:</p>
+    <p><strong>Players who return daily</strong> — even without being prompted — are forming the habit of financial awareness. That habit is the lesson.</p>
+    <p><strong>Players who describe the game to friends</strong> using financial vocabulary ("I got a salary," "I lost money on a car repair," "I had to save before I could buy it") have internalised the concepts as lived experience, not as lessons.</p>
+    <p><strong>Players who ask questions after sessions</strong> — "is that how tax actually works?", "can I really open a savings account like that?" — are at the exact moment where the game hands off to the educator. Pesa City is not trying to replace your programme. It is trying to create the questions your programme can answer.</p>
+  </div>
+</section>
+
+<footer class="page-footer">
+  <div style="max-width: 700px; margin: 0 auto; display: flex; gap: 32px; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <div style="font-weight: 700; color: var(--ink); margin-bottom: 4px;">PesaQuest · Pesa City</div>
+      <div>Built for Moski NGO · Financial Literacy Programme</div>
+      <div style="margin-top: 6px;">Document prepared June 2026 · For internal circulation</div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-weight: 600; color: var(--ink); margin-bottom: 4px;">Questions?</div>
+      <div>Reach the technical team for build questions.</div>
+      <div>Reach programme staff for educator integration.</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

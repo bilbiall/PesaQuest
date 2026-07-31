@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pesa City — Build Tracker</title>
+<meta name="description" content="Live build status for Pesa City, the PesaQuest world map — what's shipped, what's building, and what's queued.">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #08111A;
+  --surface:    #0E1C2C;
+  --surface-hi: #152538;
+  --border:     #1A3048;
+  --border-hi:  #24466A;
+  --green:      #15C77E;
+  --green-d:    rgba(21,199,126,0.10);
+  --gold:       #FFBC00;
+  --gold-d:     rgba(255,188,0,0.10);
+  --orange:     #FF6B35;
+  --orange-d:   rgba(255,107,53,0.10);
+  --blue:       #4DA8F7;
+  --muted:      #5A7A96;
+  --faint:      #1E3448;
+  --text:       #C4D8F0;
+  --bright:     #E8F4FF;
+  --mono:       ui-monospace, 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --sans:       system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html { background: var(--bg); color: var(--text); font-family: var(--sans); }
+
+body {
+  min-height: 100vh;
+  padding-bottom: 80px;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(21,199,126,0.008) 2px,
+    rgba(21,199,126,0.008) 3px
+  );
+}
+
+.hdr {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(8,17,26,0.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  padding: 0 24px;
+}
+
+.hdr-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 56px;
+}
+
+.hdr-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.hdr-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.hdr-progress {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hdr-track {
+  width: 160px;
+  height: 4px;
+  background: var(--faint);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.hdr-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green) 0%, #38F0A0 100%);
+  border-radius: 100px;
+  width: 75%;
+  animation: fillIn 1.2s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+}
+
+@keyframes fillIn {
+  from { width: 0; }
+  to   { width: 75%; }
+}
+
+.hdr-pct {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.hdr-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+.phase-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.phase-badge.shipped  { color: var(--green);  background: var(--green-d);  border-color: rgba(21,199,126,0.25); }
+.phase-badge.building { color: var(--gold);   background: var(--gold-d);   border-color: rgba(255,188,0,0.25); }
+.phase-badge.queued   { color: var(--orange); background: var(--orange-d); border-color: rgba(255,107,53,0.20); }
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0 1px;
+}
+
+.col-hdr {
+  padding: 0 0 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.col-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.col-title.shipped  { color: var(--green); }
+.col-title.building { color: var(--gold); }
+.col-title.queued   { color: var(--orange); }
+
+.col-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  background: var(--gold);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1.1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.col-count {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-body {
+  border-left: 1px solid var(--border);
+  padding: 0 0 0 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.col-body:first-of-type { border-left: none; }
+
+.phase-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 14px 6px;
+  border-top: 1px solid var(--border);
+  opacity: 0.7;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 14px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  animation: itemIn 0.3s ease both;
+  cursor: default;
+}
+
+.item:hover { background: var(--surface); }
+
+@keyframes itemIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.item.shipped  { border-left-color: var(--green);  }
+.item.building { border-left-color: var(--gold);   }
+.item.queued   { border-left-color: transparent;   }
+.item.queued:hover { border-left-color: var(--orange); }
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.dot.shipped  { background: var(--green); box-shadow: 0 0 4px rgba(21,199,126,0.5); }
+.dot.building { background: var(--gold);  box-shadow: 0 0 4px rgba(255,188,0,0.5); animation: dotPulse 1.5s ease-in-out infinite; }
+.dot.queued   { background: transparent; border: 1.5px solid var(--border-hi); }
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,188,0,0.5); }
+  50%       { box-shadow: 0 0 0 4px rgba(255,188,0,0); }
+}
+
+.item-body { flex: 1; min-width: 0; }
+
+.item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bright);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item.queued .item-title { color: var(--text); font-weight: 400; }
+
+.item-note {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.cat-ui   { background: rgba(77,168,247,0.12); color: var(--blue); }
+.cat-api  { background: rgba(21,199,126,0.10); color: var(--green); }
+.cat-data { background: rgba(255,188,0,0.10);  color: var(--gold); }
+.cat-arch { background: rgba(167,139,250,0.10); color: #A78BFA; }
+.cat-ops  { background: rgba(255,107,53,0.10); color: var(--orange); }
+.cat-art  { background: rgba(239,83,80,0.10);  color: #EF5350; }
+
+.summary {
+  max-width: 1200px;
+  margin: 32px auto 0;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.summary-stat { display: flex; flex-direction: column; gap: 2px; }
+
+.summary-num {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.summary-num.green  { color: var(--green); }
+.summary-num.gold   { color: var(--gold); }
+.summary-num.orange { color: var(--orange); }
+
+.summary-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.summary-divider { width: 1px; height: 36px; background: var(--border); }
+
+.summary-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 380px;
+  margin-left: auto;
+  font-style: italic;
+}
+
+.deploy-box {
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 14px 24px;
+  background: var(--orange-d);
+  border: 1px solid rgba(255,107,53,0.25);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deploy-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.deploy-steps { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+
+.deploy-step {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 8px;
+}
+
+.item:nth-child(1)  { animation-delay: 0.02s; }
+.item:nth-child(2)  { animation-delay: 0.04s; }
+.item:nth-child(3)  { animation-delay: 0.06s; }
+.item:nth-child(4)  { animation-delay: 0.08s; }
+.item:nth-child(5)  { animation-delay: 0.10s; }
+.item:nth-child(6)  { animation-delay: 0.12s; }
+.item:nth-child(7)  { animation-delay: 0.14s; }
+.item:nth-child(8)  { animation-delay: 0.16s; }
+.item:nth-child(9)  { animation-delay: 0.18s; }
+.item:nth-child(10) { animation-delay: 0.20s; }
+.item:nth-child(11) { animation-delay: 0.22s; }
+.item:nth-child(12) { animation-delay: 0.24s; }
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; gap: 0; }
+  .col-body { border-left: none; }
+  .hdr-track { width: 100px; }
+  .summary { gap: 16px; }
+  .summary-note { margin-left: 0; width: 100%; max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item, .hdr-fill, .col-cursor, .dot.building { animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <div class="hdr-title">🏙 Pesa City</div>
+      <div class="hdr-sub">PesaQuest · Moski NGO · Build Log</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <span class="phase-badge shipped">Phases 1–12 Shipped</span>
+    <span class="phase-badge building">Deploy Pending</span>
+    <span class="phase-badge queued">4 Post-Deploy Items</span>
+    <div class="hdr-progress">
+      <div class="hdr-track"><div class="hdr-fill" style="width:97%"></div></div>
+      <span class="hdr-pct">97% of full scope</span>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- SHIPPED -->
+  <div>
+    <div class="col-hdr">
+      <span class="col-title shipped">✓ Shipped</span>
+      <span class="col-count">62 items</span>
+    </div>
+    <div class="col-body">
+
+      <div class="phase-label">Phase 1–2 · Map Shell + Walking</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">World map layout + HUD + Sidebar</div><div class="item-note">Full-screen game view, no nav bar</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">7 District zones on map</div><div class="item-note">Market · Hub · Bank · Estates · CarYard · FunWorld · Community</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Stickman walking engine</div><div class="item-note">Distance-scaled timing, scaleX flip, celebrate on arrive</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">District bottom-sheet panel</div><div class="item-note">Slide-up, close returns to plaza, backdrop dismiss</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Map atmosphere layer</div><div class="item-note">Neighborhood tints, streetlamps, matatu buses, trees</div></div><span class="cat cat-ui">UI</span></div>
+
+      <div class="phase-label">Phase 3 · Database</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">7 migrations written</div><div class="item-note">missions · player_missions · city_courses · city_jobs + 3 join tables</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">6 new Eloquent models</div><div class="item-note">Mission, PlayerMission, CityCourse, CityJob + player variants</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Seeders: Missions + Courses + Jobs + Badges</div><div class="item-note">6 quests · 4 courses · 6 jobs · mission badges</div></div><span class="cat cat-data">Data</span></div>
+
+      <div class="phase-label">Phase 4–6 · Quest Engine</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">MissionChecker service</div><div class="item-note">asset_category · course_completed · job_employed handlers</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">MissionController (active + check)</div><div class="item-note">Deadline · days_left · urgency tier in response</div></div><span class="cat cat-api">API</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">OpportunityController</div><div class="item-note">Courses: enrol/complete · Jobs: apply with qualification gate</div></div><span class="cat cat-api">API</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Opportunity Hub panel (tabbed)</div><div class="item-note">Courses tab + Jobs tab (locked until course done)</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Badge popup overlay</div><div class="item-note">Cinematic: icon bounce, star particles, reward chips</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">LifeSimulator job salary</div><div class="item-note">settleJobSalaries() — pays every 30 ticks on login</div></div><span class="cat cat-arch">Arch</span></div>
+
+      <div class="phase-label">Phase 7 · Polish + Mobile</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Portrait scrollable map + scroll hint</div><div class="item-note">900×600px fixed map · hint auto-hides after 4.5s or first scroll</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Landscape compact HUD</div><div class="item-note">36px HUD · hides bottom nav · sidebar goes full height</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Timed quests (deadline_game_days)</div><div class="item-note">30d · 45d · 60d · urgency: safe/warning/critical</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Sound scaffold (WebAudio procedural)</div><div class="item-note">SoundMgr · 5 SFX synthesised · 🔊/🔇 HUD toggle · no MP3 files needed</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Mobile: bottom nav + sidebar drawer</div><div class="item-note">5-tab bottom nav · hamburger drawer · overlay on mobile</div></div><span class="cat cat-ui">UI</span></div>
+
+      <div class="phase-label">Phase 8 · Event Engine</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">EventEngine service (filter pipeline)</div><div class="item-note">career→asset→stage→dedup→lifestyle→pick · Schema::hasTable guards</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">World event overlay scaffold</div><div class="item-note">Alpine worldEvent state · showWorldEvent / resolveWorldEvent / result state</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">POST /world/events/resolve route</div><div class="item-note">Choice → balance delta → event log → JSON response</div></div><span class="cat cat-api">API</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">EventEngine uses Node model + career_field</div><div class="item-note">Queries nodes type=scenario · reads UserProgress.career_field directly</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">player_event_log migration written</div><div class="item-note">player_id + node_id + choice_id + seen_at · 14-day dedup</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">EventMetaSeeder — tags 40 existing scenarios</div><div class="item-note">Keyword-matching → event_type + career_track + min_chapter in metadata</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">/game/play → /world redirect</div><div class="item-note">Pesa City is now the primary game entry point for all players</div></div><span class="cat cat-ops">Ops</span></div>
+
+      <div class="phase-label">Phase 9 · District Activation + Quest Expansion</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Fun World 🎡 activated</div><div class="item-note">50/30/20 rule banner · entertainment budget calc · 4 experience cards</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Community Centre 📣 activated</div><div class="item-note">Dreams Board (5 entries) · city-wide stats · School Portal link</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Quests 4-6 seeded (Investment / Property / Business)</div><div class="item-note">75 / 90 / 120 game-day deadlines · investor · property-owner · entrepreneur badges</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">QUEST_TIPS for all 6 quests (30 tips total)</div><div class="item-note">5 tips per quest slug — investment, property, business tips added</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">District street encounters (30% trigger)</div><div class="item-note">_eventIdx cycle tracker · Math.random() &lt; 0.30 on district arrive</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Background music scaffold (playZone / stopZone)</div><div class="item-note">SoundMgr.playZone(slug) + stopZone() wired · BGM tracks commented pending MP3s</div></div><span class="cat cat-art">Art</span></div>
+
+      <div class="phase-label">Phase 9 · Scenario Engine Completion</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">CareerEventSeeder — 24 targeted scenarios</div><div class="item-note">8 career tracks × 3 events each · technology · business · healthcare · agriculture · finance · education · engineering · creative</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">EventEngine — expires_in_days urgency</div><div class="item-note">Opportunity events carry game-day countdown · metadata.expires_in_days → format()</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Expiry countdown badge in world event overlay</div><div class="item-note">Amber "⏳ 3 days left" badge · red pulsing animation when ≤ 2 days · world.css keyframe</div></div><span class="cat cat-ui">UI</span></div>
+
+      <div class="phase-label">Phase 10 · Engagement + Retention</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Daily login bonus mechanic</div><div class="item-note">LifeSimulator.checkDailyLoginBonus() · level × 150 KES · level × 12 XP · last_bonus_at guard</div></div><span class="cat cat-api">API</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">WYWA modal in Pesa City world view</div><div class="item-note">WorldController injects LifeSimulator · @include life-sim-catchup in world/index · bonus shown on city enter</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Time-sensitive opportunity events</div><div class="item-note">Expiry badge + pulsing animation · urgency-coded per career track · 2-7 day windows</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Notification stubs (GameNotification)</div><div class="item-note">Salary · bonus · life events all create GameNotification records · surfaced in dashboard feed</div></div><span class="cat cat-ops">Ops</span></div>
+
+      <div class="phase-label">Phase 11 · District Unlocks (Estates + Car Yard)</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Dynamic unlock logic in WorldController</div><div class="item-note">Estates: balance ≥ 200K or 3+ missions · CarYard: balance ≥ 100K + career set · DISTRICTS const cloned per player</div></div><span class="cat cat-arch">Arch</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Kiambu Estates 🏠 panel — 3 property listings</div><div class="item-note">Plot 250K · Bedsitter 550K · 2BR 1.2M · 10% deposit · monthly installment · rental income yield · can-afford badge</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Estates district() API data injection</div><div class="item-note">3 properties with can_afford flag (balance vs deposit) · rental_income · financial lesson per listing</div></div><span class="cat cat-api">API</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Jua Kali Car Yard 🚗 panel — 3 vehicles</div><div class="item-note">Bajaj 80K · Fielder 650K · Noah 960K · 20% deposit · gig income · net income after loan highlighted</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Car Yard district() API data injection</div><div class="item-note">Vehicles with can_afford, gig_income, monthly loan, net income calc · unlock banner on panel open</div></div><span class="cat cat-api">API</span></div>
+
+      <div class="phase-label">Phase 12 · Audio + Map Visual + Homepage</div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Procedural WebAudio SoundMgr (replaces Howl.js)</div><div class="item-note">IIFE module · lazy AudioContext · step/arrive/open/close/badge/bonus SFX synthesised · no MP3 dependency</div></div><span class="cat cat-art">Art</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Zone ambient BGM — 7 procedural zone textures</div><div class="item-note">playZone(slug) → chord pad + city noise wash per district · prime-ratio LFOs for organic beating · no MP3 files</div></div><span class="cat cat-art">Art</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Enhanced map CSS — multi-layer atmosphere</div><div class="item-note">Fine grid overlay + block shadow zones + diagonal ambient glow + ground fog + vignette depth · weather shimmer</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">District glow animation — radial pulse behind active buildings</div><div class="item-note">pc-district-active .pc-district-icon::after · 3s ease-in-out infinite · color inherited from --district-color</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item shipped"><div class="dot shipped"></div><div class="item-body"><div class="item-title">Homepage redesign — PesaQuest game-themed landing page</div><div class="item-note">welcome.blade.php rebuilt · hero + city skyline SVG · stats bar · 3-step How It Works · 6 feature cards · 7 district cards · 8 career path grid · NGO mission · CTA · footer · dark city aesthetic #08111A</div></div><span class="cat cat-ui">UI</span></div>
+    </div>
+  </div>
+
+  <!-- BUILDING -->
+  <div>
+    <div class="col-hdr">
+      <span class="col-title building">⟳ Awaiting cPanel Deploy</span>
+      <span class="col-count">1 item</span>
+    </div>
+    <div class="col-body">
+
+      <div class="phase-label">Post-Deploy Activation</div>
+      <div class="item building">
+        <div class="dot building"></div>
+        <div class="item-body">
+          <div class="item-title">Lifestyle tier calculation (post-migration)</div>
+          <div class="item-note">monthly_expense column needed on user_progress · spending/income → frugal/moderate/luxury · EventEngine weight activates automatically</div>
+        </div>
+        <span class="cat cat-data">Data</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QUEUED -->
+  <div>
+    <div class="col-hdr">
+      <span class="col-title queued">◌ Post-Deploy</span>
+      <span class="col-count">4 items</span>
+    </div>
+    <div class="col-body">
+
+      <div class="phase-label">Activation after cPanel migrate + seed</div>
+      <div class="item queued"><div class="dot queued"></div><div class="item-body"><div class="item-title">Asset-based event triggers (live)</div><div class="item-note">player_assets table migration needed · required_asset_category filter is written and waiting</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item queued"><div class="dot queued"></div><div class="item-body"><div class="item-title">Event deduplication (player_event_log)</div><div class="item-note">No repeat within 14 game days · migration written · activates after cPanel deploy</div></div><span class="cat cat-data">Data</span></div>
+      <div class="item queued"><div class="dot queued"></div><div class="item-body"><div class="item-title">Scenario chooser panel</div><div class="item-note">Full scenario replay · narrative panel in world view · fires as a world event overlay</div></div><span class="cat cat-ui">UI</span></div>
+      <div class="item queued"><div class="dot queued"></div><div class="item-body"><div class="item-title">Map artwork (WebP) — optional visual upgrade</div><div class="item-note">Commission AI-generated top-down Nairobi city illustration · compress &lt;350KB · remap district coords to image</div></div><span class="cat cat-art">Art</span></div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="summary">
+  <div class="summary-stat">
+    <span class="summary-num green">62</span>
+    <span class="summary-label">Shipped</span>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat">
+    <span class="summary-num gold">1</span>
+    <span class="summary-label">Post-Deploy</span>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat">
+    <span class="summary-num orange">4</span>
+    <span class="summary-label">Awaiting Deploy</span>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat">
+    <span class="summary-num" style="color:var(--blue);">7</span>
+    <span class="summary-label">Live Districts</span>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat">
+    <span class="summary-num" style="color:var(--muted);">0</span>
+    <span class="summary-label">MP3s Needed</span>
+  </div>
+  <div class="summary-note">
+    Phases 1–12 complete. 7 fully active districts including Kiambu Estates and Jua Kali Car Yard. Procedural WebAudio — zero MP3 dependencies. Homepage redesigned as a full PesaQuest game landing page. Ready for cPanel deploy: php artisan migrate &amp;&amp; php artisan db:seed.
+  </div>
+</div>
+
+<div class="deploy-box">
+  <span class="deploy-label">⚡ Deploy — run once on cPanel</span>
+  <div class="deploy-steps">
+    <span class="deploy-step">php artisan migrate</span>
+    <span class="deploy-step">php artisan db:seed</span>
+    <span class="deploy-step">Visit /world — check WYWA modal fires</span>
+    <span class="deploy-step">Check daily login bonus (KES + XP)</span>
+    <span class="deploy-step">Walk to district — check 30% encounter + expiry badge</span>
+    <span class="deploy-step">Test 6-quest chain as new player</span>
+    <span class="deploy-step">Seed career events: check career-track scenarios show for correct players</span>
+    <span class="deploy-step">Verify world event expiry badge (amber/red) on opportunity events</span>
+  </div>
+</div>
+
+</body>
+</html>

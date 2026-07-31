@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('loan_products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 120);
+            $table->string('icon', 8)->default('🏦');
+            $table->text('description')->nullable();
+            $table->unsignedInteger('min_amount')->default(1000);
+            $table->unsignedInteger('max_amount');
+            $table->decimal('annual_interest_rate', 5, 2);
+            $table->unsignedSmallInteger('term_ticks');
+            $table->unsignedSmallInteger('payment_period_ticks')->default(7);
+            $table->unsignedSmallInteger('min_credit_score')->default(300);
+            $table->boolean('is_active')->default(true);
+            $table->unsignedSmallInteger('sort_order')->default(0);
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('loan_products');
+    }
+};

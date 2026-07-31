@@ -1,0 +1,74 @@
+{
+  "name": "PesaQuest – Financial Life Game by Moski",
+  "short_name": "PesaQuest",
+  "description": "The Kenyan financial literacy game. Earn salary, pay bills, save, invest, and build wealth in Pesa City — all without real risk. Learn money skills that last a lifetime.",
+  "start_url": "/dashboard?utm_source=pwa",
+  "id": "/dashboard",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07060f",
+  "theme_color": "#6366f1",
+  "categories": ["games", "education", "finance"],
+  "lang": "en-KE",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/img/game/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/game/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/img/game/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/game/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/img/game/pwa-og.jpg",
+      "sizes": "1200x1200",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Pesa City — your virtual financial world"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pesa City",
+      "short_name": "City",
+      "url": "/world",
+      "icons": [{ "src": "/img/game/pwa-192.png", "sizes": "192x192" }],
+      "description": "Explore Pesa City and build your financial life"
+    },
+    {
+      "name": "Daily Spin",
+      "short_name": "Spin",
+      "url": "/spin",
+      "icons": [{ "src": "/img/game/pwa-192.png", "sizes": "192x192" }],
+      "description": "Spin the wheel for a daily reward"
+    },
+    {
+      "name": "My Profile",
+      "short_name": "Profile",
+      "url": "/profile",
+      "icons": [{ "src": "/img/game/pwa-192.png", "sizes": "192x192" }],
+      "description": "View your progress and badges"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

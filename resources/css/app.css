@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Button density pass ────────────────────────────────────────────────
+   Playful colors stay; padding, radius and type size come down a notch so
+   CTAs read professional instead of bubbly. Scoped to <button>/<a> pills
+   so chips, inputs and cards are untouched. */
+
+/* Generously padded pill/rounded CTAs slim down vertically… */
+button.rounded-full[class*="py-2.5"], a.rounded-full[class*="py-2.5"],
+button.rounded-full[class*="py-3"],   a.rounded-full[class*="py-3"],
+button.rounded-xl[class*="py-2.5"],   a.rounded-xl[class*="py-2.5"],
+button.rounded-xl[class*="py-3"],     a.rounded-xl[class*="py-3"],
+button.rounded-2xl[class*="py-3"],    a.rounded-2xl[class*="py-3"] {
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+}
+
+/* …and horizontally */
+button.rounded-full[class*="px-6"], a.rounded-full[class*="px-6"],
+button.rounded-full[class*="px-7"], a.rounded-full[class*="px-7"],
+button.rounded-full[class*="px-8"], a.rounded-full[class*="px-8"],
+button.rounded-xl[class*="px-6"],   a.rounded-xl[class*="px-6"],
+button.rounded-2xl[class*="px-8"],  a.rounded-2xl[class*="px-8"] {
+    padding-left: 1.15rem !important;
+    padding-right: 1.15rem !important;
+}
+
+/* Oversized CTA type comes down a step */
+button.rounded-full.text-base, a.rounded-full.text-base,
+button.rounded-xl.text-base,   a.rounded-xl.text-base   { font-size: 0.85rem !important; }
+button.rounded-full.text-lg,   a.rounded-full.text-lg,
+button.rounded-xl.text-lg,     a.rounded-xl.text-lg     { font-size: 0.95rem !important; }
+
+/* Full pills square off slightly — still friendly, less balloon */
+button.rounded-full[class*="px-6"], a.rounded-full[class*="px-6"],
+button.rounded-full[class*="px-7"], a.rounded-full[class*="px-7"],
+button.rounded-full[class*="px-8"], a.rounded-full[class*="px-8"] {
+    border-radius: 0.9rem !important;
+}
+
+/* Named per-page button classes (defined in page <style> blocks) */
+.btn-primary { padding: 8px 16px !important; font-size: 12.5px !important; border-radius: 10px !important; }
+.tab-pill    { padding: 5px 14px !important; font-size: 12px !important; }
