@@ -2113,12 +2113,15 @@ function pesaCity() {
 // ══════════════════════════════════════════════════════════════
 function equitySquare() {
   return {
-    bankTab:     'savings',
-    dealLoading: false,
-    loanLoading: false,
-    loanAmounts: {},
-    bankMsg:     '',
-    bankMsgOk:   true,
+    bankTab:      'savings',
+    eqTab:        'deals',
+    dealLoading:  false,
+    loanLoading:  false,
+    shareLoading: false,
+    loanAmounts:  {},
+    shareQty:     {},
+    bankMsg:      '',
+    bankMsgOk:    true,
 
     showMsg(msg, ok = true) {
       this.bankMsg   = msg;
@@ -2203,6 +2206,58 @@ function equitySquare() {
         this.showMsg('Could not process payment. Try again.', false);
       }
       this.loanLoading = false;
+    },
+
+    async buyShare(share) {
+      const qty = parseInt(this.shareQty[share.id]) || 1;
+      if (qty < 1) { this.showMsg('Enter a valid quantity', false); return; }
+      if (this.shareLoading) return;
+      const cs = document.querySelector('meta[name=csrf-token]')?.content ?? '';
+      this.shareLoading = true;
+      try {
+        const res  = await fetch('/shares/buy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cs, 'Accept': 'application/json' },
+          body: JSON.stringify({ share_id: share.id, quantity: qty }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          this.showMsg(data.error, false);
+        } else {
+          this.showMsg(data.message ?? 'Bought!', true);
+          if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
+          setTimeout(() => location.reload(), 1200);
+        }
+      } catch (e) {
+        this.showMsg('Could not buy shares. Try again.', false);
+      }
+      this.shareLoading = false;
+    },
+
+    async sellShare(holding) {
+      const qty = parseInt(this.shareQty[holding.share_id]) || holding.quantity;
+      if (qty < 1) { this.showMsg('Enter a valid quantity', false); return; }
+      if (this.shareLoading) return;
+      const cs = document.querySelector('meta[name=csrf-token]')?.content ?? '';
+      this.shareLoading = true;
+      try {
+        const res  = await fetch('/shares/sell', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cs, 'Accept': 'application/json' },
+          body: JSON.stringify({ share_id: holding.share_id, quantity: qty }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          this.showMsg(data.error, false);
+        } else {
+          this.showMsg(data.message ?? 'Sold!', (data.profit_loss ?? 0) >= 0);
+          if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
+          setTimeout(() => location.reload(), 1200);
+        }
+      } catch (e) {
+        this.showMsg('Could not sell shares. Try again.', false);
+      }
+      this.shareLoading = false;
     },
   };
 }

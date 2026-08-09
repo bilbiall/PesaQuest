@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             StorySeeder::class,
             BillSeeder::class,
             AssetSeeder::class,
+            ShareSeeder::class,
             LifeEventSeeder::class,
             MarketEventSeeder::class,
             FunWorldActivitySeeder::class,

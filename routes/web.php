@@ -159,6 +159,7 @@ Route::middleware(['auth'])->prefix('game')->name('game.')->group(function () {
     Route::post('/claim-bonus',                    [GameController::class, 'claimDailyBonus'])->name('claim-bonus');
     Route::post('/investments/{investment}/claim', [GameController::class, 'claimInvestment'])->name('investments.claim');
     Route::get('/leaderboard',                     [GameController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/leaderboard/players/{user}/details', [GameController::class, 'leaderboardPlayerDetails'])->name('leaderboard.player-details');
     Route::post('/rate',                           [GameController::class, 'rateScenario'])->name('rate');
     Route::post('/personality',                    [GameController::class, 'savePersonality'])->name('personality');
     Route::post('/replay',                         [GameController::class, 'replayScenario'])->name('replay');
@@ -304,6 +305,12 @@ Route::middleware(['auth'])->prefix('forums')->name('forums.')->group(function (
 // Investment Deals (player)
 Route::middleware(['auth'])->group(function () {
     Route::post('/deals/invest',            [\App\Http\Controllers\DealController::class, 'invest'])->name('deals.invest');
+});
+
+// Shares (Equity Square trading tab)
+Route::middleware(['auth'])->prefix('shares')->name('shares.')->group(function () {
+    Route::post('/buy',                     [\App\Http\Controllers\ShareController::class, 'buy'])->name('buy');
+    Route::post('/sell',                    [\App\Http\Controllers\ShareController::class, 'sell'])->name('sell');
 });
 
 // Loans (player)

@@ -97,6 +97,7 @@ class UserProgress extends Model
      *   + savings scheme balances
      *   + capital locked in pending investment deals
      *   + share of chama pools (share % × pool balance)
+     *   + market value of Equity Square share holdings
      *   − outstanding loan balances
      *
      * Updates net_worth_cache (does NOT save — callers save the model).
@@ -136,7 +137,15 @@ class UserProgress extends Model
                 ->sum('outstanding_balance');
         }
 
-        $this->net_worth_cache = (int) ($this->balance ?? 0) + $assets + $savings + $deals + $chama - $debts;
+        $shares = 0;
+        if (\Illuminate\Support\Facades\Schema::hasTable('player_share_holdings')) {
+            $shares = (int) \App\Models\PlayerShareHolding::where('user_id', $userId)
+                ->join('shares', 'shares.id', '=', 'player_share_holdings.share_id')
+                ->selectRaw('COALESCE(SUM(player_share_holdings.quantity * shares.current_price), 0) as v')
+                ->value('v');
+        }
+
+        $this->net_worth_cache = (int) ($this->balance ?? 0) + $assets + $savings + $deals + $chama + $shares - $debts;
 
         return $this->net_worth_cache;
     }

@@ -395,8 +395,10 @@ class GameController extends Controller
                 ->values()
                 ->map(fn($p, $i) => [
                     'rank'          => $i + 1,
+                    'user_id'       => $p->user_id,
                     'name'          => $p->user->name,
                     'profile_photo' => $p->user->profile_photo,
+                    'bio'           => $p->user->bio,
                     'points'        => $p->net_worth_cache ?? $p->balance,
                     'level'         => $p->level,
                     'is_me'         => $p->user_id === auth()->id(),
@@ -419,8 +421,10 @@ class GameController extends Controller
                 ->values()
                 ->map(fn($p, $i) => [
                     'rank'          => $i + 1,
+                    'user_id'       => $p->user_id,
                     'name'          => $p->user->name,
                     'profile_photo' => $p->user->profile_photo,
+                    'bio'           => $p->user->bio,
                     'points'        => $p->points_total,
                     'level'         => $p->level,
                     'is_me'         => $p->user_id === auth()->id(),
@@ -437,25 +441,21 @@ class GameController extends Controller
 
         $mySchoolName = $mySchoolMember?->schoolSubscription?->school_name;
 
-        // Hero-card stats: how many players are in this scope, and how the scope's
-        // TOTAL score moved vs ~7 days ago (using the same snapshot table the
-        // rank-change arrows read from — no new table needed). Null/"–" until a
-        // snapshot old enough to compare against exists.
-        $playerCount = $scopeFilter(\App\Models\UserProgress::query())->count();
-
-        $weekAgoDate = \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)
-            ->where('snapshot_date', '<=', now()->subDays(7)->toDateString())
-            ->max('snapshot_date');
-        $weekChangePct = null;
-        if ($weekAgoDate) {
-            $priorSum = (int) \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)->where('snapshot_date', $weekAgoDate)->sum('points');
-            $liveSum  = $sort === 'networth'
-                ? (int) $scopeFilter(\App\Models\UserProgress::query())->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(net_worth_cache, balance)'))
-                : (int) $scopeFilter(\App\Models\UserProgress::query())->sum('points_total');
-            if ($priorSum > 0) {
-                $weekChangePct = round((($liveSum - $priorSum) / $priorSum) * 100, 1);
-            }
-        }
+        // Attach each leader's most recently earned badge (one query for the
+        // whole page, not per-row) so the row can show a small badge chip
+        // beside their name without an N+1.
+        $badgeByUser = \Illuminate\Support\Facades\DB::table('user_badges')
+            ->join('badges', 'badges.id', '=', 'user_badges.badge_id')
+            ->whereIn('user_badges.user_id', $leaders->pluck('user_id'))
+            ->orderByDesc('user_badges.earned_at')
+            ->get(['user_badges.user_id', 'badges.icon', 'badges.name'])
+            ->groupBy('user_id')
+            ->map(fn($rows) => $rows->first());
+        $leaders = $leaders->map(function ($leader) use ($badgeByUser) {
+            $badge = $badgeByUser->get($leader['user_id']);
+            $leader['top_badge'] = $badge ? ['icon' => $badge->icon, 'name' => $badge->name] : null;
+            return $leader;
+        });
 
         // Tiny real sparkline for the "Your Goal" card — my own last few days of
         // snapshotted points in this exact scope, oldest first.
@@ -468,9 +468,31 @@ class GameController extends Controller
             ->values();
 
         return view('game.leaderboard', compact(
-            'leaders', 'ageGroup', 'myRank', 'sort', 'scope', 'mySchoolName',
-            'playerCount', 'weekChangePct', 'mySparkline'
+            'leaders', 'ageGroup', 'myRank', 'sort', 'scope', 'mySchoolName', 'mySparkline'
         ));
+    }
+
+    /** Lazy-loaded dropdown content for a leaderboard row — badges earned and
+     *  dreams achieved. Kept out of the main leaderboard payload so the page
+     *  stays light; fetched only when a player expands a row. */
+    public function leaderboardPlayerDetails(\App\Models\User $user)
+    {
+        $badges = $user->badges()
+            ->orderByDesc('user_badges.earned_at')
+            ->get(['badges.icon', 'badges.name']);
+
+        $dreams = \App\Models\PlayerDream::where('user_id', $user->id)
+            ->with('dream:id,icon,name')
+            ->orderByDesc('purchased_at')
+            ->get()
+            ->pluck('dream')
+            ->filter()
+            ->values();
+
+        return response()->json([
+            'badges' => $badges->map(fn($b) => ['icon' => $b->icon, 'name' => $b->name]),
+            'dreams' => $dreams->map(fn($d) => ['icon' => $d->icon, 'name' => $d->name]),
+        ]);
     }
 
     /** "Played for" duration in the game's OWN simulated calendar (1 tick = 1

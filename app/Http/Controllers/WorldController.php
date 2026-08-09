@@ -546,6 +546,42 @@ class WorldController extends Controller
                 ])->values();
             }
 
+            // Tradable shares (Equity Square "Shares" tab) — random-walk priced,
+            // shared across all players, distinct from the one-shot Investment Deals above.
+            if (Schema::hasTable('shares')) {
+                app(\App\Services\ShareMarketService::class)->refreshIfStale();
+
+                $shares = \App\Models\Share::active()->orderBy('sort_order')->get();
+                $district['shares'] = $shares->map(fn($s) => [
+                    'id'         => $s->id,
+                    'name'       => $s->name,
+                    'symbol'     => $s->symbol,
+                    'icon'       => $s->icon,
+                    'sector'     => $s->sector,
+                    'price'      => (float) $s->current_price,
+                    'change_pct' => $s->priceChangePct(),
+                    'direction'  => $s->priceChangeDirection(),
+                ])->values();
+
+                $district['my_shares'] = \App\Models\PlayerShareHolding::where('user_id', $user->id)
+                    ->where('quantity', '>', 0)
+                    ->with('share')
+                    ->get()
+                    ->filter(fn($h) => $h->share !== null)
+                    ->map(fn($h) => [
+                        'share_id'      => $h->share_id,
+                        'name'          => $h->share->name,
+                        'symbol'        => $h->share->symbol,
+                        'icon'          => $h->share->icon,
+                        'quantity'      => $h->quantity,
+                        'avg_cost'      => (float) $h->avg_cost,
+                        'price'         => (float) $h->share->current_price,
+                        'value'         => $h->currentValue(),
+                        'gain_loss'     => $h->gainLoss(),
+                        'gain_loss_pct' => $h->gainLossPct(),
+                    ])->values();
+            }
+
             $district['credit_tips'] = $score < 650
                 ? [
                     'Pay all bills on time — even one late payment drops your score by 50+ points.',

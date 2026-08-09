@@ -964,6 +964,23 @@
                         <span style="font-size:14px;font-weight:900;color:#35C3F0;" x-text="'KES ' + (district.balance ?? 0).toLocaleString()"></span>
                     </div>
 
+                    {{-- Tab navigation --}}
+                    <div style="display:flex;gap:4px;margin:0 0 12px;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;">
+                        <button @click="eqTab='deals'"
+                                :style="eqTab==='deals' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
+                                style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
+                            🎯 Deals
+                        </button>
+                        <button @click="eqTab='shares'"
+                                :style="eqTab==='shares' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
+                                style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
+                            📈 Shares
+                        </button>
+                    </div>
+
+                    {{-- TAB: Deals --}}
+                    <div x-show="eqTab==='deals'">
+
                     {{-- Active positions --}}
                     <template x-if="district.my_deals && district.my_deals.filter(d=>d.status==='pending').length > 0">
                         <div style="margin-bottom:12px;">
@@ -1032,6 +1049,76 @@
                             </div>
                         </div>
                     </template>
+
+                    </div>
+                    {{-- /TAB: Deals --}}
+
+                    {{-- TAB: Shares --}}
+                    <div x-show="eqTab==='shares'">
+
+                        <template x-if="district.my_shares && district.my_shares.length > 0">
+                            <div style="margin-bottom:12px;">
+                                <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">💼 My Holdings</div>
+                                <template x-for="h in district.my_shares" :key="h.share_id">
+                                    <div style="border-radius:12px;border:1px solid rgba(53,195,240,.15);padding:8px 10px;margin-bottom:6px;background:rgba(53,195,240,.03);">
+                                        <div style="display:flex;align-items:center;gap:8px;">
+                                            <span x-text="h.icon" style="font-size:18px;flex-shrink:0;"></span>
+                                            <div style="flex:1;min-width:0;">
+                                                <div style="font-size:12px;font-weight:800;color:#f9fafb;" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
+                                                <div style="font-size:11px;color:#9ca3af;" x-text="'Avg KES ' + h.avg_cost.toLocaleString() + ' · now KES ' + h.price.toLocaleString()"></div>
+                                            </div>
+                                            <div style="text-align:right;flex-shrink:0;">
+                                                <div style="font-size:12px;font-weight:800;" :style="h.gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
+                                                     x-text="(h.gain_loss >= 0 ? '+' : '') + 'KES ' + h.gain_loss.toLocaleString()"></div>
+                                                <div style="font-size:10px;color:#6b7280;" x-text="(h.gain_loss_pct >= 0 ? '+' : '') + h.gain_loss_pct + '%'"></div>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+                                            <input type="number" x-model.number="shareQty[h.share_id]" min="1" :max="h.quantity"
+                                                   :placeholder="'up to ' + h.quantity"
+                                                   style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 9px;color:#fff;font-size:12px;min-width:0;">
+                                            <button @click="sellShare(h)" :disabled="shareLoading"
+                                                    style="padding:5px 12px;border-radius:8px;font-size:11px;font-weight:800;background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.3);cursor:pointer;white-space:nowrap;">
+                                                Sell →
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">📈 Market — Buy Low, Sell High</div>
+                        <template x-if="!district.shares || district.shares.length === 0">
+                            <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No shares listed right now. Check back soon.</div>
+                        </template>
+                        <template x-for="s in (district.shares ?? [])" :key="s.id">
+                            <div style="border-radius:12px;border:1px solid rgba(255,255,255,0.08);padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.03);">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span x-text="s.icon" style="font-size:18px;flex-shrink:0;"></span>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:12px;font-weight:800;color:#f9fafb;" x-text="s.name + ' (' + s.symbol + ')'"></div>
+                                        <div style="font-size:10px;color:#6b7280;" x-text="s.sector"></div>
+                                    </div>
+                                    <div style="text-align:right;flex-shrink:0;">
+                                        <div style="font-size:13px;font-weight:900;color:#f9fafb;" x-text="'KES ' + s.price.toLocaleString()"></div>
+                                        <div style="font-size:11px;font-weight:700;"
+                                             :style="s.direction === 'up' ? 'color:#34d399' : (s.direction === 'down' ? 'color:#f87171' : 'color:#9ca3af')"
+                                             x-text="(s.direction === 'up' ? '↑ ' : (s.direction === 'down' ? '↓ ' : '— ')) + Math.abs(s.change_pct) + '%'"></div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+                                    <input type="number" x-model.number="shareQty[s.id]" min="1" placeholder="Qty"
+                                           style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 9px;color:#fff;font-size:12px;min-width:0;">
+                                    <button @click="buyShare(s)" :disabled="shareLoading"
+                                            style="padding:5px 14px;border-radius:8px;font-size:12px;font-weight:800;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;cursor:pointer;white-space:nowrap;">
+                                        Buy →
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                    </div>
+                    {{-- /TAB: Shares --}}
 
                     {{-- Toast --}}
                     <div x-show="bankMsg" x-cloak

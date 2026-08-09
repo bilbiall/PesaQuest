@@ -15,20 +15,33 @@
         .bg-orb-2 { width:400px; height:400px; bottom:-100px; right:-80px; background:rgba(139,92,246,0.10); }
         .page-content { position:relative; z-index:10; }
 
-        /* Hero card */
-        .hero-card { background:linear-gradient(145deg,rgba(99,102,241,0.16),rgba(139,92,246,0.08)); border:1px solid rgba(139,92,246,0.25); border-radius:1.25rem; padding:1.1rem 1.2rem; display:flex; align-items:center; gap:.9rem; flex-wrap:wrap; margin-bottom:1.1rem; }
-        .hero-trophy { font-size:2.4rem; line-height:1; flex-shrink:0; }
-        .hero-copy { flex:1; min-width:160px; }
-        .hero-copy h1 { font-size:1.05rem; font-weight:800; color:#fff; margin:0 0 .2rem; }
-        .hero-copy p { font-size:.75rem; color:#9ca3af; margin:0; }
-        .hero-copy .gold { color:#fbbf24; font-weight:700; }
-        .hero-stats { display:flex; gap:.5rem; flex-wrap:wrap; }
-        .stat-pill { background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.08); border-radius:.85rem; padding:.5rem .7rem; display:flex; align-items:center; gap:.5rem; min-width:118px; }
-        .stat-pill .ico { font-size:1rem; }
-        .stat-pill b { display:block; font-size:.85rem; color:#fff; font-weight:800; line-height:1.1; }
-        .stat-pill small { display:block; font-size:.62rem; color:#9ca3af; }
-        .stat-pill.up b { color:#34d399; }
-        .stat-pill.down b { color:#f87171; }
+        /* Decorative header */
+        .lb-header { position:relative; text-align:center; padding:1.4rem .5rem 1rem; margin-bottom:.4rem; overflow:hidden; }
+        .lb-deco { font-size:1.1rem; letter-spacing:.5em; opacity:.5; margin-bottom:.2rem; }
+        .lb-title { font-size:1.9rem; font-weight:900; margin:0; line-height:1.1;
+            background:linear-gradient(90deg,#f472b6,#a78bfa,#818cf8); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .lb-subtitle { font-size:.78rem; color:#9ca3af; margin:.3rem 0 0; }
+        .lb-subtitle .accent { color:#a78bfa; font-weight:700; }
+        .lb-sparkle { position:absolute; font-size:.85rem; opacity:.55; pointer-events:none; }
+        .lb-sparkle.s1 { top:6px; left:8%; }
+        .lb-sparkle.s2 { top:2px; right:12%; font-size:1.1rem; }
+        .lb-sparkle.s3 { bottom:2px; left:20%; font-size:.7rem; }
+        .lb-sparkle.s4 { bottom:6px; right:22%; }
+
+        /* Rank-1 glow */
+        @keyframes rank1-glow { 0%,100% { box-shadow:0 0 14px rgba(245,158,11,0.35), inset 0 0 0 1px rgba(245,158,11,0.4); } 50% { box-shadow:0 0 26px rgba(245,158,11,0.6), inset 0 0 0 1px rgba(245,158,11,0.55); } }
+        .rank-1 { animation: rank1-glow 2.6s ease-in-out infinite; }
+
+        /* Bio + badge chip on each row */
+        .rank-bio { font-size:.66rem; color:#7c8394; margin-top:.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .top-badge-chip { display:inline-flex; align-items:center; gap:.25rem; background:rgba(139,92,246,0.14); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:.62rem; font-weight:700; padding:.1rem .45rem; border-radius:999px; flex-shrink:0; }
+
+        /* Expandable player-stats dropdown */
+        .drop-panel { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-top:none; border-radius:0 0 .8rem .8rem; padding:.7rem .9rem .8rem; margin-top:-2px; margin-bottom:.4rem; }
+        .drop-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#9ca3af; margin-bottom:.35rem; }
+        .drop-chips { display:flex; flex-wrap:wrap; gap:.35rem; }
+        .drop-chip { background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); color:#e5e7eb; font-size:.68rem; font-weight:600; padding:.25rem .55rem; border-radius:.6rem; }
+        .drop-chip.dream { background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.28); }
 
         /* Slim pill filters */
         .pill-row { display:flex; gap:.4rem; flex-wrap:wrap; justify-content:center; }
@@ -71,34 +84,17 @@
             </a>
         </div>
 
-        {{-- Hero card --}}
-        <div class="hero-card">
-            <div class="hero-trophy">🏆</div>
-            <div class="hero-copy">
-                <h1>Rise. Learn. Lead.</h1>
-                <p>Climb the leaderboard and become a <span class="gold">money champion</span>.</p>
-            </div>
-            <div class="hero-stats">
-                <div class="stat-pill">
-                    <span class="ico">👥</span>
-                    <div><b>{{ number_format($playerCount) }}</b><small>Players on board</small></div>
-                </div>
-                <div class="stat-pill {{ $weekChangePct === null ? '' : ($weekChangePct >= 0 ? 'up' : 'down') }}">
-                    @if($weekChangePct === null)
-                        <span class="ico">🌱</span>
-                        <div><b>New</b><small>Tracking from today</small></div>
-                    @else
-                        <span class="ico">{{ $weekChangePct >= 0 ? '📈' : '📉' }}</span>
-                        <div><b>{{ $weekChangePct >= 0 ? '+' : '' }}{{ $weekChangePct }}%</b><small>vs last week</small></div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mb-5">
-            <p class="text-gray-400 text-xs">
+        {{-- Decorative header --}}
+        <div class="lb-header">
+            <span class="lb-sparkle s1">✨</span>
+            <span class="lb-sparkle s2">⭐</span>
+            <span class="lb-sparkle s3">💫</span>
+            <span class="lb-sparkle s4">✨</span>
+            <div class="lb-deco">🌿 🏆 🌿</div>
+            <h1 class="lb-title">Leaderboard</h1>
+            <p class="lb-subtitle">
                 @if($sort === 'networth') Top players by Net Worth @else Top players by XP @endif
-                · <span class="text-indigo-400">{{ ($scope ?? 'global') === 'school' ? ($mySchoolName ?? 'Your School') : 'Your age group' }}</span>
+                · <span class="accent">{{ ($scope ?? 'global') === 'school' ? ($mySchoolName ?? 'Your School') : 'Your age group' }}</span>
             </p>
         </div>
 
@@ -143,9 +139,10 @@
         {{-- Rankings --}}
         <div class="space-y-2">
             @forelse($leaders as $leader)
-            <div class="rank-card rounded-xl px-4 py-3 flex items-center gap-3
+            <div class="rank-card rounded-xl px-4 py-3 flex items-center gap-3 cursor-pointer
                         {{ $leader['rank'] === 1 ? 'rank-1' : ($leader['rank'] === 2 ? 'rank-2' : ($leader['rank'] === 3 ? 'rank-3' : '')) }}
-                        {{ $leader['is_me'] ? 'mine' : '' }}">
+                        {{ $leader['is_me'] ? 'mine' : '' }}"
+                 @click="toggle({{ $leader['user_id'] }})">
                 {{-- Rank --}}
                 <div class="w-8 text-center flex-shrink-0">
                     @if($leader['rank'] === 1) <span class="text-xl">🥇</span>
@@ -164,15 +161,19 @@
                     {{ mb_strtoupper(mb_substr($leader['name'], 0, 1)) }}
                 </div>
                 @endif
-                {{-- Name & level --}}
+                {{-- Name, level, title chip & bio --}}
                 <div class="flex-1 min-w-0">
                     <div class="font-bold text-white text-sm flex items-center gap-2">
                         <span class="truncate">{{ $leader['name'] }}</span>
                         @if($leader['is_me']) <span class="text-[.65rem] bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-1.5 py-0.5 rounded-full flex-shrink-0">You</span>@endif
+                        @if($leader['top_badge']) <span class="top-badge-chip">{{ $leader['top_badge']['icon'] }} {{ $leader['top_badge']['name'] }}</span>@endif
                     </div>
                     <div class="text-[.68rem] text-gray-500">
                         Level {{ $leader['level'] }} · {{ $leader['played_label'] }}
                     </div>
+                    @if($leader['bio'])
+                    <div class="rank-bio">{{ $leader['bio'] }}</div>
+                    @endif
                 </div>
                 {{-- Score --}}
                 <div class="text-right flex-shrink-0">
@@ -193,6 +194,34 @@
                     <span class="text-amber-400 text-xs font-black">—</span>
                     @endif
                 </div>
+            </div>
+            {{-- Expandable stats dropdown --}}
+            <div class="drop-panel" x-show="expanded === {{ $leader['user_id'] }}" x-cloak>
+                <template x-if="!cache[{{ $leader['user_id'] }}]">
+                    <div class="text-xs text-gray-500 py-1">Loading…</div>
+                </template>
+                <template x-if="cache[{{ $leader['user_id'] }}]">
+                    <div>
+                        <div class="drop-label">🏅 Badges Earned</div>
+                        <div class="drop-chips mb-1">
+                            <template x-for="b in cache[{{ $leader['user_id'] }}].badges" :key="b.name">
+                                <span class="drop-chip" x-text="b.icon + ' ' + b.name"></span>
+                            </template>
+                            <template x-if="cache[{{ $leader['user_id'] }}].badges.length === 0">
+                                <span class="text-xs text-gray-500">No badges yet</span>
+                            </template>
+                        </div>
+                        <div class="drop-label" style="margin-top:.55rem;">🌟 Dreams Achieved</div>
+                        <div class="drop-chips">
+                            <template x-for="d in cache[{{ $leader['user_id'] }}].dreams" :key="d.name">
+                                <span class="drop-chip dream" x-text="d.icon + ' ' + d.name"></span>
+                            </template>
+                            <template x-if="cache[{{ $leader['user_id'] }}].dreams.length === 0">
+                                <span class="text-xs text-gray-500">None yet</span>
+                            </template>
+                        </div>
+                    </div>
+                </template>
             </div>
             @empty
             <div class="text-center py-16 text-gray-500">
@@ -237,7 +266,22 @@
     </div>
 
     <script>
-    function leaderboardPage() { return {} }
+    function leaderboardPage() {
+        return {
+            expanded: null,
+            cache: {},
+            async toggle(userId) {
+                this.expanded = this.expanded === userId ? null : userId;
+                if (this.expanded === null || this.cache[userId]) return;
+                try {
+                    const res = await fetch(`/game/leaderboard/players/${userId}/details`);
+                    this.cache[userId] = await res.json();
+                } catch (e) {
+                    this.cache[userId] = { badges: [], dreams: [] };
+                }
+            }
+        };
+    }
     </script>
 <x-mobile-bottom-nav active="home" />
 </body>
