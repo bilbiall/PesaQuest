@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChallengeParticipantSnapshot extends Model
 {
-    protected $fillable = ['challenge_participant_id', 'rank', 'progress', 'snapshot_date'];
+    protected $fillable = ['challenge_participant_id', 'rank', 'progress', 'snapshot_date', 'snapshot_at'];
 
     protected $casts = [
         'progress'      => 'float',
         'snapshot_date' => 'date',
+        'snapshot_at'   => 'datetime',
     ];
 
     public function participant(): BelongsTo

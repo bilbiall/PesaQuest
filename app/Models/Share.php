@@ -97,4 +97,27 @@ class Share extends Model
     {
         return round($this->current_price * (1 - $this->spreadPct() / 2), 2);
     }
+
+    /** The exact shape the Equity Square market list renders — shared by
+     *  WorldController (initial page load) and ShareController (post-trade
+     *  patch), so the two can never drift out of sync with each other. */
+    public function toMarketPayload(): array
+    {
+        return [
+            'id'           => $this->id,
+            'name'         => $this->name,
+            'symbol'       => $this->symbol,
+            'icon'         => $this->icon,
+            'sector'       => $this->sector,
+            'price'        => (float) $this->current_price,
+            'buy_price'    => $this->buyPrice(),
+            'sell_price'   => $this->sellPrice(),
+            'change_pct'   => $this->priceChangePct(),
+            'direction'    => $this->priceChangeDirection(),
+            'history'      => $this->recentHistory(),
+            'event_reason' => $this->last_event_reason,
+            'risk_label'   => $this->riskLabel(),
+            'risk_color'   => $this->riskColor(),
+        ];
+    }
 }

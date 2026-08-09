@@ -2243,12 +2243,30 @@ function equitySquare() {
       this.loanLoading = false;
     },
 
-    celebrateTrade(ok, icon, message, education) {
-      this.shareTradeResult = { ok, icon, message, education };
-      setTimeout(() => { this.shareTradeResult = null; }, 6000);
+    celebrateTrade(ok, icon, message, education, basics) {
+      this.shareTradeResult = { ok, icon, message, education, basics };
+      setTimeout(() => { this.shareTradeResult = null; }, basics ? 11000 : 7000);
     },
 
-    async buyShare(share) {
+    // Patches district.shares/my_shares/balance directly from the trade response
+    // instead of reloading the page — the celebration card would otherwise get
+    // cut short by the reload, and a live update feels far more responsive.
+    applyTradeUpdate(district, shareId, data) {
+      if (data.share) {
+        const sIdx = district.shares.findIndex(s => s.id === shareId);
+        if (sIdx >= 0) district.shares[sIdx] = data.share;
+      }
+      const hIdx = district.my_shares.findIndex(h => h.share_id === shareId);
+      if (data.holding) {
+        if (hIdx >= 0) district.my_shares[hIdx] = data.holding;
+        else district.my_shares.push(data.holding);
+      } else if (hIdx >= 0) {
+        district.my_shares.splice(hIdx, 1);
+      }
+      if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
+    },
+
+    async buyShare(share, district) {
       const qty = parseInt(this.shareQty[share.id]) || 1;
       if (qty < 1) { this.showMsg('Enter a valid quantity', false); return; }
       if (this.shareLoading) return;
@@ -2264,9 +2282,9 @@ function equitySquare() {
         if (data.error) {
           this.showMsg(data.error, false);
         } else {
-          this.celebrateTrade(true, share.icon, data.message ?? 'Bought!', data.education);
-          if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
-          setTimeout(() => location.reload(), 4500);
+          this.celebrateTrade(true, share.icon, data.message ?? 'Bought!', data.education, data.basics);
+          this.applyTradeUpdate(district, share.id, data);
+          this.shareQty[share.id] = null;
         }
       } catch (e) {
         this.showMsg('Could not buy shares. Try again.', false);
@@ -2274,7 +2292,7 @@ function equitySquare() {
       this.shareLoading = false;
     },
 
-    async sellShare(holding) {
+    async sellShare(holding, district) {
       const qty = parseInt(this.shareQty[holding.share_id]) || holding.quantity;
       if (qty < 1) { this.showMsg('Enter a valid quantity', false); return; }
       if (this.shareLoading) return;
@@ -2290,9 +2308,9 @@ function equitySquare() {
         if (data.error) {
           this.showMsg(data.error, false);
         } else {
-          this.celebrateTrade((data.profit_loss ?? 0) >= 0, holding.icon, data.message ?? 'Sold!', data.education);
-          if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
-          setTimeout(() => location.reload(), 4500);
+          this.celebrateTrade((data.profit_loss ?? 0) >= 0, holding.icon, data.message ?? 'Sold!', data.education, data.basics);
+          this.applyTradeUpdate(district, holding.share_id, data);
+          this.shareQty[holding.share_id] = null;
         }
       } catch (e) {
         this.showMsg('Could not sell shares. Try again.', false);

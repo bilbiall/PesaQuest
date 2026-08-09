@@ -552,22 +552,7 @@ class WorldController extends Controller
                 app(\App\Services\ShareMarketService::class)->refreshIfStale();
 
                 $shares = \App\Models\Share::active()->orderBy('sort_order')->get();
-                $district['shares'] = $shares->map(fn($s) => [
-                    'id'            => $s->id,
-                    'name'          => $s->name,
-                    'symbol'        => $s->symbol,
-                    'icon'          => $s->icon,
-                    'sector'        => $s->sector,
-                    'price'         => (float) $s->current_price,
-                    'buy_price'     => $s->buyPrice(),
-                    'sell_price'    => $s->sellPrice(),
-                    'change_pct'    => $s->priceChangePct(),
-                    'direction'     => $s->priceChangeDirection(),
-                    'history'       => $s->recentHistory(),
-                    'event_reason'  => $s->last_event_reason,
-                    'risk_label'    => $s->riskLabel(),
-                    'risk_color'    => $s->riskColor(),
-                ])->values();
+                $district['shares'] = $shares->map(fn($s) => $s->toMarketPayload())->values();
 
                 // "Today's movers" — biggest gainer/loser among shares that have
                 // actually moved at least once (skip brand-new flat-lined ones).
@@ -586,18 +571,7 @@ class WorldController extends Controller
                     ->with('share')
                     ->get()
                     ->filter(fn($h) => $h->share !== null)
-                    ->map(fn($h) => [
-                        'share_id'      => $h->share_id,
-                        'name'          => $h->share->name,
-                        'symbol'        => $h->share->symbol,
-                        'icon'          => $h->share->icon,
-                        'quantity'      => $h->quantity,
-                        'avg_cost'      => (float) $h->avg_cost,
-                        'price'         => (float) $h->share->current_price,
-                        'value'         => $h->currentValue(),
-                        'gain_loss'     => $h->gainLoss(),
-                        'gain_loss_pct' => $h->gainLossPct(),
-                    ])->values();
+                    ->map(fn($h) => $h->toHoldingPayload())->values();
             }
 
             $district['credit_tips'] = $score < 650

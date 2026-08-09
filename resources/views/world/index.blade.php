@@ -1097,10 +1097,25 @@
                                                 <div class="share-gain-pct" x-text="(h.gain_loss_pct >= 0 ? '+' : '') + h.gain_loss_pct + '%'"></div>
                                             </div>
                                         </div>
+                                        <div class="share-card-mid">
+                                            <span class="share-trend-label">Recent trend</span>
+                                            <div class="share-candles">
+                                                <template x-for="(c, idx) in candles(h.history)" :key="idx">
+                                                    <div style="position:relative;width:8px;height:100%;">
+                                                        <div :style="'position:absolute;left:50%;top:' + c.wickTop + '%;height:' + c.wickHeight + '%;width:1px;background:' + c.color + ';transform:translateX(-50%);'"></div>
+                                                        <div :style="'position:absolute;left:0;top:' + c.bodyTop + '%;height:' + c.bodyHeight + '%;width:100%;background:' + c.color + ';border-radius:1.5px;'"></div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
                                         <div class="share-card-actions">
                                             <input type="number" x-model.number="shareQty[h.share_id]" min="1" :max="h.quantity"
                                                    :placeholder="'up to ' + h.quantity" class="share-qty-input">
-                                            <button @click="sellShare(h)" :disabled="shareLoading" class="share-sell-btn">Sell →</button>
+                                            <button @click="sellShare(h, district)" :disabled="shareLoading" class="share-sell-btn">Sell →</button>
+                                        </div>
+                                        <div class="share-estimate">
+                                            You'll receive ≈ <strong x-text="'KES ' + ((shareQty[h.share_id] || h.quantity) * h.sell_price).toLocaleString(undefined, {maximumFractionDigits: 0})"></strong>
+                                            for <span x-text="shareQty[h.share_id] || h.quantity"></span> share<span x-show="(shareQty[h.share_id] || h.quantity) !== 1">s</span>
                                         </div>
                                     </div>
                                 </template>
@@ -1176,7 +1191,11 @@
                                 </template>
                                 <div class="share-card-actions">
                                     <input type="number" x-model.number="shareQty[s.id]" min="1" placeholder="Qty" class="share-qty-input">
-                                    <button @click="buyShare(s)" :disabled="shareLoading" class="share-buy-btn">Buy →</button>
+                                    <button @click="buyShare(s, district)" :disabled="shareLoading" class="share-buy-btn">Buy →</button>
+                                </div>
+                                <div class="share-estimate">
+                                    Costs ≈ <strong x-text="'KES ' + ((shareQty[s.id] || 1) * s.buy_price).toLocaleString(undefined, {maximumFractionDigits: 0})"></strong>
+                                    for <span x-text="shareQty[s.id] || 1"></span> share<span x-show="(shareQty[s.id] || 1) !== 1">s</span>
                                 </div>
                             </div>
                         </template>
@@ -1196,6 +1215,9 @@
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span class="stc-icon" x-text="shareTradeResult ? shareTradeResult.icon : '📈'"></span>
                             <span style="font-size:13px;font-weight:800;color:#f9fafb;flex:1;" x-text="shareTradeResult ? shareTradeResult.message : ''"></span>
+                        </div>
+                        <div x-show="shareTradeResult && shareTradeResult.basics" class="stc-basics">
+                            📚 <strong>First trade!</strong> <span x-text="shareTradeResult ? shareTradeResult.basics : ''"></span>
                         </div>
                         <div x-show="shareTradeResult && shareTradeResult.education" class="stc-edu">
                             💡 <span x-text="shareTradeResult ? shareTradeResult.education : ''"></span>
@@ -2657,6 +2679,8 @@
 .share-trade-card.ok  { background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(53,195,240,0.06)); border: 1px solid rgba(16,185,129,0.35); }
 .share-trade-card.bad { background: linear-gradient(135deg, rgba(239,68,68,0.14), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.35); }
 .stc-icon { font-size: 22px; line-height: 1; animation: stc-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+.stc-basics { font-size: 11px; color: #e5e7eb; margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+    background: rgba(53,195,240,.1); border: 1px solid rgba(53,195,240,.25); line-height: 1.5; }
 .stc-edu { font-size: 11px; color: #d1d5db; margin-top: 6px; line-height: 1.4; }
 .stc-bar { height: 3px; margin-top: 8px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
 .stc-bar-fill { height: 100%; background: rgba(255,255,255,0.35); animation: stc-shrink 6s linear forwards; }
@@ -2706,6 +2730,8 @@
 .share-gain-pill { text-align: right; flex-shrink: 0; }
 .share-gain-val { font-size: 13px; font-weight: 800; }
 .share-gain-pct { font-size: 10px; color: #6b7280; margin-top: 1px; }
+.share-estimate { font-size: 10.5px; color: #9ca3af; margin-top: 6px; text-align: center; }
+.share-estimate strong { color: #e5e7eb; font-weight: 800; }
 </style>
 
 {{-- ══════════════════════════════════════

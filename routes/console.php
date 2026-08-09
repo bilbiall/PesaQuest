@@ -18,5 +18,5 @@ Schedule::command('reallife:remind')->dailyAt('07:30');
 Schedule::command('game:sweep-quests')->dailyAt('02:30');
 Schedule::command('game:settle-challenges')->dailyAt('02:45');
 Schedule::command('game:snapshot-leaderboard')->dailyAt('00:05');
-Schedule::command('game:snapshot-challenge-leaderboards')->dailyAt('00:10');
+Schedule::command('game:snapshot-challenge-leaderboards')->everyFifteenMinutes();
 Schedule::command('game:update-share-prices')->everyFiveMinutes();

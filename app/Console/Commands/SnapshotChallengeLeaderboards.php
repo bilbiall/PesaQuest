@@ -8,21 +8,24 @@ use App\Services\ChallengeService;
 use Illuminate\Console\Command;
 
 /**
- * Daily rank+progress snapshot per challenge participant, mirroring
- * SnapshotLeaderboard's approach for the main leaderboard — without a stored
- * history there's nothing to diff "today" against for the ↑/↓/— trend arrows
- * on a challenge's own leaderboard. Idempotent per day (unique on
- * challenge_participant_id+snapshot_date), so a retry just overwrites.
+ * Rank+progress snapshot per challenge participant, taken every 15 minutes —
+ * without a stored history there's nothing to diff "now" against for the
+ * ↑/↓/— trend arrows on a challenge's own leaderboard. Unlike the old daily
+ * version, this always INSERTs a fresh row (no more one-per-day upsert),
+ * since the whole point now is a short-window rolling comparison rather than
+ * a day-over-day one. Prunes anything older than 48 hours so the table
+ * doesn't grow unbounded — that's already far more history than the ~15-min
+ * comparison window needs.
  */
 class SnapshotChallengeLeaderboards extends Command
 {
     protected $signature   = 'game:snapshot-challenge-leaderboards';
-    protected $description = 'Record today\'s rank + progress for every active challenge\'s participants (for rank-change tracking)';
+    protected $description = 'Record rank + progress for every active challenge\'s participants (for rank-change tracking)';
 
     public function handle(ChallengeService $service): int
     {
-        $today = now()->toDateString();
         $now   = now();
+        $today = $now->toDateString();
         $rows  = [];
 
         foreach (Challenge::where('status', 'active')->get() as $challenge) {
@@ -37,6 +40,7 @@ class SnapshotChallengeLeaderboards extends Command
                     'rank'                     => $rankMap[$p->id] ?? null,
                     'progress'                 => $p->progress,
                     'snapshot_date'            => $today,
+                    'snapshot_at'              => $now,
                     'created_at'               => $now,
                     'updated_at'               => $now,
                 ];
@@ -44,10 +48,12 @@ class SnapshotChallengeLeaderboards extends Command
         }
 
         foreach (array_chunk($rows, 500) as $chunk) {
-            ChallengeParticipantSnapshot::upsert($chunk, ['challenge_participant_id', 'snapshot_date'], ['rank', 'progress', 'updated_at']);
+            ChallengeParticipantSnapshot::insert($chunk);
         }
 
-        $this->info('Snapshotted ' . count($rows) . ' challenge participant row(s) for ' . $today . '.');
+        $pruned = ChallengeParticipantSnapshot::where('snapshot_at', '<', $now->copy()->subHours(48))->delete();
+
+        $this->info('Snapshotted ' . count($rows) . ' challenge participant row(s) at ' . $now->toDateTimeString() . '. Pruned ' . $pruned . ' old row(s).');
 
         return self::SUCCESS;
     }

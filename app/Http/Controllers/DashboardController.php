@@ -72,6 +72,15 @@ class DashboardController extends Controller
             ])->toArray();
             if (!is_array($lifeSim)) $lifeSim = [];
             $lifeSim['events'] = array_merge($hiredEvents, $lifeSim['events'] ?? []);
+            // processLogin() can legitimately return an empty [] when 0 ticks
+            // elapsed and no daily bonus fired — that left balance/net_worth
+            // missing here, so the WYWA popup showed "Ksh 0" even for players
+            // with real money, right after a hire notification got injected.
+            $lifeSim['balance']      ??= $progress->balance;
+            $lifeSim['net_worth']    ??= $progress->net_worth_cache;
+            $lifeSim['chapter']      ??= $progress->chapterName();
+            $lifeSim['chapter_icon'] ??= $progress->chapterIcon();
+            $lifeSim['show_wywa']    = true;
             $hiredNotifs->each(fn ($n) => $n->update(['is_read' => true]));
         }
 

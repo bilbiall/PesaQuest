@@ -330,11 +330,13 @@ class ChallengeController extends Controller
      * Attaches a dynamic ->rank_change to each ChallengeParticipant — a nullable int
      * (positive = climbed, negative = dropped, 0 = held, null = no prior snapshot yet)
      * diffing the LIVE current rank (via ChallengeService::rankParticipants, same
-     * math the daily snapshot command uses) against the most recent PRIOR day's
-     * snapshot — same "null until a second day exists" semantics as the main
-     * leaderboard's rank_change (see GameController::leaderboard()). Works across a
-     * mixed list spanning several challenges (one row per challenge, e.g. "My
-     * Challenges") as well as every participant of a single challenge.
+     * math the snapshot command uses) against the most recent snapshot taken at
+     * least ~10 minutes ago — a rolling short-window comparison matching the
+     * snapshot command's every-15-minutes cadence, rather than a day-over-day one.
+     * "null" means no snapshot old enough exists yet (e.g. challenge/participant
+     * is brand new). Works across a mixed list spanning several challenges (one
+     * row per challenge, e.g. "My Challenges") as well as every participant of a
+     * single challenge.
      */
     private function attachRankChanges(Collection $participants): void
     {
@@ -351,12 +353,15 @@ class ChallengeController extends Controller
             $currentRanks = $service->rankParticipants($challenge, $all);
             $ids          = $all->pluck('id')->all();
 
-            $prevDate = ChallengeParticipantSnapshot::whereIn('challenge_participant_id', $ids)
-                ->where('snapshot_date', '<', now()->toDateString())
-                ->max('snapshot_date');
-            $prevRanks = $prevDate
-                ? ChallengeParticipantSnapshot::whereIn('challenge_participant_id', $ids)->where('snapshot_date', $prevDate)->pluck('rank', 'challenge_participant_id')
-                : collect();
+            // Most recent snapshot per participant that's at least ~10 minutes
+            // old — a small buffer under the 15-minute cadence so a slightly
+            // early/late cron run doesn't compare "now" against itself.
+            $prevRanks = ChallengeParticipantSnapshot::whereIn('challenge_participant_id', $ids)
+                ->where('snapshot_at', '<=', now()->subMinutes(10))
+                ->orderByDesc('snapshot_at')
+                ->get()
+                ->unique('challenge_participant_id')
+                ->pluck('rank', 'challenge_participant_id');
 
             foreach ($rows as $p) {
                 $current = $currentRanks[$p->id] ?? null;
