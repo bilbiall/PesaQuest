@@ -30,7 +30,7 @@ class CityJob extends Model
 
     protected $fillable = [
         'title', 'employer_name', 'employer_logo', 'description', 'career_track', 'career_tracks',
-        'salary_kes_month', 'xp_reward', 'level', 'required_course_id', 'required_course_ids',
+        'salary_kes_month', 'xp_reward', 'level', 'promotes_to_job_id', 'required_course_id', 'required_course_ids',
         'age_group', 'age_groups', 'is_active', 'is_part_time', 'employment_type', 'gig_cooldown_ticks',
     ];
 
@@ -153,6 +153,13 @@ class CityJob extends Model
     public function playerJobs(): HasMany
     {
         return $this->hasMany(PlayerCityJob::class);
+    }
+
+    /** Admin-curated explicit promotion target — the automatic same-track/next-level
+     *  match in LifeSimulator::findNextTierJob() only kicks in when this is unset. */
+    public function promotesTo(): BelongsTo
+    {
+        return $this->belongsTo(CityJob::class, 'promotes_to_job_id');
     }
 
     public function scopeActive($query)

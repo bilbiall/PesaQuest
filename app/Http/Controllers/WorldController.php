@@ -747,12 +747,12 @@ class WorldController extends Controller
             $district['active_jobs'] = $activeJobs->map(fn($pj) => [
                 'player_job_id'   => $pj->id,
                 'job_id'          => $pj->job?->id,
-                'title'           => $pj->job?->title ?? 'Unknown',
+                'title'           => $pj->job ? $pj->displayTitle() : 'Unknown',
                 'employer_name'   => $pj->job?->employer_name ?? '',
                 'employer_logo'   => $pj->job?->employer_logo ?? '🏢',
-                'salary'          => $pj->job?->salary_kes_month ?? 0,
-                'level'           => $pj->job?->level ?? 1,
-                'level_label'     => match((int)($pj->job?->level ?? 1)) { 1=>'Entry', 2=>'Mid', 3=>'Senior', default=>'Pro' },
+                'salary'          => $pj->job ? $pj->effectiveSalary() : 0,
+                'level'           => $pj->job ? $pj->effectiveLevel() : 1,
+                'level_label'     => match($pj->job ? $pj->effectiveLevel() : 1) { 1=>'Entry', 2=>'Mid', 3=>'Senior', default=>'Pro' },
                 'career_track'    => $pj->job?->career_track ?? '',
                 'career_tracks'   => $pj->job?->careerTrackList() ?? [],
                 'employment_type' => $pj->employment_type,
@@ -762,7 +762,7 @@ class WorldController extends Controller
             $district['job_count']     = $activeJobs->count();
             $district['max_jobs']      = 3;
             $district['is_employed']   = $activeJobs->count() > 0;
-            $district['total_salary']  = $activeJobs->sum(fn($pj) => $pj->job?->salary_kes_month ?? 0);
+            $district['total_salary']  = $activeJobs->sum(fn($pj) => $pj->job ? $pj->effectiveSalary() : 0);
 
             $encounters = [
                 ['icon' => '📋', 'title' => 'Performance Review',    'lesson' => 'Documenting achievements increases your salary negotiation power by 40%. Keep records of every win.'],
@@ -775,13 +775,55 @@ class WorldController extends Controller
                 ['icon' => '📈', 'title' => 'Salary Growth Check',   'lesson' => 'Your salary should grow 10–15% per year. If it\'s not, negotiate now or start looking — you have leverage.'],
             ];
             $seed = abs(crc32(date('Y-m-d') . $user->id));
-            $district['today_encounter']    = $encounters[$seed % count($encounters)];
-            $level = $progress?->level ?? 1;
-            $district['perf_score']         = min(100, 40 + ($level * 6));
-            $district['promotion_eligible'] = $level >= 4;
-            $district['next_milestone']     = $level >= 4
-                ? 'Senior role available — check Opportunity Hub'
-                : 'Reach level ' . (max(4, $level + 1)) . ' for a promotion review';
+            $district['today_encounter'] = $encounters[$seed % count($encounters)];
+
+            // Real raise/promotion progress — replaces an old level-gated stub
+            // that showed "eligible" forever with nothing ever acting on it.
+            // Raises/promotions themselves are applied automatically during the
+            // tick catch-up (LifeSimulator::settlePromotions), so what's shown
+            // here is always "progress toward the next one", not a dead flag.
+            $primaryJob = $activeJobs->sortByDesc(fn($pj) => $pj->job?->salary_kes_month ?? 0)->first();
+            if ($primaryJob && $primaryJob->job) {
+                $sinceReview = (int) $primaryJob->ticks_employed - (int) $primaryJob->ticks_employed_at_last_review;
+                $isClean     = (int) $primaryJob->missed_paydays === 0;
+                $raiseTicks  = 90;
+                $titleTicks  = 360;
+                $nextJob     = $primaryJob->job->promotes_to_job_id
+                    ? \App\Models\CityJob::find($primaryJob->job->promotes_to_job_id)
+                    : app(\App\Services\LifeSimulator::class)->findNextTierJob($primaryJob->job, $user);
+
+                $district['perf_score']         = $isClean ? min(100, (int) round($sinceReview / $raiseTicks * 100)) : 25;
+                $district['promotion_eligible'] = $isClean;
+                $district['promotions_count']   = (int) $primaryJob->promotions_count;
+
+                if (!$isClean) {
+                    $district['next_milestone'] = 'Report to Work to clear your missed paydays — raises pause until your attendance is clean.';
+                } else {
+                    $raiseIn = max(0, $raiseTicks - $sinceReview);
+                    $district['next_milestone'] = $raiseIn > 0
+                        ? "Next pay raise in {$raiseIn} game day" . ($raiseIn === 1 ? '' : 's') . '.'
+                        : 'A pay raise applies at your next payday review.';
+
+                    $titleIn = max(0, $titleTicks - $sinceReview);
+                    $atSenior = $primaryJob->effectiveLevel() >= 3;
+                    if ($nextJob) {
+                        $district['next_milestone'] .= $titleIn > 0
+                            ? " Promotion to {$nextJob->title} in {$titleIn} game days."
+                            : " Promotion to {$nextJob->title} due at your next review.";
+                    } elseif ($atSenior) {
+                        $district['next_milestone'] .= " You've hit Senior tenure here — check the Opportunity Hub for a real Senior role to keep climbing.";
+                    } else {
+                        $district['next_milestone'] .= $titleIn > 0
+                            ? " Title bump in {$titleIn} game days (no bigger role open there yet)."
+                            : ' A title bump is due at your next review.';
+                    }
+                }
+            } else {
+                $district['perf_score']         = 40;
+                $district['promotion_eligible'] = false;
+                $district['promotions_count']   = 0;
+                $district['next_milestone']     = 'Get hired at the Opportunity Hub to start earning raises and promotions.';
+            }
             if ($district['monthly_income'] > 0) {
                 $inv = (int) ($district['monthly_income'] * 0.20);
                 $district['invest_tip'] = 'Investing 20% of your KES ' . number_format($district['monthly_income']) . '/month salary adds KES ' . number_format($inv) . '/month to your wealth.';

@@ -2122,6 +2122,7 @@ function equitySquare() {
     shareQty:     {},
     bankMsg:      '',
     bankMsgOk:    true,
+    shareTradeResult: null,
 
     showMsg(msg, ok = true) {
       this.bankMsg   = msg;
@@ -2137,12 +2138,30 @@ function equitySquare() {
       };
     },
 
-    sparkHeights(history) {
+    // 4 chunky OHLC candles from the raw price history, so a glance shows the
+    // shape of the trend instead of 15 thin, hard-to-read slivers.
+    candles(history, buckets = 4) {
       if (!history || history.length === 0) return [];
-      const min   = Math.min(...history);
-      const max   = Math.max(...history);
-      const range = (max - min) || 1;
-      return history.map(v => Math.max(12, Math.round(((v - min) / range) * 100)));
+      const n         = Math.min(buckets, history.length);
+      const chunkSize = Math.ceil(history.length / n);
+      const chunks    = [];
+      for (let i = 0; i < history.length; i += chunkSize) chunks.push(history.slice(i, i + chunkSize));
+
+      const ohlc = chunks.map(c => ({
+        open: c[0], close: c[c.length - 1],
+        high: Math.max(...c), low: Math.min(...c),
+      }));
+      const globalMax = Math.max(...ohlc.map(c => c.high));
+      const globalMin = Math.min(...ohlc.map(c => c.low));
+      const range     = (globalMax - globalMin) || 1;
+
+      return ohlc.map(c => ({
+        color:      c.close >= c.open ? '#34d399' : '#f87171',
+        wickTop:    ((globalMax - c.high) / range) * 100,
+        wickHeight: Math.max(3, ((c.high - c.low) / range) * 100),
+        bodyTop:    ((globalMax - Math.max(c.open, c.close)) / range) * 100,
+        bodyHeight: Math.max(10, (Math.abs(c.open - c.close) / range) * 100),
+      }));
     },
 
     async enterDeal(deal) {
@@ -2224,6 +2243,11 @@ function equitySquare() {
       this.loanLoading = false;
     },
 
+    celebrateTrade(ok, icon, message, education) {
+      this.shareTradeResult = { ok, icon, message, education };
+      setTimeout(() => { this.shareTradeResult = null; }, 6000);
+    },
+
     async buyShare(share) {
       const qty = parseInt(this.shareQty[share.id]) || 1;
       if (qty < 1) { this.showMsg('Enter a valid quantity', false); return; }
@@ -2240,9 +2264,9 @@ function equitySquare() {
         if (data.error) {
           this.showMsg(data.error, false);
         } else {
-          this.showMsg(data.message ?? 'Bought!', true);
+          this.celebrateTrade(true, share.icon, data.message ?? 'Bought!', data.education);
           if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
-          setTimeout(() => location.reload(), 1200);
+          setTimeout(() => location.reload(), 4500);
         }
       } catch (e) {
         this.showMsg('Could not buy shares. Try again.', false);
@@ -2266,9 +2290,9 @@ function equitySquare() {
         if (data.error) {
           this.showMsg(data.error, false);
         } else {
-          this.showMsg(data.message ?? 'Sold!', (data.profit_loss ?? 0) >= 0);
+          this.celebrateTrade((data.profit_loss ?? 0) >= 0, holding.icon, data.message ?? 'Sold!', data.education);
           if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
-          setTimeout(() => location.reload(), 1200);
+          setTimeout(() => location.reload(), 4500);
         }
       } catch (e) {
         this.showMsg('Could not sell shares. Try again.', false);

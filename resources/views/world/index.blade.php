@@ -971,10 +971,15 @@
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
                             🎯 Deals
                         </button>
-                        <button @click="eqTab='shares'"
-                                :style="eqTab==='shares' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
+                        <button @click="eqTab='my-shares'"
+                                :style="eqTab==='my-shares' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            📈 Shares
+                            💼 My Shares
+                        </button>
+                        <button @click="eqTab='market'"
+                                :style="eqTab==='market' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
+                                style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
+                            📈 Market
                         </button>
                     </div>
 
@@ -1053,8 +1058,18 @@
                     </div>
                     {{-- /TAB: Deals --}}
 
-                    {{-- TAB: Shares --}}
-                    <div x-show="eqTab==='shares'">
+                    {{-- TAB: My Shares — quick progress glance, no need to open Portfolio --}}
+                    <div x-show="eqTab==='my-shares'">
+
+                        {{-- How it works — always visible so the mechanics are never a mystery --}}
+                        <div style="border-radius:12px;padding:10px 12px;margin-bottom:12px;background:rgba(53,195,240,.05);border:1px solid rgba(53,195,240,.15);">
+                            <div style="font-size:11px;font-weight:800;color:#67e8f9;margin-bottom:4px;">📚 How shares work</div>
+                            <div style="font-size:10.5px;color:#9ca3af;line-height:1.5;">
+                                Each share's price moves on its own, all the time — nobody controls it. The goal is <strong style="color:#e5e7eb;">buy low, sell high</strong>:
+                                buy when the price looks cheap next to its own recent range, sell when it looks rich. Buying costs a touch <em>above</em> the price shown and selling pays a touch <em>below</em> it —
+                                that gap is the spread, a real cost of trading that's wider on wilder shares. Shares you own count toward your net worth at their current price, even before you sell.
+                            </div>
+                        </div>
 
                         <template x-if="district.my_shares && district.my_shares.length > 0">
                             <div style="margin-bottom:12px;">
@@ -1088,8 +1103,19 @@
                                         </div>
                                     </div>
                                 </template>
+                                <a href="/portfolio" style="display:block;text-align:center;font-size:11px;font-weight:700;color:#67e8f9;margin-top:4px;">See full details in Portfolio →</a>
                             </div>
                         </template>
+                        <template x-if="!district.my_shares || district.my_shares.length === 0">
+                            <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">
+                                You don't own any shares yet.
+                                <button @click="eqTab='market'" style="display:block;margin:8px auto 0;font-size:12px;font-weight:800;color:#67e8f9;background:none;border:none;cursor:pointer;">Browse the Market →</button>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- TAB: Market — browse & buy --}}
+                    <div x-show="eqTab==='market'">
 
                         {{-- Today's movers --}}
                         <template x-if="district.top_gainer || district.top_loser">
@@ -1110,7 +1136,7 @@
                         </template>
 
                         <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">📈 Market — Buy Low, Sell High</div>
-                        <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">Buy executes slightly above and sell slightly below the price shown — that gap is the market's spread, tighter on calm shares, wider on wild ones.</div>
+                        <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">Each mini chart is 4 candles of recent price movement — green candle = that period ended up, red = ended down. Buy executes slightly above and sell slightly below the price shown; that gap is the spread.</div>
                         <template x-if="!district.shares || district.shares.length === 0">
                             <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No shares listed right now. Check back soon.</div>
                         </template>
@@ -1125,9 +1151,12 @@
                                             <span style="font-size:9px;font-weight:700;" :style="'color:' + s.risk_color" x-text="'· ' + s.risk_label"></span>
                                         </div>
                                     </div>
-                                    <div style="display:flex;align-items:flex-end;gap:1.5px;height:20px;flex-shrink:0;">
-                                        <template x-for="(hgt, idx) in sparkHeights(s.history)" :key="idx">
-                                            <div :style="'width:3px;border-radius:1px 1px 0 0;height:' + hgt + '%;background:' + (idx === s.history.length-1 ? (s.direction==='up'?'#34d399':(s.direction==='down'?'#f87171':'#9ca3af')) : 'rgba(255,255,255,.22)') + ';'"></div>
+                                    <div style="display:flex;align-items:center;gap:2.5px;height:28px;flex-shrink:0;">
+                                        <template x-for="(c, idx) in candles(s.history)" :key="idx">
+                                            <div style="position:relative;width:7px;height:100%;">
+                                                <div :style="'position:absolute;left:50%;top:' + c.wickTop + '%;height:' + c.wickHeight + '%;width:1px;background:' + c.color + ';transform:translateX(-50%);'"></div>
+                                                <div :style="'position:absolute;left:0;top:' + c.bodyTop + '%;height:' + c.bodyHeight + '%;width:100%;background:' + c.color + ';border-radius:1px;'"></div>
+                                            </div>
                                         </template>
                                     </div>
                                     <div style="text-align:right;flex-shrink:0;">
@@ -1152,7 +1181,26 @@
                         </template>
 
                     </div>
-                    {{-- /TAB: Shares --}}
+                    {{-- /TAB: Market --}}
+
+                    {{-- Share trade celebration card --}}
+                    <div x-show="shareTradeResult" x-cloak
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 scale-90 translate-y-2"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="share-trade-card" :class="shareTradeResult && shareTradeResult.ok ? 'ok' : 'bad'">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="stc-icon" x-text="shareTradeResult ? shareTradeResult.icon : '📈'"></span>
+                            <span style="font-size:13px;font-weight:800;color:#f9fafb;flex:1;" x-text="shareTradeResult ? shareTradeResult.message : ''"></span>
+                        </div>
+                        <div x-show="shareTradeResult && shareTradeResult.education" class="stc-edu">
+                            💡 <span x-text="shareTradeResult ? shareTradeResult.education : ''"></span>
+                        </div>
+                        <div class="stc-bar"><div class="stc-bar-fill"></div></div>
+                    </div>
 
                     {{-- Toast --}}
                     <div x-show="bankMsg" x-cloak
@@ -2598,6 +2646,19 @@
     top: 50%; left: 50%;
     animation: qc-particle-fly 1.2s ease-out both;
 }
+
+/* Share trade celebration card */
+@keyframes stc-pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes stc-shrink { from { width: 100%; } to { width: 0%; } }
+.share-trade-card {
+    margin-top: 10px; padding: 10px 12px; border-radius: 12px; position: relative; overflow: hidden;
+}
+.share-trade-card.ok  { background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(53,195,240,0.06)); border: 1px solid rgba(16,185,129,0.35); }
+.share-trade-card.bad { background: linear-gradient(135deg, rgba(239,68,68,0.14), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.35); }
+.stc-icon { font-size: 22px; line-height: 1; animation: stc-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+.stc-edu { font-size: 11px; color: #d1d5db; margin-top: 6px; line-height: 1.4; }
+.stc-bar { height: 3px; margin-top: 8px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.stc-bar-fill { height: 100%; background: rgba(255,255,255,0.35); animation: stc-shrink 6s linear forwards; }
 </style>
 
 {{-- ══════════════════════════════════════

@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Models\Asset;
 use App\Models\Bill;
+use App\Models\CityJob;
 use App\Models\GameNotification;
 use App\Models\InvestmentDeal;
 use App\Models\LifeEvent;
 use App\Models\PlayerAsset;
 use App\Models\PlayerBill;
+use App\Models\PlayerCityCourse;
 use App\Models\PlayerCityJob;
 use App\Models\PlayerDeal;
 use App\Models\PlayerLifeEvent;
@@ -180,6 +182,9 @@ class LifeSimulator
 
             // Pay Pesa City job salaries
             $this->settleJobSalaries($user, $progress, $ticks, $events);
+
+            // Raises and title promotions for players who've stuck at a job
+            $this->settlePromotions($user, $progress, $events);
 
             // Behavioural credit signals (savings habit, assets, job loyalty)
             $this->checkCreditSignals($user, $progress, $events);
@@ -1160,7 +1165,7 @@ class LifeSimulator
             $months = intdiv((int) $pj->unpaid_ticks, 30);
             if ($months >= 1) {
                 $pj->unpaid_ticks = ((int) $pj->unpaid_ticks) % 30;
-                $salary = (int) ($pj->job->salary_kes_month ?? 0);
+                $salary = $pj->effectiveSalary();
 
                 // Wages stack — a payday landing on an uncollected one is a "missed collection"
                 $hadUncollected     = (int) $pj->pending_salary > 0;
@@ -1222,6 +1227,200 @@ class LifeSimulator
 
             $pj->save();
         }
+    }
+
+    // ── Promotions & raises ──────────────────────────────────────────────────
+    //
+    // Gated on tenure ("how long you've stayed") + conduct (missed_paydays==0,
+    // reset clean by every successful Report to Work) rather than XP level —
+    // the old WorldController stub gated purely on level and nothing ever
+    // consumed it, which is why players saw "promotion eligible" forever with
+    // no actual promotion. Freelance gigs are excluded: each gig is a fresh
+    // one-off negotiation, not a persistent role to grow inside.
+
+    /** Real ticks between raise reviews — roughly one game quarter. */
+    private const RAISE_INTERVAL_TICKS = 90;
+
+    /** Raise size per review, compounding on the existing multiplier. */
+    private const RAISE_PCT = 10;
+
+    /** Real ticks between title-tier reviews — roughly one game year. */
+    private const TITLE_INTERVAL_TICKS = 360;
+
+    /** Salary bump when a title review has no next-tier job to promote into,
+     *  so tenure alone still grows the role — larger than a plain raise since
+     *  it's standing in for a real promotion. */
+    private const TITLE_BUMP_PCT = 20;
+
+    private function settlePromotions(User $user, UserProgress $progress, array &$events): void
+    {
+        if (!Schema::hasColumn('player_city_jobs', 'salary_multiplier')) return;
+
+        $jobs = PlayerCityJob::where('user_id', $user->id)
+            ->where('status', 'employed')
+            ->with('job')
+            ->get();
+
+        foreach ($jobs as $pj) {
+            if (!$pj->job) continue;
+
+            $type = $pj->employment_type ?: $pj->job->type();
+            if ($type === 'freelance') continue;
+
+            $isClean     = (int) $pj->missed_paydays === 0;
+            $sinceReview = (int) $pj->ticks_employed - (int) $pj->ticks_employed_at_last_review;
+            if (!$isClean || $sinceReview < self::RAISE_INTERVAL_TICKS) continue;
+
+            // Title review takes priority over a plain raise the same cycle —
+            // once a year, only if the employer actually has a next tier for them.
+            if ($sinceReview >= self::TITLE_INTERVAL_TICKS) {
+                $nextJob = $pj->job->promotes_to_job_id
+                    ? CityJob::find($pj->job->promotes_to_job_id)
+                    : $this->findNextTierJob($pj->job, $user);
+
+                if ($nextJob) {
+                    $oldTitle  = $pj->job->title;
+                    $oldSalary = $pj->effectiveSalary();
+
+                    $pj->city_job_id                  = $nextJob->id;
+                    $pj->salary_multiplier            = 1.0;
+                    $pj->ticks_employed_at_last_review = $pj->ticks_employed;
+                    $pj->promotions_count             = (int) $pj->promotions_count + 1;
+                    $pj->save();
+
+                    if (($progress->career_title ?? null) === $oldTitle) {
+                        $progress->career_title = $nextJob->title;
+                    }
+
+                    $newSalary = (int) round($nextJob->salary_kes_month ?? 0);
+                    $events[] = [
+                        'icon'        => $nextJob->employer_logo ?? '🎉',
+                        'type'        => 'job_promotion',
+                        'text'        => "Promoted to {$nextJob->title}!",
+                        'sub'         => "{$nextJob->employer_name} moved you up from {$oldTitle} after a year of reliable work. Salary: Ksh " . number_format($oldSalary) . ' → Ksh ' . number_format($newSalary) . '/month.',
+                        'delta'       => 0,
+                        'is_positive' => true,
+                        'is_milestone'=> true,
+                    ];
+
+                    GameNotification::create([
+                        'user_id' => $user->id,
+                        'type'    => 'job_promotion',
+                        'title'   => "🎉 Promoted to {$nextJob->title}!",
+                        'body'    => "{$nextJob->employer_name} moved you up from {$oldTitle}. New salary: Ksh " . number_format($newSalary) . '/month.',
+                        'icon'    => $nextJob->employer_logo ?? '🎉',
+                        'data'    => ['amount' => $newSalary, 'url' => '/life/career'],
+                    ]);
+
+                    continue; // one advancement per review cycle — no raise on top this round
+                }
+
+                // No better-paying job exists anywhere for them right now — give
+                // an in-place title bump instead, up to Senior-equivalent (the
+                // ceiling of the level system). Once capped, tenure alone can't
+                // grow this role further; stop bumping and point them at the
+                // Opportunity Hub for a genuinely new Senior role — which their
+                // now-Senior effective level makes them a real fit for.
+                if ($pj->effectiveLevel() < 3) {
+                    $oldTitle  = $pj->displayTitle();
+                    $oldSalary = $pj->effectiveSalary();
+
+                    $pj->title_bumps                   = (int) $pj->title_bumps + 1;
+                    $pj->salary_multiplier             = round(($pj->salary_multiplier ?: 1.0) * (1 + self::TITLE_BUMP_PCT / 100), 3);
+                    $pj->ticks_employed_at_last_review  = $pj->ticks_employed;
+                    $pj->promotions_count              = (int) $pj->promotions_count + 1;
+                    $pj->save();
+
+                    $newTitle  = $pj->displayTitle();
+                    $newSalary = $pj->effectiveSalary();
+
+                    if (($progress->career_title ?? null) === $oldTitle) {
+                        $progress->career_title = $newTitle;
+                    }
+
+                    $capNote = $pj->effectiveLevel() >= 3
+                        ? " You've reached Senior-level tenure here — check the Opportunity Hub for a real Senior role to keep climbing."
+                        : '';
+
+                    $events[] = [
+                        'icon'         => $pj->job->employer_logo ?? '🎉',
+                        'type'         => 'job_promotion',
+                        'text'         => "Promoted to {$newTitle}!",
+                        'sub'          => "{$pj->job->employer_name} recognized your reliability with a title bump — no bigger role was open there yet. Salary: Ksh " . number_format($oldSalary) . ' → Ksh ' . number_format($newSalary) . "/month.{$capNote}",
+                        'delta'        => 0,
+                        'is_positive'  => true,
+                        'is_milestone' => true,
+                    ];
+
+                    GameNotification::create([
+                        'user_id' => $user->id,
+                        'type'    => 'job_promotion',
+                        'title'   => "🎉 Promoted to {$newTitle}!",
+                        'body'    => "New salary: Ksh " . number_format($newSalary) . "/month.{$capNote}",
+                        'icon'    => $pj->job->employer_logo ?? '🎉',
+                        'data'    => ['amount' => $newSalary, 'url' => '/life/career'],
+                    ]);
+
+                    continue;
+                }
+            }
+
+            // Plain raise — may compound multiple times if the player was away
+            // long enough to cross the interval more than once in one catch-up.
+            $intervalsElapsed = intdiv($sinceReview, self::RAISE_INTERVAL_TICKS);
+            if ($intervalsElapsed < 1) continue;
+
+            $oldSalary = $pj->effectiveSalary();
+            $pj->salary_multiplier = round(
+                ($pj->salary_multiplier ?: 1.0) * ((1 + self::RAISE_PCT / 100) ** $intervalsElapsed),
+                3
+            );
+            $pj->ticks_employed_at_last_review += $intervalsElapsed * self::RAISE_INTERVAL_TICKS;
+            $pj->save();
+            $newSalary = $pj->effectiveSalary();
+
+            $events[] = [
+                'icon'  => $pj->job->employer_logo ?? '📈',
+                'type'  => 'salary_raise',
+                'text'  => "Pay raise at {$pj->job->employer_name}!",
+                'sub'   => "Steady, reliable work as {$pj->displayTitle()} earned you a raise. Ksh " . number_format($oldSalary) . ' → Ksh ' . number_format($newSalary) . '/month.',
+                'delta' => 0,
+                'is_positive' => true,
+            ];
+
+            GameNotification::create([
+                'user_id' => $user->id,
+                'type'    => 'salary_raise',
+                'title'   => "📈 Pay raise as {$pj->displayTitle()}!",
+                'body'    => "Ksh " . number_format($oldSalary) . ' → Ksh ' . number_format($newSalary) . '/month at ' . $pj->job->employer_name . '.',
+                'icon'    => $pj->job->employer_logo ?? '📈',
+                'data'    => ['amount' => $newSalary, 'url' => '/life/career'],
+            ]);
+        }
+    }
+
+    /** Same career_track, next level tier up, open to the player's age group and
+     *  with any required course already completed — the automatic fallback when
+     *  a job has no admin-curated promotes_to_job_id. Picks the best-paying match
+     *  if more than one job fits. Public: WorldController reuses this to preview
+     *  "what you'd be promoted into" without duplicating the matching logic. */
+    public function findNextTierJob(CityJob $current, User $user): ?CityJob
+    {
+        $tracks = $current->careerTrackList();
+        if (empty($tracks)) return null;
+
+        $completedIds = PlayerCityCourse::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->pluck('city_course_id');
+
+        return CityJob::active()
+            ->where('level', (int) $current->level + 1)
+            ->get()
+            ->filter(fn (CityJob $c) => !empty(array_intersect($tracks, $c->careerTrackList())))
+            ->filter(fn (CityJob $c) => $c->matchesAgeGroup($user->age_group))
+            ->filter(fn (CityJob $c) => $c->meetsRequirements($completedIds))
+            ->sortByDesc('salary_kes_month')
+            ->first();
     }
 
     // ── Bill settlement ───────────────────────────────────────────────────────

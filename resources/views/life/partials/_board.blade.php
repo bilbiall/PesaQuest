@@ -892,6 +892,7 @@
                         'arcade_stake_joined'=>'Rivals Trail Entry','arcade_stake_won'=>'Rivals Trail Win','arcade_stake_lost'=>'Rivals Trail Loss',
                         'arcade_forfeit_penalty'=>'Rivals Trail Withdrawal','arcade_forfeit_bonus'=>'Rivals Trail Bonus',
                         'share_buy'=>'Bought Shares','share_sell'=>'Sold Shares',
+                        'job_promotion'=>'Promotion','salary_raise'=>'Pay Raise',
                         default=>ucfirst(str_replace('_',' ',$tx->type)),
                     };
                 @endphp

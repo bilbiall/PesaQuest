@@ -96,6 +96,19 @@
                     </select>
                 </div>
                 <div>
+                    <label class="form-label">Promotes To
+                        <x-help-tip text="After ~1 game year of reliable, on-time work, a player here is moved to this exact job (title + salary change). Leave blank to fall back to an automatic match: the same career track, one level up, that the player is already eligible for." example="Senior Accountant at the same employer" />
+                    </label>
+                    <select name="promotes_to_job_id" class="form-input">
+                        <option value="">— Auto-match (same track, next level) —</option>
+                        @foreach($jobs as $j)
+                        <option value="{{ $j->id }}" {{ (string) old('promotes_to_job_id', $job?->promotes_to_job_id) === (string) $j->id ? 'selected' : '' }}>
+                            {{ $j->title }} · {{ $j->employer_name }} (Level {{ $j->level }})
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label class="form-label">Employment Type *
                         <x-help-tip text="The single biggest choice on this form — it changes how many the player can hold at once and how they get paid. Full-time is their ONLY job (highest pay, blocks all other jobs); Part-time allows up to 2 at once; Freelance gig pays a one-off amount after ~7 game days and can be re-taken after a cooldown, up to 3 running at once." example="full_time for a career role, freelance for a one-off gig" />
                     </label>

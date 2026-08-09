@@ -17,7 +17,8 @@ class GamesetJobController extends Controller
     public function create()
     {
         $courses = CityCourse::active()->orderBy('title')->get(['id', 'title', 'career_track', 'icon']);
-        return view('gameset.jobs.form', ['job' => null, 'mode' => 'create', 'courses' => $courses, 'billBurden' => $this->billBurdenPerAgeGroup()]);
+        $jobs    = CityJob::orderBy('title')->get(['id', 'title', 'employer_name', 'level']);
+        return view('gameset.jobs.form', ['job' => null, 'mode' => 'create', 'courses' => $courses, 'jobs' => $jobs, 'billBurden' => $this->billBurdenPerAgeGroup()]);
     }
 
     public function store(Request $request)
@@ -41,12 +42,17 @@ class GamesetJobController extends Controller
     public function edit(CityJob $job)
     {
         $courses = CityCourse::active()->orderBy('title')->get(['id', 'title', 'career_track', 'icon']);
-        return view('gameset.jobs.form', ['job' => $job, 'mode' => 'edit', 'courses' => $courses, 'billBurden' => $this->billBurdenPerAgeGroup()]);
+        $jobs    = CityJob::where('id', '!=', $job->id)->orderBy('title')->get(['id', 'title', 'employer_name', 'level']);
+        return view('gameset.jobs.form', ['job' => $job, 'mode' => 'edit', 'courses' => $courses, 'jobs' => $jobs, 'billBurden' => $this->billBurdenPerAgeGroup()]);
     }
 
     public function update(Request $request, CityJob $job)
     {
-        $job->update($this->validated($request));
+        $data = $this->validated($request);
+        if (($data['promotes_to_job_id'] ?? null) === $job->id) {
+            $data['promotes_to_job_id'] = null;
+        }
+        $job->update($data);
         return redirect()->route('gameset.jobs.index')->with('success', "Job \"{$job->title}\" updated.");
     }
 
@@ -100,6 +106,7 @@ class GamesetJobController extends Controller
             'salary_kes_month'       => 'required|integer|min:100',
             'gig_cooldown_ticks'     => 'nullable|integer|min:1|max:365',
             'level'                  => 'required|integer|in:1,2,3',
+            'promotes_to_job_id'     => 'nullable|integer|exists:city_jobs,id',
             'required_course_ids'    => 'nullable|array',
             'required_course_ids.*'  => 'integer|exists:city_courses,id',
             'age_groups'             => 'nullable|array',

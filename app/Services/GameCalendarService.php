@@ -140,7 +140,7 @@ class GameCalendarService
                 'kind'   => 'payday',
                 'icon'   => $pj->job->employer_logo ?? '💼',
                 'label'  => 'Payday — ' . $pj->job->employer_name . ($hasPending ? ' (skipping adds a strike!)' : ''),
-                'amount' => (int) $pj->job->salary_kes_month,
+                'amount' => $pj->effectiveSalary(),
                 'url'    => '/life/career',
             ]);
         }

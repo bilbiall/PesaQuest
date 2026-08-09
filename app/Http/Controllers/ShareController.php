@@ -64,9 +64,10 @@ class ShareController extends Controller
         app(QuestTriggerService::class)->fire($user, 'buy_share', ['symbol' => $share->symbol]);
 
         return response()->json([
-            'success' => true,
-            'message' => "Bought {$quantity} {$share->symbol} @ KES " . number_format($execPrice, 2) . " (mkt KES " . number_format($share->current_price, 2) . ')',
-            'balance' => $progress->balance,
+            'success'   => true,
+            'message'   => "Bought {$quantity} {$share->symbol} @ KES " . number_format($execPrice, 2) . " (mkt KES " . number_format($share->current_price, 2) . ')',
+            'education' => $this->buyTip($share),
+            'balance'   => $progress->balance,
         ]);
     }
 
@@ -129,8 +130,46 @@ class ShareController extends Controller
         return response()->json([
             'success'     => true,
             'message'     => "Sold {$quantity} {$share->symbol} @ KES " . number_format($execPrice, 2) . " (mkt KES " . number_format($share->current_price, 2) . ") — " . ($profitLoss >= 0 ? '+' : '') . number_format($profitLoss, 2) . " {$verdict}",
+            'education'   => $this->sellTip($share, $profitLoss),
             'profit_loss' => $profitLoss,
             'balance'     => $progress->balance,
         ]);
+    }
+
+    /** A short, contextual lesson shown right after a buy — picked by the
+     *  share's own risk tier and recent direction so it actually relates to
+     *  what the player just did, not a generic random fact. */
+    private function buyTip(Share $share): string
+    {
+        $direction = $share->priceChangeDirection();
+
+        if ($direction === 'down') {
+            return "You bought after a dip — that's half of \"buy low, sell high\". Just remember a falling price can keep falling; nothing guarantees a bounce.";
+        }
+        if ($direction === 'up') {
+            return "You bought while {$share->symbol} was already climbing — chasing a rise can mean paying near the top. Buying steady dips is usually the safer habit.";
+        }
+
+        $tips = [
+            "You paid slightly above the market price — that gap is the spread, the real cost of trading. Trade less, keep more.",
+            'One share is one bet. Spread your cash across a few sectors so one bad month doesn\'t sink your whole portfolio.',
+            $share->riskLabel() === 'High-risk — big swings'
+                ? "{$share->symbol} is tagged high-risk — it can swing hard both ways. Only put in what you can afford to see drop."
+                : "{$share->symbol} is a calmer, {$share->riskLabel()} share — steadier, but don't expect huge swings either way.",
+            'Owning a share means owning a tiny piece of that company\'s fortunes — its price reflects what other players think it\'s worth right now, not a fixed value.',
+        ];
+
+        return $tips[array_rand($tips)];
+    }
+
+    private function sellTip(Share $share, float $profitLoss): string
+    {
+        if ($profitLoss > 0) {
+            return 'You sold for a profit — that\'s the "sell high" half done right. Selling everything at once means missing out if it keeps climbing, though.';
+        }
+        if ($profitLoss < 0) {
+            return "You sold at a loss — sometimes that's the right call to stop a bigger loss, sometimes it's panic-selling a dip that would've recovered. Either way, it's a real lesson, not a wasted one.";
+        }
+        return 'You broke even after the spread — a round trip with no real gain. Frequent in-and-out trading rarely beats just holding.';
     }
 }

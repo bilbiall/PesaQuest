@@ -64,7 +64,7 @@ class LifeController extends Controller
                 $total += $net;
                 $items[] = [
                     'icon'     => $pj->job?->employer_logo ?? '💼',
-                    'label'    => ($pj->job?->title ?? 'Job') . ' · ' . ($pj->job?->employer_name ?? ''),
+                    'label'    => ($pj->job ? $pj->displayTitle() : 'Job') . ' · ' . ($pj->job?->employer_name ?? ''),
                     'type'     => $pj->employment_type,
                     'amount'   => $net,
                 ];
@@ -184,7 +184,7 @@ class LifeController extends Controller
             ->where('status', 'employed')
             ->with('job:id,salary_kes_month')
             ->get()
-            ->sum(fn($pj) => $pj->job?->salary_kes_month ?? 0);
+            ->sum(fn($pj) => $pj->job ? $pj->effectiveSalary() : 0);
 
         // Income breakdown
         $salaryPerMonth      = max((int) ($progress->career_income_rate ?? 0), (int) $cityJobSalary);
@@ -245,7 +245,7 @@ class LifeController extends Controller
             'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost', 'share_buy'],
             default    => ['salary', 'asset_income', 'bill_paid', 'bill_missed', 'life_sim', 'life_event',
                             'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus',
-                            'share_buy', 'share_sell'],
+                            'share_buy', 'share_sell', 'job_promotion', 'salary_raise'],
         };
         $statement = GameNotification::where('user_id', $user->id)
             ->whereIn('type', $stmtTypes)
@@ -312,7 +312,7 @@ class LifeController extends Controller
             ->where('status', 'employed')
             ->with('job:id,salary_kes_month')
             ->get()
-            ->sum(fn ($pj) => $pj->job?->salary_kes_month ?? 0);
+            ->sum(fn ($pj) => $pj->job ? $pj->effectiveSalary() : 0);
 
         $salaryPerMonth      = max((int) ($progress->career_income_rate ?? 0), (int) $cityJobSalary);
         $assetIncomePerMonth = (int) $playerAssets->sum(fn ($pa) => ($pa->asset->monthly_income ?? 0) * $pa->quantity);
@@ -332,7 +332,7 @@ class LifeController extends Controller
             'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost', 'share_buy'],
             default    => ['salary', 'asset_income', 'bill_paid', 'bill_missed', 'life_sim', 'life_event',
                             'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus',
-                            'share_buy', 'share_sell'],
+                            'share_buy', 'share_sell', 'job_promotion', 'salary_raise'],
         };
         $statement = GameNotification::where('user_id', $user->id)
             ->whereIn('type', $stmtTypes)
@@ -394,7 +394,7 @@ class LifeController extends Controller
             ->where('status', 'employed')
             ->with('job:id,salary_kes_month')
             ->get()
-            ->sum(fn($pj) => $pj->job?->salary_kes_month ?? 0);
+            ->sum(fn($pj) => $pj->job ? $pj->effectiveSalary() : 0);
 
         $salary = max((int) ($progress->career_income_rate ?? 0), (int) $cityJobSalary);
 

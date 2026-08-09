@@ -249,7 +249,7 @@ class DashboardController extends Controller
             ->whereIn('employment_type', ['full_time', 'part_time'])
             ->with('job:id,salary_kes_month')
             ->get()
-            ->sum(fn ($pj) => $pj->job?->salary_kes_month ?? 0);
+            ->sum(fn ($pj) => $pj->job ? $pj->effectiveSalary() : 0);
 
         // Bills due within 7 game days
         $billsDueSoon = $allPlayerBills->filter(

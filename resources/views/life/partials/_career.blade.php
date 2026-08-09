@@ -385,7 +385,7 @@
                         @foreach($readyPesaJobs as $rj)
                         <div class="flex items-center gap-2.5">
                             <span class="text-lg flex-shrink-0">{{ $rj->job->employer_logo ?? '🏢' }}</span>
-                            <span class="text-xs font-bold text-white flex-1 min-w-0 truncate">{{ $rj->job->title ?? 'Job' }}</span>
+                            <span class="text-xs font-bold text-white flex-1 min-w-0 truncate">{{ $rj->job ? $rj->displayTitle() : 'Job' }}</span>
                             <span class="text-xs font-black text-emerald-400 flex-shrink-0">Ksh {{ number_format($rj->pending_salary) }}</span>
                         </div>
                         @endforeach
@@ -399,8 +399,8 @@
                     <div class="px-5 py-3 flex items-center gap-3">
                         <span class="text-2xl flex-shrink-0">{{ $pj->job->employer_logo ?? '🏢' }}</span>
                         <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-white truncate">{{ $pj->job->title }}</p>
-                            <p class="text-[10px] text-gray-500">{{ $pj->job->employer_name }} · KES {{ number_format($pj->job->salary_kes_month ?? 0) }}/mo</p>
+                            <p class="text-xs font-bold text-white truncate">{{ $pj->displayTitle() }}</p>
+                            <p class="text-[10px] text-gray-500">{{ $pj->job->employer_name }} · KES {{ number_format($pj->effectiveSalary()) }}/mo</p>
                         </div>
                         @if(($pj->pending_salary ?? 0) > 0)
                         <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0 text-emerald-300" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);">
