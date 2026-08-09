@@ -1079,27 +1079,28 @@
                                           x-text="'KES ' + portfolioTotals(district.my_shares).value.toLocaleString() + ' · ' + (portfolioTotals(district.my_shares).gain_loss >= 0 ? '+' : '') + portfolioTotals(district.my_shares).gain_loss.toLocaleString()"></span>
                                 </div>
                                 <template x-for="h in district.my_shares" :key="h.share_id">
-                                    <div style="border-radius:12px;border:1px solid rgba(53,195,240,.15);padding:8px 10px;margin-bottom:6px;background:rgba(53,195,240,.03);">
-                                        <div style="display:flex;align-items:center;gap:8px;">
-                                            <span x-text="h.icon" style="font-size:18px;flex-shrink:0;"></span>
-                                            <div style="flex:1;min-width:0;">
-                                                <div style="font-size:12px;font-weight:800;color:#f9fafb;" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
-                                                <div style="font-size:11px;color:#9ca3af;" x-text="'Avg KES ' + h.avg_cost.toLocaleString() + ' · now KES ' + h.price.toLocaleString()"></div>
+                                    <div class="share-card">
+                                        <div class="share-card-top">
+                                            <div class="share-icon-badge" style="background:rgba(53,195,240,.12);border-color:rgba(53,195,240,.32);">
+                                                <span x-text="h.icon"></span>
                                             </div>
-                                            <div style="text-align:right;flex-shrink:0;">
-                                                <div style="font-size:12px;font-weight:800;" :style="h.gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
+                                            <div class="share-card-info">
+                                                <div class="share-name" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
+                                                <div class="share-card-tags">
+                                                    <span class="share-tag" x-text="'Avg KES ' + h.avg_cost.toLocaleString()"></span>
+                                                    <span class="share-tag" x-text="'Now KES ' + h.price.toLocaleString()"></span>
+                                                </div>
+                                            </div>
+                                            <div class="share-gain-pill">
+                                                <div class="share-gain-val" :style="h.gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
                                                      x-text="(h.gain_loss >= 0 ? '+' : '') + 'KES ' + h.gain_loss.toLocaleString()"></div>
-                                                <div style="font-size:10px;color:#6b7280;" x-text="(h.gain_loss_pct >= 0 ? '+' : '') + h.gain_loss_pct + '%'"></div>
+                                                <div class="share-gain-pct" x-text="(h.gain_loss_pct >= 0 ? '+' : '') + h.gain_loss_pct + '%'"></div>
                                             </div>
                                         </div>
-                                        <div style="display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+                                        <div class="share-card-actions">
                                             <input type="number" x-model.number="shareQty[h.share_id]" min="1" :max="h.quantity"
-                                                   :placeholder="'up to ' + h.quantity"
-                                                   style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 9px;color:#fff;font-size:12px;min-width:0;">
-                                            <button @click="sellShare(h)" :disabled="shareLoading"
-                                                    style="padding:5px 12px;border-radius:8px;font-size:11px;font-weight:800;background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.3);cursor:pointer;white-space:nowrap;">
-                                                Sell →
-                                            </button>
+                                                   :placeholder="'up to ' + h.quantity" class="share-qty-input">
+                                            <button @click="sellShare(h)" :disabled="shareLoading" class="share-sell-btn">Sell →</button>
                                         </div>
                                     </div>
                                 </template>
@@ -1141,41 +1142,41 @@
                             <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No shares listed right now. Check back soon.</div>
                         </template>
                         <template x-for="s in (district.shares ?? [])" :key="s.id">
-                            <div style="border-radius:12px;border:1px solid rgba(255,255,255,0.08);padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.03);">
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <span x-text="s.icon" style="font-size:18px;flex-shrink:0;"></span>
-                                    <div style="flex:1;min-width:0;">
-                                        <div style="font-size:12px;font-weight:800;color:#f9fafb;" x-text="s.name + ' (' + s.symbol + ')'"></div>
-                                        <div style="display:flex;gap:4px;align-items:center;margin-top:2px;">
-                                            <span style="font-size:9px;color:#6b7280;" x-text="s.sector"></span>
-                                            <span style="font-size:9px;font-weight:700;" :style="'color:' + s.risk_color" x-text="'· ' + s.risk_label"></span>
+                            <div class="share-card">
+                                <div class="share-card-top">
+                                    <div class="share-icon-badge" :style="'background:' + s.risk_color + '18;border-color:' + s.risk_color + '40;'">
+                                        <span x-text="s.icon"></span>
+                                    </div>
+                                    <div class="share-card-info">
+                                        <div class="share-name" x-text="s.name + ' (' + s.symbol + ')'"></div>
+                                        <div class="share-card-tags">
+                                            <span class="share-tag" x-text="s.sector"></span>
+                                            <span class="share-tag" :style="'color:' + s.risk_color + ';border-color:' + s.risk_color + '40;background:' + s.risk_color + '14;'" x-text="s.risk_label"></span>
                                         </div>
                                     </div>
-                                    <div style="display:flex;align-items:center;gap:2.5px;height:28px;flex-shrink:0;">
+                                    <div class="share-price-block">
+                                        <div class="share-price" x-text="'KES ' + s.price.toLocaleString()"></div>
+                                        <div class="share-change-chip" :class="s.direction === 'up' ? 'up' : (s.direction === 'down' ? 'down' : 'flat')"
+                                             x-text="(s.direction === 'up' ? '↑' : (s.direction === 'down' ? '↓' : '—')) + ' ' + Math.abs(s.change_pct) + '%'"></div>
+                                    </div>
+                                </div>
+                                <div class="share-card-mid">
+                                    <span class="share-trend-label">Recent trend</span>
+                                    <div class="share-candles">
                                         <template x-for="(c, idx) in candles(s.history)" :key="idx">
-                                            <div style="position:relative;width:7px;height:100%;">
+                                            <div style="position:relative;width:8px;height:100%;">
                                                 <div :style="'position:absolute;left:50%;top:' + c.wickTop + '%;height:' + c.wickHeight + '%;width:1px;background:' + c.color + ';transform:translateX(-50%);'"></div>
-                                                <div :style="'position:absolute;left:0;top:' + c.bodyTop + '%;height:' + c.bodyHeight + '%;width:100%;background:' + c.color + ';border-radius:1px;'"></div>
+                                                <div :style="'position:absolute;left:0;top:' + c.bodyTop + '%;height:' + c.bodyHeight + '%;width:100%;background:' + c.color + ';border-radius:1.5px;'"></div>
                                             </div>
                                         </template>
                                     </div>
-                                    <div style="text-align:right;flex-shrink:0;">
-                                        <div style="font-size:13px;font-weight:900;color:#f9fafb;" x-text="'KES ' + s.price.toLocaleString()"></div>
-                                        <div style="font-size:11px;font-weight:700;"
-                                             :style="s.direction === 'up' ? 'color:#34d399' : (s.direction === 'down' ? 'color:#f87171' : 'color:#9ca3af')"
-                                             x-text="(s.direction === 'up' ? '↑ ' : (s.direction === 'down' ? '↓ ' : '— ')) + Math.abs(s.change_pct) + '%'"></div>
-                                    </div>
                                 </div>
                                 <template x-if="s.event_reason">
-                                    <div style="font-size:10px;color:#9ca3af;font-style:italic;margin-top:4px;" x-text="s.event_reason"></div>
+                                    <div class="share-event" x-text="s.event_reason"></div>
                                 </template>
-                                <div style="display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
-                                    <input type="number" x-model.number="shareQty[s.id]" min="1" placeholder="Qty"
-                                           style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 9px;color:#fff;font-size:12px;min-width:0;">
-                                    <button @click="buyShare(s)" :disabled="shareLoading"
-                                            style="padding:5px 14px;border-radius:8px;font-size:12px;font-weight:800;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;cursor:pointer;white-space:nowrap;">
-                                        Buy →
-                                    </button>
+                                <div class="share-card-actions">
+                                    <input type="number" x-model.number="shareQty[s.id]" min="1" placeholder="Qty" class="share-qty-input">
+                                    <button @click="buyShare(s)" :disabled="shareLoading" class="share-buy-btn">Buy →</button>
                                 </div>
                             </div>
                         </template>
@@ -2659,6 +2660,52 @@
 .stc-edu { font-size: 11px; color: #d1d5db; margin-top: 6px; line-height: 1.4; }
 .stc-bar { height: 3px; margin-top: 8px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
 .stc-bar-fill { height: 100%; background: rgba(255,255,255,0.35); animation: stc-shrink 6s linear forwards; }
+
+/* Equity Square share cards (Market + My Shares) */
+.share-card { border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+    background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+    border: 1px solid rgba(255,255,255,.08); transition: transform .18s ease, border-color .18s ease; }
+.share-card:hover { transform: translateY(-2px); border-color: rgba(53,195,240,.32); }
+.share-card-top { display: flex; align-items: flex-start; gap: 10px; }
+.share-icon-badge { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid; }
+.share-card-info { flex: 1; min-width: 0; }
+.share-name { font-size: 13px; font-weight: 800; color: #f9fafb; margin-bottom: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.share-card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.share-tag { font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: #9ca3af; white-space: nowrap; }
+.share-price-block { text-align: right; flex-shrink: 0; }
+.share-price { font-size: 16px; font-weight: 900; color: #f9fafb; line-height: 1.1; }
+.share-change-chip { display: inline-flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 800;
+    padding: 2px 7px; border-radius: 999px; margin-top: 4px; }
+.share-change-chip.up { background: rgba(16,185,129,.16); color: #34d399; }
+.share-change-chip.down { background: rgba(239,68,68,.16); color: #f87171; }
+.share-change-chip.flat { background: rgba(255,255,255,.07); color: #9ca3af; }
+.share-card-mid { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-top: 11px; padding-top: 11px; border-top: 1px solid rgba(255,255,255,.06); }
+.share-trend-label { font-size: 9px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
+.share-candles { display: flex; align-items: center; gap: 4px; height: 34px; flex-shrink: 0; }
+.share-event { font-size: 10.5px; color: #d1d5db; margin-top: 9px; padding: 7px 10px; border-radius: 8px;
+    background: rgba(255,255,255,.035); border-left: 2px solid rgba(53,195,240,.4); line-height: 1.4; }
+.share-card-actions { display: flex; gap: 6px; align-items: center; margin-top: 11px; padding-top: 11px;
+    border-top: 1px solid rgba(255,255,255,.06); }
+.share-qty-input { flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 9px; padding: 7px 10px; color: #fff; font-size: 12px; min-width: 0; transition: border-color .15s; }
+.share-qty-input:focus { outline: none; border-color: rgba(53,195,240,.5); }
+.share-buy-btn { padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
+    background: linear-gradient(135deg,#0891b2,#0e7490); color: #fff; border: none; cursor: pointer;
+    white-space: nowrap; box-shadow: 0 2px 10px rgba(8,145,178,.35); transition: box-shadow .15s, transform .15s; }
+.share-buy-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(8,145,178,.5); transform: translateY(-1px); }
+.share-buy-btn:disabled { opacity: .5; cursor: not-allowed; }
+.share-sell-btn { padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
+    background: rgba(239,68,68,.16); color: #f87171; border: 1px solid rgba(239,68,68,.32); cursor: pointer;
+    white-space: nowrap; transition: background .15s; }
+.share-sell-btn:hover:not(:disabled) { background: rgba(239,68,68,.24); }
+.share-sell-btn:disabled { opacity: .5; cursor: not-allowed; }
+.share-gain-pill { text-align: right; flex-shrink: 0; }
+.share-gain-val { font-size: 13px; font-weight: 800; }
+.share-gain-pct { font-size: 10px; color: #6b7280; margin-top: 1px; }
 </style>
 
 {{-- ══════════════════════════════════════
