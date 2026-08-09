@@ -79,6 +79,18 @@ class ArcadeSnakesController extends Controller
             ->with(['match', 'inviter:id,name'])
             ->latest()->get();
 
+        // "Is the inviter online right now" — same sessions-table check the
+        // forums' "online now" stat uses, so the player can judge whether
+        // accepting means an immediate live game or a wait.
+        $onlineUserIds = \Illuminate\Support\Facades\Schema::hasTable('sessions')
+            ? \Illuminate\Support\Facades\DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
+                ->pluck('user_id')
+                ->all()
+            : [];
+        $myInvites->each(fn ($invite) => $invite->inviter_online = in_array($invite->invited_by, $onlineUserIds));
+
         $friends = Friendship::where(fn ($q) => $q->where('requester_id', $user->id)->orWhere('addressee_id', $user->id))
             ->where('status', 'accepted')
             ->get()
@@ -97,7 +109,7 @@ class ArcadeSnakesController extends Controller
         return view('arcade.snakes.lobby', [
             'game' => $game, 'tier' => $tier, 'activeSession' => $activeSession, 'openMatches' => $openMatches, 'stats' => $stats,
             'openWagerMatches' => $openWagerMatches, 'myInvites' => $myInvites, 'friends' => $friends,
-            'minWagerStake' => ArcadeSnakesService::MIN_WAGER_STAKE, 'maxWagerStake' => ArcadeSnakesService::MAX_WAGER_STAKE,
+            'minWagerStake' => ArcadeSnakesService::MIN_WAGER_STAKE,
         ]);
     }
 
@@ -159,15 +171,18 @@ class ArcadeSnakesController extends Controller
         return $positions;
     }
 
-    public function startSolo(ArcadeSnakesService $service)
+    public function startSolo(Request $request, ArcadeSnakesService $service)
     {
+        $data = $request->validate([
+            'stake_amount' => 'nullable|integer|min:50',
+        ]);
         $user = auth()->user();
         $game = ArcadeGame::where('slug', 'snakes-and-cash')->firstOrFail();
 
         if ($err = $this->dailyPlayGateError($user, $game)) return back()->with('error', $err);
 
         try {
-            $session = $service->startSoloWithBot($user, $game);
+            $session = $service->startSoloWithBot($user, $game, $data['stake_amount'] ?? null);
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -235,7 +250,7 @@ class ArcadeSnakesController extends Controller
         $data = $request->validate([
             'visibility'   => 'required|in:public,private',
             'max_players'  => 'required|integer|min:2|max:8',
-            'stake_amount' => 'required|integer|min:' . ArcadeSnakesService::MIN_WAGER_STAKE . '|max:' . ArcadeSnakesService::MAX_WAGER_STAKE,
+            'stake_amount' => 'required|integer|min:' . ArcadeSnakesService::MIN_WAGER_STAKE,
             'invite_ids'   => 'nullable|array',
             'invite_ids.*' => 'integer|exists:users,id',
             'name'         => 'nullable|string|max:40',
@@ -312,6 +327,17 @@ class ArcadeSnakesController extends Controller
         }
 
         $invite->update(['status' => 'accepted']);
+
+        // Let the inviter know right away — they've been waiting, and this is
+        // the cue to jump back in and play together now that both sides are in.
+        \App\Models\GameNotification::create([
+            'user_id' => $invite->invited_by,
+            'type'    => 'arcade_invite_accepted',
+            'title'   => "🎲 {$user->name} joined your Rivals Trail round!",
+            'body'    => "You're both in now — head back to Pesa Trail and play together.",
+            'icon'    => '🎲',
+            'data'    => ['arcade_match_id' => $match->id],
+        ]);
 
         return redirect()->route('arcade.snakes.play', $session);
     }

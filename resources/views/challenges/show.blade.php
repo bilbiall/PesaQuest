@@ -13,7 +13,8 @@
 <style>
 body{background:#07060f;}
 .profile-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:1.1rem;padding:1.1rem;}
-.rank-row{display:flex;align-items:center;gap:.7rem;padding:.65rem .85rem;border-radius:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-bottom:.5rem;position:relative;}
+.rank-row{display:flex;align-items:center;gap:.7rem;padding:.65rem .85rem;border-radius:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-bottom:.5rem;position:relative;cursor:pointer;transition:background .15s;}
+.rank-row:hover{background:rgba(255,255,255,.06);}
 .rank-row.win{border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(251,191,36,.05));animation:winGlow 2.4s ease-in-out infinite;}
 .rank-row.me{border-color:rgba(99,102,241,.5);}
 .win-avatar-wrap{position:relative;flex-shrink:0;}
@@ -85,6 +86,9 @@ body{background:#07060f;}
             </div>
         </div>
         <p class="text-xs text-gray-500">Goal: {{ number_format($challenge->goal, 0) }}{{ $challenge->styleSuffix() }} {{ str_replace('_', ' ', $challenge->metric) }} growth since the challenge started.</p>
+        @if($challenge->hasSecondMetric())
+        <p class="text-xs text-gray-500">Also tracked: {{ number_format($challenge->goal_2, 0) }}{{ $challenge->styleSuffix($challenge->style_2) }} {{ str_replace('_', ' ', $challenge->metric_2) }} growth (doesn't decide the winner).</p>
+        @endif
         @if($challenge->describeRequirements())
         <p class="text-xs text-amber-400 font-semibold mt-1.5">{{ $challenge->describeRequirements() }} — only participants meeting these can win.</p>
         @endif
@@ -139,7 +143,7 @@ body{background:#07060f;}
             </summary>
             <div class="mt-3 pl-8 space-y-1.5">
                 @foreach($row['members'] as $m)
-                <div class="flex items-center gap-2 text-xs">
+                <div class="flex items-center gap-2 text-xs" style="cursor:pointer;" onclick="event.stopPropagation();openStatsModal({{ $challenge->id }}, {{ $m->id }})">
                     @if($m->user?->profile_photo)
                     <img src="{{ $m->user->profile_photo }}" alt="" class="w-5 h-5 rounded-full object-cover flex-shrink-0">
                     @else
@@ -158,7 +162,7 @@ body{background:#07060f;}
             $pct = $challenge->goal > 0 ? max(0, min(100, ($p->progress / $challenge->goal) * 100)) : 0;
             $change = $p->rank_change ?? null;
         @endphp
-        <div class="rank-row {{ $p->is_winner ? 'win' : '' }} {{ $p->user_id === auth()->id() ? 'me' : '' }}">
+        <div class="rank-row {{ $p->is_winner ? 'win' : '' }} {{ $p->user_id === auth()->id() ? 'me' : '' }}" onclick="openStatsModal({{ $challenge->id }}, {{ $p->id }})">
             <span class="font-black text-gray-400 w-5 text-center text-sm">{{ $p->rank ?? ($i + 1) }}</span>
             <span class="win-avatar-wrap">
                 @if($p->is_winner)<span class="win-crown">👑</span>@endif
@@ -171,6 +175,9 @@ body{background:#07060f;}
             <div class="flex-1 min-w-[90px]">
                 <div class="text-xs font-bold text-white">{{ $p->user?->name ?? 'Player' }}{{ $p->user_id === auth()->id() ? ' (you)' : '' }}</div>
                 <div class="text-[.62rem] text-gray-500">{{ $p->status === 'invited' ? 'Invited — not yet accepted' : ($p->status === 'declined' ? 'Declined' : '') }}</div>
+                @if($p->status === 'accepted' && $challenge->hasSecondMetric())
+                <div class="text-[.62rem] text-gray-500 mt-0.5">📊 {{ str_replace('_', ' ', $challenge->metric_2) }}: <span class="text-gray-300 font-bold">{{ number_format($p->progress_2 ?? 0, 1) }}{{ $challenge->styleSuffix($challenge->style_2) }}</span> / {{ number_format($challenge->goal_2, 0) }}{{ $challenge->styleSuffix($challenge->style_2) }}</div>
+                @endif
             </div>
             @if($p->status === 'accepted')
             <div class="ch-track"><div class="ch-fill" style="width:{{ $pct }}%;"></div></div>
@@ -185,7 +192,50 @@ body{background:#07060f;}
     </div>
 </div>
 
+<div id="statsModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) closeStatsModal()">
+    <div class="profile-card" style="max-width:300px;width:100%;text-align:center;position:relative;">
+        <button type="button" onclick="closeStatsModal()" style="position:absolute;top:.4rem;right:.6rem;background:none;border:none;color:#9ca3af;font-size:1.1rem;cursor:pointer;">✕</button>
+        <div id="statsModalBody" style="padding-top:.5rem;"><p class="text-xs text-gray-500">Loading…</p></div>
+    </div>
+</div>
+
 <script>
+function openStatsModal(challengeId, participantId) {
+    const modal = document.getElementById('statsModal');
+    const body = document.getElementById('statsModalBody');
+    body.innerHTML = '<p class="text-xs text-gray-500">Loading…</p>';
+    modal.style.display = 'flex';
+    fetch(`/challenges/${challengeId}/participants/${participantId}/stats`, { headers: { 'Accept': 'application/json' } })
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(s => {
+            const initial = (s.name || 'P').charAt(0).toUpperCase();
+            body.innerHTML = `
+                <div style="width:56px;height:56px;border-radius:.85rem;margin:0 auto .6rem;overflow:hidden;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.3rem;color:#fff;">
+                    ${s.profile_photo ? `<img src="${s.profile_photo}" style="width:100%;height:100%;object-fit:cover;">` : initial}
+                </div>
+                <div style="font-weight:900;color:#fff;font-size:.95rem;">${s.name}</div>
+                <div style="font-size:.68rem;color:#9ca3af;margin-bottom:.75rem;">Level ${s.level} · ${s.played_label}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+                    <div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.5rem;">
+                        <div style="font-weight:900;color:#a78bfa;font-size:.85rem;">${Number(s.xp).toLocaleString()}</div>
+                        <div style="font-size:.6rem;color:#9ca3af;text-transform:uppercase;font-weight:700;">XP</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.5rem;">
+                        <div style="font-weight:900;color:#34d399;font-size:.85rem;">KES ${Number(s.net_worth).toLocaleString()}</div>
+                        <div style="font-size:.6rem;color:#9ca3af;text-transform:uppercase;font-weight:700;">Net Worth</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.5rem;grid-column:1/-1;">
+                        <div style="font-weight:900;color:#fbbf24;font-size:.85rem;">🏅 ${s.badges_count}</div>
+                        <div style="font-size:.6rem;color:#9ca3af;text-transform:uppercase;font-weight:700;">Badges</div>
+                    </div>
+                </div>`;
+        })
+        .catch(() => { body.innerHTML = '<p class="text-xs" style="color:#f87171;">Could not load stats.</p>'; });
+}
+function closeStatsModal() {
+    document.getElementById('statsModal').style.display = 'none';
+}
+
 function pqShareChallenge(btn) {
     // The public invite page, not the auth-walled show page — a logged-out
     // recipient can actually see it, and link-preview bots can unfurl it.

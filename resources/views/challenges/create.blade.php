@@ -39,6 +39,19 @@ input:not([type=checkbox]):not([type=radio]),select{width:100%;padding:.5rem .7r
                 if (this.tpl.style === 'count') return 'How many you need to reach to win.';
                 return 'How much ' + (this.tpl.metric === 'xp_points' ? 'XP' : 'KES') + ' you need to earn during the challenge.';
             },
+            picked2: '',
+            get tpl2() { return this.templates.find(t => t.id === Number(this.picked2)) || {}; },
+            get goalUnit2() {
+                if (!this.picked2) return '';
+                if (this.tpl2.style === 'percent') return '%';
+                if (this.tpl2.style === 'count') return '';
+                return this.tpl2.metric === 'xp_points' ? 'XP' : 'KES';
+            },
+            get goalPlaceholder2() {
+                if (this.tpl2.style === 'percent') return '10';
+                if (this.tpl2.style === 'count') return '3';
+                return '500';
+            },
         }">
         @csrf
 
@@ -96,6 +109,21 @@ input:not([type=checkbox]):not([type=radio]),select{width:100%;padding:.5rem .7r
             </div>
             <p class="text-[.6rem] text-gray-500 mt-1.5" x-text="goalHint"></p>
             <p class="text-[.58rem] text-gray-500 mt-1">Leave blank to use the challenge type's default target.</p>
+        </div>
+
+        <div class="profile-card">
+            <label>Also track a second metric (optional)</label>
+            <p class="text-[.6rem] text-gray-500 mb-2">Track something else alongside your main target — e.g. Net Worth Sprint + XP Race. Both are tracked separately on the same challenge; only the target above decides the winner.</p>
+            <select name="template_id_2" x-model="picked2">
+                <option value="">Don't track a second metric</option>
+                @foreach($templates as $t)
+                <option value="{{ $t->id }}" :disabled="picked === {{ $t->id }}">{{ $t->icon }} {{ $t->name }}</option>
+                @endforeach
+            </select>
+            <div x-show="picked2" x-cloak style="display:flex;align-items:center;gap:.5rem;margin-top:.6rem;">
+                <input type="number" name="goal_2" value="{{ old('goal_2') }}" step="0.01" min="0.01" :placeholder="goalPlaceholder2">
+                <span class="text-xs font-black text-gray-400" style="flex-shrink:0;min-width:1.6rem;" x-text="goalUnit2"></span>
+            </div>
         </div>
 
         <div class="profile-card" x-show="scope === 'friends'" x-cloak>

@@ -405,12 +405,19 @@
         .roll-btn:disabled { opacity:.4; cursor:not-allowed; }
         .cashout-btn { margin-top:.15rem; background:rgba(16,185,129,.2); border:1px solid rgba(16,185,129,.4); color:#6ee7b7; }
 
-        /* Event toast */
-        .event-toast { position:fixed; left:50%; bottom:170px; transform:translateX(-50%) scale(.9); max-width:340px; background:rgba(10,9,20,.96); border:1px solid rgba(255,255,255,.18); border-radius:1.1rem; padding:.85rem 1.1rem; font-size:.78rem; z-index:9998; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; line-height:1.5; box-shadow:0 12px 34px rgba(0,0,0,.5); }
-        .event-toast.show { opacity:1; transform:translateX(-50%) scale(1); }
-        .event-toast .toast-headline { font-weight:900; font-size:.92rem; margin-top:.35rem; }
+        /* Event toast — slides up with a slight spring overshoot instead of a
+           flat fade, and a shrinking accent bar along the bottom edge shows at
+           a glance how long is left before it auto-clears (see JS: the bar's
+           animation duration is set to match toastTimer's actual delay). */
+        .event-toast { position:fixed; left:50%; bottom:170px; transform:translateX(-50%) translateY(18px) scale(.94); max-width:340px; background:rgba(10,9,20,.96); border:1px solid rgba(255,255,255,.18); border-radius:1.1rem; padding:.85rem 1.1rem .75rem; font-size:.78rem; z-index:9998; opacity:0; pointer-events:none; transition:opacity .4s cubic-bezier(.34,1.56,.64,1), transform .4s cubic-bezier(.34,1.56,.64,1); line-height:1.5; box-shadow:0 12px 34px rgba(0,0,0,.5); overflow:hidden; }
+        .event-toast.show { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+        .event-toast .toast-headline { font-weight:900; font-size:.92rem; margin-top:.35rem; animation:toastPop .35s ease .05s both; }
         .event-toast .toast-headline:first-child { margin-top:0; }
         .event-toast .toast-lesson { font-size:.7rem; color:#9ca3af; margin-bottom:.3rem; font-weight:600; }
+        .event-toast::after { content:''; position:absolute; left:0; bottom:0; height:3px; width:100%; background:linear-gradient(90deg,#6366f1,#a78bfa); transform-origin:left; transform:scaleX(0); }
+        .event-toast.show::after { animation:toastShrink linear forwards; animation-duration:var(--toast-ms, 7000ms); }
+        @keyframes toastShrink { from { transform:scaleX(1); } to { transform:scaleX(0); } }
+        @keyframes toastPop { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
         @media (min-width:1024px) { .event-toast { bottom:40px; } }
 
         .opp-row { border-radius:.7rem; background:rgba(255,255,255,.02); margin-bottom:.4rem; font-size:.75rem; transition:opacity .3s, background .15s; overflow:hidden; }
@@ -972,13 +979,19 @@
         }
 
         let toastTimer = null;
-        function showToast(lines) {
+        function showToast(lines, ms = 7000) {
             if (typeof positionToastOverBoard === 'function') positionToastOverBoard();
             const el = document.getElementById('eventToast');
             el.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
+            el.style.setProperty('--toast-ms', ms + 'ms');
+            // Force a reflow between remove/add so the shrinking progress bar
+            // restarts from full even if a toast is already showing — without
+            // this, re-adding the same class mid-animation wouldn't reset it.
+            el.classList.remove('show');
+            void el.offsetWidth;
             el.classList.add('show');
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => el.classList.remove('show'), 7000);
+            toastTimer = setTimeout(() => el.classList.remove('show'), ms);
         }
 
         function eventLine(ev) {
@@ -1102,6 +1115,20 @@
             document.body.classList.toggle('drawer-open', isOpen);
             ArcadeSound.play('toggle');
         }
+
+        // Click-outside-to-close, as a capture-phase listener rather than
+        // relying solely on the backdrop's own onclick — while the drawer is
+        // open, body.drawer-open bumps .layout's z-index ABOVE the backdrop
+        // (see the CSS comment above .drawer-backdrop) so the backdrop alone
+        // doesn't reliably catch taps that land on the game board underneath.
+        // Checking the click target's DOM ancestry directly sidesteps that.
+        document.addEventListener('click', function (e) {
+            const drawer = document.getElementById('mobileDrawer');
+            const toggle = document.getElementById('menuToggle');
+            if (!drawer || !drawer.classList.contains('drawer-open')) return;
+            if (drawer.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+            toggleDrawer(false);
+        }, true);
 
         function toggleHowToPlay() {
             document.getElementById('htpToggle').classList.toggle('expanded');

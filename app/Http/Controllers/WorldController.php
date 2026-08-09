@@ -766,6 +766,28 @@ class WorldController extends Controller
                     'subtitle' => "{$c->participants_count} joined · ends {$c->ends_at->diffForHumans()}"
                         . ($c->stake_amount ? ' · KES ' . number_format($c->stake_amount) . ' entry' : ''),
                 ]);
+
+            // The player's OWN challenges — friends duels/FFA and anything
+            // they've already joined, public or private — so the popup always
+            // shows everything they have access to, not just what's open to
+            // join. Same "pending + active shown together" shape as
+            // ChallengeController::index()'s "My Challenges" list.
+            $district['my_challenges_list'] = \App\Models\ChallengeParticipant::where('user_id', $user->id)
+                ->where('status', 'accepted')
+                ->whereHas('challenge', fn ($q) => $q->whereIn('status', ['pending', 'active']))
+                ->with('challenge.template')
+                ->get()
+                ->sortBy(fn ($p) => $p->challenge->status === 'active' ? 0 : 1)
+                ->values()
+                ->map(fn ($p) => [
+                    'id'       => $p->challenge->id,
+                    'icon'     => $p->challenge->template?->icon ?? '⚔️',
+                    'title'    => $p->challenge->title,
+                    'live'     => $p->challenge->status === 'active',
+                    'subtitle' => $p->challenge->status === 'active'
+                        ? 'Live · ends ' . $p->challenge->ends_at->diffForHumans()
+                        : 'Waiting for the other side to accept',
+                ]);
         }
 
         return response()->json($district);

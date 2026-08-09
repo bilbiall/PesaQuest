@@ -53,8 +53,7 @@ class ArcadeSnakesService
     public const FORFEIT_MISSED_TURNS = 8; // consecutive auto-expired turns before a player is withdrawn
     public const WINNER_CUT_PERCENT = 60;  // % of each remaining opponent's pot the winner takes
     public const FORFEIT_CUT_PERCENT = 30; // % of a forfeiting player's pot that joins the match's bonus pool
-    public const MIN_WAGER_STAKE = 100;
-    public const MAX_WAGER_STAKE = 5000;
+    public const MIN_WAGER_STAKE = 100; // floor only — no ceiling, players can wager any amount their wallet covers
 
     private const GOLDEN_BOOST_PERCENT = 25; // % of the ORIGINAL stake, added to the pot on every golden landing after the first
 
@@ -83,15 +82,18 @@ class ArcadeSnakesService
             ?? ArcadeStakeTier::where('arcade_game_id', $game->id)->where('is_active', true)->orderBy('stake_amount')->first();
     }
 
-    public function startSolo(User $user, ArcadeGame $game): ArcadeSession
+    public function startSolo(User $user, ArcadeGame $game, ?int $stakeOverride = null): ArcadeSession
     {
-        return $this->openSession($user, $game, null);
+        return $this->openSession($user, $game, null, false, 0, $stakeOverride);
     }
 
     /** Solo play, but with Robo the bot in a private 2-seat turn-based match —
      *  races the player, taking its own turn a couple seconds after the player's
-     *  (see autoPlayBotTurn()) rather than moving in lockstep with them. */
-    public function startSoloWithBot(User $user, ArcadeGame $game): ArcadeSession
+     *  (see autoPlayBotTurn()) rather than moving in lockstep with them.
+     *  $stakeOverride lets the player pick their own starting savings instead of
+     *  the level-tier default — the bot always mirrors whatever the player ends
+     *  up with, so the race stays even either way. */
+    public function startSoloWithBot(User $user, ArcadeGame $game, ?int $stakeOverride = null): ArcadeSession
     {
         $match = ArcadeMatch::create([
             'arcade_game_id' => $game->id,
@@ -103,8 +105,8 @@ class ArcadeSnakesService
             'turn_mode'      => 'turns',
         ]);
 
-        $session = $this->openSession($user, $game, $match, false, 0);
-        $this->openSession($this->botUser(), $game, $match, true, 1);
+        $session = $this->openSession($user, $game, $match, false, 0, $stakeOverride);
+        $this->openSession($this->botUser(), $game, $match, true, 1, (int) $session->stake_amount);
         $match->update(['current_turn_session_id' => $session->id, 'turn_started_at' => now()]);
 
         return $session;
@@ -214,7 +216,7 @@ class ArcadeSnakesService
      */
     public function createWagerMatch(User $user, ArcadeGame $game, string $visibility, int $maxPlayers, int $stakeAmount, ?string $name = null): ArcadeMatch
     {
-        $stake = max(self::MIN_WAGER_STAKE, min(self::MAX_WAGER_STAKE, $stakeAmount));
+        $stake = max(self::MIN_WAGER_STAKE, $stakeAmount);
 
         $match = ArcadeMatch::create([
             'arcade_game_id' => $game->id,

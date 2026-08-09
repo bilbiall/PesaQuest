@@ -11,9 +11,16 @@ class Challenge extends Model
     protected $fillable = [
         'template_id', 'mode', 'is_team_based', 'is_chama_battle', 'scope', 'is_official', 'creator_id',
         'school_subscription_id', 'school_class_id', 'chama_id', 'title', 'slug', 'metric', 'style', 'goal',
+        'metric_2', 'style_2', 'goal_2',
         'requirements', 'stake_amount', 'level_min', 'level_max',
         'starts_at', 'ends_at', 'status',
     ];
+
+    /** True when this challenge tracks a second metric alongside the primary one. */
+    public function hasSecondMetric(): bool
+    {
+        return !empty($this->metric_2);
+    }
 
     /** Share links use the readable slug (/challenges/net-worth-sprint-x7q2), never the bare numeric ID. */
     public function getRouteKey()
@@ -62,6 +69,7 @@ class Challenge extends Model
         'is_team_based'   => 'boolean',
         'is_chama_battle' => 'boolean',
         'goal'            => 'float',
+        'goal_2'          => 'float',
         'requirements'    => 'array',
         'starts_at'       => 'datetime',
         'ends_at'         => 'datetime',
@@ -107,9 +115,9 @@ class Challenge extends Model
         return $this->mode === 'broadcast';
     }
 
-    public function styleSuffix(): string
+    public function styleSuffix(?string $style = null): string
     {
-        return match ($this->style) {
+        return match ($style ?? $this->style) {
             'percent' => '%',
             'amount'  => '',
             default   => '',

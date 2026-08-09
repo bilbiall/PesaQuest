@@ -46,7 +46,16 @@
             <div class="space-y-2">
                 @foreach($myInvites as $invite)
                 <div class="flex items-center justify-between gap-3 p-3 rounded-xl flex-wrap" style="background:rgba(255,255,255,.02);">
-                    <span class="text-xs text-gray-400">{{ $invite->inviter->name ?? 'A friend' }} invited you — entry KES {{ number_format($invite->match->stake_amount) }}</span>
+                    <div class="text-xs text-gray-400">
+                        <div>
+                            {{ $invite->inviter->name ?? 'A friend' }} invited you — entry KES {{ number_format($invite->match->stake_amount) }}
+                            <span class="inline-flex items-center gap-1 ml-1" title="{{ $invite->inviter_online ? 'Online now' : 'Not online right now' }}">
+                                <span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:{{ $invite->inviter_online ? '#34d399' : '#6b7280' }};"></span>
+                                <span style="color:{{ $invite->inviter_online ? '#6ee7b7' : '#9ca3af' }};font-weight:700;">{{ $invite->inviter_online ? 'online now' : 'offline' }}</span>
+                            </span>
+                        </div>
+                        <div class="text-[10px] text-gray-500 mt-0.5">Sent {{ $invite->created_at->diffForHumans() }}</div>
+                    </div>
                     <div class="flex gap-2">
                         <form method="POST" action="{{ route('arcade.snakes.wager.invite.accept', $invite) }}">
                             @csrf
@@ -92,9 +101,13 @@
 
         <div class="sc-card p-5 mb-6">
             <p class="text-sm font-bold mb-1">Your starting savings</p>
-            <p class="text-xs text-gray-400 mb-4">{{ $tier ? $tier->label . ' — KES ' . number_format($tier->stake_amount) : 'No starting-savings tier configured yet.' }}. This leaves your wallet and becomes your in-game savings for this round — grow it by playing well and bank it anytime. If it runs out, the round ends early.</p>
-            <form method="POST" action="{{ route('arcade.snakes.solo') }}" onsubmit="phTrack('pesatrail_solo_start')">
+            <p class="text-xs text-gray-400 mb-3">Pick how much to bring into this round — it leaves your wallet and becomes your in-game savings; grow it by playing well and bank it anytime. If it runs out, the round ends early.</p>
+            <form method="POST" action="{{ route('arcade.snakes.solo') }}" class="space-y-2" onsubmit="phTrack('pesatrail_solo_start')">
                 @csrf
+                <input type="number" name="stake_amount" min="50" value="{{ $tier->stake_amount ?? 200 }}" placeholder="Starting savings (KES)" class="sc-input">
+                @if($tier)
+                <p class="text-[11px] text-gray-500">Suggested for your level: {{ $tier->label }} — KES {{ number_format($tier->stake_amount) }}. Change it to whatever you'd rather risk.</p>
+                @endif
                 <button type="submit" class="sc-btn text-white w-full" style="background:linear-gradient(135deg,#f59e0b,#d97706);">🎲 Play Solo</button>
             </form>
         </div>
@@ -166,7 +179,7 @@
                         <form method="POST" action="{{ route('arcade.snakes.wager.create') }}" class="space-y-2" onsubmit="phTrack('pesatrail_wager_create')">
                             @csrf
                             <input name="name" maxlength="40" placeholder="Name your round (optional)" class="sc-input">
-                            <input type="number" name="stake_amount" min="{{ $minWagerStake }}" max="{{ $maxWagerStake }}" value="{{ $minWagerStake }}" placeholder="Entry amount (KES)" class="sc-input">
+                            <input type="number" name="stake_amount" min="{{ $minWagerStake }}" value="{{ $minWagerStake }}" placeholder="Entry amount (KES)" class="sc-input">
                             <select name="visibility" class="sc-input">
                                 <option value="private">Private (invite friends or share a code)</option>
                                 <option value="public">Public (anyone can join)</option>

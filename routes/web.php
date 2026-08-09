@@ -281,6 +281,7 @@ Route::middleware(['auth'])->prefix('challenges')->name('challenges.')->group(fu
     Route::post('/{challenge}/join',         [\App\Http\Controllers\ChallengeController::class, 'join'])->name('join');
     Route::post('/{challenge}/enter-chama',  [\App\Http\Controllers\ChallengeController::class, 'enterChamaBattle'])->name('enter-chama');
     Route::post('/{challenge}/cancel',       [\App\Http\Controllers\ChallengeController::class, 'cancel'])->name('cancel');
+    Route::get('/{challenge}/participants/{participant}/stats', [\App\Http\Controllers\ChallengeController::class, 'participantStats'])->name('participant-stats');
     Route::get('/{challenge}',               [\App\Http\Controllers\ChallengeController::class, 'show'])->name('show');
 });
 

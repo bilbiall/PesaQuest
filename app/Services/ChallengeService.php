@@ -62,7 +62,7 @@ class ChallengeService
     /**
      * @return array{ok: bool, error?: string, challenge?: Challenge, warning?: ?string}
      */
-    public function createDuel(User $creator, ChallengeTemplate $template, array $creatorTeamIds, array $opponentTeamIds, ?int $stakeAmount, ?int $durationDays, ?string $customTitle = null, ?array $requirements = null, ?float $goal = null): array
+    public function createDuel(User $creator, ChallengeTemplate $template, array $creatorTeamIds, array $opponentTeamIds, ?int $stakeAmount, ?int $durationDays, ?string $customTitle = null, ?array $requirements = null, ?float $goal = null, ?ChallengeTemplate $template2 = null, ?float $goal2 = null): array
     {
         if (count($creatorTeamIds) !== count($opponentTeamIds)) {
             return ['ok' => false, 'error' => 'Both sides must have the same number of players.'];
@@ -91,6 +91,9 @@ class ChallengeService
             'metric'      => $template->metric,
             'style'       => $template->style,
             'goal'        => $goal ?? $this->defaultGoal($template),
+            'metric_2'    => $template2?->metric,
+            'style_2'     => $template2?->style,
+            'goal_2'      => $template2 ? ($goal2 ?? $this->defaultGoal($template2)) : null,
             'requirements'=> $requirements,
             'stake_amount'=> $stakeAmount,
             'level_min'   => $template->level_min,
@@ -149,7 +152,7 @@ class ChallengeService
      *
      * @return array{ok: bool, error?: string, challenge?: Challenge}
      */
-    public function createFfa(User $creator, ChallengeTemplate $template, array $opponentIds, ?int $stakeAmount, ?int $durationDays, ?string $customTitle = null, ?array $requirements = null, ?float $goal = null): array
+    public function createFfa(User $creator, ChallengeTemplate $template, array $opponentIds, ?int $stakeAmount, ?int $durationDays, ?string $customTitle = null, ?array $requirements = null, ?float $goal = null, ?ChallengeTemplate $template2 = null, ?float $goal2 = null): array
     {
         $opponentIds = array_values(array_unique(array_diff($opponentIds, [$creator->id])));
         if (count($opponentIds) < 2) {
@@ -177,6 +180,9 @@ class ChallengeService
             'metric'        => $template->metric,
             'style'         => $template->style,
             'goal'          => $goal ?? $this->defaultGoal($template),
+            'metric_2'      => $template2?->metric,
+            'style_2'       => $template2?->style,
+            'goal_2'        => $template2 ? ($goal2 ?? $this->defaultGoal($template2)) : null,
             'requirements'  => $requirements,
             'stake_amount'  => $stakeAmount,
             'level_min'     => $template->level_min,
@@ -228,7 +234,7 @@ class ChallengeService
      *
      * @return array{ok: bool, error?: string, challenge?: Challenge}
      */
-    public function createOpenChallenge(User $creator, ChallengeTemplate $template, ?int $stakeAmount, ?int $durationDays, ?string $customTitle = null, ?array $requirements = null, ?float $goal = null): array
+    public function createOpenChallenge(User $creator, ChallengeTemplate $template, ?int $stakeAmount, ?int $durationDays, ?string $customTitle = null, ?array $requirements = null, ?float $goal = null, ?ChallengeTemplate $template2 = null, ?float $goal2 = null): array
     {
         $challenge = $this->createBroadcast($template, [
             'scope'         => 'open',
@@ -239,6 +245,8 @@ class ChallengeService
             'stake_amount'  => $stakeAmount,
             'duration_days' => $durationDays,
             'goal'          => $goal,
+            'template_2'    => $template2,
+            'goal_2'        => $goal2,
         ]);
 
         $join = $this->joinBroadcast($challenge, $creator);
@@ -348,10 +356,10 @@ class ChallengeService
         foreach ($challenge->participants()->where('status', 'accepted')->get() as $p) {
             $user     = $p->user;
             $progress = $user->getOrCreateProgress();
-            $p->update([
-                'baseline'  => GameMetrics::current($challenge->metric, $user, $progress, $now),
-                'progress'  => 0,
-                'joined_at' => $now,
+            $p->update($this->baselineFields($challenge, $user, $progress, $now) + [
+                'progress'   => 0,
+                'progress_2' => $challenge->hasSecondMetric() ? 0 : null,
+                'joined_at'  => $now,
             ]);
         }
     }
@@ -362,9 +370,10 @@ class ChallengeService
         // $opts is a plain untyped array (no scalar coercion at a call boundary
         // like createDuel()'s typed ?int params get) — form input arrives as a
         // numeric string, which Carbon's addDays() now rejects outright.
-        $days  = max(1, (int) ($opts['duration_days'] ?? $template->default_duration_days));
-        $now   = now();
-        $title = $opts['title'] ?? $template->name;
+        $days     = max(1, (int) ($opts['duration_days'] ?? $template->default_duration_days));
+        $now      = now();
+        $title    = $opts['title'] ?? $template->name;
+        $template2 = $opts['template_2'] ?? null;
 
         return Challenge::create([
             'template_id'             => $template->id,
@@ -381,6 +390,9 @@ class ChallengeService
             'metric'                  => $template->metric,
             'style'                   => $template->style,
             'goal'                    => $opts['goal'] ?? $this->defaultGoal($template),
+            'metric_2'                => $template2?->metric,
+            'style_2'                 => $template2?->style,
+            'goal_2'                  => $template2 ? ($opts['goal_2'] ?? $this->defaultGoal($template2)) : null,
             'requirements'            => $opts['requirements'] ?? null,
             'stake_amount'            => $opts['stake_amount'] ?? null,
             'level_min'               => $opts['level_min'] ?? $template->level_min,
@@ -418,12 +430,12 @@ class ChallengeService
         }
 
         $now = now();
-        ChallengeParticipant::create([
+        ChallengeParticipant::create($this->baselineFields($challenge, $user, $progress, $now) + [
             'challenge_id' => $challenge->id,
             'user_id'      => $user->id,
             'status'       => 'accepted',
-            'baseline'     => GameMetrics::current($challenge->metric, $user, $progress, $now),
             'progress'     => 0,
+            'progress_2'   => $challenge->hasSecondMetric() ? 0 : null,
             'stake_paid'   => (bool) $challenge->stake_amount,
             'joined_at'    => $now,
         ]);
@@ -454,12 +466,12 @@ class ChallengeService
             if (!$user) continue;
             $progress = $user->getOrCreateProgress();
 
-            ChallengeParticipant::create([
+            ChallengeParticipant::create($this->baselineFields($challenge, $user, $progress, $now) + [
                 'challenge_id' => $challenge->id,
                 'user_id'      => $user->id,
                 'status'       => 'accepted',
-                'baseline'     => GameMetrics::current($challenge->metric, $user, $progress, $now),
                 'progress'     => 0,
+                'progress_2'   => $challenge->hasSecondMetric() ? 0 : null,
                 'stake_paid'   => false,
                 'joined_at'    => $now,
             ]);
@@ -497,12 +509,12 @@ class ChallengeService
             if (!$user) continue;
             $progress = $user->getOrCreateProgress();
 
-            ChallengeParticipant::create([
+            ChallengeParticipant::create($this->baselineFields($challenge, $user, $progress, $now) + [
                 'challenge_id' => $challenge->id,
                 'user_id'      => $user->id,
                 'status'       => 'accepted',
-                'baseline'     => GameMetrics::current($challenge->metric, $user, $progress, $now),
                 'progress'     => 0,
+                'progress_2'   => $challenge->hasSecondMetric() ? 0 : null,
                 'stake_paid'   => false,
                 'joined_at'    => $now,
             ]);
@@ -558,13 +570,13 @@ class ChallengeService
             if (!$user) continue;
             $progress = $user->getOrCreateProgress();
 
-            ChallengeParticipant::create([
+            ChallengeParticipant::create($this->baselineFields($challenge, $user, $progress, $now) + [
                 'challenge_id' => $challenge->id,
                 'user_id'      => $user->id,
                 'chama_id'     => $chama->id,
                 'status'       => 'accepted',
-                'baseline'     => GameMetrics::current($challenge->metric, $user, $progress, $now),
                 'progress'     => 0,
+                'progress_2'   => $challenge->hasSecondMetric() ? 0 : null,
                 'stake_paid'   => false,
                 'joined_at'    => $now,
             ]);
@@ -599,19 +611,22 @@ class ChallengeService
 
         foreach ($participants as $p) {
             $challenge = $p->challenge;
-            $current   = GameMetrics::current($challenge->metric, $user, $progress, null);
-            $delta     = $current - (int) $p->baseline;
+            $value     = $this->progressValue($challenge->metric, $challenge->style, (int) $p->baseline, $user, $progress);
 
-            if ($challenge->style === 'percent') {
-                $floor = GameMetrics::PERCENT_FLOOR[$challenge->metric] ?? 100;
-                $denom = max((int) $p->baseline, $floor);
-                $value = round(($delta / $denom) * 100, 2);
-            } else {
-                $value = $delta;
+            $updates = [];
+            if ((float) $p->progress !== (float) $value) {
+                $updates['progress'] = $value;
             }
 
-            if ((float) $p->progress !== (float) $value) {
-                $p->update(['progress' => $value]);
+            if ($challenge->hasSecondMetric()) {
+                $value2 = $this->progressValue($challenge->metric_2, $challenge->style_2, (int) $p->baseline_2, $user, $progress);
+                if ((float) ($p->progress_2 ?? 0) !== (float) $value2) {
+                    $updates['progress_2'] = $value2;
+                }
+            }
+
+            if ($updates) {
+                $p->update($updates);
             }
 
             if ($challenge->isDuel() && $value >= $challenge->goal) {
@@ -789,5 +804,30 @@ class ChallengeService
             'count'   => 3.0,
             default   => 500.0,
         };
+    }
+
+    /** baseline + baseline_2 (null if the challenge has no second metric) for a freshly-joining participant. */
+    private function baselineFields(Challenge $challenge, User $user, \App\Models\UserProgress $progress, $now): array
+    {
+        $fields = ['baseline' => GameMetrics::current($challenge->metric, $user, $progress, $now)];
+        if ($challenge->hasSecondMetric()) {
+            $fields['baseline_2'] = GameMetrics::current($challenge->metric_2, $user, $progress, $now);
+        }
+        return $fields;
+    }
+
+    /** Baseline+delta progress value for one metric, applying the same percent-floor rule refresh() uses for the primary metric. */
+    private function progressValue(string $metric, string $style, int $baseline, User $user, \App\Models\UserProgress $progress): float
+    {
+        $current = GameMetrics::current($metric, $user, $progress, null);
+        $delta   = $current - $baseline;
+
+        if ($style === 'percent') {
+            $floor = GameMetrics::PERCENT_FLOOR[$metric] ?? 100;
+            $denom = max($baseline, $floor);
+            return round(($delta / $denom) * 100, 2);
+        }
+
+        return $delta;
     }
 }

@@ -105,15 +105,18 @@ class ChallengeController extends Controller
             'stake_amount'      => 'nullable|integer|min:0',
             'duration_days'     => 'nullable|integer|min:1|max:60',
             'goal'              => 'nullable|numeric|min:0.01|max:1000000',
+            'template_id_2'     => 'nullable|different:template_id|exists:challenge_templates,id',
+            'goal_2'            => 'nullable|numeric|min:0.01|max:1000000',
             'requirements'      => 'nullable|array',
             'requirements.*'    => 'string|in:bills_paid_all,min_assets,min_savings,debt_free',
             'min_assets_value'  => 'nullable|integer|min:1|max:50',
             'min_savings_value' => 'nullable|integer|min:0',
         ]);
 
-        $user     = auth()->user();
-        $template = ChallengeTemplate::findOrFail($data['template_id']);
-        $scope    = $data['scope'] ?? 'friends';
+        $user      = auth()->user();
+        $template  = ChallengeTemplate::findOrFail($data['template_id']);
+        $template2 = !empty($data['template_id_2']) ? ChallengeTemplate::find($data['template_id_2']) : null;
+        $scope     = $data['scope'] ?? 'friends';
 
         $requirements = null;
         foreach ($data['requirements'] ?? [] as $type) {
@@ -133,6 +136,8 @@ class ChallengeController extends Controller
                 $data['title'] ?? null,
                 $requirements,
                 $data['goal'] ?? null,
+                $template2,
+                $data['goal_2'] ?? null,
             );
         } elseif (($data['battle_mode'] ?? 'duel') === 'ffa') {
             $result = $service->createFfa(
@@ -144,6 +149,8 @@ class ChallengeController extends Controller
                 $data['title'] ?? null,
                 $requirements,
                 $data['goal'] ?? null,
+                $template2,
+                $data['goal_2'] ?? null,
             );
         } else {
             $creatorTeam = array_merge([$user->id], $data['teammate_ids'] ?? []);
@@ -158,6 +165,8 @@ class ChallengeController extends Controller
                 $data['title'] ?? null,
                 $requirements,
                 $data['goal'] ?? null,
+                $template2,
+                $data['goal_2'] ?? null,
             );
         }
 
@@ -276,6 +285,45 @@ class ChallengeController extends Controller
         }
 
         return view('challenges.show', compact('challenge', 'ranked', 'chamaRanked'));
+    }
+
+    /**
+     * A participant's public stats, for the "click an opponent" popup on the
+     * challenge page. Scoped to participants of THIS SAME challenge only —
+     * not a general "peek at anyone's profile" endpoint — so it only ever
+     * reveals what a rival in a shared challenge could already infer.
+     */
+    public function participantStats(Challenge $challenge, ChallengeParticipant $participant)
+    {
+        abort_unless($participant->challenge_id === $challenge->id, 404);
+        abort_unless(
+            $challenge->participants()->where('user_id', auth()->id())->exists() || $challenge->creator_id === auth()->id(),
+            403
+        );
+
+        $user     = $participant->user;
+        $progress = $user?->getOrCreateProgress();
+
+        return response()->json([
+            'name'          => $user?->name ?? 'Player',
+            'profile_photo' => $user?->profile_photo,
+            'level'         => $progress?->level ?? 1,
+            'xp'            => (int) ($progress?->points_total ?? 0),
+            'net_worth'     => (int) ($progress?->net_worth_cache ?? $progress?->balance ?? 0),
+            'played_label'  => $this->gamePlayedLabel((int) ($progress?->tick_count ?? 0)),
+            'badges_count'  => $user ? $user->badges()->count() : 0,
+        ]);
+    }
+
+    /** Same "played for" label GameController::leaderboard() uses — game-simulated time, not real signup age. */
+    private function gamePlayedLabel(int $tickCount): string
+    {
+        $years  = intdiv($tickCount, 365);
+        $months = intdiv($tickCount % 365, 30);
+
+        if ($years > 0) return $years . ' game yr' . ($years === 1 ? '' : 's');
+        if ($months > 0) return $months . ' game mo' . ($months === 1 ? '' : 's');
+        return 'New player';
     }
 
     /**

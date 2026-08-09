@@ -1299,6 +1299,23 @@
                         </div>
                     </template>
 
+                    <template x-if="(district.my_challenges_list || []).length > 0">
+                        <div style="margin-top:12px;">
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Your Challenges</div>
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <template x-for="c in district.my_challenges_list" :key="'mine-' + c.id">
+                                    <a :href="'{{ url('/challenges') }}/' + c.id" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);text-decoration:none;">
+                                        <span style="font-size:18px;flex-shrink:0;" x-text="c.icon"></span>
+                                        <div style="flex:1;min-width:0;">
+                                            <div style="font-size:12px;font-weight:800;color:#fff;" x-text="c.title"></div>
+                                            <div style="font-size:10px;" :style="c.live ? 'color:#34d399;' : 'color:#fbbf24;'" x-text="c.subtitle"></div>
+                                        </div>
+                                    </a>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
                     <template x-if="(district.open_challenges_list || []).length > 0">
                         <div style="margin-top:12px;">
                             <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Open Challenges — join now</div>

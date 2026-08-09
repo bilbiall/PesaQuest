@@ -77,11 +77,18 @@
     .gc-day .gc-ev { display:flex; justify-content:center; gap:2px; min-height:8px; margin-top:2px; }
     .gc-day .gc-ev b { width:6px; height:6px; border-radius:50%; display:block; }
     .gc-tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:5;
-        min-width:170px; max-width:230px; background:#1a1830; border:1px solid rgba(255,255,255,.14); border-radius:10px;
+        min-width:170px; max-width:min(230px, calc(100vw - 28px)); background:#1a1830; border:1px solid rgba(255,255,255,.14); border-radius:10px;
         padding:8px 10px; text-align:left; font-size:11px; color:#d1d5db; box-shadow:0 10px 26px rgba(0,0,0,.55); }
     .gc-day:hover .gc-tip { display:block; }
-    .gc-ev-line { display:flex; justify-content:space-between; gap:8px; padding:1.5px 0; white-space:nowrap; }
-    .gc-ev-line .neg { color:#fca5a5; font-weight:800; } .gc-ev-line .pos { color:#6ee7b7; font-weight:800; }
+    /* The week strip is a 7-column grid spanning the full popover width — a
+       tooltip centered on the leftmost/rightmost day columns would otherwise
+       get pushed past the viewport edge, which is the actual "text runs off
+       the screen" bug. Anchor edge columns to that same edge instead of
+       centering them. */
+    .gc-day:nth-child(-n+2) .gc-tip { left:0; transform:translateX(0); }
+    .gc-day:nth-child(n+6) .gc-tip { left:auto; right:0; transform:translateX(0); }
+    .gc-ev-line { display:flex; justify-content:space-between; gap:8px; padding:1.5px 0; white-space:normal; }
+    .gc-ev-line .neg { color:#fca5a5; font-weight:800; flex-shrink:0; } .gc-ev-line .pos { color:#6ee7b7; font-weight:800; flex-shrink:0; }
 
     /* Fortnight view: anchored panel below the chip — the dark surface is only
        as big as the calendar itself, never a full-screen scrim. */
