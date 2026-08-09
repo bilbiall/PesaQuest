@@ -120,6 +120,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/world/events/resolve', [WorldController::class, 'resolveEvent'])->name('world.events.resolve');
     Route::post('/world/fun-world/spend', [WorldController::class, 'funWorldSpend'])->name('world.fun-world.spend');
     Route::get('/world/quests/pending-completions', [WorldController::class, 'pendingCompletions'])->name('world.quests.pending');
+    Route::get('/world/challenges/pending-results', [WorldController::class, 'pendingChallengeResults'])->name('world.challenges.pending-results');
 
     // Game calendar HUD (date chip + week strip) — derived events, no writes
     Route::get('/game/calendar', function () {
@@ -197,6 +198,12 @@ Route::middleware(['auth', 'school.teacher'])->prefix('school/{school}/teacher')
     Route::delete('/students/{member}',        [\App\Http\Controllers\SchoolTeacherController::class, 'removeStudent'])->name('students.remove');
     Route::post('/teachers/invite',            [\App\Http\Controllers\SchoolTeacherController::class, 'inviteTeacher'])->name('teachers.invite');
     Route::delete('/teachers/{teacher}',       [\App\Http\Controllers\SchoolTeacherController::class, 'removeTeacher'])->name('teachers.remove');
+    Route::get('/teachers/{teacher}/profile',  [\App\Http\Controllers\SchoolTeacherController::class, 'teacherProfile'])->name('teachers.profile');
+    Route::post('/class-challenge',            [\App\Http\Controllers\SchoolTeacherController::class, 'createClassChallenge'])->name('challenge.create');
+    Route::post('/classes',                    [\App\Http\Controllers\SchoolTeacherController::class, 'storeClass'])->name('classes.store');
+    Route::put('/classes/{class}',             [\App\Http\Controllers\SchoolTeacherController::class, 'updateClass'])->name('classes.update');
+    Route::delete('/classes/{class}',          [\App\Http\Controllers\SchoolTeacherController::class, 'destroyClass'])->name('classes.destroy');
+    Route::post('/students/{member}/class',    [\App\Http\Controllers\SchoolTeacherController::class, 'assignStudentClass'])->name('students.assign-class');
 });
 
 // Profile
@@ -233,6 +240,7 @@ Route::middleware(['auth'])->prefix('chama')->name('chama.')->group(function () 
     Route::post('/{chama}/contribute',               [\App\Http\Controllers\ChamaController::class, 'contribute'])->name('contribute');
     Route::post('/{chama}/propose',                  [\App\Http\Controllers\ChamaController::class, 'propose'])->name('propose');
     Route::post('/{chama}/distribute',               [\App\Http\Controllers\ChamaController::class, 'distribute'])->name('distribute');
+    Route::post('/{chama}/challenge',                [\App\Http\Controllers\ChamaController::class, 'createChallenge'])->name('challenge.create');
 });
 
 // Friends & P2P friend loans
@@ -253,15 +261,40 @@ Route::middleware(['auth'])->prefix('friends')->name('friends.')->group(function
     Route::post('/gift',                     [\App\Http\Controllers\FriendController::class, 'sendGift'])->name('gift');
 });
 
+// Dreams — expensive, non-resellable, cosmetic profile flex purchases
+Route::middleware(['auth'])->prefix('dreams')->name('dreams.')->group(function () {
+    Route::get('/',                          [\App\Http\Controllers\DreamController::class, 'index'])->name('index');
+    Route::post('/{dream}/purchase',         [\App\Http\Controllers\DreamController::class, 'purchase'])->name('purchase');
+});
+
+// Public challenge invite/preview — no auth, so shared links actually work for
+// logged-out recipients and link-preview bots (WhatsApp/Twitter/etc.) can unfurl it.
+Route::get('/challenges/{challenge}/invite', [\App\Http\Controllers\ChallengeController::class, 'invite'])->name('challenges.invite');
+
+// Champions' Court — fair PvP/team/broadcast challenges
+Route::middleware(['auth'])->prefix('challenges')->name('challenges.')->group(function () {
+    Route::get('/',                          [\App\Http\Controllers\ChallengeController::class, 'index'])->name('index');
+    Route::get('/create',                    [\App\Http\Controllers\ChallengeController::class, 'create'])->name('create');
+    Route::post('/',                         [\App\Http\Controllers\ChallengeController::class, 'store'])->name('store');
+    Route::post('/{participant}/accept',     [\App\Http\Controllers\ChallengeController::class, 'accept'])->name('accept');
+    Route::post('/{participant}/decline',    [\App\Http\Controllers\ChallengeController::class, 'decline'])->name('decline');
+    Route::post('/{challenge}/join',         [\App\Http\Controllers\ChallengeController::class, 'join'])->name('join');
+    Route::post('/{challenge}/enter-chama',  [\App\Http\Controllers\ChallengeController::class, 'enterChamaBattle'])->name('enter-chama');
+    Route::post('/{challenge}/cancel',       [\App\Http\Controllers\ChallengeController::class, 'cancel'])->name('cancel');
+    Route::get('/{challenge}',               [\App\Http\Controllers\ChallengeController::class, 'show'])->name('show');
+});
+
 // Community Forums
 Route::middleware(['auth'])->prefix('forums')->name('forums.')->group(function () {
     Route::get('/',                        [\App\Http\Controllers\ForumController::class, 'index'])->name('index');
+    Route::get('/check-new',               [\App\Http\Controllers\ForumController::class, 'checkNew'])->name('check-new');
     Route::post('/',                       [\App\Http\Controllers\ForumController::class, 'store'])->name('store');
     Route::post('/vote',                   [\App\Http\Controllers\ForumController::class, 'vote'])->name('vote');
     Route::get('/{topic:slug}',            [\App\Http\Controllers\ForumController::class, 'show'])->name('show');
     Route::put('/{topic}',                 [\App\Http\Controllers\ForumController::class, 'update'])->name('update');
     Route::delete('/{topic}',              [\App\Http\Controllers\ForumController::class, 'destroy'])->name('destroy');
     Route::post('/{topic}/reply',          [\App\Http\Controllers\ForumController::class, 'reply'])->name('reply');
+    Route::post('/{topic}/react',          [\App\Http\Controllers\ForumController::class, 'react'])->name('react');
     Route::delete('/replies/{reply}',      [\App\Http\Controllers\ForumController::class, 'destroyReply'])->name('replies.destroy');
     Route::post('/{topic}/pin',            [\App\Http\Controllers\ForumController::class, 'togglePin'])->name('pin');
     Route::post('/{topic}/lock',           [\App\Http\Controllers\ForumController::class, 'toggleLock'])->name('lock');
@@ -306,6 +339,8 @@ Route::middleware('auth')->prefix('savings')->name('savings.')->group(function (
 // Admin panel
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index');
+    Route::get('/analytics', [AdminController::class, 'analytics'])->name('analytics');
+    Route::get('/docs', [AdminController::class, 'docs'])->name('docs');
 
     // Arcade sponsors — business/monetization, kept out of GameSet
     Route::post('/sponsors',                    [AdminController::class, 'storeSponsor'])->name('sponsors.store');
@@ -336,6 +371,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Settings
     Route::post('/settings',           [AdminController::class, 'saveSettings'])->name('settings.save');
     Route::post('/gates',              [AdminController::class, 'saveGates'])->name('gates.save');
+    Route::post('/trackers',           [AdminController::class, 'saveTrackers'])->name('trackers.save');
     Route::get('/push/vapid-status',   [AdminController::class, 'vapidStatus'])->name('push.vapid-status');
     Route::post('/push/vapid-keys',    [AdminController::class, 'generateVapidKeys'])->name('push.vapid-generate');
     Route::post('/push/test',          [AdminController::class, 'testPush'])->name('push.test');
@@ -401,6 +437,7 @@ Route::middleware(['auth'])->prefix('life')->name('life.')->group(function () {
     Route::get('/',                              [LifeController::class, 'board'])->name('board');
     Route::get('/career',                        [LifeController::class, 'career'])->name('career');
     Route::get('/timeline',                      [LifeController::class, 'timeline'])->name('timeline');
+    Route::get('/finances',                      [LifeController::class, 'finances'])->name('finances');
     Route::post('/bills/{playerBill}/pay',       [LifeController::class, 'payBill'])->name('bills.pay');
     Route::post('/work/checkin',                 [LifeController::class, 'workCheckin'])->name('work.checkin');
     Route::post('/assets/{playerAsset}/maintain',[LifeController::class, 'maintain'])->name('assets.maintain');
@@ -469,6 +506,7 @@ Route::middleware(['auth', 'gameset'])->prefix('gameset')->name('gameset.')->gro
 // GameSet admin
 Route::middleware(['auth', 'gameset'])->prefix('gameset')->name('gameset.')->group(function () {
     Route::get('/',                    [GameSetController::class, 'index'])->name('index');
+    Route::get('/docs',                [GameSetController::class, 'docs'])->name('docs');
 
     // Marketplace asset management
     Route::get('/assets',                         [\App\Http\Controllers\GamesetAssetController::class, 'index'])->name('assets.index');
@@ -595,6 +633,26 @@ Route::middleware(['auth', 'gameset'])->prefix('gameset')->name('gameset.')->gro
     Route::put('/loans/{loan}',                   [\App\Http\Controllers\GamesetLoanController::class, 'update'])->name('loans.update');
     Route::delete('/loans/{loan}',                [\App\Http\Controllers\GamesetLoanController::class, 'destroy'])->name('loans.destroy');
     Route::post('/loans/{loan}/toggle-active',    [\App\Http\Controllers\GamesetLoanController::class, 'toggleActive'])->name('loans.toggle-active');
+
+    // Dreams catalog management
+    Route::get('/dreams',                         [\App\Http\Controllers\GamesetDreamController::class, 'index'])->name('dreams.index');
+    Route::get('/dreams/create',                  [\App\Http\Controllers\GamesetDreamController::class, 'create'])->name('dreams.create');
+    Route::post('/dreams',                        [\App\Http\Controllers\GamesetDreamController::class, 'store'])->name('dreams.store');
+    Route::get('/dreams/{dream}/edit',            [\App\Http\Controllers\GamesetDreamController::class, 'edit'])->name('dreams.edit');
+    Route::put('/dreams/{dream}',                 [\App\Http\Controllers\GamesetDreamController::class, 'update'])->name('dreams.update');
+    Route::delete('/dreams/{dream}',              [\App\Http\Controllers\GamesetDreamController::class, 'destroy'])->name('dreams.destroy');
+    Route::patch('/dreams/{dream}/toggle',        [\App\Http\Controllers\GamesetDreamController::class, 'toggleActive'])->name('dreams.toggle-active');
+
+    // Challenge templates + PesaCity Official Challenges
+    Route::get('/challenges',                          [\App\Http\Controllers\GamesetChallengeController::class, 'index'])->name('challenges.index');
+    Route::get('/challenges/create',                   [\App\Http\Controllers\GamesetChallengeController::class, 'create'])->name('challenges.create');
+    Route::post('/challenges',                         [\App\Http\Controllers\GamesetChallengeController::class, 'store'])->name('challenges.store');
+    Route::post('/challenges/launch',                  [\App\Http\Controllers\GamesetChallengeController::class, 'launchOfficial'])->name('challenges.launch');
+    Route::get('/challenges/{template}/edit',          [\App\Http\Controllers\GamesetChallengeController::class, 'edit'])->name('challenges.edit');
+    Route::put('/challenges/{template}',               [\App\Http\Controllers\GamesetChallengeController::class, 'update'])->name('challenges.update');
+    Route::delete('/challenges/{template}',            [\App\Http\Controllers\GamesetChallengeController::class, 'destroy'])->name('challenges.destroy');
+    Route::patch('/challenges/{template}/toggle',      [\App\Http\Controllers\GamesetChallengeController::class, 'toggleActive'])->name('challenges.toggle-active');
+    Route::delete('/challenges/{challenge}/cancel',    [\App\Http\Controllers\GamesetChallengeController::class, 'cancel'])->name('challenges.cancel');
 
     // Financial Crisis events (server-wide economy events)
     Route::get('/crises',                 [\App\Http\Controllers\GamesetCrisisController::class, 'index'])->name('crises.index');

@@ -45,7 +45,7 @@
                     "@type": "ImageObject",
                     "url": "{{ asset('moski-logo.png') }}"
                 },
-                "description": "Moski is a Kenyan NGO using gamification to improve financial literacy across all age groups.",
+                "description": "Moski is a Kenyan company using gamification to improve financial literacy across all age groups.",
                 "areaServed": "KE",
                 "sameAs": []
             },
@@ -550,7 +550,7 @@
                         <span class="gradient-text">education feel like play.</span>
                     </h2>
                     <p class="text-gray-400 text-lg leading-relaxed mb-6">
-                        Moski is a non-profit empowering young Kenyans and Africans with the financial skills schools don't teach —
+                        Moski empowers young Kenyans and Africans with the financial skills schools don't teach —
                         through a living virtual world that mirrors real financial life.
                     </p>
                     <p class="text-gray-400 text-lg leading-relaxed mb-8">

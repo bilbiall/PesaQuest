@@ -43,6 +43,8 @@ class DatabaseSeeder extends Seeder
             Level1QuestSeeder::class,
             Level123ContentSeeder::class,
             SpinSegmentSeeder::class,
+            DreamSeeder::class,
+            ChallengeTemplateSeeder::class,
         ]);
     }
 }

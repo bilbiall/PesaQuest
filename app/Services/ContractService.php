@@ -27,24 +27,8 @@ use Illuminate\Support\Facades\Schema;
  */
 class ContractService
 {
-    /** metric key => [style, evaluator] — style: count|amount|absolute|clear */
-    public const METRIC_STYLES = [
-        'courses_completed'   => 'count',
-        'jobs_started'        => 'count',
-        'gigs_completed'      => 'count',
-        'paydays_collected'   => 'count',
-        'assets_owned'        => 'count',
-        'chama_contributions' => 'count',
-        'friends_count'       => 'count',
-        'forum_posts'         => 'count',
-        'bills_paid'          => 'count',
-        'savings_balance'     => 'amount',
-        'wallet_balance'      => 'amount',
-        'net_worth'           => 'amount',
-        'xp_points'           => 'amount',
-        'mood_level'          => 'absolute',
-        'overdue_cleared'     => 'clear',
-    ];
+    /** metric key => [style, evaluator] — style: count|amount|absolute|clear. Shared with ChallengeService via GameMetrics. */
+    public const METRIC_STYLES = GameMetrics::METRIC_STYLES;
 
     /** Refresh, settle and top-up a player's contracts. Returns active ones for display. */
     public function refresh(User $user): Collection
@@ -306,34 +290,10 @@ class ContractService
         return (int) ($vars['amount'] ?? $vars['n'] ?? 1);
     }
 
-    /** Current absolute value of a metric — the single source of truth for progress. */
+    /** Current absolute value of a metric — delegates to GameMetrics (shared with ChallengeService). */
     private function measure(string $metric, User $user, UserProgress $progress, PlayerContract $contract): int
     {
-        $since = $contract->created_at ?? now();
-
-        return (int) match ($metric) {
-            'courses_completed'   => \App\Models\PlayerCityCourse::where('user_id', $user->id)->where('status', 'completed')->count(),
-            'jobs_started'        => \App\Models\PlayerCityJob::where('user_id', $user->id)->count(),
-            'gigs_completed'      => \App\Models\PlayerCityJob::where('user_id', $user->id)->where('employment_type', 'freelance')->where('status', 'completed')->count(),
-            // Counted from contract start (baseline stays 0) — the bell purges
-            // rows older than 10 days, which would corrupt an all-time baseline
-            'paydays_collected'   => GameNotification::where('user_id', $user->id)->where('type', 'salary')->where('created_at', '>=', $since)->count(),
-            'bills_paid'          => GameNotification::where('user_id', $user->id)->where('type', 'bill_paid')->where('created_at', '>=', $since)->count(),
-            'assets_owned'        => \App\Models\PlayerAsset::where('user_id', $user->id)->count(),
-            'chama_contributions' => Schema::hasTable('chama_contributions')
-                ? \App\Models\ChamaContribution::where('user_id', $user->id)->where('status', 'paid')->count() : 0,
-            'friends_count'       => count($user->friendIds()),
-            'forum_posts'         => \App\Models\ForumTopic::where('user_id', $user->id)->count()
-                                   + \App\Models\ForumReply::where('user_id', $user->id)->count(),
-            'savings_balance'     => Schema::hasTable('savings_schemes')
-                ? \App\Models\SavingsScheme::where('user_id', $user->id)->sum('current_amount') : 0,
-            'wallet_balance'      => (int) ($progress->balance ?? 0),
-            'net_worth'           => (int) ($progress->net_worth_cache ?? 0),
-            'xp_points'           => (int) ($progress->points_total ?? 0),
-            'mood_level'          => (int) ($progress->mood ?? 0),
-            'overdue_cleared'     => \App\Models\PlayerBill::where('user_id', $user->id)->where('status', 'overdue')->count(),
-            default               => 0,
-        };
+        return GameMetrics::current($metric, $user, $progress, $contract->created_at);
     }
 
     private function round50(int $n): int

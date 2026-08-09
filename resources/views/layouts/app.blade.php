@@ -71,6 +71,8 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         @stack('head')
+
+        @include('partials.trackers')
     </head>
 
     {{-- ── Page loader — see-through overlay with cycling messages ── --}}

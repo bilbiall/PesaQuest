@@ -134,6 +134,8 @@
             cursor: pointer;
         }
     </style>
+
+    @include('partials.trackers')
 </head>
 <body class="font-sans text-white antialiased" style="min-height:100vh;">
 

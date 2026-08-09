@@ -157,6 +157,19 @@ class WorldController extends Controller
                 ['label' => 'Browse Jobs', 'url' => '/opportunities', 'style' => 'primary'],
             ],
         ],
+        'champions-court' => [
+            'slug'        => 'champions-court',
+            'name'        => "Champions' Court",
+            'tagline'     => 'Chase Dreams. Win Challenges.',
+            'icon'        => '🏆',
+            'color'       => '#F59E0B',
+            'description' => 'Claim expensive, aspirational Dreams as a permanent flex on your profile, or duel friends and the whole city in fair challenges — everyone races on progress made DURING the challenge, never on wealth they already had.',
+            'status'      => 'active',
+            'actions'     => [
+                ['label' => 'Browse Dreams',       'url' => '/dreams',     'style' => 'primary'],
+                ['label' => 'Browse Challenges',   'url' => '/challenges', 'style' => 'secondary'],
+            ],
+        ],
     ];
 
     /** Read-only district metadata (name/icon/color) for the GameSet map calibrator. */
@@ -721,6 +734,40 @@ class WorldController extends Controller
             }
         }
 
+        if ($slug === 'champions-court' && Schema::hasTable('dreams')) {
+            $district['dreams_count']      = \App\Models\Dream::active()->count();
+            $district['owned_dreams']      = \App\Models\PlayerDream::where('user_id', $user->id)->count();
+            $district['featured_dream']    = \App\Models\Dream::active()->orderBy('sort_order')->first();
+            $district['open_challenges']   = \App\Models\Challenge::where('mode', 'broadcast')->where('status', 'active')->where('scope', 'open')->count();
+            $district['my_active_challenges'] = \App\Models\ChallengeParticipant::where('user_id', $user->id)
+                ->where('status', 'accepted')
+                ->whereHas('challenge', fn ($q) => $q->where('status', 'active'))
+                ->count();
+            $district['pending_invites']   = \App\Models\ChallengeParticipant::where('user_id', $user->id)->where('status', 'invited')->count();
+
+            // Available-to-join list, right in the popup — same eligibility shape
+            // as ChallengeController::index()'s "Open Challenges" section.
+            $joinedIds = \App\Models\ChallengeParticipant::where('user_id', $user->id)->pluck('challenge_id')->all();
+            $district['open_challenges_list'] = \App\Models\Challenge::where('mode', 'broadcast')
+                ->where('status', 'active')
+                ->where('scope', 'open')
+                ->where('is_chama_battle', false)
+                ->whereNotIn('id', $joinedIds)
+                ->withCount('participants')
+                ->with('template')
+                ->orderByDesc('is_official')
+                ->orderBy('ends_at')
+                ->limit(6)
+                ->get()
+                ->map(fn ($c) => [
+                    'id'       => $c->id,
+                    'icon'     => $c->template?->icon ?? '🏆',
+                    'title'    => ($c->is_official ? '🏙️ ' : '') . $c->title,
+                    'subtitle' => "{$c->participants_count} joined · ends {$c->ends_at->diffForHumans()}"
+                        . ($c->stake_amount ? ' · KES ' . number_format($c->stake_amount) . ' entry' : ''),
+                ]);
+        }
+
         return response()->json($district);
     }
 
@@ -870,6 +917,12 @@ class WorldController extends Controller
             $quests->map(function (Quest $q) use ($level, $completedIds, $inProgressIds, $fieldMeta) {
                 $minLevel = max(1, (int) ($q->level_required ?? $q->sort_order ?? 1));
                 $isLocked = $level < $minLevel;
+                // Quests below the player's current level were never excluded from
+                // this list (only ones ABOVE it get $isLocked) — this just flags
+                // that fact explicitly so the quest board can surface a dedicated
+                // "from earlier levels" filter instead of leaving them buried,
+                // unlabeled, in the full list.
+                $isPreviousLevel = !$isLocked && $minLevel < $level;
 
                 $status = match(true) {
                     in_array($q->id, $completedIds)  => 'completed',
@@ -906,6 +959,7 @@ class WorldController extends Controller
                     'kes_reward'    => $q->kes_reward ?? 0,
                     'min_level'     => $minLevel,
                     'is_locked'     => $isLocked,
+                    'is_previous_level' => $isPreviousLevel,
                     'user_status'   => $status,
                     'trigger_type'  => $q->trigger_type,
                     'trigger_value' => $q->trigger_value,
@@ -1148,6 +1202,34 @@ class WorldController extends Controller
             'completions' => array_values($completions),
             'step_fires'  => array_values($stepFires),
         ]);
+    }
+
+    /**
+     * GET /world/challenges/pending-results
+     * Unread challenge_result/challenge_cancelled notifications, for a
+     * celebration popup. Unlike pending_quest_completions (a session flash
+     * queue), this reads from GameNotification — settlement can happen while
+     * the player is offline (the nightly game:settle-challenges sweep, or
+     * another participant's page load triggering an early duel win), so a
+     * session-scoped queue would miss it entirely.
+     */
+    public function pendingChallengeResults()
+    {
+        $notifications = \App\Models\GameNotification::where('user_id', auth()->id())
+            ->whereIn('type', ['challenge_result', 'challenge_cancelled'])
+            ->where('is_read', false)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        \App\Models\GameNotification::whereIn('id', $notifications->pluck('id'))->update(['is_read' => true]);
+
+        return response()->json($notifications->map(fn ($n) => [
+            'title'     => $n->title,
+            'body'      => $n->body,
+            'icon'      => $n->icon,
+            'is_winner' => (bool) ($n->data['is_winner'] ?? false),
+        ])->values());
     }
 
     // ── Fun World spend endpoint ────────────────────────────────────

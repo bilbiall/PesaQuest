@@ -351,8 +351,40 @@ class GameController extends Controller
         $ageGroup = $request->input('age_group', auth()->user()->age_group ?? '18-25');
         $sort     = $request->input('sort', 'xp'); // 'xp' or 'networth'
 
-        $baseQuery = \App\Models\UserProgress::with('user')
-            ->whereHas('user', fn($q) => $q->where('age_group', $ageGroup));
+        // "My School" scope — same ranking, filtered to the player's own active
+        // school roster instead of the global age-group pool.
+        $mySchoolMember = \App\Models\SchoolMember::where('user_id', auth()->id())
+            ->where('status', 'active')
+            ->whereHas('schoolSubscription', fn ($q) => $q->where('status', 'active')->where('ends_at', '>', now()))
+            ->with('schoolSubscription')
+            ->first();
+        $scope = $request->input('scope', 'global') === 'school' && $mySchoolMember ? 'school' : 'global';
+
+        $rosterIds = $scope === 'school'
+            ? \App\Models\SchoolMember::where('school_subscription_id', $mySchoolMember->school_subscription_id)->where('status', 'active')->pluck('user_id')
+            : collect();
+
+        $scopeFilter = function ($query) use ($scope, $rosterIds, $ageGroup) {
+            return $scope === 'school'
+                ? $query->whereIn('user_id', $rosterIds)
+                : $query->whereHas('user', fn ($q) => $q->where('age_group', $ageGroup));
+        };
+
+        $baseQuery = $scopeFilter(\App\Models\UserProgress::with('user'));
+
+        // Rank-change arrows need yesterday's (or the last available) snapshot
+        // to compare against — see SnapshotLeaderboard, which populates this
+        // table nightly. First day ever run, this is simply empty (all "—").
+        $scopeKey = $scope === 'school'
+            ? "school:{$sort}:{$mySchoolMember->schoolSubscription->id}"
+            : "global:{$sort}:{$ageGroup}";
+        $prevDate = \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)
+            ->where('snapshot_date', '<', now()->toDateString())
+            ->max('snapshot_date');
+        $prevRanks = $prevDate
+            ? \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)->where('snapshot_date', $prevDate)->pluck('rank', 'user_id')
+            : collect();
+        $rankChange = fn (int $userId, int $currentRank) => $prevRanks->has($userId) ? $prevRanks[$userId] - $currentRank : null;
 
         if ($sort === 'networth') {
             $leaders = $baseQuery
@@ -362,19 +394,21 @@ class GameController extends Controller
                 ->get()
                 ->values()
                 ->map(fn($p, $i) => [
-                    'rank'      => $i + 1,
-                    'name'      => $p->user->name,
-                    'points'    => $p->net_worth_cache ?? $p->balance,
-                    'level'     => $p->level,
-                    'is_me'     => $p->user_id === auth()->id(),
-                    'played_label' => $this->gamePlayedLabel($p->tick_count ?? 0),
-                    'sort_type' => 'networth',
+                    'rank'          => $i + 1,
+                    'name'          => $p->user->name,
+                    'profile_photo' => $p->user->profile_photo,
+                    'points'        => $p->net_worth_cache ?? $p->balance,
+                    'level'         => $p->level,
+                    'is_me'         => $p->user_id === auth()->id(),
+                    'played_label'  => $this->gamePlayedLabel($p->tick_count ?? 0),
+                    'sort_type'     => 'networth',
+                    'rank_change'   => $rankChange($p->user_id, $i + 1),
                 ]);
 
             $myNetWorth = \App\Models\UserProgress::where('user_id', auth()->id())
                 ->selectRaw('COALESCE(net_worth_cache, balance) as sort_value')
                 ->value('sort_value') ?? 0;
-            $myRank = \App\Models\UserProgress::whereHas('user', fn($q) => $q->where('age_group', $ageGroup))
+            $myRank = $scopeFilter(\App\Models\UserProgress::query())
                 ->whereRaw('COALESCE(net_worth_cache, balance) > ?', [$myNetWorth])
                 ->count() + 1;
         } else {
@@ -384,22 +418,59 @@ class GameController extends Controller
                 ->get()
                 ->values()
                 ->map(fn($p, $i) => [
-                    'rank'      => $i + 1,
-                    'name'      => $p->user->name,
-                    'points'    => $p->points_total,
-                    'level'     => $p->level,
-                    'is_me'     => $p->user_id === auth()->id(),
-                    'played_label' => $this->gamePlayedLabel($p->tick_count ?? 0),
-                    'sort_type' => 'xp',
+                    'rank'          => $i + 1,
+                    'name'          => $p->user->name,
+                    'profile_photo' => $p->user->profile_photo,
+                    'points'        => $p->points_total,
+                    'level'         => $p->level,
+                    'is_me'         => $p->user_id === auth()->id(),
+                    'played_label'  => $this->gamePlayedLabel($p->tick_count ?? 0),
+                    'sort_type'     => 'xp',
+                    'rank_change'   => $rankChange($p->user_id, $i + 1),
                 ]);
 
             $myPoints = \App\Models\UserProgress::where('user_id', auth()->id())->value('points_total') ?? 0;
-            $myRank   = \App\Models\UserProgress::whereHas('user', fn($q) => $q->where('age_group', $ageGroup))
+            $myRank   = $scopeFilter(\App\Models\UserProgress::query())
                 ->where('points_total', '>', $myPoints)
                 ->count() + 1;
         }
 
-        return view('game.leaderboard', compact('leaders', 'ageGroup', 'myRank', 'sort'));
+        $mySchoolName = $mySchoolMember?->schoolSubscription?->school_name;
+
+        // Hero-card stats: how many players are in this scope, and how the scope's
+        // TOTAL score moved vs ~7 days ago (using the same snapshot table the
+        // rank-change arrows read from — no new table needed). Null/"–" until a
+        // snapshot old enough to compare against exists.
+        $playerCount = $scopeFilter(\App\Models\UserProgress::query())->count();
+
+        $weekAgoDate = \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)
+            ->where('snapshot_date', '<=', now()->subDays(7)->toDateString())
+            ->max('snapshot_date');
+        $weekChangePct = null;
+        if ($weekAgoDate) {
+            $priorSum = (int) \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)->where('snapshot_date', $weekAgoDate)->sum('points');
+            $liveSum  = $sort === 'networth'
+                ? (int) $scopeFilter(\App\Models\UserProgress::query())->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(net_worth_cache, balance)'))
+                : (int) $scopeFilter(\App\Models\UserProgress::query())->sum('points_total');
+            if ($priorSum > 0) {
+                $weekChangePct = round((($liveSum - $priorSum) / $priorSum) * 100, 1);
+            }
+        }
+
+        // Tiny real sparkline for the "Your Goal" card — my own last few days of
+        // snapshotted points in this exact scope, oldest first.
+        $mySparkline = \App\Models\LeaderboardSnapshot::where('scope_key', $scopeKey)
+            ->where('user_id', auth()->id())
+            ->orderByDesc('snapshot_date')
+            ->limit(4)
+            ->pluck('points')
+            ->reverse()
+            ->values();
+
+        return view('game.leaderboard', compact(
+            'leaders', 'ageGroup', 'myRank', 'sort', 'scope', 'mySchoolName',
+            'playerCount', 'weekChangePct', 'mySparkline'
+        ));
     }
 
     /** "Played for" duration in the game's OWN simulated calendar (1 tick = 1

@@ -77,22 +77,30 @@
                     <div class="section-title">🗓 Bill Details</div>
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div class="sm:col-span-2">
-                            <label class="form-label">Bill Name *</label>
+                            <label class="form-label">Bill Name *
+                                <x-help-tip text="What the player sees on their Life HQ Bills Board — name it like a real Kenyan household bill." example="Bedsitter Rent" />
+                            </label>
                             <input name="name" value="{{ old('name', $bill?->name) }}" required
                                    class="form-input" placeholder="e.g. Monthly Rent">
                         </div>
                         <div>
-                            <label class="form-label">Slug (auto-generated if blank)</label>
+                            <label class="form-label">Slug (auto-generated if blank)
+                                <x-help-tip text="Stable internal key used to link this bill to assets and quests — leave blank to auto-generate from the name." example="bedsitter-rent" />
+                            </label>
                             <input name="slug" value="{{ old('slug', $bill?->slug) }}"
                                    class="form-input" placeholder="monthly-rent">
                         </div>
                         <div>
-                            <label class="form-label">Icon (emoji) *</label>
+                            <label class="form-label">Icon (emoji) *
+                                <x-help-tip text="Small emoji shown next to the bill name on the Bills Board and payment notifications." example="🏠" />
+                            </label>
                             <input name="icon" value="{{ old('icon', $bill?->icon ?? '💸') }}"
                                    class="form-input" placeholder="🏠" maxlength="10">
                         </div>
                         <div>
-                            <label class="form-label">Category *</label>
+                            <label class="form-label">Category *
+                                <x-help-tip text="Groups the bill for filtering and stats, and links it to the matching asset type — e.g. buying a vehicle auto-attaches a transport-category bill." example="housing" />
+                            </label>
                             <select name="category" class="form-input" required>
                                 @foreach(['housing'=>'🏠 Housing','transport'=>'🚗 Transport','utilities'=>'💡 Utilities','food'=>'🍽 Food','healthcare'=>'🏥 Healthcare','education'=>'🎒 Education','social'=>'🤝 Social','entertainment'=>'🎮 Entertainment','tax'=>'🧾 Tax'] as $k => $v)
                                 <option value="{{ $k }}" {{ old('category', $bill?->category) === $k ? 'selected' : '' }}>{{ $v }}</option>
@@ -100,7 +108,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Age Group *</label>
+                            <label class="form-label">Age Group *
+                                <x-help-tip text="Restricts who can be assigned this bill — younger players get pocket-money-scale bills, adults get rent and utilities." example="18-25" />
+                            </label>
                             <select name="age_group" class="form-input" required>
                                 @foreach(['all'=>'All ages','8-12'=>'8-12','13-17'=>'13-17','18-25'=>'18-25','26+'=>'26+'] as $k => $v)
                                 <option value="{{ $k }}" {{ old('age_group', $bill?->age_group ?? 'all') === $k ? 'selected' : '' }}>{{ $v }}</option>
@@ -115,13 +125,17 @@
                     <div class="section-title">💰 Amount & Schedule</div>
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label">Amount (Ksh) *</label>
+                            <label class="form-label">Amount (Ksh) *
+                                <x-help-tip text="How much the player is charged each time this bill is due — scale it to the age band's typical income." example="6500" />
+                            </label>
                             <input name="amount" type="number" min="0" required
                                    value="{{ old('amount', $bill?->amount ?? 0) }}"
                                    class="form-input">
                         </div>
                         <div>
-                            <label class="form-label">Frequency *</label>
+                            <label class="form-label">Frequency *
+                                <x-help-tip text="How often the bill repeats, in game days (ticks) — 30 for a monthly bill like rent, 7 for a weekly one like airtime." example="30" />
+                            </label>
                             <select name="frequency_ticks" class="form-input" required>
                                 @foreach([7=>'Weekly (7 days)',14=>'Fortnightly (14 days)',30=>'Monthly (30 days)',90=>'Termly (90 days)',182=>'Every 6 months',365=>'Annually (365 days)'] as $ticks => $lbl)
                                 <option value="{{ $ticks }}" {{ old('frequency_ticks', $bill?->frequency_ticks ?? 30) == $ticks ? 'selected' : '' }}>{{ $lbl }}</option>
@@ -129,14 +143,18 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Credit Score on Pay</label>
+                            <label class="form-label">Credit Score on Pay
+                                <x-help-tip text="Credit score points awarded when the player pays this bill on time — leave at 0 if this bill shouldn't affect credit." example="5" />
+                            </label>
                             <input name="credit_impact_pay" type="number" min="-100" max="100"
                                    value="{{ old('credit_impact_pay', $bill?->credit_impact_pay ?? 5) }}"
                                    class="form-input">
                             <p class="text-[10px] text-gray-600 mt-1">+5 to +15 = reward for paying. Leave 0 if not credit-linked.</p>
                         </div>
                         <div>
-                            <label class="form-label">Credit Score on Miss</label>
+                            <label class="form-label">Credit Score on Miss
+                                <x-help-tip text="Credit score points deducted when the player lets this bill go overdue — make essentials sting harder than optional ones." example="-20" />
+                            </label>
                             <input name="credit_impact_miss" type="number" min="-100" max="100"
                                    value="{{ old('credit_impact_miss', $bill?->credit_impact_miss ?? -20) }}"
                                    class="form-input">
@@ -150,7 +168,9 @@
                     <div class="section-title">⚙️ Trigger & Assignment</div>
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label">Trigger Type</label>
+                            <label class="form-label">Trigger Type
+                                <x-help-tip text="Planning metadata describing how this bill is meant to start — actual assignment is driven by Auto-assign, Age Group and Minimum Chapter below (or the asset's category for asset-triggered bills)." example="immediate" />
+                            </label>
                             <select name="trigger" class="form-input">
                                 <option value="immediate" {{ old('trigger', $bill?->trigger ?? 'immediate') === 'immediate' ? 'selected' : '' }}>Immediate (on game start)</option>
                                 <option value="chapter"   {{ old('trigger', $bill?->trigger) === 'chapter'   ? 'selected' : '' }}>Chapter unlock</option>
@@ -159,7 +179,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Minimum Chapter</label>
+                            <label class="form-label">Minimum Chapter
+                                <x-help-tip text="The life chapter a player must reach before this bill can be assigned to them — combined with Auto-assign, this is what actually gates the bill." example="The Student" />
+                            </label>
                             <select name="min_chapter" class="form-input">
                                 @foreach(\App\Models\UserProgress::chapters() as $c)
                                 <option value="{{ $c['key'] }}" {{ old('min_chapter', $bill?->min_chapter ?? 'student') === $c['key'] ? 'selected' : '' }}>
@@ -180,15 +202,21 @@
                     <div class="section-title">📝 Text & Flavour</div>
                     <div class="space-y-4">
                         <div>
-                            <label class="form-label">Description</label>
+                            <label class="form-label">Description
+                                <x-help-tip text="Internal notes for the content team about what this bill represents — not shown to players." example="Standard room rent for an 18-25 bedsitter tenant." />
+                            </label>
                             <textarea name="description" class="form-input">{{ old('description', $bill?->description) }}</textarea>
                         </div>
                         <div>
-                            <label class="form-label">Flavour Text (shown to player)</label>
+                            <label class="form-label">Flavour Text (shown to player)
+                                <x-help-tip text="The 'why this bill?' line the player sees on the Bills Board — teach the real-life lesson, don't just restate the charge." example="Your landlord Mama Otis expects rent by the 5th. Housing takes the biggest slice of most Kenyan budgets." />
+                            </label>
                             <textarea name="flavor_text" class="form-input">{{ old('flavor_text', $bill?->flavor_text) }}</textarea>
                         </div>
                         <div>
-                            <label class="form-label">Consequence Text (shown when missed)</label>
+                            <label class="form-label">Consequence Text (shown when missed)
+                                <x-help-tip text="The warning shown once this bill goes overdue — state the real-life parallel to make the credit-score hit feel earned." example="Late rent strains the one relationship that keeps a roof over you." />
+                            </label>
                             <textarea name="consequence_text" class="form-input">{{ old('consequence_text', $bill?->consequence_text) }}</textarea>
                         </div>
                     </div>
@@ -205,15 +233,15 @@
                     <div class="space-y-4">
 
                         @foreach([
-                            ['field'=>'is_essential', 'label'=>'Essential Bill', 'desc'=>'Missing this bill has severe consequences — e.g. eviction, power cut.', 'default'=>false],
-                            ['field'=>'auto_assign',  'label'=>'Auto-Assign',    'desc'=>'Automatically attach this bill to eligible players when they log in.', 'default'=>true],
-                            ['field'=>'is_active',    'label'=>'Active',         'desc'=>'Inactive bills are hidden from players and ignored by the simulator.', 'default'=>true],
+                            ['field'=>'is_essential', 'label'=>'Essential Bill', 'desc'=>'Missing this bill has severe consequences — e.g. eviction, power cut.', 'default'=>false, 'help'=>'Flags this bill as a life essential, so missing it should trigger a harsher in-fiction consequence and a bigger Credit Score on Miss penalty than an optional bill.'],
+                            ['field'=>'auto_assign',  'label'=>'Auto-Assign',    'desc'=>'Automatically attach this bill to eligible players when they log in.', 'default'=>true, 'help'=>'When on, eligible players (matching Age Group and Minimum Chapter) get this bill automatically — turn it off for bills that should only appear through a specific quest or event.'],
+                            ['field'=>'is_active',    'label'=>'Active',         'desc'=>'Inactive bills are hidden from players and ignored by the simulator.', 'default'=>true, 'help'=>'Lets you pause a bill without deleting it — inactive bills stop appearing for new assignments and are skipped by the billing simulator.'],
                         ] as $toggle)
                         @php $val = old($toggle['field'], $bill ? (bool)$bill->{$toggle['field']} : $toggle['default']); @endphp
                         <div x-data="{ on: {{ $val ? 'true' : 'false' }} }">
                             <div class="flex items-center justify-between mb-1">
                                 <div>
-                                    <div class="text-sm font-bold text-white">{{ $toggle['label'] }}</div>
+                                    <div class="text-sm font-bold text-white">{{ $toggle['label'] }}<x-help-tip :text="$toggle['help']" /></div>
                                     <div class="text-[10px] text-gray-500 leading-relaxed mt-0.5">{{ $toggle['desc'] }}</div>
                                 </div>
                                 <button type="button" @click="on = !on"

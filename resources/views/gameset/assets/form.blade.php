@@ -198,25 +198,33 @@
                     <p class="section-title">📋 Identity & Appearance</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="sm:col-span-2">
-                            <label class="form-label">Asset Name *</label>
+                            <label class="form-label">Asset Name *
+                                <x-help-tip text="The product name shown on the asset card and detail view in the marketplace. Be specific and realistic — this is what sells the purchase to players." example="Honda Fit 2015" />
+                            </label>
                             <input type="text" name="name" class="form-input"
                                    x-model="form.name" placeholder="e.g. Honda Fit 2015"
                                    value="{{ old('name', $asset?->name) }}" required>
                         </div>
                         <div>
-                            <label class="form-label">Brand / Issuer</label>
+                            <label class="form-label">Brand / Issuer
+                                <x-help-tip text="The manufacturer, company, or institution behind the asset — shown as a small subtitle under the name on the marketplace card. Leave blank if it doesn't apply." example="Toyota" />
+                            </label>
                             <input type="text" name="brand" class="form-input"
                                    x-model="form.brand" placeholder="e.g. Honda, CBK, Safaricom"
                                    value="{{ old('brand', $asset?->brand) }}">
                         </div>
                         <div>
-                            <label class="form-label">Icon (emoji) <span class="text-gray-600 font-normal normal-case">— optional, leave blank to hide</span></label>
+                            <label class="form-label">Icon (emoji) <span class="text-gray-600 font-normal normal-case">— optional, leave blank to hide</span>
+                                <x-help-tip text="A single emoji shown as the big icon on this asset's marketplace card and live preview. Leave blank and the icon area is simply hidden." example="🚗" />
+                            </label>
                             <input type="text" name="icon" class="form-input text-center text-2xl"
                                    x-model="form.icon" placeholder="🚗"
                                    value="{{ old('icon', $asset?->icon ?? '') }}" maxlength="8">
                         </div>
                         <div>
-                            <label class="form-label">Category *</label>
+                            <label class="form-label">Category *
+                                <x-help-tip text="Sets which marketplace section the asset lists under and which auto-bills attach on purchase — vehicle and property assets automatically attach follow-up bills like insurance and fuel." example="vehicle" />
+                            </label>
                             <select name="category" class="form-input" x-model="form.category" required>
                                 <option value="vehicle"    {{ old('category',$asset?->category)==='vehicle'    ? 'selected':'' }}>🚗 Vehicle</option>
                                 <option value="property"   {{ old('category',$asset?->category)==='property'   ? 'selected':'' }}>🏠 Property</option>
@@ -226,7 +234,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Age Group *</label>
+                            <label class="form-label">Age Group *
+                                <x-help-tip text="Restricts which players can see and buy this asset in the marketplace. Choose 'All Ages' unless the item only makes sense for a specific age bracket." example="18-25" />
+                            </label>
                             <select name="age_group" class="form-input" x-model="form.age_group" required>
                                 <option value="all"   {{ old('age_group',$asset?->age_group)==='all'   ? 'selected':'' }}>All Ages</option>
                                 <option value="8-12"  {{ old('age_group',$asset?->age_group)==='8-12'  ? 'selected':'' }}>8–12</option>
@@ -236,7 +246,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Tier (1 = Starter, 5 = Elite) *</label>
+                            <label class="form-label">Tier (1 = Starter, 5 = Elite) *
+                                <x-help-tip text="Sets the asset's prestige level, shown as dots on its marketplace card. Higher tiers should generally cost more and mark a bigger financial milestone, not just a random label." example="3" />
+                            </label>
                             <div class="flex items-center gap-3">
                                 <input type="range" name="tier" min="1" max="5" class="flex-1"
                                        x-model="form.tier"
@@ -245,7 +257,9 @@
                             </div>
                         </div>
                         <div>
-                            <label class="form-label">Max per Player *</label>
+                            <label class="form-label">Max per Player *
+                                <x-help-tip text="The most units of this asset a single player can own at once. Use 1 for unique big-ticket items like a house; raise it for stackable items like shares." example="1" />
+                            </label>
                             <input type="number" name="max_per_player" class="form-input" min="1" max="20"
                                    x-model="form.max_per_player"
                                    value="{{ old('max_per_player', $asset?->max_per_player ?? 1) }}" required>
@@ -268,6 +282,9 @@
                     @endif
 
                     {{-- Upload zone --}}
+                    <label class="form-label">Upload Photo
+                        <x-help-tip text="The product photo shown on this asset's marketplace card. Uploading a file here always overrides the pasted URL below. Accepts PNG, JPG or WEBP up to 5MB." />
+                    </label>
                     <div class="drop-zone mb-4" id="dropZone"
                          @dragover.prevent="$el.classList.add('drag-over')"
                          @dragleave.prevent="$el.classList.remove('drag-over')"
@@ -298,6 +315,9 @@
                         <div class="flex-1 h-px bg-white/10"></div>
                     </div>
 
+                    <label class="form-label mt-3 mb-0">Or Paste an Image URL
+                        <x-help-tip text="An alternative to uploading a file above — paste a direct link to a photo hosted elsewhere. Leave blank on edit to keep the asset's current image." example="https://images.example.com/boda-boda.jpg" />
+                    </label>
                     <input type="text" name="image_url" class="form-input mt-3"
                            x-model="form.image_url"
                            @input="previewFromUrl()"
@@ -311,44 +331,62 @@
                     <p class="section-title">💰 Pricing & Economics</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="sm:col-span-2">
-                            <label class="form-label">Base Price (Ksh) *</label>
+                            <label class="form-label">Base Price (Ksh) *
+                                <x-help-tip text="What players pay upfront to buy this asset — the top half of the Payback Preview below (Price ÷ net monthly income). Keep it real-world plausible for the item." example="85000" />
+                            </label>
                             <input type="number" name="base_price" class="form-input" min="0"
                                    x-model="form.base_price"
                                    value="{{ old('base_price', $asset?->base_price) }}" required>
                         </div>
                         <div>
-                            <label class="form-label">Monthly Income (Ksh) *</label>
+                            <label class="form-label">Monthly Income (Ksh) *
+                                <x-help-tip text="How much this asset automatically pays the player every income period (set below) — the core of the investment case. Set to 0 for pure status/luxury items with no payout." example="12000" />
+                            </label>
                             <input type="number" name="monthly_income" class="form-input" min="0"
                                    x-model="form.monthly_income"
                                    value="{{ old('monthly_income', $asset?->monthly_income ?? 0) }}" required>
+                            <label class="form-label mt-2">Income Source Description
+                                <x-help-tip text="A short flavor line shown to players describing where the income comes from. Purely descriptive — it does not affect the actual payout." example="Rent from 2 tenants" />
+                            </label>
                             <input type="text" name="income_description" class="form-input mt-2"
                                    placeholder="Income source description"
                                    value="{{ old('income_description', $asset?->income_description) }}">
                         </div>
                         <div>
-                            <label class="form-label">Monthly Cost (Ksh) *</label>
+                            <label class="form-label">Monthly Cost (Ksh) *
+                                <x-help-tip text="How much this asset automatically charges the player every income period (set below) — fuel, maintenance, fees. Real businesses and vehicles should never be 0; only true passive investments are cost-free." example="3500" />
+                            </label>
                             <input type="number" name="monthly_cost" class="form-input" min="0"
                                    x-model="form.monthly_cost"
                                    value="{{ old('monthly_cost', $asset?->monthly_cost ?? 0) }}" required>
+                            <label class="form-label mt-2">Cost Breakdown Description
+                                <x-help-tip text="A short flavor line shown to players describing what the running cost covers. Purely descriptive — it does not affect the actual charge." example="Fuel, repairs & insurance" />
+                            </label>
                             <input type="text" name="cost_description" class="form-input mt-2"
                                    placeholder="Cost breakdown description"
                                    value="{{ old('cost_description', $asset?->cost_description) }}">
                         </div>
                         <div>
-                            <label class="form-label">Income Period (game days / ticks) *</label>
+                            <label class="form-label">Income Period (game days / ticks) *
+                                <x-help-tip text="How often, in game days, the Monthly Income and Monthly Cost above actually get paid/charged — not literally every calendar month. E.g. 7 pays out roughly 4 times a game month; 30 pays out once." example="7" />
+                            </label>
                             <input type="number" name="income_period_ticks" class="form-input" min="1" max="365"
                                    value="{{ old('income_period_ticks', $asset?->income_period_ticks ?? 7) }}" required>
                             <p class="text-[10px] text-gray-600 mt-1">1 = daily · 7 = weekly · 30 = monthly. Lower = faster returns.</p>
                         </div>
                         <div>
-                            <label class="form-label">Appreciation Rate (%/mo)</label>
+                            <label class="form-label">Appreciation Rate (%/mo)
+                                <x-help-tip text="How much the asset's resale value drifts every game month, compounding over time. Positive grows value (investments, property); negative shrinks it (vehicles, gadgets wear out)." example="-1.5" />
+                            </label>
                             <input type="number" name="appreciation_rate" class="form-input" step="0.01" min="-20" max="20"
                                    x-model="form.appreciation_rate"
                                    value="{{ old('appreciation_rate', $asset?->appreciation_rate ?? 0) }}" required>
                             <p class="text-[10px] text-gray-600 mt-1">Negative = depreciation (e.g. -1.5 for cars)</p>
                         </div>
                         <div>
-                            <label class="form-label">Volatility (0 = stable, 1 = wild)</label>
+                            <label class="form-label">Volatility (0 = stable, 1 = wild)
+                                <x-help-tip text="Adds random swings to the asset's value on top of the Appreciation Rate trend. Near 0 keeps the price smooth and predictable; higher (this slider caps at 50%) causes sharp, unpredictable jumps up or down, like a risky stock." example="0.05" />
+                            </label>
                             <div class="flex items-center gap-3">
                                 <input type="range" name="volatility" min="0" max="0.5" step="0.01" class="flex-1"
                                        x-model="form.volatility"
@@ -358,7 +396,9 @@
                             <input type="hidden" name="volatility" :value="form.volatility">
                         </div>
                         <div>
-                            <label class="form-label">Risk Level (1-5) *</label>
+                            <label class="form-label">Risk Level (1-5) *
+                                <x-help-tip text="The risk badge shown to players (Very Low to Very High) on the asset card — purely a signal, it doesn't itself change payouts or volatility. Keep it honest relative to the volatility and appreciation rate you actually set." example="2" />
+                            </label>
                             <div class="flex items-center gap-3 mt-1">
                                 <input type="range" min="1" max="5" class="flex-1"
                                        x-model="form.risk_level">
@@ -367,7 +407,9 @@
                             <input type="hidden" name="risk_level" :value="form.risk_level">
                         </div>
                         <div>
-                            <label class="form-label">Auto-Create Bill (slug)</label>
+                            <label class="form-label">Auto-Create Bill (slug)
+                                <x-help-tip text="When set, buying this asset automatically attaches a recurring bill (e.g. insurance, service fee) — it must exactly match an existing slug in GameSet → Bills. Leave blank if this asset shouldn't create a follow-up bill." example="car-insurance" />
+                            </label>
                             <input type="text" name="creates_bill_slug" class="form-input"
                                    x-model="form.creates_bill_slug"
                                    placeholder="e.g. car-insurance"
@@ -405,19 +447,25 @@
                     <p class="section-title">📝 Descriptions & Education</p>
                     <div class="space-y-4">
                         <div>
-                            <label class="form-label">Main Description *</label>
+                            <label class="form-label">Main Description *
+                                <x-help-tip text="The main sales-pitch paragraph shown on the asset's detail view. Sell it honestly, including any real downsides players should weigh before buying." example="A dependable TVS boda with 40,000km on the clock — fuel, repairs and insurance eat into every fare." />
+                            </label>
                             <textarea name="description" class="form-input" rows="3"
                                       x-model="form.description" required>{{ old('description', $asset?->description) }}</textarea>
                         </div>
                         <div>
-                            <label class="form-label">Flavor Text * <span class="text-gray-600 font-normal normal-case">(short, memorable quote)</span></label>
+                            <label class="form-label">Flavor Text * <span class="text-gray-600 font-normal normal-case">(short, memorable quote)</span>
+                                <x-help-tip text="A short punchy quote shown on the asset card below the name. It adds personality, not information — keep it to a single sentence." example="The first car is always a Honda Fit." />
+                            </label>
                             <input type="text" name="flavor_text" class="form-input"
                                    x-model.lazy="form.flavor_text"
                                    placeholder='"The first car is always a Honda Fit."'
                                    value="{{ old('flavor_text', $asset?->flavor_text) }}" required>
                         </div>
                         <div>
-                            <label class="form-label">Educational Note * <span class="text-gray-600 font-normal normal-case">(financial lesson)</span></label>
+                            <label class="form-label">Educational Note * <span class="text-gray-600 font-normal normal-case">(financial lesson)</span>
+                                <x-help-tip text="The financial-literacy takeaway shown to players after buying — spell out the real-world lesson this purchase teaches, e.g. depreciation, cash flow, or leverage." example="Vehicles lose value the moment you drive them off the lot — budget for depreciation, not just the purchase price." />
+                            </label>
                             <textarea name="educational_note" class="form-input" rows="3"
                                       required>{{ old('educational_note', $asset?->educational_note) }}</textarea>
                         </div>
@@ -442,7 +490,9 @@
                             <span class="text-sm font-bold text-white" id="toggle-label">
                                 {{ old('is_active', $asset?->is_active ?? true) ? 'Active — visible in marketplace' : 'Inactive — hidden from players' }}
                             </span>
-                            <p class="text-xs text-gray-500">Players can only see and buy active assets</p>
+                            <p class="text-xs text-gray-500">Players can only see and buy active assets
+                                <x-help-tip text="When off, the asset is completely hidden from the marketplace and players can't buy it — use this to stage new items or retire old ones without deleting their purchase history." />
+                            </p>
                         </div>
                     </label>
 
@@ -454,13 +504,17 @@
                                class="w-4 h-4 rounded border-white/20 bg-white/5 accent-amber-500">
                         <div>
                             <span class="text-sm font-bold text-amber-400">✨ Lucrative Asset</span>
-                            <p class="text-xs text-gray-500 mt-0.5">Lucrative assets show in a premium section of the marketplace with a gold crown badge.</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Lucrative assets show in a premium section of the marketplace with a gold crown badge.
+                                <x-help-tip text="Marks zero-or-low-income status items (flashy cars, gadgets) meant to teach players about opportunity cost by contrast with real cash-flowing assets. Use it deliberately for luxuries, not for genuine investments." example="true for a designer watch with no income" />
+                            </p>
                         </div>
                     </label>
 
                     {{-- Badge --}}
                     <div class="mt-5">
-                        <label class="form-label">Marketplace Badge</label>
+                        <label class="form-label">Marketplace Badge
+                            <x-help-tip text="An optional coloured pill shown on the marketplace card to draw attention or signal a vibe (e.g. hot, safe, risky). Purely cosmetic marketing — it doesn't change any of the asset's stats." example="trending" />
+                        </label>
                         <select name="badge" class="form-input mt-1">
                             <option value="" {{ old('badge', $asset?->badge) == '' ? 'selected' : '' }}>— None —</option>
                             @foreach(['popular'=>'🔥 Popular','trending'=>'📈 Trending','new'=>'✨ New','stable'=>'🛡 Stable','risky'=>'⚡ Risky'] as $val=>$lbl)
@@ -472,7 +526,9 @@
 
                     {{-- Featured Section --}}
                     <div class="mt-5">
-                        <label class="form-label">Featured Section</label>
+                        <label class="form-label">Featured Section
+                            <x-help-tip text="Places this asset into one of the marketplace's curated editorial rows so players discover it there in addition to normal browsing and search." example="high_growth" />
+                        </label>
                         <select name="featured_section" class="form-input mt-1">
                             <option value="" {{ old('featured_section', $asset?->featured_section) == '' ? 'selected' : '' }}>— None —</option>
                             <option value="starter_moves"      {{ old('featured_section', $asset?->featured_section) === 'starter_moves'      ? 'selected' : '' }}>🎯 Starter Moves</option>

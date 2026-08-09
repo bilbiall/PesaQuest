@@ -40,6 +40,11 @@ class DashboardController extends Controller
         $progress->refresh();
         $leveledUp = ($progress->level ?? 1) > $levelBefore;
 
+        // Quest Gate: banked XP waiting behind unfinished quests — surfaced here
+        // (not just the world-map quest panel) since the Level number itself
+        // lives on this page and "my level isn't moving" is confusing without it.
+        $questGate = \App\Services\QuestGate::status($progress);
+
         // "Last Played" + streak must reflect every real visit, not only visits
         // where XP happens to be earned (addPoints() is the only other writer
         // of last_played_at, which made genuinely-active players look stale).
@@ -288,6 +293,12 @@ class DashboardController extends Controller
             $contracts = app(\App\Services\ContractService::class)->refresh($user);
         } catch (\Throwable $e) { /* pre-migration — no widget */ }
 
+        // Challenges — recompute progress on every dashboard visit so duels can
+        // settle the instant someone crosses the goal, not just when they check.
+        try {
+            app(\App\Services\ChallengeService::class)->refresh($user);
+        } catch (\Throwable $e) { /* pre-migration — safe to skip */ }
+
         // Active quests (started, not yet completed/approved) — used for Today's Goals
         $questGoals = UserQuest::where('user_id', $user->id)
             ->whereNull('completed_at')
@@ -305,7 +316,7 @@ class DashboardController extends Controller
             'needsOnboarding', 'monthlyReport', 'showOnboardingWizard', 'onboardingSteps',
             'daysTillSalary', 'salaryAmount', 'billsDueSoon',
             'canSpin', 'recentLifeEvents',
-            'questGoals', 'activeQuest', 'smartToolsUnlocked', 'weekCal', 'contracts', 'currentTick'
+            'questGoals', 'activeQuest', 'smartToolsUnlocked', 'weekCal', 'contracts', 'currentTick', 'questGate'
         ));
     }
 

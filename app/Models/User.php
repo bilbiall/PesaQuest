@@ -19,9 +19,20 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @var list<string>
      */
+    /** Kenya's 47 counties, for the optional player-supplied `county` field. */
+    public const COUNTIES = [
+        'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa',
+        'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi',
+        'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu', 'Machakos',
+        'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa', "Murang'a",
+        'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua', 'Nyeri',
+        'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi', 'Trans Nzoia',
+        'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
+    ];
+
     protected $fillable = [
         'name', 'username', 'email', 'password', 'google_id',
-        'date_of_birth', 'age_group', 'is_admin', 'is_gameset', 'is_active',
+        'date_of_birth', 'county', 'age_group', 'is_admin', 'is_gameset', 'is_active',
         'profile_photo', 'cover_photo', 'bio', 'notification_prefs',
         'onboarding_completed_at', 'friend_code',
     ];

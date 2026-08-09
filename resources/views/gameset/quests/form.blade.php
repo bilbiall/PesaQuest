@@ -68,12 +68,16 @@
             <div class="st">📜 Quest Basics</div>
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
-                    <label class="fl">Icon (emoji)</label>
+                    <label class="fl">Icon (emoji)
+                        <x-help-tip text="The emoji shown on the quest card when no custom image is uploaded — purely cosmetic, it has no effect on detection or rewards." example="🏦" />
+                    </label>
                     <input type="text" name="icon" class="fi text-center text-2xl" maxlength="4"
                            value="{{ old('icon', $quest->icon ?? '📜') }}" placeholder="📜"/>
                 </div>
                 <div class="sm:col-span-3">
-                    <label class="fl">Quest Title *</label>
+                    <label class="fl">Quest Title *
+                        <x-help-tip text="The quest's name shown to players in the quest list and popup — keep it a short, motivating action." example="Start Your Savings Journey" />
+                    </label>
                     <input type="text" name="title" class="fi" required maxlength="120"
                            value="{{ old('title', $quest->title ?? '') }}" placeholder="e.g. Get Connected"/>
                 </div>
@@ -81,7 +85,9 @@
 
             {{-- Quest image --}}
             <div class="mt-4">
-                <label class="fl">Quest Image (optional — replaces emoji in card)</label>
+                <label class="fl">Quest Image (optional — replaces emoji in card)
+                    <x-help-tip text="An optional custom image shown on the quest card instead of the emoji icon; leave it blank to keep using the emoji." />
+                </label>
                 <div class="flex items-start gap-4 flex-wrap">
                     <div class="relative flex-shrink-0">
                         <div x-show="!imagePreview && !existingImage"
@@ -111,16 +117,22 @@
             </div>
 
             <div class="mt-4">
-                <label class="fl">Description (shown in quest list)</label>
+                <label class="fl">Description (shown in quest list)
+                    <x-help-tip text="Short blurb shown in the quest list to tell players what the quest is about before they open it." example="Grow your bank savings to Ksh 3,000." />
+                </label>
                 <textarea name="description" class="fi" maxlength="500" placeholder="Short overview of what this quest is about...">{{ old('description', $quest->description ?? '') }}</textarea>
             </div>
             <div class="mt-4">
-                <label class="fl">How to Complete (guide shown in quest popup)</label>
+                <label class="fl">How to Complete (guide shown in quest popup)
+                    <x-help-tip text="Step-by-step guidance shown inside the quest popup once a player opens it — explain exactly what to do so the trigger fires." example="Head to the Bank, open a savings pocket, then deposit at least Ksh 3,000." />
+                </label>
                 <textarea name="instructions" class="fi" style="min-height:100px;"
                           placeholder="Step-by-step guide. e.g. Head to the Marketplace → Electronics. Buy a smartphone. Once you own a mobile device you unlock mobile money, online jobs, and digital banking.">{{ old('instructions', $quest->instructions ?? '') }}</textarea>
             </div>
             <div class="mt-4">
-                <label class="fl">Lesson Learned (shown on quest completion)</label>
+                <label class="fl">Lesson Learned (shown on quest completion)
+                    <x-help-tip text="The financial takeaway shown to the player when they complete the quest — the 'why this matters' payoff." example="The first Ksh 3,000 is the hardest — after that, saving becomes a habit." />
+                </label>
                 <textarea name="lesson" class="fi" style="min-height:70px;"
                           placeholder="e.g. Owning a mobile phone gives you access to M-Pesa — Kenya's mobile money service — letting you save, send, and receive money digitally.">{{ old('lesson', $quest->lesson ?? '') }}</textarea>
                 <div class="hint">A short financial insight shown when the player completes the quest.</div>
@@ -132,7 +144,9 @@
             <div class="st">⭐ Level Gate & Rewards</div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                    <label class="fl">Level Required *</label>
+                    <label class="fl">Level Required *
+                        <x-help-tip text="Minimum player level needed to see and start this quest; players below this level see it locked." example="2" />
+                    </label>
                     <select name="level_required" class="fi" required>
                         @for($i = 1; $i <= 10; $i++)
                         <option value="{{ $i }}" {{ old('level_required', $quest->level_required ?? 1) == $i ? 'selected' : '' }}>Level {{ $i }}</option>
@@ -141,25 +155,33 @@
                     <div class="hint">Players below this level see the quest as locked.</div>
                 </div>
                 <div>
-                    <label class="fl">XP Reward *</label>
+                    <label class="fl">XP Reward *
+                        <x-help-tip text="Experience points awarded on completion. Keep it low for one-step quests and higher for multi-step chains, matching the game's deliberately scarce XP economy." example="50" />
+                    </label>
                     <input type="number" name="xp_reward" class="fi" required min="0" max="99999"
                            value="{{ old('xp_reward', $quest->xp_reward ?? 50) }}"/>
                 </div>
                 <div>
-                    <label class="fl">Ksh Reward</label>
+                    <label class="fl">Ksh Reward
+                        <x-help-tip text="Cash paid into the player's wallet on completion. Leave at 0 for quests that are purely about XP; reserve KES for chains that take real effort." example="500" />
+                    </label>
                     <input type="number" name="kes_reward" class="fi" min="0" max="9999999"
                            value="{{ old('kes_reward', $quest->kes_reward ?? 0) }}"/>
                     <div class="hint">0 = no cash reward.</div>
                 </div>
                 <div>
-                    <label class="fl">Sort Order</label>
+                    <label class="fl">Sort Order
+                        <x-help-tip text="Controls display order among quests at the same level — lower numbers appear first. Doesn't affect gameplay logic." example="0" />
+                    </label>
                     <input type="number" name="sort_order" class="fi" min="0"
                            value="{{ old('sort_order', $quest->sort_order ?? 0) }}"/>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                    <label class="fl">Age Group *</label>
+                    <label class="fl">Age Group *
+                        <x-help-tip text="Restricts this quest to players in the selected age band; choose 'all' for a quest suitable for every age group." example="13-17" />
+                    </label>
                     <select name="age_group" class="fi" required>
                         @foreach(['all','8-12','13-17','18-25','26+'] as $ag)
                         <option value="{{ $ag }}" {{ old('age_group', $quest->age_group ?? 'all') === $ag ? 'selected' : '' }}>{{ $ag }}</option>
@@ -171,7 +193,9 @@
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" name="is_active" value="1" class="w-4 h-4 rounded accent-violet-500"
                                {{ old('is_active', $quest->is_active ?? true) ? 'checked' : '' }}>
-                        <span class="text-sm font-semibold text-gray-300">Active (visible to players)</span>
+                        <span class="text-sm font-semibold text-gray-300">Active (visible to players)
+                            <x-help-tip text="Unchecking hides this quest from players everywhere (list, popup, notifications) without deleting it — useful for drafts or retiring old quests." />
+                        </span>
                     </label>
                 </div>
             </div>
@@ -179,7 +203,9 @@
             {{-- Career Path Targeting --}}
             @php $existingCareerFields = old('career_fields', $quest->career_fields ?? []); @endphp
             <div class="mt-4" x-data="{ allPaths: {{ empty($existingCareerFields) ? 'true' : 'false' }} }">
-                <label class="fl">Career Path Targeting</label>
+                <label class="fl">Career Path Targeting
+                    <x-help-tip text="Limits this quest to players who chose one of the checked career paths; keep 'All career paths' checked for general quests like saving or budgeting, and target specific paths for career-flavored goals." example="Tech & Digital" />
+                </label>
                 <label class="flex items-center gap-3 cursor-pointer mb-2.5">
                     <input type="checkbox" name="career_fields_all" value="1" x-model="allPaths" class="w-4 h-4 rounded accent-violet-500">
                     <span class="text-sm font-semibold text-gray-300">🌍 All career paths (default)</span>
@@ -296,13 +322,16 @@
 
         {{-- AUTO-TRIGGERS --}}
         <div class="sc mb-8">
-            <div class="st">🎯 Auto-Triggers</div>
+            <div class="st">🎯 Auto-Triggers
+                <x-help-tip text="Add one or more automatic detection rules below. Leave every trigger empty and this becomes a manual quest instead: the player submits it themselves and it queues under Admin → Quests Pending for approval — handy for offline or classroom assignments." />
+            </div>
             <p class="text-xs text-gray-500 mb-4">Add one or more triggers. Use the completion mode to control when the quest completes. Leave all triggers empty for a manually-submitted quest.</p>
 
             {{-- Trigger mode toggle (only meaningful with 2+ triggers) --}}
             <div class="mb-5">
                 <label class="fl">Completion Mode
                     <span style="font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:#6b7280;"> — applies when you have multiple triggers</span>
+                    <x-help-tip text="ALL treats every trigger as a checklist step that must all fire before the quest completes. ANY completes the quest the instant the first trigger fires, offering alternative routes to the same goal." />
                 </label>
                 <div style="display:flex;gap:8px;margin-top:4px;">
                     <label style="flex:1;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .15s;"
@@ -333,7 +362,9 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                         <div>
-                            <label class="fl">Trigger Type</label>
+                            <label class="fl">Trigger Type
+                                <x-help-tip text="Picks what player action this trigger detects. The value field below changes meaning per type: buy_item_slug/buy_item_category pick an asset or category; open_savings, join_chama, spin_wheel and play_scenario fire automatically with no value; deposit_savings needs a KES target for ONE savings pocket, reach_savings a KES target across ALL pockets combined, reach_balance a KES wallet-cash-only target, and reach_net_worth a KES target for cash+savings+assets minus loans; take_course picks a course, get_job a job, earn_badge a badge, reach_level a level number, and complete_quest another quest that must finish first (chain)." example="reach_savings → 3000" />
+                            </label>
                             <select class="fi" x-model="trig.type" @change="onTriggerTypeChange(trig, idx)">
                                 <option value="">— Select trigger —</option>
                                 <optgroup label="Marketplace">
@@ -366,7 +397,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="fl">Trigger Label (shown to player)</label>
+                            <label class="fl">Trigger Label (shown to player)
+                                <x-help-tip text="The player-facing text shown for this step inside the quest popup checklist — describe the action in plain language, not the raw trigger type." example="Save Ksh 3,000 at the bank" />
+                            </label>
                             <input type="text" class="fi" x-model="trig.label"
                                    placeholder="e.g. Buy any vehicle in the Marketplace"/>
                         </div>
@@ -380,7 +413,9 @@
                     {{-- Numeric threshold triggers --}}
                     <template x-if="numericTypes.includes(trig.type)">
                         <div>
-                            <label class="fl">Threshold Amount (Ksh)</label>
+                            <label class="fl">Threshold Amount (Ksh)
+                                <x-help-tip text="The KES amount this trigger must reach. Its exact meaning depends on the trigger type chosen above: one savings pocket, total across all pockets, wallet cash only, or full net worth (cash + savings + assets − loans)." example="3000" />
+                            </label>
                             <input type="number" class="fi" min="0"
                                    :value="trig.values[0] || ''"
                                    @input="trig.values = [$event.target.value]"
@@ -393,7 +428,9 @@
                     <template x-if="trig.type && !noValueTypes.includes(trig.type) && !numericTypes.includes(trig.type)">
                         <div>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                                <label class="fl" style="margin-bottom:0;">Select Values <span style="color:#6b7280;font-weight:500;text-transform:none;letter-spacing:0;">(leave all unchecked = any)</span></label>
+                                <label class="fl" style="margin-bottom:0;">Select Values <span style="color:#6b7280;font-weight:500;text-transform:none;letter-spacing:0;">(leave all unchecked = any)</span>
+                                    <x-help-tip text="Choose which specific assets, categories, courses, jobs, badges, levels, or quests satisfy this trigger. Leave every box unchecked to accept any value of that type." example="smartphone" />
+                                </label>
                                 <span x-show="trig.values.length > 0" class="text-xs text-violet-400"
                                       x-text="trig.values.length + ' selected'"></span>
                             </div>

@@ -23,6 +23,8 @@ $gsnGroups = [
         ['key' => 'fun-world',   'icon' => '🎢', 'label' => 'Fun World',      'route' => 'gameset.fun-world.index'],
         ['key' => 'spin',        'icon' => '🎡', 'label' => 'Spin Wheel',     'route' => 'gameset.spin.index'],
         ['key' => 'arcade',      'icon' => '🐍', 'label' => 'Arcade',         'route' => 'gameset.arcade.index'],
+        ['key' => 'dreams',      'icon' => '🌟', 'label' => 'Dreams',         'route' => 'gameset.dreams.index'],
+        ['key' => 'challenges',  'icon' => '🏆', 'label' => 'Challenges',     'route' => 'gameset.challenges.index'],
     ]],
 ];
 @endphp
@@ -88,6 +90,7 @@ $gsnGroups = [
         </div>
 
         <div class="gsn-right">
+            <a href="{{ route('gameset.docs') }}" class="gsn-chip {{ $active === 'docs' ? 'gsn-on' : '' }}">📚 Guide</a>
             <a href="{{ route('players.search') }}" class="gsn-chip">🔍 Players</a>
             <a href="{{ route('dashboard') }}" class="gsn-chip">🏠 Dashboard</a>
             <button type="button" class="gsn-burger" @click="gsnDrawer = true" aria-label="Open menu">
@@ -115,6 +118,7 @@ $gsnGroups = [
                     @endforeach
                 @endforeach
                 <h4>🧭 Shortcuts</h4>
+                <a href="{{ route('gameset.docs') }}" class="gsn-item {{ $active === 'docs' ? 'gsn-on' : '' }}">📚 GameSet Guide</a>
                 <a href="{{ route('players.search') }}" class="gsn-item">🔍 Player Search</a>
                 <a href="{{ route('dashboard') }}" class="gsn-item">🏠 Dashboard</a>
             </div>

@@ -162,11 +162,12 @@ class ArcadeSnakesService
 
     /** Every match is turn-based — waiting your turn isn't a choice, it's how the
      *  game works (matches the always-on 10s-per-turn rule solo-vs-bot already uses). */
-    public function createMatch(User $user, ArcadeGame $game, string $visibility, int $maxPlayers): ArcadeMatch
+    public function createMatch(User $user, ArcadeGame $game, string $visibility, int $maxPlayers, ?string $name = null): ArcadeMatch
     {
         $match = ArcadeMatch::create([
             'arcade_game_id' => $game->id,
             'created_by'     => $user->id,
+            'name'           => $name,
             'join_code'      => $visibility === 'private' ? ArcadeMatch::generateJoinCode() : null,
             'visibility'     => $visibility,
             'max_players'    => max(2, min(8, $maxPlayers)),
@@ -211,13 +212,14 @@ class ArcadeSnakesService
      * the round is decided rather than via a manual cash-out (see
      * settleMatchIfDecided()/cashOut()'s wager guard).
      */
-    public function createWagerMatch(User $user, ArcadeGame $game, string $visibility, int $maxPlayers, int $stakeAmount): ArcadeMatch
+    public function createWagerMatch(User $user, ArcadeGame $game, string $visibility, int $maxPlayers, int $stakeAmount, ?string $name = null): ArcadeMatch
     {
         $stake = max(self::MIN_WAGER_STAKE, min(self::MAX_WAGER_STAKE, $stakeAmount));
 
         $match = ArcadeMatch::create([
             'arcade_game_id' => $game->id,
             'created_by'     => $user->id,
+            'name'           => $name,
             'join_code'      => $visibility === 'private' ? ArcadeMatch::generateJoinCode() : null,
             'visibility'     => $visibility,
             'max_players'    => max(2, min(8, $maxPlayers)),
@@ -431,19 +433,32 @@ class ArcadeSnakesService
         $session->missed_turns = 0; // a completed roll clears any prior missed-turn count
         $session->save();
 
+        $settlement = null;
         if ($match) {
             $hasMoveEvent = collect($events)->contains(fn ($e) => $e['type'] === 'move');
             $animationDelayMs = self::PRE_HOP_REVEAL_MS + count($hopPath) * self::HOP_MS
                 + ($hasMoveEvent ? self::MOVE_EVENT_EXTRA_MS : self::PLAIN_LANDING_EXTRA_MS);
             $this->advanceTurn($match, $animationDelayMs);
-            $this->settleMatchIfDecided($match);
+            $settlement = $this->settleMatchIfDecided($match);
+            // settleMatchIfDecided() mutates a separately-queried copy of this same
+            // row (money/status changes happen on ITS $winner instance, not this
+            // one) — without this refresh, a winner whose own roll decided the
+            // match would see only their finish-tile bonus below, not the wager
+            // winnings that settlement just added on top of it.
+            if ($settlement) {
+                $session->refresh();
+            }
         }
 
         Cache::forget($lockKey);
 
+        $wonHere = $settlement && $settlement['winner_session_id'] === $session->id;
+
         return [
             'roll' => $rollValue, 'from' => $from, 'first_landing' => $firstLanding, 'hop_path' => $hopPath,
             'events' => $events, 'position' => $session->position, 'pot' => $session->pot_amount, 'status' => $session->status,
+            'winner_gain' => $wonHere ? $settlement['winner_gain'] : null,
+            'forfeit_bonus' => $wonHere ? $settlement['forfeit_bonus'] : null,
         ];
     }
 
@@ -554,26 +569,32 @@ class ArcadeSnakesService
     }
 
     /**
-     * The single choke point for Rivals Trail payouts — called from the bottom
-     * of roll() and from forfeitSession(), no-ops for standard matches. Decides
-     * whether the round is over (someone reached the finish tile, or attrition
-     * has left exactly one player still active) and, if so, moves money exactly
-     * once: 60% of each remaining opponent's pot to the winner, the opponents'
-     * other 40% back to their own wallets, plus the entire forfeit pool.
+     * The single choke point for match completion — called from the bottom of
+     * roll() and from forfeitSession(). Decides whether the round is over
+     * (someone reached the finish tile, or attrition has left exactly one
+     * player still active) and, if so, ends the match for everyone: standard
+     * matches just flip the remaining active sessions to 'lost' (otherwise
+     * they'd keep rolling forever against a match that already has a winner),
+     * while Rivals Trail (wager) matches additionally move money — 60% of
+     * each remaining opponent's pot to the winner, the opponents' other 40%
+     * back to their own wallets, plus the entire forfeit pool.
+     *
+     * Returns a settlement summary (winner_session_id/winner_gain/forfeit_bonus)
+     * when the match was just decided by THIS call, or null if it was already
+     * decided/still in progress — callers use a non-null return to know their
+     * in-memory $session is now stale and needs refreshing.
      */
-    public function settleMatchIfDecided(ArcadeMatch $match): void
+    public function settleMatchIfDecided(ArcadeMatch $match): ?array
     {
-        if (!$match->isWager()) return;
-
-        DB::transaction(function () use ($match) {
+        return DB::transaction(function () use ($match) {
             $lockedMatch = ArcadeMatch::where('id', $match->id)->lockForUpdate()->first();
-            if (!$lockedMatch || $lockedMatch->status === 'completed') return; // idempotency guard
+            if (!$lockedMatch || $lockedMatch->status === 'completed') return null; // idempotency guard
 
             $sessions = ArcadeSession::where('arcade_match_id', $lockedMatch->id)->lockForUpdate()->get();
             $winner = $sessions->firstWhere('status', 'won');
             $stillActive = $sessions->where('status', 'active');
 
-            if (!$winner && $stillActive->count() > 1) return; // mid-game — not decided yet
+            if (!$winner && $stillActive->count() > 1) return null; // mid-game — not decided yet
 
             if (!$winner && $stillActive->count() === 1) {
                 $winner = $stillActive->first();
@@ -585,7 +606,29 @@ class ArcadeSnakesService
             // triggers this method. If it somehow still happens, do nothing rather
             // than crediting an arbitrary "winner" — money stays untouched and the
             // match simply stays open for the next poll to re-evaluate.
-            if (!$winner) return;
+            if (!$winner) return null;
+
+            if (!$lockedMatch->isWager()) {
+                // No money to move, but the race is still over — every other
+                // active session would otherwise keep rolling forever against a
+                // match that already has a winner, since nothing else ever
+                // flips their status or completes the match for standard mode.
+                foreach ($sessions as $s) {
+                    if ($s->id === $winner->id || $s->status !== 'active') continue;
+                    $s->status = 'lost';
+                    $s->ended_at = now();
+                    $this->awardXp($s);
+                    $s->save();
+                }
+                $winner->ended_at ??= now();
+                $winner->save();
+
+                $lockedMatch->status = 'completed';
+                $lockedMatch->current_turn_session_id = null;
+                $lockedMatch->save();
+
+                return ['winner_session_id' => $winner->id, 'winner_gain' => 0, 'forfeit_bonus' => 0];
+            }
 
             $winnerGain = 0;
             foreach ($sessions as $s) {
@@ -596,6 +639,15 @@ class ArcadeSnakesService
                 $s->status = 'lost';
                 $s->ended_at = now();
                 $this->awardXp($s);
+                // Persisted (not just used for the notification below) so a loser
+                // who learns about this via a later poll — the decisive roll was
+                // someone else's, or the match ended by an opponent's forfeit —
+                // can still see who beat them and by how much: state() reads it
+                // back off this same column, same pattern as the winner's event
+                // just below.
+                $loserEvents = is_array($s->last_event) ? $s->last_event : [];
+                $loserEvents[] = ['type' => 'settlement', 'amount_lost' => $cut, 'winner_name' => $winner->user->name ?? 'the other player'];
+                $s->last_event = $loserEvents;
                 $s->save();
 
                 $loserProgress = $s->user->getOrCreateProgress();
@@ -623,6 +675,13 @@ class ArcadeSnakesService
             }
             $winner->ended_at ??= now();
             $this->awardXp($winner);
+            // Persisted (not just returned) so a winner who learns about this via
+            // a later poll — e.g. the decisive event was an opponent's forfeit,
+            // not their own roll — can still see the breakdown: state() reads it
+            // back off this same column (see ArcadeSnakesController::state()).
+            $winnerEvents = is_array($winner->last_event) ? $winner->last_event : [];
+            $winnerEvents[] = ['type' => 'settlement', 'winner_gain' => $winnerGain, 'forfeit_bonus' => $forfeitBonus];
+            $winner->last_event = $winnerEvents;
             $winner->save();
 
             $winnerProgress = $winner->user->getOrCreateProgress();
@@ -654,6 +713,8 @@ class ArcadeSnakesService
             $lockedMatch->status = 'completed';
             $lockedMatch->current_turn_session_id = null;
             $lockedMatch->save();
+
+            return ['winner_session_id' => $winner->id, 'winner_gain' => $winnerGain, 'forfeit_bonus' => $forfeitBonus];
         });
     }
 

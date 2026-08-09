@@ -140,20 +140,26 @@ $pqUser = auth()->user();
                 <a class="pq-item" href="{{ route('world', ['open' => 'quests']) }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📜</span> Quests</a>
                 <a class="pq-item" href="{{ route('game.leaderboard') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🏆</span> Leaderboard</a>
             </div>
-            <div class="pq-group" data-stagger style="--i:4;--pq-gc:rgba(167,139,250,.28);--pq-gt:#c4b5fd;">
+            <div class="pq-group" data-stagger style="--i:4;--pq-gc:rgba(245,158,11,.28);--pq-gt:#fbbf24;">
+                <div class="pq-group-title">🎮 Play</div>
+                <a class="pq-item" href="{{ route('arcade.snakes.lobby') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🕹️</span> Arcade <small>Pesa Trail</small></a>
+                <a class="pq-item" href="{{ route('dreams.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🌟</span> Dreams</a>
+                <a class="pq-item" href="{{ route('challenges.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🏆</span> Champions' Court</a>
+            </div>
+            <div class="pq-group" data-stagger style="--i:5;--pq-gc:rgba(167,139,250,.28);--pq-gt:#c4b5fd;">
                 <div class="pq-group-title">👥 People</div>
                 <a class="pq-item" href="{{ route('friends.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">👥</span> Friends &amp; Loans</a>
                 <a class="pq-item" href="{{ route('chama.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🤝</span> Chamas</a>
                 <a class="pq-item" href="{{ route('forums.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🗣️</span> Forums</a>
             </div>
-            <div class="pq-group" data-stagger style="--i:5;--pq-gc:rgba(245,158,11,.25);--pq-gt:#fcd34d;">
+            <div class="pq-group" data-stagger style="--i:6;--pq-gc:rgba(245,158,11,.25);--pq-gt:#fcd34d;">
                 <div class="pq-group-title">🏠 Life</div>
                 <a class="pq-item" href="{{ route('life.board') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📋</span> Life HQ</a>
                 <a class="pq-item" href="{{ route('life.career') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">💼</span> Career &amp; Work</a>
                 <a class="pq-item" href="{{ route('life.timeline') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🗓️</span> My Timeline</a>
                 <a class="pq-item" href="{{ route('inbox.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📬</span> Life Inbox</a>
             </div>
-            <div class="pq-group" data-stagger style="--i:6;--pq-gc:rgba(236,72,153,.25);--pq-gt:#f9a8d4;">
+            <div class="pq-group" data-stagger style="--i:7;--pq-gc:rgba(236,72,153,.25);--pq-gt:#f9a8d4;">
                 <div class="pq-group-title">🙍 Profile</div>
                 @if($pqUser)
                 <a class="pq-item" href="{{ route('players.show', $pqUser) }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🪪</span> My Profile</a>

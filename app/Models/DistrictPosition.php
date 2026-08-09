@@ -28,6 +28,9 @@ class DistrictPosition extends Model
         'community'       => ['left' => 60, 'top' => 55, 'width' => 12, 'height' => 16],
         'estates'         => ['left' => 26, 'top' => 60, 'width' => 25, 'height' => 25],
         'savings'         => ['left' => 79, 'top' => 70, 'width' => 19, 'height' => 19],
+        // Approximates the previously-empty building the admin pointed out
+        // beside Fun World — nudge with the GameSet World calibrator if needed.
+        'champions-court' => ['left' => 90, 'top' => 28, 'width' => 14, 'height' => 16],
     ];
 
     /** Every district slug's rectangle, as floats (DB rows override defaults). */

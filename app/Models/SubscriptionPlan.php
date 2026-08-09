@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SubscriptionPlan extends Model
 {
-    protected $fillable = ['key', 'name', 'plan_type', 'months', 'seats', 'price_kes', 'is_active', 'is_featured', 'description'];
+    protected $fillable = ['key', 'name', 'plan_type', 'months', 'seats', 'max_classes', 'price_kes', 'is_active', 'is_featured', 'description'];
 
     protected $casts = ['is_active' => 'boolean', 'is_featured' => 'boolean'];
 

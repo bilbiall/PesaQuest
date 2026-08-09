@@ -74,7 +74,9 @@
                 <h2 style="font-weight:900;font-size:1rem;color:#fff;margin-bottom:.75rem;">⚡ Schedule a Crisis</h2>
 
                 {{-- Presets --}}
-                <span class="cx-lbl">Start from a preset</span>
+                <span class="cx-lbl">Start from a preset
+                    <x-help-tip text="One click pre-fills the name, icon, description, effect type, and severity below with a ready-made scenario — you still set the three schedule times yourself before scheduling." example="NSE Market Crash pre-fills Investment Drop at 25%" />
+                </span>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem;">
                     <template x-for="(p, i) in presets" :key="i">
                         <button type="button" class="cx-preset" @click="applyPreset(p)">
@@ -86,23 +88,31 @@
 
                 <div style="display:grid;grid-template-columns:4rem 1fr;gap:.6rem;margin-bottom:.75rem;">
                     <div>
-                        <span class="cx-lbl">Icon</span>
+                        <span class="cx-lbl">Icon
+                            <x-help-tip text="The emoji shown next to the crisis name in player notifications and on the scheduled-crisis list — defaults to a warning sign if left blank." example="📉" />
+                        </span>
                         <input type="text" x-model="form.icon" maxlength="4" class="cx-field" style="text-align:center;font-size:1.1rem;">
                     </div>
                     <div>
-                        <span class="cx-lbl">Crisis name</span>
+                        <span class="cx-lbl">Crisis name
+                            <x-help-tip text="The headline players see in their crisis warning notification and on their Life Story timeline entry." example="NSE Market Crash" />
+                        </span>
                         <input type="text" x-model="form.name" maxlength="120" class="cx-field" placeholder="e.g. NSE Market Crash">
                     </div>
                 </div>
 
                 <div style="margin-bottom:.75rem;">
-                    <span class="cx-lbl">Description (players see this in the warning)</span>
+                    <span class="cx-lbl">Description (players see this in the warning)
+                        <x-help-tip text="The explanation shown to players in the warning notification — describe what's happening in the economy and why it matters so they can prepare." example="Foreign investors pull out of the NSE, and pending investment deals lose a quarter of their value overnight." />
+                    </span>
                     <textarea x-model="form.description" maxlength="500" class="cx-field" placeholder="What is happening in the economy and why it matters..."></textarea>
                 </div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.75rem;">
                     <div>
-                        <span class="cx-lbl">Effect</span>
+                        <span class="cx-lbl">Effect
+                            <x-help-tip text="Chooses which part of a player's economy takes the hit: Investment Drop shrinks pending investment deals, Asset Crash cuts the value of owned assets, Balance Drain skims a percentage off cash wallets, and Salary Cut reduces job pay for as long as the crisis window stays open." example="Balance Drain" />
+                        </span>
                         <select x-model="form.effect_type" class="cx-field">
                             <template x-for="(meta, key) in effectTypes" :key="key">
                                 <option :value="key" x-text="meta.icon + ' ' + meta.label"></option>
@@ -111,7 +121,9 @@
                         <p style="font-size:.66rem;color:#6b7280;margin-top:.3rem;" x-text="effectTypes[form.effect_type]?.hint"></p>
                     </div>
                     <div>
-                        <span class="cx-lbl">Severity (%)</span>
+                        <span class="cx-lbl">Severity (%)
+                            <x-help-tip text="The percentage of value removed when the crisis hits — 5-10% reads as a mild squeeze, 20% and up is a painful shock players will feel for the rest of the game week." example="15" />
+                        </span>
                         <input type="number" x-model.number="form.effect_amount" min="0.5" max="90" step="0.5" class="cx-field">
                         <p style="font-size:.66rem;color:#6b7280;margin-top:.3rem;">Percentage lost. 5–10% = mild, 20%+ = painful.</p>
                     </div>
@@ -124,15 +136,21 @@
 
                 <div style="display:grid;grid-template-columns:1fr;gap:.6rem;margin-bottom:1rem;">
                     <div>
-                        <span class="cx-lbl">📢 Warning goes out at</span>
+                        <span class="cx-lbl">📢 Warning goes out at
+                            <x-help-tip text="The moment every player receives the 'crisis incoming' notification so they can prepare — sell assets, stash savings, or stock up — before the hit lands." example="48 hours before the hit time" />
+                        </span>
                         <input type="datetime-local" x-model="form.warning_at" class="cx-field">
                     </div>
                     <div>
-                        <span class="cx-lbl">💥 Crisis hits at</span>
+                        <span class="cx-lbl">💥 Crisis hits at
+                            <x-help-tip text="The moment the effect actually applies to every player at once — instant for Investment Drop, Asset Crash, and Balance Drain, or the start of the pay-cut window for Salary Cut." example="2 days after the warning" />
+                        </span>
                         <input type="datetime-local" x-model="form.active_from" class="cx-field">
                     </div>
                     <div>
-                        <span class="cx-lbl">🕊️ Crisis ends at</span>
+                        <span class="cx-lbl">🕊️ Crisis ends at
+                            <x-help-tip text="Closes the crisis window. Only Salary Cut keeps acting until this moment — it reduces every salary collected while active — the other effect types are one-shot at hit time." example="24 hours after the crisis hits" />
+                        </span>
                         <input type="datetime-local" x-model="form.active_until" class="cx-field">
                     </div>
                 </div>

@@ -125,23 +125,23 @@ body{background:#08070f;}
         <form @submit.prevent="saveBadge()" class="space-y-4" enctype="multipart/form-data">
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Badge Name</label>
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Badge Name<x-help-tip text="The title shown on the player's profile and in award notifications when they earn this badge." example="First Step" /></label>
                     <input type="text" x-model="form.name" required maxlength="60" class="ifield" placeholder="e.g. First Step">
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Description</label>
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Description<x-help-tip text="The short caption players see under the badge explaining what they did to earn it." example="You made your very first savings deposit!" /></label>
                     <input type="text" x-model="form.description" required maxlength="255" class="ifield" placeholder="Short motivating description">
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Emoji Icon</label>
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Emoji Icon<x-help-tip text="The emoji shown as the badge's icon on the grid and player profile — used only if no image is uploaded below." example="🏅" /></label>
                     <input type="text" x-model="form.icon" maxlength="4" class="ifield" placeholder="🏅">
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Color</label>
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Color<x-help-tip text="The accent color used for the badge card's glow, border, and icon background so it stands out in its own theme." example="#f59e0b" /></label>
                     <input type="color" x-model="form.color" class="ifield h-10 cursor-pointer p-1">
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Badge Image (replaces emoji)</label>
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Badge Image (replaces emoji)<x-help-tip text="An optional custom picture that overrides the emoji icon everywhere the badge is displayed, for a more polished look." example="badge-first-step.png" /></label>
                     <input type="file" id="badge-img-input" accept="image/png,image/jpeg,image/svg+xml,image/gif,image/webp"
                            class="ifield cursor-pointer" @change="previewBadgeImg">
                     <p class="text-[10px] text-gray-600 mt-1">📐 Best: <strong class="text-gray-400">200×200 px square</strong> PNG or SVG with transparent background. Max 2 MB. The image will be shown at 56×56 px on the profile.</p>
@@ -151,7 +151,7 @@ body{background:#08070f;}
                     </div>
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Trigger Type</label>
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Trigger Type<x-help-tip text="The player milestone that automatically awards this badge. Pick 'Manually Awarded' if it should only ever be granted by an admin via the Award button." example="Reach Level X" /></label>
                     <select x-model="form.trigger_type" class="ifield">
                         <optgroup label="── Progress ──" style="color:#6b7280;">
                         <option value="level">⭐ Reach Level X</option>
@@ -180,12 +180,13 @@ body{background:#08070f;}
                     <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">
                         Trigger Value
                         <span class="normal-case text-gray-600" x-text="triggerHelp()"></span>
+                        <x-help-tip text="The threshold number the player must reach for the chosen trigger type before the badge is auto-awarded. Ignored when Trigger Type is 'Manually Awarded'." example="5" />
                     </label>
                     <input type="number" x-model.number="form.trigger_value" min="0" class="ifield" placeholder="e.g. 5">
                 </div>
                 <div class="col-span-2 flex items-center gap-3">
                     <input type="checkbox" id="is_active" x-model="form.is_active" class="rounded">
-                    <label for="is_active" class="text-gray-300 text-sm">Badge is active (auto-awarded when triggered)</label>
+                    <label for="is_active" class="text-gray-300 text-sm">Badge is active (auto-awarded when triggered)<x-help-tip text="Turn off to pause automatic awarding of this badge without deleting it — players who already earned it keep it." example="On for most badges" /></label>
                 </div>
             </div>
 
@@ -212,7 +213,7 @@ body{background:#08070f;}
         <p class="text-sm text-gray-400 mb-4">Award "<strong class="text-white" x-text="awardBadgeName"></strong>" to a player.</p>
         <div class="space-y-3">
             <div>
-                <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Player User ID</label>
+                <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Player User ID<x-help-tip text="The numeric account ID of the player who should manually receive this badge, bypassing its automatic trigger condition." example="482" /></label>
                 <input type="number" x-model.number="awardUserId" class="ifield" placeholder="Enter user ID">
             </div>
             <button @click="awardBadge()" :disabled="awarding" class="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"

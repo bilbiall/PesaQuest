@@ -500,6 +500,19 @@ textarea.ifield   { resize:vertical;min-height:80px }
 
         <div>
           <label class="block text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wider">
+            County <span class="normal-case font-normal text-slate-600">(optional)</span>
+          </label>
+          <select name="county" class="ifield">
+            <option value="">Prefer not to say</option>
+            @foreach($counties as $c)
+              <option value="{{ $c }}" @selected(old('county', $user->county) === $c)>{{ $c }}</option>
+            @endforeach
+          </select>
+          @error('county')<p class="text-red-400 text-xs mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <div>
+          <label class="block text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wider">
             Date of Birth <span class="normal-case font-normal text-slate-600">🔒 private — used only for birthday gifts &amp; your game world</span>
           </label>
           @if($user->date_of_birth)

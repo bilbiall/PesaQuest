@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="silverCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f2f4f7"/>
+      <stop offset="55%" stop-color="#c3c9d1"/>
+      <stop offset="100%" stop-color="#8b929c"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 70 L34 118 L64 104 L94 118 L78 70 Z" fill="#7d838d"/>
+  <path d="M46 68 L32 112 L52 102" fill="none" stroke="#5f646c" stroke-width="4" stroke-linecap="round"/>
+  <path d="M82 68 L96 112 L76 102" fill="none" stroke="#5f646c" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="64" cy="56" r="46" fill="url(#silverCoin)" stroke="#6b7078" stroke-width="3"/>
+  <circle cx="64" cy="56" r="37" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+  <path d="M64 30 L71 48 L90 48 L74 60 L80 78 L64 67 L48 78 L54 60 L38 48 L57 48 Z" fill="#ffffff"/>
+  <ellipse cx="46" cy="36" rx="14" ry="8" fill="#ffffff" opacity="0.35"/>
+</svg>

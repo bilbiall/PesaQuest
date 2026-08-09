@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="legacyCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffb5cf"/>
+      <stop offset="100%" stop-color="#c2185b"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="url(#legacyCoin)" stroke="#8c0f42" stroke-width="3"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.35"/>
+  <path d="M64 52 c-6 -12 -26 -10 -26 5 c0 14 26 26 26 26 s26 -12 26 -26 c0 -15 -20 -17 -26 -5 Z" fill="#ffffff"/>
+  <path d="M30 92 c8 -10 20 -10 34 -10 s26 0 34 10 c-4 8 -14 12 -34 12 s-30 -4 -34 -12 Z" fill="#ffffff" opacity="0.85"/>
+</svg>

@@ -165,28 +165,28 @@
         <form method="POST" action="{{ route('gameset.arcade.settings.save', $game) }}" class="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
             @csrf
             <div>
-                <label class="tile-head">Tile count</label>
+                <label class="tile-head">Tile count<x-help-tip text="Fixed and not editable here — the board art image is built for exactly this many tiles, so the count can't change without new art." example="81" /></label>
                 <div class="arc-input" style="background:rgba(255,255,255,.02);color:#9ca3af;">{{ $game->tile_count }} (fixed)</div>
             </div>
             <div>
-                <label class="tile-head">Floor % (bust threshold)</label>
+                <label class="tile-head">Floor % (bust threshold)<x-help-tip text="If a session's pot drops to this percentage of the entry stake or below, the session busts and ends immediately. Higher = players bust out faster/more often; lower = more forgiving, longer games." example="20" /></label>
                 <input name="floor_percent" type="number" min="0" max="90" value="{{ $game->floor_percent }}" class="arc-input" required>
             </div>
             <div>
-                <label class="tile-head">Finish bonus %</label>
+                <label class="tile-head">Finish bonus %<x-help-tip text="A house-funded top-up added to the pot the instant a player reaches the final tile — the reward for actually finishing instead of cashing out early." example="15" /></label>
                 <input name="finish_bonus_percent" type="number" min="0" max="100" value="{{ $game->finish_bonus_percent }}" class="arc-input" required>
             </div>
             <div>
-                <label class="tile-head">XP per play</label>
+                <label class="tile-head">XP per play<x-help-tip text="Flat XP every session earns just for playing, win or lose — stacks on top of existing position/outcome-based XP, it doesn't replace it." example="5" /></label>
                 <input name="xp_per_play" type="number" min="0" max="1000" value="{{ $game->xp_per_play }}" class="arc-input" required>
             </div>
             <div>
-                <label class="tile-head">XP per win</label>
+                <label class="tile-head">XP per win<x-help-tip text="Extra flat XP awarded only on a genuine win — reaching the finish tile, or winning a Rivals Trail (head-to-head wager) round." example="20" /></label>
                 <input name="xp_per_win" type="number" min="0" max="1000" value="{{ $game->xp_per_win }}" class="arc-input" required>
             </div>
             <div class="flex items-center gap-2">
                 <input type="checkbox" name="is_active" value="1" id="game-active" {{ $game->is_active ? 'checked' : '' }} style="width:1.1rem;height:1.1rem;">
-                <label for="game-active" class="text-xs font-bold text-gray-300">Active</label>
+                <label for="game-active" class="text-xs font-bold text-gray-300">Active<x-help-tip text="Unchecking hides Pesa Trail from the arcade lobby entirely (e.g. for maintenance) without deleting any of its configuration." /></label>
             </div>
             <button type="submit" class="btn-mini text-white" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">Save Settings</button>
         </form>
@@ -202,16 +202,16 @@
         <form method="POST" action="{{ route('gameset.arcade.mystery.store') }}" class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end mb-4">
             @csrf
             <input type="hidden" name="arcade_game_id" value="{{ $game->id }}">
-            <div class="col-span-2"><label class="tile-head">Label</label><input name="label" class="arc-input" placeholder="Found cash..." required maxlength="120"></div>
+            <div class="col-span-2"><label class="tile-head">Label<x-help-tip text="The line shown to the player when this outcome is rolled." example="Found cash on the street!" /></label><input name="label" class="arc-input" placeholder="Found cash..." required maxlength="120"></div>
             <div>
-                <label class="tile-head">Effect</label>
+                <label class="tile-head">Effect<x-help-tip text="Gift adds this outcome's amount to the session pot; Curse removes it." example="Gift" /></label>
                 <select name="effect" class="arc-input">
                     <option value="gift">🎁 Gift</option>
                     <option value="curse">💀 Curse</option>
                 </select>
             </div>
-            <div><label class="tile-head">Percent</label><input name="percent" type="number" min="1" max="100" class="arc-input" required></div>
-            <div><label class="tile-head">Weight</label><input name="weight" type="number" min="1" max="100" value="10" class="arc-input" required></div>
+            <div><label class="tile-head">Percent<x-help-tip text="How much of the CURRENT pot this outcome moves — a percentage, not a flat KES amount." example="15" /></label><input name="percent" type="number" min="1" max="100" class="arc-input" required></div>
+            <div><label class="tile-head">Weight<x-help-tip text="Relative odds of this outcome being picked when a mystery tile is landed on — a weight-20 row is twice as likely to roll as a weight-10 row, regardless of how many other outcomes exist." example="10" /></label><input name="weight" type="number" min="1" max="100" value="10" class="arc-input" required></div>
             <button type="submit" class="btn-mini text-white" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">Add</button>
         </form>
 
@@ -245,7 +245,7 @@
         <div class="grid sm:grid-cols-2 gap-5">
             @foreach(['reward' => ['label' => '💰 Reward lines', 'texts' => $rewardTexts, 'color' => '#6ee7b7'], 'expense' => ['label' => '💸 Expense lines', 'texts' => $expenseTexts, 'color' => '#fca5a5']] as $cat => $info)
             <div>
-                <p class="text-xs font-black mb-2" style="color:{{ $info['color'] }};">{{ $info['label'] }}</p>
+                <p class="text-xs font-black mb-2" style="color:{{ $info['color'] }};">{{ $info['label'] }}<x-help-tip text="One line from this category's pool is picked at random whenever a player lands on a plain reward or expense tile — a bigger pool means fresher wording instead of the same line every time. A tile's own Label (set in the Tile Editor below) always overrides this pool for that specific tile." example="Consistent saving compounds — small wins add up." /></p>
                 <form method="POST" action="{{ route('gameset.arcade.flavor-text.store', $game) }}" class="flex gap-2 mb-3">
                     @csrf
                     <input type="hidden" name="category" value="{{ $cat }}">
@@ -257,7 +257,7 @@
                     <form method="POST" action="{{ route('gameset.arcade.flavor-text.update', $t) }}" class="flex items-center gap-2 {{ $t->is_active ? '' : 'opacity-40' }}">
                         @csrf @method('PUT')
                         <input name="text" value="{{ $t->text }}" class="arc-input" required maxlength="160">
-                        <label class="flex items-center gap-1 text-[10px] text-gray-400 flex-shrink-0"><input type="checkbox" name="is_active" value="1" {{ $t->is_active ? 'checked' : '' }}> On</label>
+                        <label class="flex items-center gap-1 text-[10px] text-gray-400 flex-shrink-0"><input type="checkbox" name="is_active" value="1" {{ $t->is_active ? 'checked' : '' }}> On @if($loop->first)<x-help-tip text="Uncheck to keep a line in the list without it being picked — useful for retiring a line without losing your work." />@endif</label>
                         <button type="submit" class="btn-mini flex-shrink-0" style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;">Save</button>
                         <button type="submit" form="del-flavor-{{ $t->id }}" onclick="return confirm('Delete this line?')" class="btn-mini flex-shrink-0" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#fca5a5;">✕</button>
                     </form>
@@ -276,10 +276,10 @@
         <h2 class="text-sm font-black text-emerald-300 mb-3">💵 Stake Tiers (level → deposit amount)</h2>
         <form method="POST" action="{{ route('gameset.arcade.stake-tiers.store', $game) }}" class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end mb-4">
             @csrf
-            <div class="col-span-2"><label class="tile-head">Label</label><input name="label" class="arc-input" placeholder="Starter" required maxlength="40"></div>
-            <div><label class="tile-head">Level min</label><input name="level_min" type="number" min="1" max="99" class="arc-input" required></div>
-            <div><label class="tile-head">Level max</label><input name="level_max" type="number" min="1" max="99" class="arc-input" required></div>
-            <div><label class="tile-head">Stake (KES)</label><input name="stake_amount" type="number" min="1" class="arc-input" required></div>
+            <div class="col-span-2"><label class="tile-head">Label<x-help-tip text="A readable name for the tier — shown only in this admin list, not to players." example="Starter (Lv 1–5)" /></label><input name="label" class="arc-input" placeholder="Starter" required maxlength="40"></div>
+            <div><label class="tile-head">Level min<x-help-tip text="Lowest player level this tier applies to. A player's stake is chosen by matching their current level into one tier's min–max range." example="1" /></label><input name="level_min" type="number" min="1" max="99" class="arc-input" required></div>
+            <div><label class="tile-head">Level max<x-help-tip text="Highest player level this tier applies to (must be ≥ Level min)." example="5" /></label><input name="level_max" type="number" min="1" max="99" class="arc-input" required></div>
+            <div><label class="tile-head">Stake (KES)<x-help-tip text="KES deducted from the player's wallet and turned into their starting session pot when they start a game at this level range. Used for solo/normal play only — Rivals Trail wager rounds use an entry amount the round's creator sets instead." example="200" /></label><input name="stake_amount" type="number" min="1" class="arc-input" required></div>
             <button type="submit" class="btn-mini text-white" style="background:linear-gradient(135deg,#10b981,#059669);">Add</button>
         </form>
 
@@ -316,11 +316,11 @@
         <div class="row-group">
             <div class="row-group-h">{{ $group['label'] }}</div>
             <div class="tile-row" style="background:rgba(255,255,255,.03);">
-                <span class="tile-head">#</span><span class="tile-head">Icon</span>
-                <span class="tile-head">Money</span><span class="tile-head">%</span>
-                <span class="tile-head">Movement</span><span class="tile-head">Target</span>
-                <span class="tile-head">Myst.</span><span class="tile-head">Gold</span>
-                <span class="tile-head">Flavor text</span>
+                <span class="tile-head">#</span><span class="tile-head">Icon<x-help-tip text="Optional emoji shown on this tile on the board — purely visual, has no effect on gameplay. Leave blank to use the board art's default look for that tile type." example="🎁" /></span>
+                <span class="tile-head">Money<x-help-tip text="What happens to the session pot when a player lands here: None (no effect), Reward (adds to the pot), or Expense (removes from the pot) — set as a % of the pot's CURRENT value via the % field, not a flat KES amount." example="Reward" /></span><span class="tile-head">%<x-help-tip text="How much of the pot's current value the Money effect moves. Required whenever Money is set to Reward or Expense — saving with a money effect but no percent is rejected." example="10" /></span>
+                <span class="tile-head">Movement<x-help-tip text="Sends the player to another tile on landing: Ladder bottom (jumps forward) or Snake head (drops back). Requires a Target tile number, and that target can't be this same tile." example="Ladder bottom" /></span><span class="tile-head">Target<x-help-tip text="The tile number this tile sends the player to. Required whenever Movement is Ladder bottom or Snake head; ignored otherwise." example="42" /></span>
+                <span class="tile-head">Myst.<x-help-tip text="Routes this landing through the Mystery Pool above (a random weighted gift/curse) instead of applying the plain Money effect directly." /></span><span class="tile-head">Gold<x-help-tip text="Marks a golden tile: the first landing just reveals it, and every landing after that auto-adds +25% of the player's ORIGINAL stake to the pot." /></span>
+                <span class="tile-head">Flavor text<x-help-tip text="Optional per-tile override line. Leave blank to use a random pick from the Flavor Text pool above instead; only fill this in if this specific tile should always say the exact same thing every time, e.g. a sponsor-branded tile." example="Sponsored by SafeSave Bank!" /></span>
             </div>
             @foreach($group['tiles'] as $tile)
             <div class="tile-row">

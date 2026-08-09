@@ -79,21 +79,35 @@
         <h2 class="text-sm font-black text-amber-300 mb-3">➕ Add Segment</h2>
         <form method="POST" action="{{ route('gameset.spin.store') }}" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 items-end">
             @csrf
-            <div class="col-span-2"><label class="seg-head">Label</label><input name="label" class="seg-input" placeholder="Ksh 2,000" required maxlength="40"></div>
-            <div><label class="seg-head">Emoji</label><input name="emoji" class="seg-input" placeholder="💰" required maxlength="10"></div>
-            <div><label class="seg-head">Color</label><input name="color" type="color" value="#6366f1" class="seg-input" style="height:34px;padding:2px;"></div>
+            <div class="col-span-2"><label class="seg-head">Label
+                <x-help-tip text="The wedge's display text, shown on the wheel graphic and in the win/lose popup after spinning." example="Ksh 2,000" />
+            </label><input name="label" class="seg-input" placeholder="Ksh 2,000" required maxlength="40"></div>
+            <div><label class="seg-head">Emoji
+                <x-help-tip text="The icon shown on this wedge of the wheel." example="💰" />
+            </label><input name="emoji" class="seg-input" placeholder="💰" required maxlength="10"></div>
+            <div><label class="seg-head">Color
+                <x-help-tip text="The wedge's fill color on the wheel graphic — use contrasting colors so players can tell wedges apart at a glance." example="#6366f1" />
+            </label><input name="color" type="color" value="#6366f1" class="seg-input" style="height:34px;padding:2px;"></div>
             <div>
-                <label class="seg-head">Type</label>
+                <label class="seg-head">Type
+                    <x-help-tip text="What kind of reward this wedge grants when landed on: wallet cash, a credit-score change, XP points, or a double-next-salary boost." example="balance" />
+                </label>
                 <select name="type" class="seg-input">
                     @foreach(\App\Models\SpinSegment::TYPES as $k => $lbl)
                     <option value="{{ $k }}">{{ $lbl }}</option>
                     @endforeach
                 </select>
             </div>
-            <div><label class="seg-head">Value</label><input name="value" type="number" class="seg-input" placeholder="2000" required></div>
-            <div><label class="seg-head">Weight</label><input name="weight" type="number" class="seg-input" value="10" min="1" max="100" required></div>
+            <div><label class="seg-head">Value
+                <x-help-tip text="The amount awarded for this reward type — KES for the balance/salary types (use a negative number for a fine), points for credit or XP." example="2000" />
+            </label><input name="value" type="number" class="seg-input" placeholder="2000" required></div>
+            <div><label class="seg-head">Weight
+                <x-help-tip text="How likely this wedge is to be landed on, relative to the other active wedges — a higher weight means better odds, not a bigger physical slice." example="10" />
+            </label><input name="weight" type="number" class="seg-input" value="10" min="1" max="100" required></div>
             <div>
-                <label class="seg-head">Tier</label>
+                <label class="seg-head">Tier
+                    <x-help-tip text="Labels the wedge Good, Great, or Bad for the win-chance / risk-chance stats and popup styling — it does not change the odds itself, only how the outcome is framed to the player." example="good" />
+                </label>
                 <select name="tier" class="seg-input">
                     <option value="good">🙂 Good</option>
                     <option value="great">🤩 Great</option>
@@ -113,9 +127,9 @@
     @php $totalWeight = max(1, $segments->where('is_active', true)->sum('weight')); @endphp
     <div class="rounded-2xl overflow-hidden" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);">
         <div class="seg-row" style="background:rgba(255,255,255,.025);">
-            <span class="seg-head">Wedge</span><span class="seg-head">Label</span><span class="seg-head">Emoji</span>
-            <span class="seg-head">Type</span><span class="seg-head">Value</span><span class="seg-head">Weight</span>
-            <span class="seg-head">Tier</span><span class="seg-head">Chance</span><span class="seg-head text-right">Actions</span>
+            <span class="seg-head">Wedge<x-help-tip text="The wedge's fill color on the wheel graphic — use contrasting colors so players can tell wedges apart at a glance." example="#6366f1" /></span><span class="seg-head">Label<x-help-tip text="The wedge's display text, shown on the wheel graphic and in the win/lose popup after spinning." example="Ksh 2,000" /></span><span class="seg-head">Emoji<x-help-tip text="The icon shown on this wedge of the wheel." example="💰" /></span>
+            <span class="seg-head">Type<x-help-tip text="What kind of reward this wedge grants when landed on: wallet cash, a credit-score change, XP points, or a double-next-salary boost." example="balance" /></span><span class="seg-head">Value<x-help-tip text="The amount awarded for this reward type — KES for the balance/salary types (use a negative number for a fine), points for credit or XP." example="2000" /></span><span class="seg-head">Weight<x-help-tip text="How likely this wedge is to be landed on, relative to the other active wedges — a higher weight means better odds, not a bigger physical slice." example="10" /></span>
+            <span class="seg-head">Tier<x-help-tip text="Labels the wedge Good, Great, or Bad for the win-chance / risk-chance stats and popup styling — it does not change the odds itself, only how the outcome is framed to the player." example="good" /></span><span class="seg-head">Chance</span><span class="seg-head text-right">Actions</span>
         </div>
         @foreach($segments as $seg)
         <form method="POST" action="{{ route('gameset.spin.update', $seg) }}" class="seg-row {{ $seg->is_active ? '' : 'opacity-40' }}">

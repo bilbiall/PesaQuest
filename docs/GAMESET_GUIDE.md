@@ -20,6 +20,7 @@
 5. [🎓 Courses](#5-courses) — with sample
 6. [💼 Jobs (Full-time, Part-time, Freelance)](#6-jobs) — with samples
 7. [📜 Quests & Triggers](#7-quests--triggers) — with 3 samples
+7b. [🤖 Automation — Contracts, Quest Factory & Blueprints](#7b-automation) — with worked example
 8. [📈 Investment Deals](#8-investment-deals) — with sample
 9. [🏦 Loan Products](#9-loan-products) — with sample
 9b. [🏠 Asset Financing (Estates & Car Yard)](#9b-asset-financing-estates--car-yard) — with worked example
@@ -27,6 +28,8 @@
 11. [🌪️ Crisis Events](#11-crisis-events) — with worked schedule
 12. [🎡 Fun World Activities](#12-fun-world-activities) — with sample
 12b. [🐍 Arcade — Pesa Trail](#12b-arcade--pesa-trail) — board layout, settings, XP, flavor text, Rivals Trail
+12c. [🌟 Dreams](#12c-dreams) — with sample
+12d. [🏆 Champions' Court — Challenges](#12d-champions-court--challenges) — with sample
 13. [🏅 Badges](#13-badges)
 14. [🌱 Life Chapters](#14-life-chapters)
 15. [⚙️ XP Levels, Milestones, Hustle Tips & Career Quiz](#15-config-panels)
@@ -312,6 +315,82 @@ alternative routes).
 
 ---
 
+## 7b. Automation
+
+**What it is in gameplay:** three self-driving systems that generate real, drafted game
+content from what already exists in your economy — so a small team can keep a big living
+city stocked with quests and NPC side-tasks without hand-writing every single one.
+
+**Manager:** GameSet → Quests → 🤖 Automation (also linked from the Quests list). The page
+itself has a **"📖 New here?"** disclosure panel at the top — click it for a live,
+always-current walkthrough of exactly what's on the page; the summary below is the
+field-by-field reference.
+
+### 📜 Contract Rules (personal NPC side-tasks)
+Every player automatically holds a small number of live "contracts" — short NPC-voiced
+side-tasks generated from *their own* situation (an overdue bill, low mood, uncollected
+pay). Nothing to approve; they're ephemeral and re-top-up automatically. You tune the
+**recipe**, not individual contracts:
+
+| Field | Meaning | Guidance |
+|---|---|---|
+| Age group / Level band | Which players this rule applies to | Narrowest matching rule wins; a specific band beats `all` |
+| Objectives per contract | How many goals bundle into one contract (3–5) | More objectives = a longer, more demanding contract |
+| Completion mode | `all` (every objective) or `any N` (first N of the set) | `any N` is more forgiving — good for younger bands |
+| Duration (game days) | How long a contract stays open before expiring unmet | Match to your game clock pace (§2 in ADMIN-GUIDE) |
+| Held count | How many contracts a player carries at once | 2–3 keeps it a steady trickle, not a wall of tasks |
+| XP / KES reward | Payout on completion | Keep modest — contracts are a side activity, not the main quest economy |
+
+### 🏭 Quest Factory (reactive — one switch)
+When **Factory on** is checked, every course or job you create in GameSet auto-drafts its
+own matching quest ("Study X", "Get hired at Y") using the NPC voice pool — you never touch
+this after flipping it on. **Auto-publish** skips the review queue entirely (only turn this
+on once you trust the copy it writes). **⛰️ Quest Gate** is a related but separate switch on
+the same card: when on, players cannot level past a level that still has unfinished quests —
+XP keeps banking up and applies the instant they clear the backlog; nobody is ever demoted.
+
+### 🎲 The Mixers (one-button batch generation)
+Two "press and walk away" composers, both always land as **drafts for review**, never
+published directly:
+- **Quest Mixer** — fills a level range up to a target quest-count per level, inventing
+  combos from your real courses/jobs/assets, with money values sized off your own job
+  salaries and a difficulty mix (gentle/balanced/spicy) that sets the XP curve. Idempotent —
+  pressing again only tops up levels still below target.
+- **Life Events Mixer** — composes a batch of new life events (windfalls, shocks, market
+  swings, credit moves, career/story beats) across every age group at once. They land
+  switched **off**; approve each one in §10 Life Events.
+
+### 🧬 Quest Blueprints (the ladder printing press)
+A blueprint is a **recipe**, not a single quest: one or more triggers (save Ksh X, take any
+course + deposit Y, buy an asset in category Z…) repeated up a level ladder with growing
+values and rewards, so a themed quest line (e.g. "Saver's Staircase") never has a gap
+between levels — a nightly sweep prints any missing rung as a draft automatically.
+
+| Field | Meaning | Guidance |
+|---|---|---|
+| Name / icon | Identity for the whole ladder | e.g. "Saver's Staircase" 🏦 |
+| Trigger recipe | One or more trigger types (same catalogue as §7) with a base value | The "shape" of every rung — only the numbers grow per level |
+| Level range (from–to) | Which rungs the sweep should keep filled | e.g. levels 1→9 |
+| Value growth | How the trigger's target value scales per rung | e.g. +50% target per level up the ladder |
+| Reward growth | How XP/KES scale per rung | Keep pace with the value growth so later rungs still feel worth it |
+| **Chain** 🔗 | Makes each rung require the previous rung's quest as a prerequisite | Turns a set of independent quests into a real progression story |
+| Active | Pauses the sweep for this blueprint without deleting it | Use to retire a ladder without losing the recipe |
+
+### 📋 Worked example
+
+> **Blueprint:** "Saver's Staircase" 🏦 · **Trigger:** `reach_savings` starting at 1,000 ·
+> **Levels:** 1→9 · **Value growth:** +50%/level · **Chain:** on
+> *Rung 1 (Lv 1): save Ksh 1,000 → Rung 2 (Lv 2, requires Rung 1): save Ksh 1,500 → … →
+> Rung 9 (Lv 9): save Ksh 38,000-ish.* Run the nightly sweep (or trigger it from Admin →
+> Artisan) and every missing rung prints as a draft; publish the ladder once, and it stays
+> self-healing forever — add a new max level later and the next sweep prints the new rungs.
+
+*Generated output from all three systems (Factory drafts, Mixer output, Blueprint rungs)
+lands in one place: GameSet → Quests → 🎲 Generated Quests — filter by source, publish or
+discard individually or in bulk.*
+
+---
+
 ## 8. Investment Deals
 
 **What it is in gameplay:** Equity Square offers that lock money until a maturity date
@@ -436,38 +515,53 @@ are recorded forever on the player's Life Story timeline.
 | Field | Meaning | Guidance |
 |---|---|---|
 | Slug, title, icon | Identity | Slug must be unique |
-| Chapter | student…elder or `all` | Match hardship to life stage |
-| Asset category (optional) | Only fires for owners of that category | Ownership consequences |
+| **Chapter** | Despite the name, this scopes by **age group** (`8-12`, `13-17`, `18-25`, `26+`) or `all` — NOT the six net-worth Life Chapters from §14. An 8–12 event should never be a mortgage story. | Match hardship to age band |
+| Asset category (optional) | Only fires for owners of that category (`vehicle`, `property`, `business`, `investment`, `gadget`) | Ownership consequences |
 | Effect type + effect data | What happens (below) | — |
 | Probability | Chance per game day (e.g. 0.010 = 1%) | 0.005–0.02 typical; players see ~⅓ of your pool monthly |
 | Flavor text | A quoted voice line | Kenyan, human, short |
 | Educational note | THE LESSON | Never skip |
 | Positive flag | Colours the event green/red | — |
 
-**Effect types and their data:**
-- `balance_delta` — wallet change. Data: `{"balance": -2500}` or a range
-  `{"balance_min": -3000, "balance_max": -800}`.
-- `credit_delta` — credit score change. Data: `{"credit": -10}`.
-- `market_event` — asset values shift by category. Data: `{"category": "stock", "percent": -8}`.
-- `compound` — wallet + credit together.
-- `narrative` — story only, no numbers.
+**Effect types and their exact data shape** (the form gives you structured sub-fields per
+type, not raw JSON — but this is what actually gets stored):
+- `balance_delta` — wallet change, picked randomly within a range. Data:
+  `{"balance_min": -3000, "balance_max": -800}` (both sides negative = pure loss; both
+  positive = pure windfall; straddling zero = a mixed-luck event).
+- `market_event` — one asset category's value shifts by a percentage. Data:
+  `{"market_categories": [{"category": "investment", "pct": -8}]}` (category is one of
+  the same five asset categories: vehicle/property/business/investment/gadget).
+- `credit_adjust` — credit score change, picked randomly within a range. Data:
+  `{"credit_min": -15, "credit_max": -5}`.
+- `bill_assign` — attaches an existing bill (by slug) to the player, as if they'd taken on
+  a new obligation. Data: `{"bill_slug": "car-insurance"}` — the slug must match a real
+  bill in GameSet → Bills.
+- `career_change` — a one-off income swing framed as a job/career event (a raise, a pay
+  cut, a bonus). Data: `{"income_delta_min": 2000, "income_delta_max": 6000}`.
 
 ### 📋 Sample A: negative event
 
 > **Slug:** `matatu-fare-hike` · **Chapter:** all · **Icon:** 🚌 · **Probability:** 0.012
-> **Effect:** `balance_delta`, `{"balance_min": -900, "balance_max": -300}`
+> **Effect:** `balance_delta` → `{"balance_min": -900, "balance_max": -300}`
 > **Title:** "Matatu Fares Doubled Overnight" · **Positive:** no
 > **Flavor:** *"Beba beba! Mafuta imepanda, si mimi."* — every conductor this week
 > **Educational note:** "Transport is a budget's most volatile line. Keep a small buffer
 > so a fare hike never touches your savings."
 
-### 📋 Sample B: positive, chapter-scoped event
+### 📋 Sample B: positive, age-scoped event
 
-> **Slug:** `chama-dividend` · **Chapter:** hustler · **Icon:** 🎉 · **Probability:** 0.008
-> **Effect:** `balance_delta`, `{"balance": 4000}` · **Positive:** yes
+> **Slug:** `chama-dividend` · **Chapter:** 18-25 · **Icon:** 🎉 · **Probability:** 0.008
+> **Effect:** `balance_delta` → `{"balance_min": 3000, "balance_max": 5000}` · **Positive:** yes
 > **Flavor:** *"Mwisho wa mwaka, mgao!"* — your chama treasurer, beaming
 > **Educational note:** "Group saving pays twice: the dividend, and the discipline you
 > practised all year."
+
+### 📋 Sample C: bill_assign event
+
+> **Slug:** `new-phone-plan` · **Chapter:** all · **Icon:** 📱 · **Probability:** 0.006
+> **Effect:** `bill_assign` → `{"bill_slug": "airtime-data"}` · **Positive:** no
+> **Educational note:** "A new habit is a new recurring cost — check what it does to your
+> budget before you commit to it, not after."
 
 ---
 
@@ -634,6 +728,102 @@ set for themselves per round, not something GameSet configures ahead of time.
 
 ---
 
+## 12c. Dreams
+
+**What it is in gameplay:** the "someday" wishlist at **Champions' Court** — expensive,
+purely cosmetic trophies (mansions, supercars, a private jet) that a player buys outright
+with wallet cash once they've genuinely accumulated it. Dreams **never count toward net
+worth** and can never be resold — that's a deliberate anti-loophole decision, so a Dream
+can't be used to launder wealth through a chapter-advancement or challenge metric. Owned
+Dreams show in the player's Trophy Case on their profile.
+
+**Manager:** GameSet → Dreams → New Dream.
+
+| Field | Meaning | Guidance |
+|---|---|---|
+| Name, tagline, description | What players see on the catalog card | Sell the aspiration — this is pure motivation content |
+| Emoji icon / Image URL | Visual | Image overrides the emoji; use the in-house SVG trophy set (`/img/trophies/...svg`) for a consistent look |
+| Price (KES) | Cash cost, paid once from wallet balance | Should feel like a genuine stretch goal — 1,000,000+ is typical |
+| Category | property / vehicle / travel / legacy / business / lifestyle | Cosmetic grouping only — drives the catalog's filter chips |
+| Min level (optional) | Hides the Dream from players below this level | Leave blank for no gate; use to keep top-tier Dreams aspirational rather than day-one purchases |
+| Sort order | Manual ordering within its category | Lower numbers show first |
+| Active | Visible in Champions' Court | — |
+
+### 📋 Sample
+
+> **Name:** Karen Hillside Mansion · **Icon:** 🏡 · **Category:** property ·
+> **Price:** 45,000,000 · **Min level:** 12
+> **Tagline:** "The house that says you made it."
+> *Design note: price Dreams meaningfully above what any single asset or job pays out —
+> the lesson is patient accumulation across the whole economy, not one lucky windfall.*
+
+---
+
+## 12d. Champions' Court — Challenges
+
+**What it is in gameplay:** fair head-to-head and broadcast competitions between players,
+scored on **baseline + delta** (how much you *improved* during the challenge window, not
+your raw starting balance) so a rich player and a poor player can compete on equal footing.
+Two modes: **duel** (1-on-1 or team, invite → accept, both sides' baselines snapshot the
+moment everyone has accepted — a fair start line) and **broadcast** (join-anytime
+leaderboard, used for official Pesa City events, school Class Challenges, and chama-vs-chama
+battles).
+
+**Manager:** GameSet → Challenges → New Template. You define reusable **templates**; players
+(or teachers, or the "official" broadcast tool) spin up actual challenges from a template.
+
+| Field | Meaning | Guidance |
+|---|---|---|
+| Key | Stable machine identifier | Set once, cannot be changed after creation |
+| Name, description, icon/image | What players see | — |
+| **Metric** | What progress is measured (net worth, savings balance, wallet balance, XP, courses completed, assets owned, jobs started, gigs completed, chama contributions, friends, forum posts, bills paid, Pesa Trail wins/winnings) | Pick something every eligible player can move — a "courses completed" challenge is unfair to a player who's already finished them all |
+| **Style** | `percent` growth (fairest — rewards improvement relative to your own start), `amount` (absolute KES/points gained), or `count` (raw event count) | Percent is the safest default for money metrics; count suits activity metrics like bills paid |
+| Default duration (days) | How long a challenge from this template runs | 7 is typical — long enough to matter, short enough to stay urgent |
+| Level min / max | Eligibility band | Keep bands narrow enough that the metric stays a fair contest |
+| Players can create duels | Lets players challenge friends directly using this template | Turn off for templates meant only for official/teacher use |
+| Usable for broadcasts | Available to the admin/teacher "start an official challenge" tool | — |
+| Active | Selectable at all | — |
+
+**Stakes** (set by whoever creates an actual challenge, not the template): an optional
+entry fee, pooled and paid winner-take-all — always framed as an "entry fee / prize," never
+a "bet," matching the game's no-gambling stance.
+
+### 📋 Sample
+
+> **Key:** `savings-sprint` · **Name:** Savings Sprint · **Icon:** 🏦
+> **Metric:** Savings Balance · **Style:** percent · **Duration:** 7 days ·
+> **Level:** 3–99 · **Player duels:** on · **Broadcasts:** on
+> **Description:** "Whoever grows their savings balance the most (by %) in a week wins."
+> *A level-30 player with Ksh 500,000 saved and a level-4 player with Ksh 2,000 saved can
+> both win this — percent style measures who improved the most, not who started richest.*
+
+---
+
+## 12e. World Map Calibration
+
+**What it is in gameplay:** the invisible tap-zones over the Pesa City map art — where a
+player actually needs to click to enter each district (Marketplace, Fun World, Champions'
+Court, Estates, Car Yard, etc.), and where each district's info panel/pin visually sits.
+There is no text form here; it's a **drag-and-resize** tool laid directly over the map
+image.
+
+**Manager:** GameSet → World Map.
+
+- Drag any district's coloured box to reposition its tap-zone; drag its bottom-right handle
+  to resize it. The small dot marks the district's exact anchor point (used for the info
+  panel's pin).
+- **Two independent calibration passes are required**, same reasoning as Arcade's board
+  layout (§12b): a **Desktop** pass for wide screens, and a separate **Mobile** pass for
+  phones (different aspect ratio, different crop of the same art). Save each tab
+  separately — saving one never touches the other.
+- Get this wrong and the *game* still works (district names/content are unaffected) but
+  players tap empty air trying to enter a district, or the info panel points at the wrong
+  spot on the map.
+- *Tip:* after changing the map artwork itself, always redo both calibration passes —
+  positions are pixel/percent coordinates tied to that specific image.
+
+---
+
 ## 13. Badges
 
 **What it is in gameplay:** permanent achievement markers on the player profile.
@@ -679,10 +869,19 @@ All on the GameSet Hub:
   "Property Owner — buy your first asset" → type `asset`, threshold 1.
 - **💡 Hustle Tips** — the rotating one-liner tips in the Pesa City sidebar. Keep 8–15
   live; one idea per tip; Kenyan and concrete.
+- **🧭 Career Fields & Tracks** — the two linked lists everything career-related is built
+  from; nothing about careers is hardcoded. **Tracks** (📚) are the coarse groupings
+  Courses and Jobs are filed under (e.g. `finance`, `tech`) — each has an icon, label,
+  key, and colour. **Fields** (🎯) are the *finer* interest categories shown in the career
+  quiz (e.g. "Finance & Banking") — each field picks one recommended track from the list
+  above, plus its own icon/label/key/colour and an optional result-screen description.
+  Rename or add either list here and it updates the quiz, Courses and Jobs everywhere at
+  once. *Gotcha:* renaming a field's key here does **not** retroactively rename it inside
+  quiz options already saved below — re-pick the field in each affected option after
+  saving.
 - **🎯 Career Quiz Questions** — the onboarding quiz. Each option maps to career fields
-  with weights, e.g. `{"technology": 3, "finance": 1}`. Valid field keys: technology,
-  healthcare, finance, creative, education, agriculture, media, engineering, law,
-  business. Keep 4–6 questions; the result recommends (never restricts) courses/jobs.
+  (picked from the Fields list above) with weights, e.g. `{"finance": 3, "business": 1}`.
+  Keep 4–6 questions; the result recommends (never restricts) courses/jobs.
 - **🧭 Onboarding Wizard** — the first-time "how to play" tutorial. Shown once, right
   after a new player lands on the dashboard (separate from the Career Quiz Questions
   gate above — a player sees the wizard first, then the career quiz if they haven't

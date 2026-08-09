@@ -60,6 +60,7 @@ class LifeInboxService
             // Apply XP / points
             if ($choice->xp_delta > 0) {
                 $progress->points_total = ($progress->points_total ?? 0) + $choice->xp_delta;
+                $progress->level = $progress->calculateLevel();
             }
 
             $progress->save();

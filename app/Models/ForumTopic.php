@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ForumTopic extends Model
 {
     protected $fillable = [
-        'user_id', 'school_subscription_id', 'title', 'slug', 'body', 'category',
+        'user_id', 'school_subscription_id', 'title', 'slug', 'body', 'category', 'image_path', 'visibility',
         'is_pinned', 'is_locked', 'is_challenge', 'posted_by_name',
         'replies_count', 'views', 'last_activity_at',
     ];
@@ -34,9 +34,19 @@ class ForumTopic extends Model
         return $this->school_subscription_id !== null;
     }
 
+    public function isFriendsOnly(): bool
+    {
+        return $this->visibility === 'friends';
+    }
+
     public function replies()
     {
         return $this->hasMany(ForumReply::class, 'topic_id');
+    }
+
+    public function reactions()
+    {
+        return $this->hasMany(ForumReaction::class, 'topic_id');
     }
 
     /**

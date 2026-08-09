@@ -218,6 +218,7 @@ class MpesaService
                 'school_name'  => $schoolName,
                 'contact_email'=> $user->email,
                 'seats'        => $plan->seats ?? 30,
+                'max_classes'  => $plan->max_classes ?? 3,
                 'starts_at'    => now(),
                 'ends_at'      => $endsAt,
                 'status'       => 'active',

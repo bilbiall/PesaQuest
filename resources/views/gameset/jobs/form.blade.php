@@ -49,21 +49,29 @@
             <h2 class="text-sm font-black text-white/80 mb-4">Job Details</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
-                    <label class="form-label">Job Title *</label>
+                    <label class="form-label">Job Title *
+                        <x-help-tip text="The role name players see on the job listing and their Career page once hired." example="Junior Financial Analyst" />
+                    </label>
                     <input type="text" name="title" value="{{ old('title', $job?->title) }}" class="form-input" placeholder="e.g. Junior Financial Analyst" required>
                     @error('title')<p class="error-msg">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label class="form-label">Employer Name *</label>
+                    <label class="form-label">Employer Name *
+                        <x-help-tip text="The company or person players see as their employer on the job card and their payslip." example="Equity Bank Kenya" />
+                    </label>
                     <input type="text" name="employer_name" value="{{ old('employer_name', $job?->employer_name) }}" class="form-input" placeholder="e.g. Equity Bank Kenya" required>
                 </div>
                 <div>
-                    <label class="form-label">Employer Logo (emoji)</label>
+                    <label class="form-label">Employer Logo (emoji)
+                        <x-help-tip text="The emoji shown as the employer's logo on the job card and Career page." example="🏢" />
+                    </label>
                     <input type="text" name="employer_logo" value="{{ old('employer_logo', $job?->employer_logo ?? '🏢') }}" class="form-input" maxlength="10" placeholder="🏢">
                 </div>
                 <div class="sm:col-span-2">
                     @php $selectedTracks = old('career_tracks', $job?->careerTrackList() ?? []); @endphp
-                    <label class="form-label">Career Track(s) * <span class="font-normal normal-case text-white/30">(select one or more)</span></label>
+                    <label class="form-label">Career Track(s) * <span class="font-normal normal-case text-white/30">(select one or more)</span>
+                        <x-help-tip text="This job is shown as 'recommended' to a player if ANY one of the tracks you tick here matches their career-quiz result. Tick one for a narrowly-focused role, or several for a cross-disciplinary one." example="finance + business for a bookkeeping role" />
+                    </label>
                     <div class="rounded-xl p-3 grid sm:grid-cols-2 gap-1.5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">
                         @foreach(\App\Services\CareerService::tracks() as $t)
                         <label class="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition-colors hover:bg-white/5">
@@ -78,7 +86,9 @@
                     @error('career_tracks')<p class="error-msg">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label class="form-label">Level *</label>
+                    <label class="form-label">Level *
+                        <x-help-tip text="The difficulty ladder rung this job sits on — players typically need to be around this level (and hold any required course certificate) before the job feels attainable." example="2" />
+                    </label>
                     <select name="level" class="form-input" required>
                         <option value="1" {{ old('level', $job?->level ?? 1) == 1 ? 'selected' : '' }}>Level 1 — Entry</option>
                         <option value="2" {{ old('level', $job?->level) == 2 ? 'selected' : '' }}>Level 2 — Mid</option>
@@ -86,7 +96,9 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label">Employment Type *</label>
+                    <label class="form-label">Employment Type *
+                        <x-help-tip text="The single biggest choice on this form — it changes how many the player can hold at once and how they get paid. Full-time is their ONLY job (highest pay, blocks all other jobs); Part-time allows up to 2 at once; Freelance gig pays a one-off amount after ~7 game days and can be re-taken after a cooldown, up to 3 running at once." example="full_time for a career role, freelance for a one-off gig" />
+                    </label>
                     <select name="employment_type" id="employment-type-select" class="form-input" required onchange="toggleJobTypeFields(this.value)">
                         @php $currentType = old('employment_type', $job?->employment_type ?? ($job?->is_part_time ? 'part_time' : 'full_time')); @endphp
                         <option value="full_time" {{ $currentType === 'full_time' ? 'selected' : '' }}>🏢 Full-time — the player's only job (must resign to change)</option>
@@ -96,7 +108,9 @@
                     @error('employment_type')<p class="error-msg">{{ $message }}</p>@enderror
                 </div>
                 <div id="gig-cooldown-field" style="{{ $currentType === 'freelance' ? '' : 'display:none;' }}">
-                    <label class="form-label">Gig Reopens After (game days)</label>
+                    <label class="form-label">Gig Reopens After (game days)
+                        <x-help-tip text="Freelance-only: how many game days pass before this SAME gig becomes available again to a player who already did it. It is independent of the ~7-day delivery time — use a short cooldown for a quick low-paying odd job, and a long one to keep a prestigious gig scarce. Leave blank to use the game-wide default of 28 days." example="28" />
+                    </label>
                     <input type="number" name="gig_cooldown_ticks" value="{{ old('gig_cooldown_ticks', $job?->gig_cooldown_ticks) }}" class="form-input" min="1" max="365" placeholder="28 (default — 4 game weeks)">
                     <p class="text-[11px] mt-1" style="color:rgba(255,255,255,.35);">Leave blank to use the game default (28 days). This gig takes 7 game days to deliver, then this many days pass before the same client offers it again.</p>
                     @error('gig_cooldown_ticks')<p class="error-msg">{{ $message }}</p>@enderror
@@ -108,14 +122,18 @@
             <h2 class="text-sm font-black text-white/80 mb-4">Compensation & Requirements</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="form-label" id="pay-field-label">{{ $currentType === 'freelance' ? 'Gig Payment (KES, one-off) *' : 'Monthly Salary (KES) *' }}</label>
+                    <label class="form-label" id="pay-field-label"><span id="pay-field-label-text">{{ $currentType === 'freelance' ? 'Gig Payment (KES, one-off) *' : 'Monthly Salary (KES) *' }}</span>
+                        <x-help-tip text="For full-time/part-time jobs this is what the player earns per game month (collected only when they Report to Work). For a freelance gig it's a single one-off payment for the whole gig, not a monthly rate — price it at roughly a quarter to a third of what a monthly job in the same track pays." example="25000 salary, or 6000 for a one-off gig" />
+                    </label>
                     <input type="number" name="salary_kes_month" value="{{ old('salary_kes_month', $job?->salary_kes_month) }}" class="form-input" min="1000" placeholder="25000" required>
                     <p class="text-[11px] mt-1" style="color:rgba(255,255,255,.35);" id="pay-field-hint">{{ $currentType === 'freelance' ? 'The one-off amount the player earns for delivering this gig — not a monthly rate.' : '' }}</p>
                     @error('salary_kes_month')<p class="error-msg">{{ $message }}</p>@enderror
                 </div>
                 <div class="sm:col-span-2">
                     @php $selectedAges = old('age_groups', $job?->ageGroupList() ?? []); @endphp
-                    <label class="form-label">Age Group(s) <span class="font-normal normal-case text-white/30">(select one or more — leave all unchecked for every age)</span></label>
+                    <label class="form-label">Age Group(s) <span class="font-normal normal-case text-white/30">(select one or more — leave all unchecked for every age)</span>
+                        <x-help-tip text="Only players in the ticked age group(s) will see and can take this job. Use the bill-burden hints shown per group to price a salary that leaves a healthy margin after their typical bills." example="13-17 for a first part-time gig" />
+                    </label>
                     <div class="rounded-xl p-3 grid sm:grid-cols-2 gap-1.5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">
                         @foreach(\App\Models\CityJob::AGE_GROUPS as $key => $ag)
                         <label class="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition-colors hover:bg-white/5">
@@ -134,7 +152,9 @@
                 </div>
                 <div class="sm:col-span-2">
                     @php $selectedCourseIds = old('required_course_ids', $job?->requiredCourseIdList() ?? []); @endphp
-                    <label class="form-label">Required Courses <span class="font-normal normal-case text-white/30">(select one or more — leave all unchecked for no prerequisite)</span></label>
+                    <label class="form-label">Required Courses <span class="font-normal normal-case text-white/30">(select one or more — leave all unchecked for no prerequisite)</span>
+                        <x-help-tip text="The certificate gate: a player must complete every course ticked here before they can apply. Selecting more than one stacks the requirement (ALL must be done) — use that for higher-paying jobs needing layered skills." example="bookkeeping-basics course for a Bookkeeping Clerk role" />
+                    </label>
                     <div class="rounded-xl p-3 space-y-3" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);max-height:16rem;overflow-y:auto;">
                         @forelse($courses->groupBy('career_track') as $track => $trackCourses)
                         @php $tOpt = \App\Services\CareerService::tracksByKey()[$track] ?? null; @endphp
@@ -163,7 +183,9 @@
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', $job?->is_active ?? true) ? 'checked' : '' }} class="w-4 h-4 accent-emerald-500">
-                    <span class="text-sm font-bold text-white/70">Active (visible to players)</span>
+                    <span class="text-sm font-bold text-white/70">Active (visible to players)
+                        <x-help-tip text="Controls whether this job listing appears anywhere in the game. Uncheck to keep it in the database without deleting it." />
+                    </span>
                 </label>
             </div>
         </div>
@@ -180,7 +202,7 @@
 <script>
 function toggleJobTypeFields(type) {
     const cooldownField = document.getElementById('gig-cooldown-field');
-    const payLabel = document.getElementById('pay-field-label');
+    const payLabel = document.getElementById('pay-field-label-text');
     const payHint  = document.getElementById('pay-field-hint');
     if (type === 'freelance') {
         cooldownField.style.display = '';

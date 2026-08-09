@@ -31,6 +31,7 @@ class AdminController extends Controller
         // missing column to `false` for every user, falsely flagging everyone
         // as deactivated.
         $usersHaveActiveColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'is_active');
+        $schoolClassesTableExists = \Illuminate\Support\Facades\Schema::hasTable('school_classes');
 
         $stats = [
             'total_users'        => User::count(),
@@ -88,8 +89,114 @@ class AdminController extends Controller
         return view('admin.panel', compact(
             'users', 'stats', 'recentActivity', 'plans',
             'allSubscriptions', 'payments', 'settings', 'schools', 'crises', 'coupons',
-            'freeGates', 'gateMeta', 'usersHaveActiveColumn', 'sponsors', 'sponsorableTiles'
+            'freeGates', 'gateMeta', 'usersHaveActiveColumn', 'sponsors', 'sponsorableTiles',
+            'schoolClassesTableExists'
         ));
+    }
+
+    /**
+     * In-app rendering of docs/ADMIN-GUIDE.md — so any admin (including one
+     * you're onboarding remotely) gets the full operations manual without
+     * repo access.
+     */
+    public function docs()
+    {
+        $doc = \App\Services\DocsRenderer::render('docs/ADMIN-GUIDE.md');
+        return view('admin.docs', $doc);
+    }
+
+    /**
+     * In-house operational dashboard — the numbers no third-party analytics
+     * tool (PostHog/GA4/Clarity) understands, because they're specific to
+     * this game's own tables (jobs, bills, savings, credit score, quests).
+     */
+    public function analytics()
+    {
+        $activeToday = UserProgress::whereDate('last_played_at', today())->count();
+        $liveOnline  = UserProgress::where('last_played_at', '>=', now()->subMinutes(15))->count();
+
+        $totalQuests     = \Illuminate\Support\Facades\Schema::hasTable('user_quests') ? \App\Models\UserQuest::count() : 0;
+        $completedQuests = \Illuminate\Support\Facades\Schema::hasTable('user_quests') ? \App\Models\UserQuest::whereNotNull('completed_at')->count() : 0;
+        $questCompletionRate = $totalQuests > 0 ? round($completedQuests / $totalQuests * 100, 1) : 0;
+
+        $popularJobs = \Illuminate\Support\Facades\Schema::hasTable('player_city_jobs')
+            ? \App\Models\PlayerCityJob::where('status', 'employed')
+                ->select('city_job_id', \Illuminate\Support\Facades\DB::raw('count(*) as cnt'))
+                ->groupBy('city_job_id')->orderByDesc('cnt')->take(8)->get()
+                ->map(function ($row) {
+                    $job = \App\Models\CityJob::find($row->city_job_id);
+                    return ['label' => $job?->title ?? 'Unknown', 'count' => $row->cnt];
+                })
+            : collect();
+
+        $savingsAccountsTotal = \Illuminate\Support\Facades\Schema::hasTable('savings_schemes') ? \App\Models\SavingsScheme::count() : 0;
+        $savingsAccountsToday = \Illuminate\Support\Facades\Schema::hasTable('savings_schemes') ? \App\Models\SavingsScheme::whereDate('created_at', today())->count() : 0;
+        $totalSavings         = \Illuminate\Support\Facades\Schema::hasTable('savings_schemes') ? \App\Models\SavingsScheme::sum('current_amount') : 0;
+
+        $missedBills = \Illuminate\Support\Facades\Schema::hasTable('player_bills')
+            ? \App\Models\PlayerBill::select('bill_id', \Illuminate\Support\Facades\DB::raw('sum(missed_count) as total_missed'))
+                ->groupBy('bill_id')->orderByDesc('total_missed')->take(8)->get()
+                ->filter(fn ($row) => $row->total_missed > 0)
+                ->map(function ($row) {
+                    $bill = \App\Models\Bill::find($row->bill_id);
+                    return ['label' => $bill?->name ?? 'Unknown', 'count' => (int) $row->total_missed];
+                })
+            : collect();
+
+        $avgCreditScore = round(UserProgress::avg('credit_score') ?? 500);
+        $highestLevel   = UserProgress::max('level') ?? 1;
+        $highestLevelPlayer = UserProgress::where('level', $highestLevel)->orderByDesc('points_total')->first();
+
+        $byCounty = User::whereNotNull('county')->select('county', \Illuminate\Support\Facades\DB::raw('count(*) as cnt'))
+            ->groupBy('county')->orderByDesc('cnt')->get();
+        $unknownCounty = User::whereNull('county')->count();
+
+        $trackers = [
+            'posthog_key'         => Setting::get('posthog_key', ''),
+            'posthog_host'        => Setting::get('posthog_host', 'https://us.i.posthog.com'),
+            'ga4_measurement_id'  => Setting::get('ga4_measurement_id', ''),
+            'clarity_project_id'  => Setting::get('clarity_project_id', ''),
+        ];
+
+        return view('admin.analytics', [
+            'activeToday'          => $activeToday,
+            'liveOnline'           => $liveOnline,
+            'questCompletionRate'  => $questCompletionRate,
+            'totalQuests'          => $totalQuests,
+            'completedQuests'      => $completedQuests,
+            'popularJobs'          => $popularJobs,
+            'savingsAccountsTotal' => $savingsAccountsTotal,
+            'savingsAccountsToday' => $savingsAccountsToday,
+            'totalSavings'         => $totalSavings,
+            'missedBills'          => $missedBills,
+            'avgCreditScore'       => $avgCreditScore,
+            'highestLevel'         => $highestLevel,
+            'highestLevelPlayer'   => $highestLevelPlayer?->user,
+            'byCounty'             => $byCounty,
+            'unknownCounty'        => $unknownCounty,
+            'trackers'             => $trackers,
+        ]);
+    }
+
+    /**
+     * Save third-party tracker IDs (PostHog / GA4 / Clarity). Storing these
+     * as Settings (not .env) means they go live immediately without a
+     * redeploy, matching the plan_limits/gates pattern above.
+     */
+    public function saveTrackers(Request $request)
+    {
+        $data = $request->validate([
+            'posthog_key'        => 'nullable|string|max:255',
+            'posthog_host'       => 'nullable|string|max:255',
+            'ga4_measurement_id' => 'nullable|string|max:50',
+            'clarity_project_id' => 'nullable|string|max:50',
+        ]);
+
+        foreach ($data as $key => $value) {
+            Setting::set($key, trim((string) $value), 'trackers');
+        }
+
+        return response()->json(['success' => true, 'message' => 'Tracker settings saved — live on next page load.']);
     }
 
     // ── Arcade Sponsors (business/monetization — kept out of GameSet) ──────
@@ -457,6 +564,7 @@ class AdminController extends Controller
                 'school_name'   => $schoolName,
                 'contact_email' => $user->email,
                 'seats'         => $plan->seats ?? 30,
+                'max_classes'   => $plan->max_classes ?? 3,
                 'starts_at'     => now(),
                 'ends_at'       => $endsAt,
                 'status'        => 'active',
@@ -582,6 +690,7 @@ class AdminController extends Controller
             'is_active'   => 'boolean',
             'is_featured' => 'boolean',
             'seats'       => 'nullable|integer|min:1|max:5000',
+            'max_classes' => 'nullable|integer|min:1|max:100',
         ]);
 
         $plan->update($data);
@@ -594,6 +703,7 @@ class AdminController extends Controller
             'name'        => 'required|string|max:60',
             'months'      => 'required|integer|min:1|max:60',
             'seats'       => 'required|integer|min:1|max:5000',
+            'max_classes' => 'nullable|integer|min:1|max:100',
             'price_kes'   => 'required|integer|min:0',
             'description' => 'nullable|string|max:300',
             'is_featured' => 'boolean',
@@ -613,6 +723,7 @@ class AdminController extends Controller
             'name'        => $data['name'],
             'months'      => $data['months'],
             'seats'       => $data['seats'],
+            'max_classes' => $data['max_classes'] ?? 3,
             'price_kes'   => $data['price_kes'],
             'description' => $data['description'] ?? null,
             'is_active'   => true,
@@ -761,6 +872,7 @@ class AdminController extends Controller
             'school_name'   => 'required|string|max:255',
             'contact_email' => 'required|email|max:255',
             'seats'         => 'required|integer|min:1|max:2000',
+            'max_classes'   => 'nullable|integer|min:1|max:100',
             'months'        => 'required|integer|min:1|max:60',
             'price_kes'     => 'nullable|integer|min:0',
             'notes'         => 'nullable|string|max:500',
@@ -770,6 +882,7 @@ class AdminController extends Controller
             'school_name'   => $data['school_name'],
             'contact_email' => $data['contact_email'],
             'seats'         => $data['seats'],
+            'max_classes'   => $data['max_classes'] ?? 3,
             'starts_at'     => now(),
             'ends_at'       => now()->addMonths($data['months']),
             'status'        => 'active',
@@ -805,6 +918,7 @@ class AdminController extends Controller
                 'school_name'          => $school->school_name,
                 'contact_email'        => $school->contact_email,
                 'seats'                => $school->seats,
+                'max_classes'          => $school->max_classes,
                 'ends_at'              => $school->ends_at->format('d M Y'),
                 'status'               => $school->statusLabel(),
                 'portal_url'           => route('school.portal', $school->portal_token),
@@ -821,6 +935,7 @@ class AdminController extends Controller
             'school_name'   => 'required|string|max:255',
             'contact_email' => 'required|email|max:255',
             'seats'         => 'required|integer|min:1|max:2000',
+            'max_classes'   => 'nullable|integer|min:1|max:100',
             'status'        => 'required|in:active,suspended',
             'notes'         => 'nullable|string|max:500',
         ]);
@@ -1130,6 +1245,8 @@ class AdminController extends Controller
             'seed:career-events'  => ['cmd' => 'db:seed', 'args' => ['--class' => 'CareerEventSeeder',        '--force' => true]],
             'seed:missions'       => ['cmd' => 'db:seed', 'args' => ['--class' => 'MissionSeeder',            '--force' => true]],
             'seed:fun-world'      => ['cmd' => 'db:seed', 'args' => ['--class' => 'FunWorldActivitySeeder',   '--force' => true]],
+            'seed:dreams'         => ['cmd' => 'db:seed', 'args' => ['--class' => 'DreamSeeder',              '--force' => true]],
+            'seed:challenge-templates' => ['cmd' => 'db:seed', 'args' => ['--class' => 'ChallengeTemplateSeeder', '--force' => true]],
             // Destructive seeders (truncate first — danger!)
             'seed:assets'         => ['cmd' => 'db:seed', 'args' => ['--class' => 'AssetSeeder',             '--force' => true]],
             'seed:bills'          => ['cmd' => 'db:seed', 'args' => ['--class' => 'BillSeeder',              '--force' => true]],

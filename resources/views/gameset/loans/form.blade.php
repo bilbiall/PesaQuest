@@ -46,24 +46,34 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-5">
                 <div>
-                    <label class="field-label">Icon (emoji)</label>
+                    <label class="field-label">Icon (emoji)
+                        <x-help-tip text="Emoji shown next to the loan product on the Bank's loan menu." example="⚡" />
+                    </label>
                     <input type="text" name="icon" value="{{ old('icon', $product->icon ?? '🏦') }}" class="field-input" maxlength="8">
                 </div>
                 <div>
-                    <label class="field-label">Loan Name *</label>
+                    <label class="field-label">Loan Name *
+                        <x-help-tip text="The loan's name on the Bank menu — name it around what the money is for." example="Hustler Boost Loan" />
+                    </label>
                     <input type="text" name="name" value="{{ old('name', $product->name ?? '') }}" required class="field-input" placeholder="e.g. Student Starter Loan">
                 </div>
                 <div>
-                    <label class="field-label">Description</label>
+                    <label class="field-label">Description
+                        <x-help-tip text="The pitch shown to the player when browsing this loan — explain what it's meant to be used for." example="Quick capital for a working asset. Borrow for things that EARN — if the asset's monthly profit beats the installment, debt is a tool; if not, it's a trap." />
+                    </label>
                     <textarea name="description" class="field-input" rows="3" placeholder="What is this loan for?">{{ old('description', $product->description ?? '') }}</textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="field-label">Min Amount (KES)</label>
+                        <label class="field-label">Min Amount (KES)
+                            <x-help-tip text="The smallest amount a player can borrow from this loan product." example="1000" />
+                        </label>
                         <input type="number" name="min_amount" value="{{ old('min_amount', $product->min_amount ?? 1000) }}" min="100" class="field-input">
                     </div>
                     <div>
-                        <label class="field-label">Max Amount (KES)</label>
+                        <label class="field-label">Max Amount (KES)
+                            <x-help-tip text="The largest amount a player can borrow from this loan product in one go." example="50000" />
+                        </label>
                         <input type="number" name="max_amount" value="{{ old('max_amount', $product->max_amount ?? 50000) }}" min="100" class="field-input">
                     </div>
                 </div>
@@ -71,30 +81,40 @@
 
             <div class="space-y-5">
                 <div>
-                    <label class="field-label">Annual Interest Rate (%)</label>
+                    <label class="field-label">Annual Interest Rate (%)
+                        <x-help-tip text="The yearly interest rate charged on the outstanding balance, compounded every payment period — higher rates mean bigger installments and a stronger 'cost of credit' lesson." example="14" />
+                    </label>
                     <input type="number" name="annual_interest_rate" value="{{ old('annual_interest_rate', $product->annual_interest_rate ?? 18) }}" min="1" max="200" step="0.5" class="field-input">
                     <p class="text-xs text-gray-500 mt-1">Compounded every payment period</p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="field-label">Loan Term (ticks)</label>
+                        <label class="field-label">Loan Term (ticks)
+                            <x-help-tip text="How many game days the player has to fully repay this loan before it's considered defaulted." example="180" />
+                        </label>
                         <input type="number" name="term_ticks" value="{{ old('term_ticks', $product->term_ticks ?? 90) }}" min="7" max="3650" class="field-input">
                         <p class="text-xs text-gray-500 mt-1">90 ≈ 3 game months</p>
                     </div>
                     <div>
-                        <label class="field-label">Payment Period (ticks)</label>
+                        <label class="field-label">Payment Period (ticks)
+                            <x-help-tip text="How often (in game days) an installment auto-deducts from the player's cash — a standing order, unlike most other bills which are manual." example="30" />
+                        </label>
                         <input type="number" name="payment_period_ticks" value="{{ old('payment_period_ticks', $product->payment_period_ticks ?? 7) }}" min="1" max="90" class="field-input">
                         <p class="text-xs text-gray-500 mt-1">7 = pay weekly</p>
                     </div>
                 </div>
                 <div>
-                    <label class="field-label">Min Credit Score Required</label>
+                    <label class="field-label">Min Credit Score Required
+                        <x-help-tip text="The minimum credit score a player needs before this loan product appears as available to them — set it to 300 to make it open to anyone." example="450" />
+                    </label>
                     <input type="number" name="min_credit_score" value="{{ old('min_credit_score', $product->min_credit_score ?? 300) }}" min="300" max="850" class="field-input">
                     <p class="text-xs text-gray-500 mt-1">300 = anyone. Higher = better credit required.</p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="field-label">Sort Order</label>
+                        <label class="field-label">Sort Order
+                            <x-help-tip text="Controls display order on the Bank's loan menu — lower numbers show first." example="0" />
+                        </label>
                         <input type="number" name="sort_order" value="{{ old('sort_order', $product->sort_order ?? 0) }}" min="0" class="field-input">
                     </div>
                     <div class="flex items-end pb-1">
@@ -102,7 +122,9 @@
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', $product->is_active ?? true) ? 'checked' : '' }}
                                    class="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500/20">
-                            <span class="text-sm font-semibold text-gray-300">Active</span>
+                            <span class="text-sm font-semibold text-gray-300">Active
+                                <x-help-tip text="Inactive loan products are hidden from the Bank menu and can't be newly borrowed against, but existing player loans keep repaying normally." />
+                            </span>
                         </label>
                     </div>
                 </div>

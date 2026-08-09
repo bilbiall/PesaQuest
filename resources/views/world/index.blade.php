@@ -930,7 +930,7 @@
             </template>
 
             {{-- Standard active district (marketplace only — other districts have dedicated templates) --}}
-            <template x-if="district && district.status === 'active' && district.slug !== 'opportunity-hub' && district.slug !== 'fun-world' && district.slug !== 'community' && district.slug !== 'estates' && district.slug !== 'car-yard' && district.slug !== 'bank' && district.slug !== 'savings' && district.slug !== 'workplace' && district.slug !== 'quests'">
+            <template x-if="district && district.status === 'active' && district.slug !== 'opportunity-hub' && district.slug !== 'fun-world' && district.slug !== 'community' && district.slug !== 'estates' && district.slug !== 'car-yard' && district.slug !== 'bank' && district.slug !== 'savings' && district.slug !== 'workplace' && district.slug !== 'quests' && district.slug !== 'champions-court'">
                 <div>
                     <p class="pc-panel-desc" x-text="district.description"></p>
                     <div class="pc-panel-actions">
@@ -1258,6 +1258,82 @@
             </template>
 
             {{-- ── WORKPLACE — Full Career Management Panel ── --}}
+            {{-- ══════════════════════════════════════════
+                 CHAMPIONS' COURT — Dreams + Challenges hub
+            ══════════════════════════════════════════ --}}
+            <template x-if="district && district.slug === 'champions-court'">
+                <div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.22);">
+                        <div style="font-size:28px;flex-shrink:0;">🏆</div>
+                        <div>
+                            <div style="font-size:12px;font-weight:900;color:#f59e0b;letter-spacing:.04em;text-transform:uppercase;">Champions' Court</div>
+                            <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;margin-top:2px;">Dreams &amp; fair challenges — progress made DURING the race is all that counts</div>
+                        </div>
+                    </div>
+
+                    <div class="pc-comm-stats">
+                        <div class="pc-comm-stat">
+                            <div class="pc-comm-stat-num" x-text="district.owned_dreams ?? 0"></div>
+                            <div class="pc-comm-stat-label">Dreams Claimed</div>
+                        </div>
+                        <div class="pc-comm-stat">
+                            <div class="pc-comm-stat-num" x-text="district.open_challenges ?? 0"></div>
+                            <div class="pc-comm-stat-label">Open Challenges</div>
+                        </div>
+                    </div>
+
+                    <template x-if="(district.pending_invites ?? 0) > 0">
+                        <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);font-size:12px;font-weight:700;color:#a5b4fc;">
+                            ✉️ You have <span x-text="district.pending_invites"></span> pending challenge invite(s) waiting.
+                        </div>
+                    </template>
+
+                    <template x-if="district.featured_dream">
+                        <div style="margin-top:12px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+                            <span style="font-size:26px;" x-text="district.featured_dream.icon"></span>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;">Featured Dream</div>
+                                <div style="font-size:13px;font-weight:800;color:#fff;" x-text="district.featured_dream.name"></div>
+                            </div>
+                            <span style="font-size:12px;font-weight:900;color:#fbbf24;" x-text="'KES ' + Number(district.featured_dream.price).toLocaleString()"></span>
+                        </div>
+                    </template>
+
+                    <template x-if="(district.open_challenges_list || []).length > 0">
+                        <div style="margin-top:12px;">
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Open Challenges — join now</div>
+                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                <template x-for="c in district.open_challenges_list" :key="c.id">
+                                    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+                                        <span style="font-size:18px;flex-shrink:0;" x-text="c.icon"></span>
+                                        <div style="flex:1;min-width:0;">
+                                            <div style="font-size:12px;font-weight:800;color:#fff;" x-text="c.title"></div>
+                                            <div style="font-size:10px;color:rgba(255,255,255,.4);" x-text="c.subtitle"></div>
+                                        </div>
+                                        <button type="button" @click="joinChampionsChallenge(c.id)" :disabled="champions.joiningId === c.id"
+                                                style="flex-shrink:0;padding:5px 10px;border-radius:8px;font-size:10.5px;font-weight:900;color:#fff;border:none;cursor:pointer;"
+                                                :style="champions.joiningId === c.id ? 'background:rgba(255,255,255,.1);' : 'background:linear-gradient(135deg,#f59e0b,#b45309);'"
+                                                x-text="champions.joiningId === c.id ? '…' : 'Join'"></button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="champions.msg">
+                        <div style="margin-top:8px;padding:8px 10px;border-radius:10px;font-size:11px;font-weight:700;"
+                             :style="champions.msgOk ? 'background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);' : 'background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.3);'"
+                             x-text="champions.msg"></div>
+                    </template>
+
+                    <div class="pc-panel-actions" style="margin-top:14px;">
+                        <template x-for="action in (district.actions || [])" :key="action.label">
+                            <a :href="action.url" :class="'pc-action-btn pc-action-' + action.style" x-text="action.label"></a>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
             <template x-if="district && district.slug === 'workplace'">
                 <div x-data="{ wpResignId: null, wpResigning: false, wpMsg: '', wpMsgOk: true }">
 
@@ -2054,6 +2130,13 @@
                                 @click="questsData.filter = 'completed'">
                             ✅ Completed
                         </button>
+                        <template x-if="questsData.quests.some(x => x.is_previous_level && x.user_status !== 'completed')">
+                            <button class="pc-opp-tab"
+                                    :class="{ active: questsData.filter === 'pending_old' }"
+                                    @click="questsData.filter = 'pending_old'">
+                                ⏳ From Earlier Levels <span x-text="questsData.quests.filter(x => x.is_previous_level && x.user_status !== 'completed').length"></span>
+                            </button>
+                        </template>
                     </div>
 
                     {{-- Quest list --}}
@@ -2080,6 +2163,10 @@
                                             <template x-if="quest.is_locked">
                                                 <span class="pc-quest-level-req"
                                                       x-text="'🔒 Level ' + quest.min_level + ' required'"></span>
+                                            </template>
+                                            <template x-if="quest.is_previous_level && quest.user_status !== 'completed'">
+                                                <span class="pc-quest-level-req" style="color:#FFBC00;"
+                                                      x-text="'⏳ Level ' + quest.min_level + ' quest'"></span>
                                             </template>
                                         </div>
                                     </div>
@@ -2412,6 +2499,38 @@
             <span class="qc-kes-badge" x-show="questComplete.kes > 0" x-text="'💵 KES ' + questComplete.kes.toLocaleString()"></span>
         </div>
         <button class="qc-btn" @click="questComplete.show = false">Awesome! 🎉</button>
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════
+     CHALLENGE RESULT (win / loss / cancelled)
+══════════════════════════════════════ --}}
+<div class="qc-overlay"
+     x-show="challengeResult.show"
+     x-cloak
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click.self="closeChallengeResult()">
+    <div class="qc-card">
+        <template x-if="challengeResult.isWinner">
+            <div class="qc-particles">
+                <div class="qc-star" style="background:#fbbf24;--tx:-90px;--ty:-80px;animation-delay:.05s;"></div>
+                <div class="qc-star" style="background:#f59e0b;--tx:85px;--ty:-95px;animation-delay:.12s;"></div>
+                <div class="qc-star" style="background:#fbbf24;--tx:-70px;--ty:90px;animation-delay:.18s;width:6px;height:6px;"></div>
+                <div class="qc-star" style="background:#f59e0b;--tx:100px;--ty:75px;animation-delay:.08s;width:10px;height:10px;border-radius:2px;"></div>
+                <div class="qc-star" style="background:#fbbf24;--tx:-115px;--ty:20px;animation-delay:.22s;width:6px;height:6px;"></div>
+            </div>
+        </template>
+
+        <span class="qc-icon" x-text="challengeResult.icon"></span>
+        <div class="qc-eyebrow" x-text="challengeResult.isWinner ? 'YOU WON!' : 'CHALLENGE OVER'"></div>
+        <div class="qc-title" x-text="challengeResult.title"></div>
+        <div class="qc-lesson" x-show="challengeResult.body" x-text="challengeResult.body"></div>
+        <button class="qc-btn" @click="closeChallengeResult()" x-text="challengeResult.isWinner ? 'Awesome! 🎉' : 'Got it'"></button>
     </div>
 </div>
 

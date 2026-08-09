@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="platCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eaf6ff"/>
+      <stop offset="45%" stop-color="#bfe3fb"/>
+      <stop offset="100%" stop-color="#6fa8d6"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 70 L34 118 L64 104 L94 118 L78 70 Z" fill="#4d7ba8"/>
+  <path d="M46 68 L32 112 L52 102" fill="none" stroke="#3a5f85" stroke-width="4" stroke-linecap="round"/>
+  <path d="M82 68 L96 112 L76 102" fill="none" stroke="#3a5f85" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="64" cy="56" r="46" fill="url(#platCoin)" stroke="#3a5f85" stroke-width="3"/>
+  <circle cx="64" cy="56" r="37" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.8"/>
+  <path d="M64 26 L73 46 L94 46 L76 59 L83 81 L64 68 L45 81 L52 59 L34 46 L55 46 Z" fill="#ffffff"/>
+  <circle cx="64" cy="56" r="8" fill="#eaf6ff" stroke="#6fa8d6" stroke-width="2"/>
+  <ellipse cx="46" cy="36" rx="14" ry="8" fill="#ffffff" opacity="0.5"/>
+</svg>

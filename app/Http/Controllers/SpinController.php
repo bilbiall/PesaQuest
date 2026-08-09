@@ -92,6 +92,7 @@ class SpinController extends Controller
                 break;
             case 'xp':
                 $progress->points_total = ($progress->points_total ?? 0) + $prize['value'];
+                $progress->level = $progress->calculateLevel();
                 break;
             case 'salary_2x':
                 // Flag for next salary to be doubled — store in active_loans JSON as a flag

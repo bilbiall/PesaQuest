@@ -3231,15 +3231,20 @@
   }
   /* The panel must NEVER extend behind the bottom tab bar: pin its bottom
      above the nav (incl. iOS/Android gesture safe area), hard-cap its height
-     to the space between HUD and nav, and let the inside scroll. */
+     to the space between HUD and nav, and let the inside scroll.
+     Nav is 60px tall (see .pc-mobile-nav) — reserve 64px (extra 4px buffer)
+     so rounding/browser vh-vs-dvh differences never eat into the gap. */
   .pc-panel {
-    bottom: calc(58px + env(safe-area-inset-bottom, 0px));
-    max-height: calc(100vh  - 58px - 66px);
-    max-height: calc(100dvh - 58px - 66px - env(safe-area-inset-bottom, 0px));
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(100vh  - 64px - 66px);
+    max-height: calc(100dvh - 64px - 66px - env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
+    /* Above .pc-mobile-nav (z-index 150) so a stray px of overlap can never
+       hide panel content/buttons behind the opaque nav bar. */
+    z-index: 160;
   }
   /* Breathing room so the last button always clears the panel edge */
-  .pc-panel-body { padding-bottom: 34px; }
+  .pc-panel-body { padding-bottom: 56px; }
 }
 
 /* Phones with home-indicator bars: lift the tab bar itself */

@@ -72,6 +72,14 @@
                    class="hidden sm:flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-xl bg-amber-600/20 border border-amber-500/30 text-amber-300 hover:bg-amber-600/30 transition-all">
                     💳 Plans Page
                 </a>
+                <a href="{{ route('admin.analytics') }}"
+                   class="hidden sm:flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30 transition-all">
+                    📊 Analytics
+                </a>
+                <a href="{{ route('admin.docs') }}"
+                   class="hidden sm:flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/30 transition-all">
+                    📚 Guide
+                </a>
                 <span class="text-sm text-gray-400">{{ auth()->user()->name }}</span>
             </div>
         </div>
@@ -417,6 +425,10 @@
                                     <span class="font-bold text-white ml-1">{{ $used }}/{{ $school->seats }}</span>
                                 </div>
                                 <div>
+                                    <span class="text-gray-600">Classes</span>
+                                    <span class="font-bold text-white ml-1">{{ $schoolClassesTableExists ? $school->classes()->count() : 0 }}/{{ $school->max_classes }}</span>
+                                </div>
+                                <div>
                                     <span class="text-gray-600">Valid until</span>
                                     <span class="font-bold text-amber-400 ml-1">{{ $school->ends_at->format('d M Y') }}</span>
                                 </div>
@@ -483,29 +495,49 @@
                     </div>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">School Name</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">School Name
+                                <x-help-tip text="The institution's name as it appears on their portal, in this admin list and on the school leaderboard." example="Starehe Boys Centre" />
+                            </label>
                             <input type="text" x-model="form.school_name" class="input-field" placeholder="e.g. Starehe Boys Centre">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Contact Email</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Contact Email
+                                <x-help-tip text="The teacher or buyer who runs this account. They automatically become the school's owner teacher and get an invite link to the teacher portal, where they can bring on colleagues." example="librarian@starehe.ac.ke" />
+                            </label>
                             <input type="email" x-model="form.contact_email" class="input-field" placeholder="librarian@starehe.ac.ke">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Student Seats</label>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Student Seats
+                                    <x-help-tip text="How many of this school's students can hold an active membership at once. Each member plays with full premium features; removing a member frees their seat." example="100" />
+                                </label>
                                 <input type="number" x-model.number="form.seats" class="input-field" min="1" max="2000" placeholder="100">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Duration (months)</label>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Duration (months)
+                                    <x-help-tip text="How long this school's access lasts — the expiry date is set this many months from today. When it lapses, every student on the seats drops back to the free plan." example="12" />
+                                </label>
                                 <input type="number" x-model.number="form.months" class="input-field" min="1" max="60" placeholder="12">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Price Paid (Ksh)</label>
-                            <input type="number" x-model.number="form.price_kes" class="input-field" min="0" placeholder="15000">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Max Classes
+                                    <x-help-tip text="How many classes or cohorts this school can create, each with its own teacher, roster and class challenges. Leave blank for the default of 3." example="3 for Form 1, 2 and 3" />
+                                </label>
+                                <input type="number" x-model.number="form.max_classes" class="input-field" min="1" max="100" placeholder="3">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Price Paid (Ksh)
+                                    <x-help-tip text="What this school actually paid, recorded for your revenue reporting. Set 0 for donor-sponsored or pilot schools." example="15000" />
+                                </label>
+                                <input type="number" x-model.number="form.price_kes" class="input-field" min="0" placeholder="15000">
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Notes (optional)</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Notes (optional)
+                                <x-help-tip text="An internal memo about this school, shown on its card in this list. Admins only — the school never sees it." example="Term 1 2026, paid by cheque" />
+                            </label>
                             <input type="text" x-model="form.notes" class="input-field" placeholder="e.g. Term 1 2026">
                         </div>
                     </div>
@@ -547,7 +579,9 @@
                 <h3 class="font-bold text-white mb-2">Create Financial Crisis</h3>
 
                 {{-- Presets --}}
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Start from a preset</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Start from a preset
+                    <x-help-tip text="One click fills the whole form below with a ready-made Kenyan crisis — name, icon, description, effect type and severity. You can still edit any field afterwards; the preset is only a starting point." example="NSE Market Crash, Property Market Slump, Drought Food Inflation, Fuel Price Shock, Economic Recession, Currency Devaluation" />
+                </p>
                 <div class="flex flex-wrap gap-2 mb-3">
                     <template x-for="(p, i) in presets" :key="i">
                         <button type="button" @click="applyPreset(p)"
@@ -564,19 +598,27 @@
 
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Name</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Name
+                            <x-help-tip text="The crisis headline players see in their warning notification and on their Life Story timeline. Name the real-world event, not the mechanic — it's what makes the shock feel like news rather than a penalty. Max 80 characters." example="Kenyan Recession 2026" />
+                        </label>
                         <input x-model="form.name" type="text" placeholder="e.g. Kenyan Recession 2026" class="input-field mt-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Icon (emoji)</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Icon (emoji)
+                            <x-help-tip text="Single emoji that fronts this crisis in notifications and on the timeline. Pick one that signals the kind of shock at a glance, so a player scanning their timeline can tell a market crash from a drought." example="📉" />
+                        </label>
                         <input x-model="form.icon" type="text" placeholder="⚠️" maxlength="4" class="input-field mt-1">
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="text-xs text-gray-400 font-bold uppercase">Description</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Description
+                            <x-help-tip text="The story behind the shock, shown in the warning notification and the timeline entry. This is where the financial lesson lands — say what happened and what a prepared player could have done. Max 400 characters." example="Inflation has pushed food prices up nationwide. Everyone's wallet takes a hit — but savings accounts are untouched, so anyone with an emergency fund rides it out." />
+                        </label>
                         <textarea x-model="form.description" rows="2" placeholder="What happened and how it affects players" class="input-field mt-1 resize-none"></textarea>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Effect Type</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Effect Type
+                            <x-help-tip text="Which part of every player's finances the shock attacks. Investment Value Drop hits pending deals, Asset Value Drop hits owned assets, Balance Drain takes a cut of wallets (savings are spared — that's the lesson), and Salary Cut reduces every pay packet collected for the whole active window rather than firing once." example="Balance Drain — teaches why an emergency fund in savings beats cash in the wallet" />
+                        </label>
                         <select x-model="form.effect_type" class="input-field mt-1">
                             <option value="investment_drop">Investment Value Drop</option>
                             <option value="asset_drop">Asset Value Drop</option>
@@ -585,19 +627,27 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Effect Amount (%)</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Effect Amount (%)
+                            <x-help-tip text="Severity — the percentage of the targeted value that is wiped out for every player at once. 5–10% is a mild scare that starts a conversation; 20%+ genuinely hurts and can end a careless player's run. Allowed range is 0.1 to 100." example="10 (a mild drought-inflation drain) or 20 (a painful recession)" />
+                        </label>
                         <input x-model.number="form.effect_amount" type="number" min="1" max="100" placeholder="e.g. 20" class="input-field mt-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Warning At (48hr before)</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Warning At (48hr before)
+                            <x-help-tip text="Real-world date/time the “crisis incoming” notification goes out to every player. The gap between this and Active From is the whole game — it's the window in which players can move cash to savings or sell exposed assets. Set it in the past (or use the quick buttons above) to warn immediately." example="Warn now, hit in 48 hours — the classic setup" />
+                        </label>
                         <input x-model="form.warning_at" type="datetime-local" class="input-field mt-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Active From</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Active From
+                            <x-help-tip text="The hit moment — when the effect actually applies and a 🌪️ entry lands on every affected player's timeline. Must be after Warning At. Crises are processed hourly by the cron job (or on demand via Artisan → Process Crises Now)." example="Wednesday 10:00, two days after the Monday warning" />
+                        </label>
                         <input x-model="form.active_from" type="datetime-local" class="input-field mt-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Active Until</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Active Until
+                            <x-help-tip text="When the crisis window closes and the status flips to ✅ Completed. For one-shot effects (investment drop, asset drop, balance drain) this mostly just controls how long it reads as “active”; for Salary Cut it matters a lot — every salary collected inside this window stays reduced. Must be after Active From." example="Friday 10:00 — a two-day salary-cut window covering one payday" />
+                        </label>
                         <input x-model="form.active_until" type="datetime-local" class="input-field mt-1">
                     </div>
                 </div>
@@ -666,29 +716,35 @@
             </div>
 
             <div class="panel rounded-2xl p-5 max-w-2xl">
-                <label class="text-xs text-gray-400 font-bold uppercase mb-1 block">Title</label>
+                <label class="text-xs text-gray-400 font-bold uppercase mb-1 block">Title
+                    <x-help-tip text="Headline for the announcement — it becomes the bold first line of the in-app notification bell entry and the title of the phone push. Max 100 characters, but phones truncate around 40, so front-load the point." example="New feature: Freelance Gigs are live!" />
+                </label>
                 <input type="text" x-model="title" maxlength="100" class="input-field mb-3" placeholder="e.g. New feature: Freelance Gigs are live!">
 
-                <label class="text-xs text-gray-400 font-bold uppercase mb-1 block">Message</label>
+                <label class="text-xs text-gray-400 font-bold uppercase mb-1 block">Message
+                    <x-help-tip text="Body of the announcement, shown under the title in the notification bell and inside the phone push. Max 300 characters — one clear sentence plus a call to action beats a paragraph, since most players only ever see the push preview." example="Head to the Opportunity Hub — short gigs now pay out the same game day, with no long contract." />
+                </label>
                 <textarea x-model="body" maxlength="300" rows="3" class="input-field mb-3" placeholder="Keep it short — this also has to fit in a phone notification."></textarea>
                 <p class="text-[11px] text-gray-600 mb-4" x-text="body.length + ' / 300'"></p>
 
-                <label class="text-xs text-gray-400 font-bold uppercase mb-2 block">Audience</label>
+                <label class="text-xs text-gray-400 font-bold uppercase mb-2 block">Audience
+                    <x-help-tip text="Who receives this broadcast. Every option creates in-app notifications for the matching players immediately; push delivery on top of that still respects each recipient's own quiet hours, daily cap and category preferences, so a “success” message never guarantees every phone buzzed. Picking anything other than Everyone reveals a follow-up field below." example="Free players only — for a conversion nudge before a promo ends" />
+                </label>
                 <div class="grid sm:grid-cols-2 gap-2 mb-4">
                     <label class="flex items-center gap-2 p-2.5 rounded-xl cursor-pointer text-sm" :style="audience==='all' ? 'background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);'">
-                        <input type="radio" x-model="audience" value="all" class="accent-indigo-500"> <span class="text-gray-300">🌍 Everyone</span>
+                        <input type="radio" x-model="audience" value="all" class="accent-indigo-500"> <span class="text-gray-300">🌍 Everyone<x-help-tip text="Sends to every registered player on the platform with no filter — free and paid, all ages, schools included. Use it only for genuine platform-wide news; over-using it trains players to ignore the bell." example="Scheduled maintenance tonight, or a new district going live" /></span>
                     </label>
                     <label class="flex items-center gap-2 p-2.5 rounded-xl cursor-pointer text-sm" :style="audience==='free_only' ? 'background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);'">
-                        <input type="radio" x-model="audience" value="free_only" class="accent-indigo-500"> <span class="text-gray-300">🆓 Free players only</span>
+                        <input type="radio" x-model="audience" value="free_only" class="accent-indigo-500"> <span class="text-gray-300">🆓 Free players only<x-help-tip text="Targets only players with no active subscription — anyone whose subscription is missing, inactive or already expired. This is the conversion-nudge audience, so paying subscribers never see the upsell. No extra field is needed." example="Your free trial ends Sunday — upgrade now and keep your career progress" /></span>
                     </label>
                     <label class="flex items-center gap-2 p-2.5 rounded-xl cursor-pointer text-sm" :style="audience==='age_group' ? 'background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);'">
-                        <input type="radio" x-model="audience" value="age_group" class="accent-indigo-500"> <span class="text-gray-300">🎂 One age group</span>
+                        <input type="radio" x-model="audience" value="age_group" class="accent-indigo-500"> <span class="text-gray-300">🎂 One age group<x-help-tip text="Sends only to players whose profile age group matches the one you pick in the dropdown that appears below. Use it when the news is age-specific — content, jobs and quests are age-gated, so announcing a teen feature to 8–12s just causes confusion." example="Pick 13–17 when new secondary-school career tracks go live" /></span>
                     </label>
                     <label class="flex items-center gap-2 p-2.5 rounded-xl cursor-pointer text-sm" :style="audience==='school' ? 'background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);'">
-                        <input type="radio" x-model="audience" value="school" class="accent-indigo-500"> <span class="text-gray-300">🏫 One school</span>
+                        <input type="radio" x-model="audience" value="school" class="accent-indigo-500"> <span class="text-gray-300">🏫 One school<x-help-tip text="Sends only to the active members of the one school subscription you choose in the dropdown that appears below. Removed or inactive seat-holders are skipped automatically, so a school that has rotated its roster won't get messages to ex-students." example="Pick the school, then announce Friday's class challenge to that cohort only" /></span>
                     </label>
                     <label class="flex items-center gap-2 p-2.5 rounded-xl cursor-pointer text-sm sm:col-span-2" :style="audience==='single_user' ? 'background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);'">
-                        <input type="radio" x-model="audience" value="single_user" class="accent-indigo-500"> <span class="text-gray-300">👤 One player (by email)</span>
+                        <input type="radio" x-model="audience" value="single_user" class="accent-indigo-500"> <span class="text-gray-300">👤 One player (by email)<x-help-tip text="Sends to exactly one account, matched on the email address you type into the field that appears below. This is the support-reply channel — the address must match a registered account exactly or the broadcast reaches nobody." example="player@example.com — following up on a “my salary disappeared” ticket" /></span>
                     </label>
                 </div>
 
@@ -746,33 +802,33 @@
 
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-4 mb-2">Free-player limits</p>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div><label class="text-[11px] text-gray-400 font-bold">Max assets owned</label><input type="number" min="0" x-model.number="free.max_assets" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Max active deals</label><input type="number" min="0" x-model.number="free.max_active_deals" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Max savings goals</label><input type="number" min="0" x-model.number="free.max_savings_schemes" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Max loans</label><input type="number" min="0" x-model.number="free.max_loans" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Catch-up game days / visit</label><input type="number" min="1" max="60" x-model.number="free.catchup_ticks" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">pesAI questions / day</label><input type="number" min="0" x-model.number="free.ai_per_day" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Fun World / game month</label><input type="number" min="0" x-model.number="free.fun_per_game_month" class="input-field mt-1"></div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Forum topics min level</label><input type="number" min="0" x-model.number="free.forum_topic_min_level" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Max assets owned<x-help-tip text="How many distinct active assets an unsubscribed player may own at once in the Marketplace. Hitting the cap prompts them to subscribe. 0 = unlimited." example="3 (default)" /></label><input type="number" min="0" x-model.number="free.max_assets" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Max active deals<x-help-tip text="Pending investment deals a free player can run at the same time in Equity Square. 0 = unlimited." example="1 (default)" /></label><input type="number" min="0" x-model.number="free.max_active_deals" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Max savings goals<x-help-tip text="Open savings schemes a free player can keep running at once. 0 = unlimited." example="1 (default)" /></label><input type="number" min="0" x-model.number="free.max_savings_schemes" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Max loans<x-help-tip text="Active loans a free player may hold at once — premium players get 2. 0 = unlimited." example="1 (default)" /></label><input type="number" min="0" x-model.number="free.max_loans" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Catch-up game days / visit<x-help-tip text="How many game days are simulated for a free player when they return after time away. This is the strongest pace lever in the game — never set it below about 5 or returning players feel frozen." example="7 (default)" /></label><input type="number" min="1" max="60" x-model.number="free.catchup_ticks" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">pesAI questions / day<x-help-tip text="How many questions a free player can ask the pesAI money coach per real day. Also caps your AI API spend. 0 = unlimited." example="3 (default)" /></label><input type="number" min="0" x-model.number="free.ai_per_day" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Fun World / game month<x-help-tip text="Leisure activities a free player can enjoy per game month. Mood — and therefore work income — depends on these, so this bites. 0 = unlimited." example="2 (default)" /></label><input type="number" min="0" x-model.number="free.fun_per_game_month" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Forum topics min level<x-help-tip text="The level a free player must reach before they can start a new forum topic — an anti-spam gate. Replying to others is always free. 0 = no level needed." example="5 (default)" /></label><input type="number" min="0" x-model.number="free.forum_topic_min_level" class="input-field mt-1"></div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Can create Chama?</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Can create Chama?<x-help-tip text="Whether free players may start their own savings chama. Joining someone else's chama is always free either way." example="No — premium only (default)" /></label>
                         <select x-model.number="free.chama_create" class="input-field mt-1">
                             <option value="0">No — premium only</option>
                             <option value="1">Yes</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Quests started / day override</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Quests started / day override<x-help-tip text="A tighter daily quest-start cap that applies to free accounts only. Leave at 0 and they follow the global pace value; set it above 0 to throttle them below everyone else." example="3 while the global pace is 5" /></label>
                         <input type="number" min="0" max="100" x-model.number="free.quests_per_day" class="input-field mt-1">
                         <p class="text-[10px] text-gray-600 mt-1">0 = no override, uses the global pace value below. Set &gt;0 to throttle free accounts tighter than everyone else.</p>
                     </div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Spin Wheel cooldown (real days)</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Spin Wheel cooldown (real days)<x-help-tip text="How many real days a free player must wait between Spin Wheel plays. 0 lets them spin daily just like premium." example="7 (default — once a week)" /></label>
                         <input type="number" min="0" max="90" x-model.number="free.spin_cooldown_days" class="input-field mt-1">
                         <p class="text-[10px] text-gray-600 mt-1">0 = spin every day like premium. Default 7 = once a week.</p>
                     </div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Money Toolkit access?</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Money Toolkit access?<x-help-tip text="Whether free players can open the six real-world calculators plus the real-life bill reminders and savings tracking that come with them." example="No — premium only (default)" /></label>
                         <select x-model.number="free.smart_tools_access" class="input-field mt-1">
                             <option value="0">No — premium only</option>
                             <option value="1">Yes</option>
@@ -780,7 +836,7 @@
                         <p class="text-[10px] text-gray-600 mt-1">Bajeti, Lengo, Matumizi, Ukuaji, Mkopo & Faida calculators on the dashboard.</p>
                     </div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Send money to friends?</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Send money to friends?<x-help-tip text="Whether free players may gift a friend cash straight from their balance. Friend Loans (borrowing and lending) stay free either way — this gate only covers no-strings transfers." example="No — premium only (default)" /></label>
                         <select x-model.number="free.send_money_access" class="input-field mt-1">
                             <option value="0">No — premium only</option>
                             <option value="1">Yes</option>
@@ -788,7 +844,7 @@
                         <p class="text-[10px] text-gray-600 mt-1">Gifting a friend money straight from balance (separate from structured loans, which stay free).</p>
                     </div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Pesa Trail games / day</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Pesa Trail games / day<x-help-tip text="How many Pesa Trail arcade games a free player can start per real day — inviting someone else to a match counts the same as starting one. 0 = unlimited." example="3 (default)" /></label>
                         <input type="number" min="0" max="1000" x-model.number="free.pesatrail_games_per_day" class="input-field mt-1">
                         <p class="text-[10px] text-gray-600 mt-1">0 = unlimited. Premium always unlimited and can invite others unlimited times.</p>
                     </div>
@@ -796,17 +852,17 @@
 
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-5 mb-2">Trial, upsell nudges & quest pace</p>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div><label class="text-[11px] text-gray-400 font-bold">Free trial (real days)</label><input type="number" min="0" max="365" x-model.number="trial_days" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Free trial (real days)<x-help-tip text="How long a brand-new account gets full premium before any gate applies — taste first, wall second. 0 turns the trial off completely." example="7 (default)" /></label><input type="number" min="0" max="365" x-model.number="trial_days" class="input-field mt-1"></div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Subscribe nudges</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Subscribe nudges<x-help-tip text="Master switch for the periodic upgrade reminders shown to free players. Off silences them platform-wide." example="On" /></label>
                         <select x-model="upsell_nag_enabled" class="input-field mt-1">
                             <option :value="true">On</option>
                             <option :value="false">Off</option>
                         </select>
                     </div>
-                    <div><label class="text-[11px] text-gray-400 font-bold">Nudge every N real days</label><input type="number" min="1" max="90" x-model.number="upsell_nag_days" class="input-field mt-1"></div>
+                    <div><label class="text-[11px] text-gray-400 font-bold">Nudge every N real days<x-help-tip text="How many real days pass between subscribe reminders for the same free player. Lower is pushier — and easier to get tuned out." example="3 (default)" /></label><input type="number" min="1" max="90" x-model.number="upsell_nag_days" class="input-field mt-1"></div>
                     <div>
-                        <label class="text-[11px] text-gray-400 font-bold">Max quests started / day (global pace)</label>
+                        <label class="text-[11px] text-gray-400 font-bold">Max quests started / day (global pace)<x-help-tip text="The game-wide daily cap on starting new quests, premium included. Re-opening a quest already started never counts against it. 0 = unlimited." example="0 for unlimited, or 5 to slow the whole game down" /></label>
                         <input type="number" min="0" max="100" x-model.number="max_quests_per_day" class="input-field mt-1">
                         <p class="text-[10px] text-gray-600 mt-1">Applies to everyone, including premium, unless overridden above for free accounts.</p>
                     </div>
@@ -834,20 +890,26 @@
                             </div>
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" x-model="isActive" class="rounded" style="accent-color:#6366f1;">
-                                <span class="text-xs text-gray-400">Active</span>
+                                <span class="text-xs text-gray-400">Active<x-help-tip text="Uncheck to pull this plan off the public subscribe page without deleting it. Players already on it keep their access until it expires." example="Uncheck an old price tier after launching a new one" /></span>
                             </label>
                         </div>
                         <div class="space-y-3">
                             <div>
-                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Plan Name</label>
+                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Plan Name
+                                    <x-help-tip text="The name players see on the subscribe page and on their M-Pesa receipt." example="Monthly Premium" />
+                                </label>
                                 <input type="text" x-model="name" class="input-field text-sm" placeholder="Plan name">
                             </div>
                             <div>
-                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Price (Ksh)</label>
+                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Price (Ksh)
+                                    <x-help-tip text="What a player is charged via M-Pesa for this plan, in Kenyan Shillings — once per plan period, not per month unless the plan is monthly." example="300" />
+                                </label>
                                 <input type="number" x-model.number="price" min="1" class="input-field text-lg font-black" placeholder="0">
                             </div>
                             <div>
-                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Description & Perks</label>
+                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Description & Perks
+                                    <x-help-tip text="The selling copy shown under this plan on the subscribe page — list what the player actually unlocks by paying." example="Full premium for 30 days • unlimited quests • Money Toolkit" />
+                                </label>
                                 <textarea x-model="desc" class="input-field text-xs resize-none" style="min-height:100px;font-family:inherit;" placeholder="Full access for X period…"></textarea>
                             </div>
                         </div>
@@ -892,7 +954,7 @@
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     @foreach($plans->where('plan_type', 'school') as $plan)
                     <div class="plan-card p-5 relative" style="border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.04);"
-                         x-data="planEditor({{ Js::from($plan->key) }}, {{ Js::from($plan->name) }}, {{ $plan->price_kes }}, {{ Js::from($plan->description) }}, {{ $plan->is_active ? 'true' : 'false' }}, {{ $plan->is_featured ? 'true' : 'false' }}, {{ $plan->seats ?? 0 }})">
+                         x-data="planEditor({{ Js::from($plan->key) }}, {{ Js::from($plan->name) }}, {{ $plan->price_kes }}, {{ Js::from($plan->description) }}, {{ $plan->is_active ? 'true' : 'false' }}, {{ $plan->is_featured ? 'true' : 'false' }}, {{ $plan->seats ?? 0 }}, {{ $plan->max_classes ?? 0 }})">
                         {{-- School badge --}}
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-2">
@@ -905,27 +967,41 @@
                             </div>
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" x-model="isActive" class="rounded" style="accent-color:#10b981;">
-                                <span class="text-xs text-gray-400">Active</span>
+                                <span class="text-xs text-gray-400">Active<x-help-tip text="Uncheck to stop offering this school tier to new buyers without deleting it. Schools already on the plan keep their seats until it expires." example="Uncheck last year's term pricing" /></span>
                             </label>
                         </div>
 
                         <div class="space-y-3">
                             <div>
-                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Plan Name</label>
+                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Plan Name
+                                    <x-help-tip text="The tier name schools see on the pricing page and on their invoice — make the size tier obvious." example="Small School — 50 Students" />
+                                </label>
                                 <input type="text" x-model="name" class="input-field text-sm" placeholder="e.g. Small School">
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-3 gap-2">
                                 <div>
-                                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Price (Ksh)</label>
+                                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Price (Ksh)
+                                        <x-help-tip text="Total the school pays for the whole plan period, in Kenyan Shillings — not per student." example="15000" />
+                                    </label>
                                     <input type="number" x-model.number="price" min="0" class="input-field font-black" placeholder="0">
                                 </div>
                                 <div>
-                                    <label class="text-[10px] text-emerald-500 uppercase tracking-wider mb-1 block">Student Seats</label>
+                                    <label class="text-[10px] text-emerald-500 uppercase tracking-wider mb-1 block">Student Seats
+                                        <x-help-tip text="How many students can hold an active membership at the same time on this tier. Removing a member frees their seat for someone else." example="50" />
+                                    </label>
                                     <input type="number" x-model.number="seats" min="1" max="5000" class="input-field font-black" placeholder="30" style="border-color:rgba(16,185,129,0.35);">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-emerald-500 uppercase tracking-wider mb-1 block">Max Classes
+                                        <x-help-tip text="How many classes or cohorts a school on this tier may create. Each class has its own teacher, roster and class challenges — so this decides how many streams a school can run." example="3" />
+                                    </label>
+                                    <input type="number" x-model.number="maxClasses" min="1" max="100" class="input-field font-black" placeholder="3" style="border-color:rgba(16,185,129,0.35);">
                                 </div>
                             </div>
                             <div>
-                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Description</label>
+                                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Description
+                                    <x-help-tip text="Shown under this tier on the pricing page — spell out what the school gets for the money." example="Up to 50 students • school portal • teacher dashboards" />
+                                </label>
                                 <textarea x-model="desc" class="input-field text-xs resize-none" style="min-height:70px;font-family:inherit;" placeholder="e.g. For schools with up to 30 students&#10;• All premium features&#10;• Dedicated school portal"></textarea>
                             </div>
                         </div>
@@ -965,27 +1041,46 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Plan Name</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Plan Name
+                                <x-help-tip text="The tier name schools see on the pricing page and on their invoice. Its URL key is generated from this name plus the seat count." example="Small School, 100 Students" />
+                            </label>
                             <input type="text" x-model="createForm.name" class="input-field" placeholder="e.g. Small School, 100 Students">
                             <p class="text-[10px] text-gray-600 mt-1">Use a descriptive name that shows the size tier</p>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Student Seats</label>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Student Seats
+                                    <x-help-tip text="How many students a school on this tier can have active at once. A seat frees up when a member is removed from the school portal." example="50" />
+                                </label>
                                 <input type="number" x-model.number="createForm.seats" class="input-field" min="1" max="5000" placeholder="50">
                                 <p class="text-[10px] text-gray-600 mt-1">Max students at once</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Duration (months)</label>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Duration (months)
+                                    <x-help-tip text="How long access lasts once a school buys this plan — their expiry date is set this many months from the purchase date." example="12 for a full academic year" />
+                                </label>
                                 <input type="number" x-model.number="createForm.months" class="input-field" min="1" max="60" placeholder="12">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Price (Ksh)</label>
-                            <input type="number" x-model.number="createForm.price_kes" class="input-field" min="0" placeholder="15000">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Max Classes
+                                    <x-help-tip text="How many classes or cohorts a school on this tier may create. Each class gets its own teacher, roster and class challenges. Leave blank to use the default of 3." example="3" />
+                                </label>
+                                <input type="number" x-model.number="createForm.max_classes" class="input-field" min="1" max="100" placeholder="3">
+                                <p class="text-[10px] text-gray-600 mt-1">How many classes/cohorts the school can create</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Price (Ksh)
+                                    <x-help-tip text="Total the school pays for the whole period, in Kenyan Shillings. Set 0 for a free or donor-sponsored tier." example="15000" />
+                                </label>
+                                <input type="number" x-model.number="createForm.price_kes" class="input-field" min="0" placeholder="15000">
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Description</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Description
+                                <x-help-tip text="Shown under this tier on the pricing page — what the school gets for the price." example="Up to 50 students • school portal • teacher dashboards" />
+                            </label>
                             <textarea x-model="createForm.description" class="input-field text-xs resize-none" rows="3"
                                       placeholder="e.g. For schools with up to 50 students&#10;• All students get full premium access&#10;• School portal to manage members"></textarea>
                         </div>
@@ -1033,26 +1128,34 @@
                 <h3 class="font-bold text-white mb-4" x-text="editingId ? 'Edit Coupon' : 'Create Coupon'"></h3>
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Code</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Code
+                            <x-help-tip text="What a player types at checkout to get the discount. Letters, numbers, dashes and underscores only — it is stored uppercase and must be unique." example="KARIBU20" />
+                        </label>
                         <input x-model="form.code" @input="form.code = form.code.toUpperCase()" type="text" placeholder="e.g. KARIBU20" class="input-field mt-1 font-mono uppercase">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Type</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Type
+                            <x-help-tip text="Percent takes a share off the plan price, so the saving scales with the plan. Fixed takes a flat number of shillings off whatever the plan costs." example="Percent for 20% off; Fixed for Ksh 100 off" />
+                        </label>
                         <select x-model="form.type" class="input-field mt-1">
                             <option value="percent">Percent (%)</option>
                             <option value="fixed">Fixed (KES)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase" x-text="form.type === 'percent' ? 'Value (%)' : 'Value (KES)'"></label>
+                        <label class="text-xs text-gray-400 font-bold uppercase" x-text="form.type === 'percent' ? 'Value (%)' : 'Value (KES)'"></label><x-help-tip text="How big the discount is, read according to the Type above — a percentage of the price (never more than 100) or a flat shilling amount." example="20 with Percent = 20% off" />
                         <input x-model.number="form.value" type="number" min="1" placeholder="e.g. 20" class="input-field mt-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Max Redemptions</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Max Redemptions
+                            <x-help-tip text="Total times this code can be redeemed across all players before it stops working — your budget cap on the campaign. Leave empty for unlimited." example="100 for a capped launch promo" />
+                        </label>
                         <input x-model="form.max_redemptions" type="number" min="1" placeholder="Empty = unlimited" class="input-field mt-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Plan</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Plan
+                            <x-help-tip text="Restrict the code so it only discounts one specific plan. Leave on Any plan and it works on every plan, including school tiers." example="Annual Premium only" />
+                        </label>
                         <select x-model="form.plan_id" class="input-field mt-1">
                             <option value="">Any plan</option>
                             @foreach($plans as $plan)
@@ -1061,12 +1164,16 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-bold uppercase">Expires At</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Expires At
+                            <x-help-tip text="After this moment the code is refused at checkout. Leave empty and it never expires." example="31 Dec 2026, 23:59" />
+                        </label>
                         <input x-model="form.expires_at" type="datetime-local" class="input-field mt-1">
                         <p class="text-[10px] text-gray-600 mt-1">Empty = never expires</p>
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="text-xs text-gray-400 font-bold uppercase">Note</label>
+                        <label class="text-xs text-gray-400 font-bold uppercase">Note
+                            <x-help-tip text="A reminder of what this code was created for, shown only in this admin table. Players never see it." example="Back-to-school campaign, Term 1 2026" />
+                        </label>
                         <input x-model="form.note" type="text" placeholder="Internal note, e.g. Back-to-school campaign" class="input-field mt-1">
                     </div>
                 </div>
@@ -1418,25 +1525,35 @@
                     <div class="space-y-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Host</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Host
+                                    <x-help-tip text="Address of the mail server PesaQuest hands every outgoing email to — password resets, subscription confirmations and weekly summaries. Get it wrong and those emails silently never arrive; players then can't recover accounts." example="smtp.gmail.com" />
+                                </label>
                                 <input type="text" x-model="smtp.host" placeholder="smtp.gmail.com" class="input-field">
                             </div>
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Port</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Port
+                                    <x-help-tip text="Network port on that mail server. It has to match the Encryption setting below — 587 goes with TLS and 465 with SSL. A mismatched pair is the most common reason mail hangs and then fails." example="587" />
+                                </label>
                                 <input type="number" x-model="smtp.port" placeholder="587" class="input-field">
                             </div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Username / Email</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Username / Email
+                                <x-help-tip text="The account PesaQuest logs into the mail server as. For most providers this is the full mailbox address, not a short username — and it is separate from the From Email below, though they are usually the same." example="you@gmail.com" />
+                            </label>
                             <input type="text" x-model="smtp.username" placeholder="you@gmail.com" class="input-field">
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Password / App Password</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Password / App Password
+                                <x-help-tip text="Secret for that mailbox. Gmail and most modern providers reject your normal login password here — you must generate a dedicated app password with 2FA enabled. Leave blank when re-saving to keep the stored value." example="A 16-character Google app password, not your Gmail login" />
+                            </label>
                             <input type="password" x-model="smtp.password" placeholder="••••••••••••" class="input-field">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Encryption</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Encryption
+                                    <x-help-tip text="How the connection to the mail server is secured. Pair TLS with port 587 or SSL with port 465 — those are the two combinations providers actually accept. Only pick None for a local test relay that has no TLS at all." example="TLS (with port 587)" />
+                                </label>
                                 <select x-model="smtp.encryption" class="input-field">
                                     <option value="tls">TLS</option>
                                     <option value="ssl">SSL</option>
@@ -1444,12 +1561,16 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">From Name</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">From Name
+                                    <x-help-tip text="The sender name players see in their inbox before they open anything. A recognisable brand name here measurably improves whether password-reset mails get opened instead of ignored as spam." example="PesaQuest" />
+                                </label>
                                 <input type="text" x-model="smtp.from_name" placeholder="PesaQuest" class="input-field">
                             </div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">From Email</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">From Email
+                                <x-help-tip text="Return address stamped on every outgoing mail, and where player replies land. Use an address on a domain your mail server is actually authorised to send for — otherwise spam filters reject the mail even though the send looks successful here." example="hello@moski.org" />
+                            </label>
                             <input type="email" x-model="smtp.from_email" placeholder="hello@moski.org" class="input-field">
                         </div>
                     </div>
@@ -1458,7 +1579,7 @@
                             <span x-show="!smtpSaving">💾 Save SMTP</span><span x-show="smtpSaving">Saving…</span>
                         </button>
                         <div class="flex gap-2">
-                            <input type="email" x-model="testEmail" placeholder="test@email.com" class="input-field" style="width:160px;">
+                            <input type="email" x-model="testEmail" placeholder="test@email.com" class="input-field" style="width:160px;"><x-help-tip text="Where the 📤 Test button delivers a one-line proof email. Save your SMTP settings first — the test sends using whatever is currently stored, so testing before saving only checks the old config. If nothing arrives, check the spam folder before assuming the credentials are wrong." example="your.own@email.com" />
                             <button @click="testSmtp()" :disabled="smtpTesting" class="px-4 py-2.5 rounded-xl text-sm font-bold transition-all text-white whitespace-nowrap" style="background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.3);">
                                 <span x-show="!smtpTesting">📤 Test</span><span x-show="smtpTesting">Sending…</span>
                             </button>
@@ -1482,16 +1603,21 @@
                     </div>
                     <div class="space-y-3">
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Client ID</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Client ID
+                                <x-help-tip text="Public identifier for your OAuth app from Google Cloud Console. It only works if that app lists the redirect URI shown above — a mismatch produces a Google error page instead of a login, for every player." example="123456789-abc.apps.googleusercontent.com" />
+                            </label>
                             <input type="text" x-model="google.client_id" placeholder="xxxx.apps.googleusercontent.com" class="input-field">
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Client Secret</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Client Secret
+                                <x-help-tip text="Private half of the same Google OAuth credential — treat it like a password and never paste it anywhere public. If it leaks, rotate it in Google Cloud Console and re-save here." example="GOCSPX-xxxxxxxxxxxxxxxx" />
+                            </label>
                             <input type="password" x-model="google.client_secret" placeholder="••••••••••••" class="input-field">
                         </div>
                         <label class="flex items-center gap-2 text-xs font-bold text-gray-300 cursor-pointer">
                             <input type="checkbox" x-model="google.enabled" style="width:1.1rem;height:1.1rem;">
                             Show "Continue with Google" on login/register
+                            <x-help-tip text="Master switch for the Google button on the login and register pages. Turning it off hides the button without deleting the credentials above, so you can pull it instantly if Google OAuth starts failing — existing Google-created accounts keep working via password reset." example="Leave OFF until the Client ID and Secret above are saved and tested" />
                         </label>
                     </div>
                     <div class="flex gap-3 mt-4">
@@ -1517,7 +1643,9 @@
                     </div>
                     <div class="space-y-3">
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Environment</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Environment
+                                <x-help-tip text="Which Safaricom Daraja endpoint every STK Push is sent to. Sandbox uses test credentials and moves no real money — nothing you do there charges anyone. Switching to Production makes subscription payments real and irreversible, so only flip it once a sandbox payment has completed end to end." example="Sandbox (Testing) while setting up; Production (Live) on launch day" />
+                            </label>
                             <select x-model="mpesa.env" class="input-field">
                                 <option value="sandbox">Sandbox (Testing)</option>
                                 <option value="production">Production (Live)</option>
@@ -1525,26 +1653,36 @@
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Consumer Key</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Consumer Key
+                                    <x-help-tip text="Public half of your Daraja app credential — PesaQuest trades it for the access token behind every STK Push. Sandbox and Production keys are different; copying a sandbox key into live mode makes every payment fail with an auth error." example="Copied from your app on developer.safaricom.co.ke" />
+                                </label>
                                 <input type="text" x-model="mpesa.consumer_key" placeholder="From Daraja portal" class="input-field">
                             </div>
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Consumer Secret</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Consumer Secret
+                                    <x-help-tip text="Private partner to the Consumer Key above — together they authenticate PesaQuest to Daraja. Anyone holding both can transact against your shortcode, so never share it; rotate it in the Daraja portal if it leaks." example="Copied from the same Daraja app as the Consumer Key" />
+                                </label>
                                 <input type="password" x-model="mpesa.consumer_secret" placeholder="••••••••••••" class="input-field">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Business Shortcode</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Business Shortcode
+                                    <x-help-tip text="The Paybill or Till number subscription money actually lands in — this is where your revenue goes, so double-check it before going live. 174379 is Safaricom's shared sandbox test shortcode; replace it with your own registered number for Production." example="174379 in sandbox; your own Paybill in production" />
+                                </label>
                                 <input type="text" x-model="mpesa.shortcode" placeholder="174379" class="input-field">
                             </div>
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Account Reference</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Account Reference
+                                    <x-help-tip text="Short label attached to every STK Push — it shows on the player's phone prompt and on your M-Pesa statement, so it is how you recognise PesaQuest income among everything else hitting that shortcode. Keep it short; long values get truncated by Safaricom." example="PesaQuest" />
+                                </label>
                                 <input type="text" x-model="mpesa.account_ref" placeholder="PesaQuest" class="input-field">
                             </div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Passkey (LipaNaMpesa)</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Passkey (LipaNaMpesa)
+                                <x-help-tip text="Lipa Na M-Pesa Online passkey, issued per shortcode. It signs the password on each STK Push request, so it must belong to the exact shortcode above — a passkey from a different shortcode makes every prompt fail even when the keys are correct." example="The Lipa Na M-Pesa Online passkey for your shortcode" />
+                            </label>
                             <input type="password" x-model="mpesa.passkey" placeholder="••••••••••••" class="input-field">
                         </div>
                     </div>
@@ -1565,7 +1703,9 @@
                     </div>
                     <div class="grid md:grid-cols-2 gap-6 items-start">
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Real Hours Per Game Week</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Real Hours Per Game Week
+                                <x-help-tip text="The single most powerful knob in the game: how many real hours it takes to burn through one game week (7 ticks — one tick is one game day). Divide the value by 7 to get the real time per tick: 24 real hours per game week means one real day = 7 game days, so 1 tick ≈ 3.4 real hours; 56 real hours per game week means one real day = 3 game days, so 1 tick = 8 real hours. Every tick-based mechanic scales with this at once — bill cycles, salary months, savings interest, loan installments, asset appreciation, gig cooldowns, deal maturities and quest deadlines all arrive proportionally faster or slower. Faster settings pack years of financial life into a school term but bury daily visitors in obligations; slower settings suit younger cohorts." example="2 hrs for a normal pace; 12 hrs for a calmer class group; 24 hrs so one real day = one game week" />
+                            </label>
                             <select x-model="clock.rate" @change="updateClockDesc()" class="input-field">
                                 <option value="0.25">0.25 hrs — 15 min real = 1 game week (Ultra Fast)</option>
                                 <option value="0.5">0.5 hrs — 30 min real = 1 game week (Very Fast)</option>
@@ -1586,7 +1726,9 @@
                         </div>
                     </div>
                     <div class="mt-5 pt-5" style="border-top:1px solid rgba(255,255,255,.06);">
-                        <label class="text-xs text-gray-400 mb-1 block font-bold">Max "While You Were Away" Catch-up (game days)</label>
+                        <label class="text-xs text-gray-400 mb-1 block font-bold">Max "While You Were Away" Catch-up (game days)
+                            <x-help-tip text="Ceiling on how many game days a single login may simulate, no matter how long the player was actually gone. Anything beyond it is discarded, never banked — so a returning player faces a manageable catch-up instead of months of stacked bills. A hard engine ceiling of 60 ticks still applies on top, and free accounts are further limited by their own catch-up gate. This is a flat game-days count and does not change when you change the clock speed above." example="30 — a returning player replays at most one game month, however long they were away" />
+                        </label>
                         <input type="number" min="1" max="3650" step="1" x-model.number="clock.max_catchup" @input="updateClockDesc()" class="input-field max-w-xs">
                         <p class="text-xs text-gray-500 mt-1.5">No matter how long a player was actually away — an hour or a year — a single login only ever simulates up to this many game days. The rest of the absence is simply not simulated (never banked for later). This is a flat game-days number, independent of the clock speed above.</p>
                         <p class="text-xs text-amber-400 mt-1.5 font-semibold" x-show="catchupDesc" x-text="catchupDesc"></p>
@@ -1603,7 +1745,9 @@
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">🔓</div>
                             <div>
-                                <h3 class="font-black text-white">Free-for-All Mode</h3>
+                                <h3 class="font-black text-white">Free-for-All Mode
+                                    <x-help-tip text="One switch that overrides every paywall gate at once — while ON, every player is treated as premium regardless of subscription status, so no feature limit, quest cap, catch-up limit or upsell nag applies to anyone. It sits above the Free Plan Gates panel, meaning nothing you configure there has any effect until this is turned back OFF. Built for school events, demos and launch weeks; leaving it ON in normal operation means the platform earns nothing." example="Turn ON for a school demo day, OFF again the same evening" />
+                                </h3>
                                 <p class="text-xs text-gray-400">When ON, all players get full access — subscription paywall is completely disabled.</p>
                             </div>
                         </div>
@@ -1638,16 +1782,22 @@
                     </div>
                     <div class="grid sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">📧 Support Email</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">📧 Support Email
+                                <x-help-tip text="Public support address behind the Email button on the landing page. Leave it blank and that button simply doesn't render — so only fill it in for an inbox someone actually watches." example="support@moski.org" />
+                            </label>
                             <input type="email" x-model="email" placeholder="support@moski.org" class="input-field">
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">💬 WhatsApp Number</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">💬 WhatsApp Number
+                                <x-help-tip text="Number the landing page's WhatsApp button opens a chat with — usually the fastest support channel for Kenyan parents and teachers. Must be in international form with the country code and no plus sign or spaces, or the wa.me link silently opens an empty chat. Blank hides the button." example="254712345678" />
+                            </label>
                             <input type="text" x-model="whatsapp" placeholder="254712345678" class="input-field">
                             <p class="text-xs text-gray-500 mt-1">Include country code, no + or spaces needed — e.g. 2547XXXXXXXX.</p>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">📞 Phone Number</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">📞 Phone Number
+                                <x-help-tip text="Callable number behind the landing page's Call button — displayed as typed, so format it for humans to read. Mostly used by schools evaluating a seat package. Blank hides the button." example="+254 7XX XXX XXX" />
+                            </label>
                             <input type="text" x-model="phone" placeholder="+254 7XX XXX XXX" class="input-field">
                         </div>
                     </div>
@@ -1682,7 +1832,9 @@
 
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="text-xs text-gray-400 mb-1 block font-bold">Contact email (VAPID subject)</label>
+                            <label class="text-xs text-gray-400 mb-1 block font-bold">Contact email (VAPID subject)
+                                <x-help-tip text="Required by the web-push spec: a real contact address stored as a mailto: subject, which browser push services (Google, Mozilla, Apple) use to reach you about your push traffic — for example if your sends start looking abusive. Never shown to players. It is saved as part of generating the keys, so set it before clicking Generate." example="support@moski.org" />
+                            </label>
                             <input type="email" x-model="subject" placeholder="support@moski.org" class="input-field">
                             <p class="text-xs text-gray-500 mt-1">Browsers may use this to contact you about your push traffic. Never shown to players.</p>
                         </div>
@@ -1699,6 +1851,7 @@
                             <span x-show="!generating" x-text="hasKeys ? '🔄 Regenerate Keys' : '🔑 Generate VAPID Keys'"></span>
                             <span x-show="generating">Generating…</span>
                         </button>
+                        <x-help-tip text="One-time setup: creates the public/private VAPID key pair that lets browsers accept push from this server, and stores the contact email above as the mailto: subject. Until you press this, no player can receive any push at all. Pressing it again later regenerates the pair and wipes every existing player subscription — harmless the first time, disruptive afterwards, so only repeat it if the keys have leaked." example="Click once on Day 1, right after filling in the contact email" />
                         <button x-show="hasKeys" @click="testPush()" :disabled="testing"
                                 class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
                                 style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;">
@@ -1707,7 +1860,9 @@
                         </button>
                     </div>
                     <p x-show="hasKeys" class="text-xs text-red-400/80 mt-2">⚠️ Regenerating invalidates every player's existing push subscription — they'll need to re-enable notifications. Only do this if keys have leaked.</p>
-                    <p x-show="hasKeys" class="text-xs text-gray-500 mt-2">"Send Test Push to Myself" delivers directly to YOUR account right now, ignoring quiet hours and the daily cap — the fastest way to confirm push actually works end-to-end. Requires you to have enabled push notifications on this device already (Profile → Notification Settings).</p>
+                    <p x-show="hasKeys" class="text-xs text-gray-500 mt-2">"Send Test Push to Myself" delivers directly to YOUR account right now, ignoring quiet hours and the daily cap — the fastest way to confirm push actually works end-to-end. Requires you to have enabled push notifications on this device already (Profile → Notification Settings).
+                        <x-help-tip text="Diagnostic button, not a real send: it pushes straight to your own logged-in device, deliberately ignoring quiet hours (9:30pm–6am Nairobi), the 4-per-day cap and category preferences. That makes it the one test that isolates a genuine configuration fault from normal filtering — if this fails, push is broken; if this works but a broadcast reached nobody, the recipients were simply filtered out." example="Use it right after generating keys, and again whenever a broadcast seems to have vanished" />
+                    </p>
                     <div x-show="msg" x-transition class="mt-3 text-xs font-bold" :class="msgOk ? 'text-emerald-400' : 'text-red-400'" x-text="msg"></div>
                     <div x-show="testMsg" x-transition class="mt-2 text-xs font-bold" :class="testOk ? 'text-emerald-400' : 'text-red-400'" x-text="testMsg"></div>
                 </div>
@@ -1734,7 +1889,9 @@
                         {{-- Left column --}}
                         <div class="space-y-3">
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">OpenRouter API Key</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">OpenRouter API Key
+                                    <x-help-tip text="Credential PesaQuest uses to reach the AI mentor's language model through OpenRouter. With no key saved, pesAI simply refuses to answer and the test button below reports it. Billing follows the model you pick — a free model costs nothing even with a key attached, a paid one bills this account per message." example="sk-or-v1-… — created free at openrouter.ai/keys" />
+                                </label>
                                 <div class="flex gap-2">
                                     <input :type="showKey ? 'text' : 'password'" x-model="ai.api_key"
                                            placeholder="sk-or-v1-••••••••••••" class="input-field flex-1">
@@ -1746,7 +1903,9 @@
                             </div>
 
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">AI Model</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">AI Model
+                                    <x-help-tip text="Which language model answers every player question. This is the direct cost-versus-quality trade-off: the free-tier models cost nothing but share a 200-request-per-day ceiling across the whole platform, while paid models give better financial explanations and bill your OpenRouter account per message with no daily ceiling. Changing it takes effect on the very next question — no redeploy." example="Llama 3.1 8B (Free) for everyday use; Llama 3.1 70B (Paid) if answer quality matters more than cost" />
+                                </label>
                                 <select x-model="ai.model" class="input-field">
                                     <option value="meta-llama/llama-3.1-8b-instruct:free">⭐ Llama 3.1 8B (Free — Recommended)</option>
                                     <option value="meta-llama/llama-3.2-3b-instruct:free">Llama 3.2 3B (Free — Fastest)</option>
@@ -1761,7 +1920,9 @@
                             </div>
 
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Daily Message Limit Per User</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Daily Message Limit Per User
+                                    <x-help-tip text="How many questions one player may ask pesAI in a single real day before being cut off until midnight. It is the cost brake on the whole feature: a low number keeps a classroom of players inside the free tier's shared daily quota, while a high number risks one enthusiastic user exhausting the API for everyone. Accepts 1–100." example="10 — enough for genuine curiosity, low enough that 20 players can't drain a free-tier quota" />
+                                </label>
                                 <input type="number" x-model="ai.daily_limit" min="1" max="100" class="input-field" style="max-width:120px;">
                                 <p class="text-xs text-gray-500 mt-1">Resets at midnight. Prevents API exhaustion.</p>
                             </div>
@@ -1770,7 +1931,9 @@
                         {{-- Right column: icon + test --}}
                         <div class="space-y-3">
                             <div>
-                                <label class="text-xs text-gray-400 mb-1 block font-bold">Agent Icon / Avatar</label>
+                                <label class="text-xs text-gray-400 mb-1 block font-bold">Agent Icon / Avatar
+                                    <x-help-tip text="The face of the AI mentor — shown on the floating chat button and beside every pesAI reply. Accepts either a single emoji or a public image URL; a URL must be reachable from the player's browser or the avatar renders blank. Purely cosmetic, but it is how younger players recognise the mentor as a character rather than a settings menu." example="🤖 — or https://moski.org/img/mama-pesa.png" />
+                                </label>
                                 <input type="text" x-model="ai.icon"
                                        placeholder="🤖 or https://… image URL"
                                        class="input-field">
@@ -1792,7 +1955,9 @@
 
                             {{-- Test configuration --}}
                             <div>
-                                <label class="text-xs text-gray-400 mb-2 block font-bold">Test Configuration</label>
+                                <label class="text-xs text-gray-400 mb-2 block font-bold">Test Configuration
+                                    <x-help-tip text="Sends one real message to the saved key and model and prints pesAI's actual reply below — the quickest way to tell a bad key from a bad model choice, since each failure comes back with the provider's own error text. It uses the stored settings, so press Save first or you'll be testing the previous configuration." example="Run it once after saving a new key, and again after switching models" />
+                                </label>
                                 <button @click="testAi()" :disabled="aiTesting"
                                         class="w-full py-2 rounded-xl text-sm font-bold transition-all"
                                         style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#34d399;">
@@ -1932,11 +2097,15 @@
             <div class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs text-gray-400 font-semibold mb-1 block">Full Name</label>
+                        <label class="text-xs text-gray-400 font-semibold mb-1 block">Full Name
+                            <x-help-tip text="The player's display name — it appears on their profile, on leaderboards and anywhere their progress is shown to others." example="Jane Wanjiku" />
+                        </label>
                         <input type="text" x-model="cuModal.name" placeholder="e.g. Jane Wanjiku" class="input-field w-full" />
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400 font-semibold mb-1 block">Age Group</label>
+                        <label class="text-xs text-gray-400 font-semibold mb-1 block">Age Group
+                            <x-help-tip text="Decides which age-banded jobs, courses and quests this player is shown. Leave blank and they choose it themselves during the first-login wizard." example="13-17 for a high-school student" />
+                        </label>
                         <select x-model="cuModal.age_group" class="input-field w-full">
                             <option value="">— optional —</option>
                             <option value="8-12">🧒 Ages 8–12</option>
@@ -1947,11 +2116,15 @@
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Email Address</label>
+                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Email Address
+                        <x-help-tip text="Their login ID and the address password resets are sent to. Must be unique — no two accounts can share an email." example="jane.wanjiku@example.com" />
+                    </label>
                     <input type="email" x-model="cuModal.email" placeholder="user@example.com" class="input-field w-full" />
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Password</label>
+                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Password
+                        <x-help-tip text="The starting password you hand to the player — they can change it later from their profile. Minimum 8 characters; use Generate for a strong random one." example="Kx7m2Qp9" />
+                    </label>
                     <div class="flex gap-2">
                         <input :type="cuModal.showPw ? 'text' : 'password'" x-model="cuModal.password"
                                placeholder="Min. 8 characters" class="input-field flex-1" />
@@ -1967,7 +2140,9 @@
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Role</label>
+                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Role
+                        <x-help-tip text="Player is a normal game account. GameSet unlocks the content portal (courses, quests, jobs, economy tuning). Admin unlocks this whole panel — users, money and plans." example="Player for students, GameSet for your content team" />
+                    </label>
                     <div class="flex gap-2">
                         <template x-for="r in [{v:'player',l:'🎮 Player'},{v:'gameset',l:'🎛 GameSet'},{v:'admin',l:'🛡 Admin'}]">
                             <button type="button"
@@ -2003,7 +2178,9 @@
             <h3 class="font-black text-lg">Grant Subscription</h3>
             <p class="text-sm text-gray-400">Granting premium access to <strong x-text="subModal.userName" class="text-white"></strong></p>
             <div>
-                <label class="text-xs text-gray-400 font-semibold mb-1.5 block">Subscription Plan</label>
+                <label class="text-xs text-gray-400 font-semibold mb-1.5 block">Subscription Plan
+                    <x-help-tip text="Which plan to hand this player for free. Access starts now and ends after the plan's duration, and any subscription they already have is cancelled and replaced." example="Monthly — premium until 30 days from today" />
+                </label>
                 <select x-model="subModal.plan" class="input-field w-full">
                     @foreach($plans as $plan)
                     <option value="{{ $plan->key }}">{{ $plan->name }} ({{ $plan->durationLabel() }}) – {{ $plan->formattedPrice() }}</option>
@@ -2011,7 +2188,9 @@
                 </select>
             </div>
             <div>
-                <label class="text-xs text-gray-400 font-semibold mb-1.5 block">Payment Reference (optional)</label>
+                <label class="text-xs text-gray-400 font-semibold mb-1.5 block">Payment Reference (optional)
+                    <x-help-tip text="Your own record of how this was paid for, stored on the subscription so payments can be reconciled later. Leave blank for comped or sponsored accounts." example="MPESA-QK12ZX9P" />
+                </label>
                 <input type="text" x-model="subModal.reference" placeholder="e.g. MPESA-XXXXXXX" class="input-field w-full" />
             </div>
             <div class="flex gap-3 pt-2">
@@ -2254,15 +2433,16 @@ function adminPanel() {
     };
 }
 
-function planEditor(id, name, price, desc, isActive, isFeatured, seats) {
+function planEditor(id, name, price, desc, isActive, isFeatured, seats, maxClasses) {
     return {
-        id, name, price, desc, isActive, isFeatured, seats: seats ?? null,
+        id, name, price, desc, isActive, isFeatured, seats: seats ?? null, maxClasses: maxClasses ?? null,
         saving: false, saved: false, error: '',
         async save() {
             this.saving = true; this.saved = false; this.error = '';
             try {
                 const payload = { name: this.name, price_kes: this.price, description: this.desc, is_active: this.isActive, is_featured: this.isFeatured };
                 if (this.seats !== null) payload.seats = this.seats;
+                if (this.maxClasses !== null) payload.max_classes = this.maxClasses;
                 const res = await fetch(`/admin/plans/${this.id}`, {
                     method: 'PUT',
                     headers: { 'X-CSRF-TOKEN': csrf(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -2304,9 +2484,9 @@ function schoolPlanCreator() {
         createModal: false,
         creating: false,
         createError: '',
-        createForm: { name: '', seats: '', months: 12, price_kes: '', description: '' },
+        createForm: { name: '', seats: '', max_classes: 3, months: 12, price_kes: '', description: '' },
         openCreate() {
-            this.createForm = { name: '', seats: '', months: 12, price_kes: '', description: '' };
+            this.createForm = { name: '', seats: '', max_classes: 3, months: 12, price_kes: '', description: '' };
             this.createError = '';
             this.createModal = true;
         },
@@ -2528,10 +2708,10 @@ function schoolsPanel() {
         createModal: false,
         saving: false,
         createError: '',
-        form: { school_name: '', contact_email: '', seats: 50, months: 12, price_kes: 0, notes: '' },
+        form: { school_name: '', contact_email: '', seats: 50, max_classes: 3, months: 12, price_kes: 0, notes: '' },
 
         openCreate() {
-            this.form = { school_name: '', contact_email: '', seats: 50, months: 12, price_kes: 0, notes: '' };
+            this.form = { school_name: '', contact_email: '', seats: 50, max_classes: 3, months: 12, price_kes: 0, notes: '' };
             this.createError = '';
             this.createModal = true;
         },
@@ -3418,6 +3598,8 @@ function artisanRunner() {
             { key: 'seed:career-events',   label: 'Career Events',    icon: '💼', danger: false },
             { key: 'seed:missions',        label: 'Missions',         icon: '🗺', danger: false },
             { key: 'seed:fun-world',       label: 'Fun World Activities', icon: '🎡', danger: false },
+            { key: 'seed:dreams',          label: 'Dreams Catalog',   icon: '🏆', danger: false },
+            { key: 'seed:challenge-templates', label: 'Challenge Templates', icon: '⚔️', danger: false },
             { key: 'seed:scenarios-bulk',  label: 'Bulk Scenarios',   icon: '📖', danger: false },
             { key: 'seed:scenarios-adult', label: 'Adult Scenarios',  icon: '📋', danger: false },
             { key: 'seed:asset-events',    label: 'Asset Events',     icon: '💼', danger: false },

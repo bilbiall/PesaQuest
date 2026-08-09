@@ -31,6 +31,8 @@ class GameSetController extends Controller
             'badges'      => Schema::hasTable('badges') ? ['total' => \App\Models\Badge::count(), 'active' => \App\Models\Badge::count()] : ['total' => 0, 'active' => 0],
             'life_events' => $count('life_events', \App\Models\LifeEvent::class),
             'fun_world'   => $count('fun_world_activities', \App\Models\FunWorldActivity::class),
+            'dreams'      => $count('dreams', \App\Models\Dream::class),
+            'challenges'  => $count('challenge_templates', \App\Models\ChallengeTemplate::class),
         ];
 
         $crises = Schema::hasTable('financial_crises')
@@ -376,6 +378,16 @@ class GameSetController extends Controller
 
         \App\Models\Setting::set('journey_milestones', json_encode($data['milestones']), 'game');
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * In-app rendering of docs/GAMESET_GUIDE.md — so content-team users get
+     * the full setup manual without leaving the portal or needing repo access.
+     */
+    public function docs()
+    {
+        $doc = \App\Services\DocsRenderer::render('docs/GAMESET_GUIDE.md');
+        return view('gameset.docs', $doc);
     }
 
     public static function defaultMilestones(): array

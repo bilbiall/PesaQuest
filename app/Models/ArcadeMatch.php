@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class ArcadeMatch extends Model
 {
     protected $fillable = [
-        'arcade_game_id', 'created_by', 'join_code', 'visibility', 'max_players', 'status',
+        'arcade_game_id', 'created_by', 'name', 'join_code', 'visibility', 'max_players', 'status',
         'turn_mode', 'current_turn_session_id', 'turn_started_at',
         'mode', 'stake_amount', 'forfeit_pool_amount',
     ];

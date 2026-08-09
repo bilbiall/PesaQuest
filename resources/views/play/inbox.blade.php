@@ -180,7 +180,9 @@
         /* ── Scroll snap on mobile ── */
         @media (max-width: 640px) {
             .cards-scroll { scroll-snap-type: x mandatory; overflow-x: auto; display: flex; gap: 1rem; padding-bottom: 0.5rem; }
-            .cards-scroll .decision-card { min-width: 88vw; scroll-snap-align: start; flex-shrink: 0; }
+            /* width + max-width (a hard cap), not min-width (a floor) — a floor lets
+               unwrapped text inside push the card wider than the screen. */
+            .cards-scroll .decision-card { width: 88vw; max-width: 88vw; scroll-snap-align: start; flex-shrink: 0; }
         }
 
         /* ── Glass sidebar ── */
@@ -315,7 +317,7 @@
                                 @click="pick({{ $choice->id }})"
                                 :disabled="resolving"
                             >
-                                <span class="flex-1">
+                                <span class="flex-1 min-w-0">
                                     <span class="block font-bold text-white text-sm">{{ $choice->label }}</span>
                                     @if($choice->description)
                                     <span class="block text-gray-400 text-xs mt-0.5 font-normal">{{ $choice->description }}</span>

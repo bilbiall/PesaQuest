@@ -628,6 +628,14 @@
                         <div class="xp-fill h-full rounded-full" style="width:{{ $xpPct }}%;"></div>
                     </div>
                 </div>
+                @if($questGate['blocked'] ?? false)
+                <div class="mt-2.5 px-2.5 py-2 rounded-lg text-left" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.35);">
+                    <div class="text-[10px] font-black" style="color:#fbbf24;">⛰️ Level {{ $questGate['xp_level'] }} is waiting for you!</div>
+                    <div class="text-[9.5px] mt-0.5 leading-relaxed" style="color:rgba(251,191,36,0.75);">
+                        You've earned the XP — finish {{ $questGate['remaining'] }} more quest{{ $questGate['remaining'] === 1 ? '' : 's' }} at Level {{ $questGate['gate_level'] }} to unlock it.
+                    </div>
+                </div>
+                @endif
             </div>
             <div class="px-4 py-4 flex-1 flex flex-col gap-3">
                 <div class="grid grid-cols-2 gap-2">

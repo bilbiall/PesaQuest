@@ -10,12 +10,16 @@ use App\Models\ChamaMember;
 use App\Models\ChamaContribution;
 use App\Models\ChamaProposal;
 use App\Models\ChamaVote;
+use App\Models\Challenge;
+use App\Models\ChallengeTemplate;
 use App\Models\GameNotification;
+use App\Services\ChallengeService;
 use App\Services\GameClock;
 use App\Services\PlanGate;
 use App\Services\QuestTriggerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ChamaController extends Controller
@@ -190,17 +194,52 @@ class ChamaController extends Controller
 
         // Friends a member can invite directly (not already in this chama)
         $invitableFriends = collect();
-        if ($myMember && \Illuminate\Support\Facades\Schema::hasTable('friendships') && !$chama->isFull()) {
+        if ($myMember && Schema::hasTable('friendships') && !$chama->isFull()) {
             $memberIds = $chama->activeMembers->pluck('user_id')->all();
             $invitableFriends = $user->friends()->reject(fn ($f) => in_array($f->id, $memberIds, true))->values();
         }
+
+        // Chama Challenges — chairman-only, launches once the challenges tables exist.
+        $challengeTemplates = $isChairman && Schema::hasTable('challenge_templates')
+            ? ChallengeTemplate::active()->where('allow_broadcast', true)->orderBy('name')->get()
+            : collect();
+        $chamaChallenges = Schema::hasTable('challenges')
+            ? Challenge::where('chama_id', $chama->id)->withCount('participants')->latest()->take(5)->get()
+            : collect();
 
         return view('chama.show', compact(
             'chama', 'user', 'myMember', 'isChairman',
             'hasContributedThisMonth', 'allContributions',
             'availableAssets', 'targetPct', 'monthlyIncome',
-            'gameMonth', 'progress', 'invitableFriends'
+            'gameMonth', 'progress', 'invitableFriends',
+            'challengeTemplates', 'chamaChallenges'
         ));
+    }
+
+    /** Chairman-only: launch a broadcast Challenge scoped to this chama, auto-enrolling every active member. */
+    public function createChallenge(Request $request, Chama $chama, ChallengeService $service)
+    {
+        $member = $chama->getMemberRecord(auth()->user());
+        abort_unless($member && $member->isChairman(), 403);
+
+        $data = $request->validate([
+            'template_id'   => 'required|exists:challenge_templates,id',
+            'duration_days' => 'nullable|integer|min:1|max:60',
+        ]);
+
+        $template = ChallengeTemplate::where('allow_broadcast', true)->findOrFail($data['template_id']);
+
+        $challenge = $service->createBroadcast($template, [
+            'title'          => "🤝 Chama Challenge — {$template->name}",
+            'scope'          => 'chama',
+            'chama_id'       => $chama->id,
+            'creator_id'     => auth()->id(),
+            'duration_days'  => $data['duration_days'] ?? null,
+        ]);
+
+        $enrolled = $service->enrollChamaRoster($challenge);
+
+        return back()->with('success', "Chama Challenge launched — {$enrolled} member(s) enrolled automatically.");
     }
 
     // ─────────────────────────────────────────────────────────────────────────

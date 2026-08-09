@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="travelCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5fe0c8"/>
+      <stop offset="100%" stop-color="#0a8f76"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="url(#travelCoin)" stroke="#065f4d" stroke-width="3"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.35"/>
+  <circle cx="60" cy="66" r="30" fill="none" stroke="#ffffff" stroke-width="4"/>
+  <ellipse cx="60" cy="66" rx="30" ry="12" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <line x1="30" y1="66" x2="90" y2="66" stroke="#ffffff" stroke-width="3"/>
+  <path d="M76 36 L98 30 L102 36 L86 46 L92 60 L86 62 L74 46 L64 50 L64 44 Z" fill="#ffffff"/>
+</svg>

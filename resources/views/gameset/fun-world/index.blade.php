@@ -164,33 +164,47 @@
             <template x-if="editing"><input type="hidden" name="_method" value="PUT"></template>
             <div class="grid grid-cols-3 gap-3">
                 <div class="col-span-2">
-                    <label class="fw-label">Name</label>
+                    <label class="fw-label">Name
+                        <x-help-tip text="The activity's display name shown to players browsing Fun World." example="Nyama Choma Hangout" />
+                    </label>
                     <input name="name" x-model="form.name" required maxlength="80" class="fw-input" placeholder="Nyama Choma Hangout">
                 </div>
                 <div>
-                    <label class="fw-label">Icon (emoji)</label>
+                    <label class="fw-label">Icon (emoji)
+                        <x-help-tip text="The emoji shown as this activity's icon on its card and in player notifications." example="🍖" />
+                    </label>
                     <input name="icon" x-model="form.icon" required maxlength="8" class="fw-input text-center">
                 </div>
             </div>
             <div>
-                <label class="fw-label">Description</label>
+                <label class="fw-label">Description
+                    <x-help-tip text="A short blurb shown on the activity card to set the scene before players buy it." example="Grilled meat and good vibes with friends." />
+                </label>
                 <input name="description" x-model="form.description" maxlength="200" class="fw-input" placeholder="Grilled meat and good vibes with friends.">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="fw-label">Price (KES)</label>
+                    <label class="fw-label">Price (KES)
+                        <x-help-tip text="What a player pays from their wallet to do this activity once; also feeds the automatic mood-boost formula (price ÷ 200)." example="300" />
+                    </label>
                     <input name="price" type="number" min="1" x-model.number="form.price" required class="fw-input">
                 </div>
                 <div>
-                    <label class="fw-label">Base Mood Boost (1–25)</label>
+                    <label class="fw-label">Base Mood Boost (1–25)
+                        <x-help-tip text="The minimum mood gained from this activity — the game uses whichever is bigger, this base or price ÷ 200, capped at 25. Mood decays 1 point per game day and dropping below 40 cuts work income 10%, so this is the player's main lever to stay above that line." example="6" />
+                    </label>
                     <input name="mood_boost_base" type="number" min="1" max="25" x-model.number="form.mood_boost_base" required class="fw-input">
                 </div>
                 <div>
-                    <label class="fw-label">XP Reward</label>
+                    <label class="fw-label">XP Reward
+                        <x-help-tip text="Experience points awarded to the player each time they complete this activity." example="12" />
+                    </label>
                     <input name="xp_reward" type="number" min="0" x-model.number="form.xp_reward" required class="fw-input">
                 </div>
                 <div>
-                    <label class="fw-label">Sort Order</label>
+                    <label class="fw-label">Sort Order
+                        <x-help-tip text="Controls the display order of activity cards on the Fun World page — lower numbers show first." example="0" />
+                    </label>
                     <input name="sort_order" type="number" min="0" x-model.number="form.sort_order" class="fw-input">
                 </div>
             </div>
@@ -198,6 +212,7 @@
                 <input type="hidden" name="is_active" :value="form.is_active ? 1 : 0">
                 <input type="checkbox" x-model="form.is_active" class="rounded">
                 Active (visible to players)
+                <x-help-tip text="When off, the activity is hidden from players in Fun World but stays saved here for later reactivation." />
             </label>
             <div class="rounded-xl px-4 py-3 text-xs text-orange-300 leading-snug" style="background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.15);">
                 💡 Effective mood boost = min(25, max(base boost, price ÷ 200)). Higher-priced experiences give bigger boosts automatically.

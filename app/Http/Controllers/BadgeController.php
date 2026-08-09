@@ -33,7 +33,7 @@ class BadgeController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('badges', 'public');
-            $data['image_url'] = asset('storage/' . $path);
+            $data['image_url'] = '/storage/' . $path;
         }
 
         // Map trigger_type → legacy fields for backward compat

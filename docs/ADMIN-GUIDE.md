@@ -2,7 +2,7 @@
 
 *How every system works under the hood, how to operate the platform day to day, how it
 makes money, how it is secured, and how it scales.*
-*Version: July 2026 · Audience: administrators, developers, Moski leadership*
+*Version: August 2026 · Audience: administrators, developers, Moski leadership*
 
 **Companion documents:** `GAMEPLAY.md` (the game explained for reviewers/educators — the
 document to hand to KICD) · `GAMESET_GUIDE.md` (the content team's setup manual with
@@ -177,6 +177,22 @@ Quests (filter `?drafts=1`; publish = the normal activate toggle). Settings:
 on the Automation page. Factory calls are try/catch-wrapped — they can never block
 content creation.
 
+### 3.3d Dreams & Challenges (Champions' Court)
+**Dreams** are a flat purchase (`DreamService`) — wallet debit, `PlayerDream` row created,
+never counted in net worth and never resellable (deliberate: closes a "buy cosmetic →
+resell → inflate net worth" loophole). **Challenges** (`ChallengeService`) share a
+progress engine, `GameMetrics`, with City Contracts (`GameMetrics::METRIC_STYLES` —
+percent-style metrics use a floor divisor to avoid divide-by-zero/absurd swings for
+near-zero starting balances). Two shapes: `duel` (baselines snapshot at full acceptance,
+so both sides start from a fair line) and `broadcast` (join-anytime; used for official
+Pesa City events, teacher Class Challenges, and chama-vs-chama Battles, which rank by
+*average* member progress rather than any one member's score). Stakes, if any, are
+charged symmetrically at each side's own commitment moment (creator at creation, others
+at accept) and paid out winner-take-all on settlement. Duels settle instantly the moment
+someone hits the goal; everything else settles via `game:settle-challenges`
+(`SettleChallenges`, scheduled `dailyAt('02:45')`, same login-driven-or-cron pattern as
+every other engine here).
+
 ### 3.4 Credit score (300–850, start 500)
 Single write path `UserProgress::adjustCreditScoreWithLog()` — every change writes a
 `credit_change` notification with delta + reason (powers the player-visible history and
@@ -226,7 +242,9 @@ queue.
 ### 💳 Plans & Pricing
 - **Individual plans:** create/edit monthly plans (name, price, months). These are what
   the subscribe page sells via M-Pesa.
-- **School plans:** seat-package products for institutions.
+- **School plans:** seat-package products for institutions — name, price, seats, **max
+  classes** (how many `SchoolClass` cohorts the school can create — see 🏫 Schools below),
+  and duration in months.
 - **Coupons:** code, percent-or-fixed value, max redemptions, plan scope, expiry — for
   campaigns and classroom promos.
 - **🚧 Free Plan Gates panel** — the monetization control room; see §6.3 for
@@ -240,6 +258,38 @@ transaction's status + reference).
 ### 🏫 Schools
 School subscriptions with seat counts and member lists; add/remove members. A school
 member plays with full features while their membership is active.
+
+- **Classes** — each school can split its roster into `SchoolClass` cohorts (e.g. "Form 2
+  Blue"), one teacher per class, up to the school plan's **max classes** limit. A class
+  scopes two things: the roster a **Class Challenge** auto-enrolls (below), and which
+  students a given teacher's dashboard shows.
+- **Teacher portal** (`/school/teacher`, own login — not `/admin`) — school owners can
+  invite additional teacher accounts; each teacher manages their own class(es): roster,
+  Class Challenges, and the **teacher evaluation dashboard** (per-student progress,
+  engagement and at-risk flags, so a teacher can spot a student who's stalled without
+  reading every profile individually).
+- **Class Challenges & Chama Battles** — a teacher can launch a broadcast Challenge (see
+  `GAMESET_GUIDE.md` §12d) scoped to their class, auto-enrolling the active roster
+  (assigned, not opt-in — it's the teacher's own class). **Chama Battles** are the
+  chama-vs-chama equivalent for the general playerbase: two chamas face off, ranked by
+  average member progress on the challenge's metric rather than any single member's
+  score, so a small dedicated chama can beat a large, less-engaged one.
+
+### 📊 Analytics
+`/admin/analytics` — an operational dashboard (Chart.js), read-only: active/live player
+counts, signup and retention trends, economy health (money in circulation, top
+assets/jobs), and content engagement (quests/courses completed). Deliberately answers
+"what's happening inside the game," not "who's visiting the marketing site" — pair with
+PostHog/GA4 (below) for the latter.
+
+### 📣 Broadcast
+A composer for one-shot announcements, sent as both an in-game notification and a push
+(where the recipient has push enabled): **title**, **body**, and an **audience** picker —
+everyone, one age group, one school's active roster, free-tier players only (a
+conversion nudge), or a single player by email (support follow-ups). Delivery still
+respects each recipient's own quiet-hours/daily-cap/category preferences, so "sent
+successfully" does not guarantee every recipient's device buzzed — that's expected, not a
+bug.
 
 ### 🌪 Crises
 Same scheduler the gameset portal has (presets, quick "warn now / hit in 48h" buttons,
@@ -259,6 +309,20 @@ Grouped forms; each saves independently:
   *test* button.
 - **General** — `free_for_all` switch: everyone premium (school events, demos, launch
   weeks). Overrides every gate while on.
+- **🔔 Push Notifications (VAPID)** — one-time setup for the web-push/PWA pipeline: hit
+  *Generate VAPID Keys* once (this also invalidates every existing player push
+  subscription — expected the first time, disruptive if repeated later) and set the
+  *subject* (a `mailto:` contact address required by the push spec). *Send Test Push*
+  fires a real push to **your own** logged-in device/browser, bypassing quiet hours and
+  the daily cap (it's a diagnostic, not a real send) — it requires you to have already
+  enabled push in your own Profile → Notification Settings first. Real pushes to players
+  respect quiet hours (9:30pm–6am), a daily cap (4/day), and each player's per-category
+  preferences — see the Broadcast composer above for actually sending one.
+- **📈 Trackers** — third-party analytics wiring: **PostHog** key + host (self-serve
+  product analytics — funnels, session replay), plus GA4 and Microsoft Clarity IDs if
+  used. These IDs only get injected into pages once saved here; nothing is hardcoded into
+  the frontend. See `POSTHOG-GUIDE.md` for what's already instrumented (Pesa Trail funnel
+  events) and how to add more.
 - **Hustle Tips** — also editable from the GameSet hub.
 
 ### 🛠 Artisan — the deploy console (no SSH needed)
@@ -333,6 +397,8 @@ Every value live-edits the `plan_limits` Setting read by `PlanGate` on each chec
 | Fun World per game month | 2 | Leisure actions |
 | Forum topics min level | 5 | Anti-spam gate (replying is always free) |
 | Can create Chama | No | Joining is always free |
+| **Send money to friends** | Locked | P2P cash gifts between friends — borrowing/lending (Friend Loans) stays free either way; this gate only covers no-strings-attached transfers |
+| **Pesa Trail games/day** | 3 | Arcade sessions started per real day (0 = unlimited); inviting others to a match counts the same as starting one |
 | Trial (real days) | 7 | Full-premium window for new accounts |
 | Nudges on/off + cadence | On / 3 days | Subscription reminders |
 | Max quests started/day | 0 | Game-wide pacing (also in GameSet Game Rules) |

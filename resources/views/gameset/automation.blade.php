@@ -117,14 +117,17 @@
                 <label class="flex items-center gap-2 text-xs font-bold text-gray-300 cursor-pointer">
                     <input type="checkbox" name="factory_enabled" value="1" @checked($factoryEnabled) class="rounded border-white/20 bg-white/5">
                     Factory on — draft quests from new content
+                    <x-help-tip text="When on, every new course or job you add in GameSet instantly gets its own matching quest drafted for review — no need to write one by hand." example="Add a course → a 'Study X' quest drafts automatically" />
                 </label>
                 <label class="flex items-center gap-2 text-xs font-bold text-gray-300 cursor-pointer">
                     <input type="checkbox" name="factory_autopublish" value="1" @checked($factoryAutopublish) class="rounded border-white/20 bg-white/5">
                     Auto-publish drafts (skip the review queue)
+                    <x-help-tip text="Skips the Generated Quests review queue entirely — new Factory quests go live for players the moment they're created. Only enable once you trust the auto-written copy." example="Off = drafts wait for approval; On = instant live" />
                 </label>
                 <label class="flex items-center gap-2 text-xs font-bold text-gray-300 cursor-pointer" title="Players cannot level past a level that still has unfinished quests — XP banks up and applies the moment the quests are cleared. Never demotes anyone.">
                     <input type="checkbox" name="quest_gate" value="1" @checked($questGateEnabled) class="rounded border-white/20 bg-white/5">
                     ⛰️ Quest Gate — quests must be completed to level up
+                    <x-help-tip text="Only turn this on once your quest content actually reaches the levels players are progressing through — otherwise XP just banks up with nothing available to clear it." example="Quests exist for levels 1–10, players are levels 1–8 → safe to enable" />
                 </label>
                 <button class="au-btn text-white mt-1" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">Save Factory Settings</button>
             </form>
@@ -143,19 +146,27 @@
                 @csrf
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level from</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level from
+                            <x-help-tip text="The lowest player level the Mixer should generate quests for in this run." example="1" />
+                        </label>
                         <input type="number" name="level_min" value="1" min="1" max="20" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level to</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level to
+                            <x-help-tip text="The highest player level the Mixer should generate quests for in this run." example="10" />
+                        </label>
                         <input type="number" name="level_max" value="10" min="1" max="20" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Quests / level</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Quests / level
+                            <x-help-tip text="How many quests each level in the range should end up with — the Mixer only adds what's missing to reach this count, it never removes existing quests." example="4" />
+                        </label>
                         <input type="number" name="per_level" value="4" min="1" max="12" class="au-input" title="Levels already at or above this count are skipped">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Difficulty mix</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Difficulty mix
+                            <x-help-tip text="Sets the split of easy/semi/complex quests generated and how quickly the XP curve ramps with level — Gentle stays easy longer, Spicy gets hard fast." example="Balanced" />
+                        </label>
                         <select name="mix" class="au-input">
                             <option value="auto">Auto (harder w/ level)</option>
                             <option value="gentle">Gentle</option>
@@ -164,15 +175,21 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP easy</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP easy
+                            <x-help-tip text="XP awarded for an easy-difficulty quest at level 1, before the growth % below is applied." example="15" />
+                        </label>
                         <input type="number" name="xp_easy" value="15" min="1" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP semi</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP semi
+                            <x-help-tip text="XP awarded for a medium-difficulty quest at level 1, before the growth % below is applied." example="25" />
+                        </label>
                         <input type="number" name="xp_semi" value="25" min="1" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP complex</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP complex
+                            <x-help-tip text="XP awarded for a hard/complex quest at level 1, before the growth % below is applied." example="50" />
+                        </label>
                         <input type="number" name="xp_complex" value="50" min="1" class="au-input">
                     </div>
                     <div>
@@ -203,7 +220,9 @@
             <form method="POST" action="{{ route('gameset.automation.mix-life-events') }}">
                 @csrf
                 <div class="mb-3" style="max-width:12rem;">
-                    <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">How many to compose</label>
+                    <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">How many to compose
+                        <x-help-tip text="How many new life-event drafts to compose in this batch, spread across every age group and effect type. Regenerate any time to top up what's missing." example="20" />
+                    </label>
                     <input type="number" name="count" value="20" min="1" max="60" class="au-input">
                 </div>
                 <button class="au-btn text-white w-full" style="background:linear-gradient(135deg,#059669,#0d9488);">🎲 Generate Life Event Drafts</button>
@@ -330,11 +349,15 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                     <div class="col-span-2">
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Name (admin only)</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Name (admin only)
+                            <x-help-tip text="Internal label for the whole ladder — shown only to you in this admin table, never to players." example="Saver's Staircase" />
+                        </label>
                         <input name="name" id="bp-name" required maxlength="100" class="au-input" placeholder="e.g. Saver's Staircase">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Voice archetype</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Voice archetype
+                            <x-help-tip text="Which NPC voice writes the copy for every quest this ladder prints — sets the tone and style of the quest text." example="🏦 Banker Auntie" />
+                        </label>
                         <select name="archetype" id="bp-archetype" class="au-input">
                             @foreach($archetypes as $key => $arch)
                             <option value="{{ $key }}">{{ $arch['icon'] }} {{ \Illuminate\Support\Str::headline($key) }}</option>
@@ -342,14 +365,18 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Icon (optional)</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Icon (optional)
+                            <x-help-tip text="Small emoji shown next to this ladder's quests and in this table. Leave blank to fall back to the voice archetype's own icon." example="🏦" />
+                        </label>
                         <input name="icon" id="bp-icon" maxlength="10" class="au-input" placeholder="🏦">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Age group</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Age group
+                            <x-help-tip text="Which players this ladder is printed for. Pick 'All' to print the same ladder for everyone, or a specific band to target just that age group." example="13-17" />
+                        </label>
                         <select name="age_group" id="bp-age" class="au-input">
                             @foreach(['all' => '🌍 All', '8-12' => '8–12', '13-17' => '13–17', '18-25' => '18–25', '26+' => '26+'] as $v => $lbl)
                             <option value="{{ $v }}">{{ $lbl }}</option>
@@ -357,11 +384,15 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level from</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level from
+                            <x-help-tip text="The lowest level the sweep should keep a rung filled at for this ladder." example="1" />
+                        </label>
                         <input type="number" name="level_min" id="bp-lmin" value="1" min="1" max="20" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level to</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Level to
+                            <x-help-tip text="The highest level the sweep should keep a rung filled at for this ladder." example="9" />
+                        </label>
                         <input type="number" name="level_max" id="bp-lmax" value="9" min="1" max="20" class="au-input">
                     </div>
                     <div>
@@ -374,31 +405,42 @@
                         </label>
                         <label class="flex items-center gap-1.5 text-[11px] font-bold text-gray-300 cursor-pointer">
                             <input type="checkbox" name="is_active" id="bp-active" value="1" checked class="rounded border-white/20 bg-white/5"> Active
+                            <x-help-tip text="Pauses the nightly sweep for this one blueprint without deleting the recipe or its already-printed quests — flip back on any time to resume filling gaps." example="On" />
                         </label>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP base</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP base
+                            <x-help-tip text="XP reward for the very first rung of the ladder (the lowest level in range)." example="100" />
+                        </label>
                         <input type="number" name="xp_base" id="bp-xpb" value="100" min="0" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP + per level</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">XP + per level
+                            <x-help-tip text="Extra XP added to the reward for each level above the first — this is what makes later rungs worth more." example="+40" />
+                        </label>
                         <input type="number" name="xp_per_level" id="bp-xpl" value="40" min="0" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Ksh base</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Ksh base
+                            <x-help-tip text="Cash (Ksh) reward for the very first rung of the ladder." example="50" />
+                        </label>
                         <input type="number" name="kes_base" id="bp-kesb" value="50" min="0" class="au-input">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Ksh + per level</label>
+                        <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Ksh + per level
+                            <x-help-tip text="Extra Ksh added to the reward for each level above the first." example="+25" />
+                        </label>
                         <input type="number" name="kes_per_level" id="bp-kesl" value="25" min="0" class="au-input">
                     </div>
                 </div>
 
                 <div class="mb-1 flex items-center justify-between">
-                    <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Recipe steps <span class="text-gray-600 normal-case font-bold">(the player must do ALL of them · values with a curve grow per rung)</span></label>
+                    <label class="text-[9px] font-black uppercase tracking-wider text-gray-500">Recipe steps <span class="text-gray-600 normal-case font-bold">(the player must do ALL of them · values with a curve grow per rung)</span>
+                        <x-help-tip text="Each step is a trigger the player must complete (save an amount, take a course, buy an asset...). Steps set to the Curve value mode grow bigger on every higher rung, so the ladder gets naturally harder." example="reach_savings, curve, base 1,000, +500/level → rung 9 asks for ~5,000" />
+                    </label>
                 </div>
                 <div id="bp-steps"></div>
                 <button type="button" onclick="bpAddStep()" class="au-btn text-violet-300 mt-1" style="background:rgba(124,58,237,0.1);border:1px dashed rgba(124,58,237,0.4);">+ Add step</button>

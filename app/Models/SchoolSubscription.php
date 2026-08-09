@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SchoolSubscription extends Model
 {
     protected $fillable = [
-        'school_name', 'contact_email', 'seats', 'starts_at', 'ends_at',
+        'school_name', 'contact_email', 'seats', 'max_classes', 'starts_at', 'ends_at',
         'status', 'portal_token', 'price_kes', 'notes', 'created_by',
     ];
 
@@ -19,6 +19,11 @@ class SchoolSubscription extends Model
     public function members()
     {
         return $this->hasMany(SchoolMember::class);
+    }
+
+    public function classes()
+    {
+        return $this->hasMany(SchoolClass::class, 'school_subscription_id');
     }
 
     public function teachers()
@@ -61,6 +66,11 @@ class SchoolSubscription extends Model
     public function availableSeats(): int
     {
         return max(0, $this->seats - $this->usedSeats());
+    }
+
+    public function availableClassSlots(): int
+    {
+        return max(0, $this->max_classes - $this->classes()->count());
     }
 
     public function statusLabel(): string

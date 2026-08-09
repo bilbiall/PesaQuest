@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GameNotification;
 use App\Models\PlayerBill;
 use App\Models\PlayerLifeEvent;
+use App\Models\SchoolClass;
 use App\Models\SchoolMember;
 use App\Models\SchoolSubscription;
 use App\Models\SchoolTeacher;
@@ -77,19 +78,21 @@ class SchoolTeacherController extends Controller
         $roster = $members->map(function ($m) use ($progressByUser, $overdueByUser) {
             $p = $progressByUser->get($m->user_id);
             return [
-                'member_id'    => $m->id,
-                'user'         => $m->user,
-                'level'        => $p->level ?? 1,
-                'credit_score' => $p->credit_score ?? 500,
-                'net_worth'    => $p->net_worth_cache ?? 0,
-                'chapter'      => $p?->chapterName() ?? 'The Student',
-                'overdue_bills'=> (int) ($overdueByUser[$m->user_id] ?? 0),
-                'last_active'  => $p?->last_tick_at,
+                'member_id'      => $m->id,
+                'user'           => $m->user,
+                'school_class_id'=> $m->school_class_id,
+                'level'          => $p->level ?? 1,
+                'credit_score'   => $p->credit_score ?? 500,
+                'net_worth'      => $p->net_worth_cache ?? 0,
+                'chapter'        => $p?->chapterName() ?? 'The Student',
+                'overdue_bills'  => (int) ($overdueByUser[$m->user_id] ?? 0),
+                'last_active'    => $p?->last_tick_at,
             ];
         })->sortByDesc('overdue_bills')->values();
 
-        $teachers = $school->teachers()->with('user')->orderByDesc('role')->get();
+        $teachers = $school->teachers()->with(['user', 'schoolClass'])->orderByDesc('role')->get();
         $myRole   = request()->attributes->get('schoolTeacherRole', 'teacher');
+        $myTeacher = request()->attributes->get('schoolTeacher');
 
         $stats = [
             'students'      => $members->count(),
@@ -97,7 +100,184 @@ class SchoolTeacherController extends Controller
             'avg_credit'    => $roster->isEmpty() ? 0 : (int) round($roster->avg('credit_score')),
         ];
 
-        return view('school.teacher.dashboard', compact('school', 'roster', 'teachers', 'myRole', 'stats'));
+        $classes = $school->classes()->withCount('members')->with('teacher.user')->orderBy('name')->get();
+
+        $challengeTemplates = \Illuminate\Support\Facades\Schema::hasTable('challenge_templates')
+            ? \App\Models\ChallengeTemplate::where('is_active', true)->where('allow_broadcast', true)->orderBy('name')->get()
+            : collect();
+        $classChallenges = \Illuminate\Support\Facades\Schema::hasTable('challenges')
+            ? \App\Models\Challenge::where('school_subscription_id', $school->id)->withCount('participants')->latest()->take(5)->get()
+            : collect();
+
+        return view('school.teacher.dashboard', compact(
+            'school', 'roster', 'teachers', 'myRole', 'myTeacher', 'stats',
+            'classes', 'challengeTemplates', 'classChallenges'
+        ));
+    }
+
+    // ── Classes (owner only for CRUD; any teacher can view/assign students) ──
+
+    public function storeClass(Request $request, SchoolSubscription $school): JsonResponse
+    {
+        $this->requireOwner($school);
+
+        if ($school->availableClassSlots() <= 0) {
+            return response()->json(['error' => "This plan allows up to {$school->max_classes} classes. Delete one or upgrade the plan to add more."], 422);
+        }
+
+        $data = $request->validate(['name' => 'required|string|max:80']);
+
+        if (SchoolClass::where('school_subscription_id', $school->id)->where('name', $data['name'])->exists()) {
+            return response()->json(['error' => 'A class with this name already exists.'], 422);
+        }
+
+        $class = SchoolClass::create([
+            'school_subscription_id' => $school->id,
+            'name'                   => $data['name'],
+        ]);
+
+        return response()->json(['success' => true, 'class' => $class]);
+    }
+
+    public function updateClass(Request $request, SchoolSubscription $school, SchoolClass $class): JsonResponse
+    {
+        $this->requireOwner($school);
+        abort_unless($class->school_subscription_id === $school->id, 404);
+
+        $data = $request->validate([
+            'name'       => 'sometimes|required|string|max:80',
+            'teacher_id' => 'sometimes|nullable|exists:school_teachers,id',
+        ]);
+
+        if (!empty($data['teacher_id'])) {
+            $teacher = SchoolTeacher::find($data['teacher_id']);
+            abort_unless($teacher && $teacher->school_subscription_id === $school->id, 422);
+        }
+
+        $class->update($data);
+
+        return response()->json(['success' => true, 'class' => $class->fresh()]);
+    }
+
+    public function destroyClass(SchoolSubscription $school, SchoolClass $class): JsonResponse
+    {
+        $this->requireOwner($school);
+        abort_unless($class->school_subscription_id === $school->id, 404);
+
+        // Students/teacher on this class simply fall back to "whole school"
+        // (school_class_id nulled by the FK's nullOnDelete) — nothing is deleted.
+        $class->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function assignStudentClass(Request $request, SchoolSubscription $school, SchoolMember $member): JsonResponse
+    {
+        abort_unless($member->school_subscription_id === $school->id, 404);
+
+        $data = $request->validate(['school_class_id' => 'nullable|exists:school_classes,id']);
+
+        if (!empty($data['school_class_id'])) {
+            $class = SchoolClass::find($data['school_class_id']);
+            abort_unless($class && $class->school_subscription_id === $school->id, 422);
+        }
+
+        $member->update(['school_class_id' => $data['school_class_id'] ?? null]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Teacher evaluation dashboard — performance of the teacher's assigned class,
+     * so the school owner (or platform admin) can see if a class is engaged and
+     * learning. Access: owner, platform admin (both arrive as role=owner via the
+     * school.teacher middleware), or the teacher viewing their own profile.
+     */
+    public function teacherProfile(SchoolSubscription $school, SchoolTeacher $teacher)
+    {
+        abort_unless($teacher->school_subscription_id === $school->id, 404);
+
+        $myRole = request()->attributes->get('schoolTeacherRole', 'teacher');
+        $isSelf = $teacher->user_id === auth()->id();
+        abort_unless($myRole === 'owner' || $isSelf, 403);
+
+        $teacher->load('schoolClass', 'user');
+
+        $classUserIds = collect();
+        $classStats   = null;
+
+        if ($teacher->school_class_id) {
+            $classUserIds = SchoolMember::where('school_class_id', $teacher->school_class_id)
+                ->where('status', 'active')
+                ->pluck('user_id');
+
+            $progress = UserProgress::whereIn('user_id', $classUserIds)->get();
+
+            $totalQuests     = \App\Models\UserQuest::whereIn('user_id', $classUserIds)->count();
+            $completedQuests = \App\Models\UserQuest::whereIn('user_id', $classUserIds)->whereNotNull('completed_at')->count();
+
+            $participations = \App\Models\ChallengeParticipant::whereIn('user_id', $classUserIds)->get();
+
+            $classStats = [
+                'roster_size'          => $classUserIds->count(),
+                'avg_net_worth'        => $progress->isEmpty() ? 0 : (int) round($progress->avg('net_worth_cache')),
+                'avg_credit_score'     => $progress->isEmpty() ? 500 : (int) round($progress->avg('credit_score')),
+                'avg_level'            => $progress->isEmpty() ? 1 : round($progress->avg('level'), 1),
+                'quest_completion_rate'=> $totalQuests > 0 ? round($completedQuests / $totalQuests * 100, 1) : 0,
+                'total_quests'         => $totalQuests,
+                'completed_quests'     => $completedQuests,
+                'challenge_entries'    => $participations->count(),
+                'challenge_wins'       => $participations->where('is_winner', true)->count(),
+            ];
+        }
+
+        return view('school.teacher.teacher-profile', compact('school', 'teacher', 'classStats'));
+    }
+
+    /** Teacher-assigned "Class Challenge" — a broadcast Challenge auto-enrolling the roster (whole school, or one class). */
+    public function createClassChallenge(Request $request, SchoolSubscription $school, \App\Services\ChallengeService $service)
+    {
+        if (!$school->isActive()) {
+            return back()->with('error', 'This school subscription has expired or is inactive.');
+        }
+
+        $data = $request->validate([
+            'template_id'     => 'required|exists:challenge_templates,id',
+            'duration_days'   => 'nullable|integer|min:1|max:60',
+            'school_class_id' => 'nullable|exists:school_classes,id',
+        ]);
+
+        $myRole    = request()->attributes->get('schoolTeacherRole', 'teacher');
+        $myTeacher = request()->attributes->get('schoolTeacher');
+        $classId   = $data['school_class_id'] ?? null;
+
+        if ($myRole !== 'owner') {
+            // Non-owner teachers may only target their own assigned class, never the whole school or someone else's class.
+            if (!$myTeacher?->school_class_id) {
+                return back()->with('error', 'Ask the school owner to assign you to a class before launching a Class Challenge.');
+            }
+            $classId = $myTeacher->school_class_id;
+        } elseif ($classId) {
+            $class = SchoolClass::find($classId);
+            if (!$class || $class->school_subscription_id !== $school->id) {
+                return back()->with('error', 'Invalid class selected.');
+            }
+        }
+
+        $template = \App\Models\ChallengeTemplate::where('allow_broadcast', true)->findOrFail($data['template_id']);
+
+        $challenge = $service->createBroadcast($template, [
+            'title'                  => "🏫 Class Challenge — {$template->name}",
+            'scope'                  => 'school',
+            'school_subscription_id' => $school->id,
+            'school_class_id'        => $classId,
+            'creator_id'             => auth()->id(),
+            'duration_days'          => $data['duration_days'] ?? null,
+        ]);
+
+        $enrolled = $service->enrollSchoolRoster($challenge);
+
+        return back()->with('success', "Class Challenge launched — {$enrolled} student(s) enrolled automatically.");
     }
 
     public function student(SchoolSubscription $school, SchoolMember $member)

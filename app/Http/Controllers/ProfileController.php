@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\UploadsImages;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +14,9 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    use UploadsImages;
+
+
     /**
      * Life chapter metadata (icon/label/color) for a display badge — name and
      * icon come from the SAME admin-configurable source as everywhere else
@@ -47,7 +51,8 @@ class ProfileController extends Controller
         $chapterMeta = self::chapterMeta($progress?->life_chapter);
         $portfolioValue = $user->portfolio_value;
 
-        return view('profile.edit', compact('user', 'progress', 'streak', 'badges', 'sub', 'chapterMeta', 'portfolioValue'));
+        return view('profile.edit', compact('user', 'progress', 'streak', 'badges', 'sub', 'chapterMeta', 'portfolioValue'))
+            ->with('counties', User::COUNTIES);
     }
 
     public function show(User $user): View
@@ -71,6 +76,15 @@ class ProfileController extends Controller
         // where a Log Out button made no sense (and logged the ADMIN out).
         $isOwnProfile = auth()->id() === $user->id;
 
+        // Trophy Case — owned Dreams + won Challenges, same display family as Badges
+        $ownedDreams = \Illuminate\Support\Facades\Schema::hasTable('dreams')
+            ? \App\Models\PlayerDream::where('user_id', $user->id)->with('dream')->latest('purchased_at')->get()
+            : collect();
+        $wonChallenges = \Illuminate\Support\Facades\Schema::hasTable('challenges')
+            ? \App\Models\ChallengeParticipant::where('user_id', $user->id)->where('is_winner', true)
+                ->with('challenge.template')->latest('updated_at')->get()
+            : collect();
+
         return view('profile.show', [
             'user'           => $user,
             'progress'       => $progress,
@@ -80,6 +94,8 @@ class ProfileController extends Controller
             'chapterMeta'    => $chapterMeta,
             'portfolioValue' => $portfolioValue,
             'isOwnProfile'   => $isOwnProfile,
+            'ownedDreams'    => $ownedDreams,
+            'wonChallenges'  => $wonChallenges,
         ]);
     }
 
@@ -122,6 +138,7 @@ class ProfileController extends Controller
                 : 'nullable',
             'email'         => 'required|email|max:255|unique:users,email,' . $request->user()->id,
             'bio'           => 'nullable|string|max:300',
+            'county'        => 'nullable|string|max:40',
             'date_of_birth' => 'nullable|date|before:' . now()->subYears(5)->format('Y-m-d') . '|after:1920-01-01',
             'profile_photo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'cover_photo'   => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:8192',
@@ -217,56 +234,5 @@ class ProfileController extends Controller
             $path = preg_replace('#^storage/#', '', $path);
             Storage::disk('public')->delete($path);
         }
-    }
-
-    // ── Resize + compress image directly into public/uploads/ ──────────────
-    // Writing to public/ means no storage symlink is needed — works on any host.
-
-    private function resizeAndStore($uploadedFile, string $folder, int $targetW, int $targetH, int $quality = 82): string
-    {
-        $mime    = $uploadedFile->getMimeType();
-        $tmpPath = $uploadedFile->getRealPath();
-
-        $src = match ($mime) {
-            'image/jpeg' => imagecreatefromjpeg($tmpPath),
-            'image/png'  => imagecreatefrompng($tmpPath),
-            'image/gif'  => imagecreatefromgif($tmpPath),
-            'image/webp' => imagecreatefromwebp($tmpPath),
-            default      => imagecreatefromjpeg($tmpPath),
-        };
-
-        [$srcW, $srcH] = getimagesize($tmpPath);
-
-        // Cover-fit: crop to target ratio then scale
-        $srcRatio = $srcW / $srcH;
-        $tgtRatio = $targetW / $targetH;
-
-        if ($srcRatio > $tgtRatio) {
-            $cropH = $srcH;
-            $cropW = (int)($srcH * $tgtRatio);
-            $cropX = (int)(($srcW - $cropW) / 2);
-            $cropY = 0;
-        } else {
-            $cropW = $srcW;
-            $cropH = (int)($srcW / $tgtRatio);
-            $cropX = 0;
-            $cropY = (int)(($srcH - $cropH) / 2);
-        }
-
-        $dst = imagecreatetruecolor($targetW, $targetH);
-        imagealphablending($dst, false);
-        imagesavealpha($dst, true);
-        imagecopyresampled($dst, $src, 0, 0, $cropX, $cropY, $targetW, $targetH, $cropW, $cropH);
-
-        $filename = $folder . '/' . uniqid() . '.jpg';
-        $fullPath = public_path('uploads/' . $filename);
-
-        @mkdir(dirname($fullPath), 0755, true);
-        imagejpeg($dst, $fullPath, $quality);
-
-        imagedestroy($src);
-        imagedestroy($dst);
-
-        return $filename;
     }
 }

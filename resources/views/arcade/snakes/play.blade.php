@@ -8,6 +8,7 @@
     <title>Pesa Trail — Playing</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
+    @include('partials.trackers')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
@@ -162,18 +163,34 @@
                 display:flex; align-items:center; justify-content:center; background:#0b0a16;
             }
             /* The board image's fixed 1264:848 ratio doesn't match a typical
-               phone's rotated proportions — keeping aspect-ratio locked (the base
-               .board-wrap rule) meant this box shrank to fit within the taller
-               local box while preserving that ratio exactly, leaving the leftover
-               space as letterbox bars — which, after the 90° rotation, land as
-               dead bars along the TOP and BOTTOM of the real screen. Dropping the
-               lock and letting the image itself stretch (object-fit:fill below)
-               is what actually makes the board fill the whole screen, matching
-               the GameSet mobile calibrator's own board-wrap-mobile (which must
-               do the exact same thing, or a calibrated position would land in a
-               different relative spot live than where it was dragged). */
-            .panel-board .board-wrap { width:100%; height:100%; aspect-ratio:auto; }
-            .panel-board .board-wrap img { object-fit:fill; }
+               phone's rotated proportions. Forcing board-wrap to exactly
+               100%x100% of the rotated screen box (dropping the ratio lock)
+               used to close that gap, but stretched the art on any device
+               whose rotated ratio diverges from 1264:848 — circles became
+               ovals, tiles looked squashed. Tokens are plotted as left_m/top_m
+               PERCENTAGES OF board-wrap ITSELF (see tokenPos()), calibrated
+               against board-wrap exactly filling the image with no internal
+               dead space — so simply switching the <img> to object-fit:contain
+               would keep the art undistorted but shift every token off its
+               tile, since the visible image would then be smaller than and
+               centered within board-wrap rather than equal to it.
+               This min()/calc() pair instead sizes board-wrap ITSELF to the
+               largest 1264:848 rectangle that fits inside the rotated screen
+               box (100dvh x 100dvw), so board-wrap == the image's true bounds
+               again (fill stays undistorted, tokens stay correctly calibrated)
+               — any leftover space becomes slim letterbox/pillarbox bars
+               OUTSIDE board-wrap, filled by .panel-board's own centered flex
+               layout and dark background rather than stretched pixels. */
+            .panel-board .board-wrap {
+                /* vh/vw fallback, same reasoning as .panel-board above — dvh/dvw
+                   override wherever supported. */
+                width: min(100vh, calc(100vw * 1264 / 848));
+                height: min(100vw, calc(100vh * 848 / 1264));
+                width: min(100dvh, calc(100dvw * 1264 / 848));
+                height: min(100dvw, calc(100dvh * 848 / 1264));
+                aspect-ratio: auto;
+            }
+            .panel-board .board-wrap img { object-fit: fill; }
             /* Pushed below the fixed, full-viewport-height board and topbar (both
                position:fixed here, so neither reserves any normal-flow space —
                mobile-hud would otherwise start flowing from the very top of the
@@ -296,6 +313,16 @@
            onerror handler removes just the <img>, revealing that emoji instead
            of a broken-image icon. */
         .token img { position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover; }
+
+        /* The board itself scales with the viewport (width:100%), but tokens
+           were a flat 26px everywhere — proportionate on a narrow phone board,
+           but tiny and hard to spot on a large desktop board that can render
+           several times wider. Scales up only at the desktop breakpoint
+           already used for the board's own two-column layout above. */
+        @media (min-width:1024px) {
+            .token { width:40px; height:40px; font-size:22px; }
+            .token-me { font-size:24px; }
+        }
 
         .reaction-bar { display:flex; flex-wrap:wrap; gap:.3rem; justify-content:center; margin:.6rem 0; }
         .reaction-btn {
@@ -446,11 +473,17 @@
             /* Unlike the die/banner/toast/overlay above (all position:fixed
                against the viewport, so each needs its OWN rotate(90deg) to match
                the board), a token is a plain descendant of the already-rotated
-               .panel-board and inherits that rotation automatically — fine for a
-               small emoji glyph, but a real profile photo would render sideways.
-               Counter-rotating just the <img> (same trick as the GameSet mobile
-               calibrator's tile-number labels) keeps faces upright. */
-            .token img { transform:rotate(-90deg); }
+               .panel-board and inherits that rotation automatically — the piece
+               itself (its emoji glyph, or a real profile photo) ends up sideways
+               on top of a board that otherwise reads correctly landscape.
+               Counter-rotating the token itself (not just its <img>, which used
+               to be the only thing rotated here and left the plain-emoji case
+               still sideways) cancels the inherited rotation for BOTH cases —
+               same trick as the GameSet mobile calibrator's tile-number labels.
+               Keeps the existing translate(-50%,-50%) centering, just adds the
+               counter-rotation alongside it; the <img> itself needs no rotation
+               of its own anymore since its now-upright parent already covers it. */
+            .token { transform: translate(-50%,-50%) rotate(-90deg); }
             /* The wobble keyframes set their OWN transform (including rotate) at
                every step, so a plain static rotate(90deg) here would just get
                overridden the instant the animation starts — swapping to a
@@ -684,7 +717,18 @@
     <div id="winOverlay" class="overlay"><div class="overlay-card">
         <p class="text-3xl mb-2">🏁🎉</p>
         <p class="text-xl font-black text-amber-300 mb-1">You Won!</p>
+        <p class="text-sm font-bold text-emerald-300 mb-1" id="winGainLine" style="display:none;"></p>
         <p class="text-sm text-gray-300 mb-4">Total saved: <b id="winPayout">KES 0</b></p>
+        @include('arcade.snakes.partials.overlay-actions')
+    </div></div>
+
+    {{-- Standard (non-wager) matches: shown to whoever DIDN'T reach the finish
+         tile once another player did — pollState() is the only path that can
+         ever detect this for the non-winning side. --}}
+    <div id="raceOverOverlay" class="overlay"><div class="overlay-card">
+        <p class="text-3xl mb-2">🏁</p>
+        <p class="text-xl font-black text-amber-300 mb-1"><span id="raceWinnerName">A player</span> won the race!</p>
+        <p class="text-sm text-gray-300 mb-4">Total saved: <b id="raceOverPayout">KES 0</b></p>
         @include('arcade.snakes.partials.overlay-actions')
     </div></div>
 
@@ -701,7 +745,8 @@
     <div id="lostOverlay" class="overlay"><div class="overlay-card">
         <p class="text-3xl mb-2">📉</p>
         <p class="text-xl font-black text-red-300 mb-1">Lost a Rivals Trail round</p>
-        <p class="text-sm text-gray-300 mb-4">You kept <b id="lostPayout">KES 0</b> of your in-round savings — the rest went to the winner.</p>
+        <p class="text-sm font-bold text-red-300 mb-1" id="lostAmountLine" style="display:none;"></p>
+        <p class="text-sm text-gray-300 mb-4">You kept <b id="lostPayout">KES 0</b> of your in-round savings.</p>
         @include('arcade.snakes.partials.overlay-actions')
     </div></div>
 
@@ -1269,6 +1314,7 @@
                 }
                 document.getElementById('boardWrap').appendChild(token);
                 placeToken(token, opp.position || 1);
+                ArcadeSound.play('notify');
                 showToast([`👋 ${opp.is_bot ? 'Robo' : safeName} joined the match!`]);
             }
 
@@ -1297,7 +1343,19 @@
                 if (moved) {
                     if (!opp.is_bot) {
                         trackAnimating(opp.session_id, 1100);
-                        showToast([`🎲 ${escapeHtml(opp.name || 'Player')} rolled — moving to tile ${opp.position}...`]);
+                        const lines = [`🎲 ${escapeHtml(opp.name || 'Player')} rolled — moving to tile ${opp.position}...`];
+                        // Same eventLine() wording used for your OWN reward/expense/
+                        // mystery/golden tiles — money_event is only ever present
+                        // once per new position (see state()'s $s->last_event pick),
+                        // so this rides the same one-shot `moved` gate above and
+                        // won't repeat on later polls.
+                        if (opp.money_event) {
+                            lines.push(eventLine(opp.money_event));
+                            const lost = opp.money_event.type === 'expense'
+                                || (opp.money_event.type === 'mystery' && opp.money_event.effect !== 'gift');
+                            ArcadeSound.play(lost ? 'coinLoss' : 'coinGain');
+                        }
+                        showToast(lines);
                         ArcadeSound.play('move');
                     }
                     placeToken(token, opp.position);
@@ -1348,17 +1406,31 @@
             const mySeat = { session_id: MY_SESSION_ID, name: MY_NAME, is_me: true, is_bot: false, turn_order: MY_TURN_ORDER, status: res.session ? res.session.status : status };
             updateTurnOrderStrip([mySeat, ...(res.opponents || [])], res.current_turn_session_id);
 
-            // Rivals Trail: a player who didn't roll the decisive move themselves
-            // (someone else's win or forfeit settled the round) only ever learns
-            // the outcome here — processRollResult()'s win/bust overlays only ever
-            // cover the roller's OWN turn.
-            if (res.mode === 'wager' && res.session && status === 'active' && res.session.status !== 'active' && !rolling) {
+            // A player who didn't roll the decisive move themselves (someone
+            // else's win, or in Rivals Trail an opponent's forfeit, settled the
+            // round) only ever learns the outcome here — processRollResult()'s
+            // win/bust overlays only ever cover the roller's OWN turn. This used
+            // to be gated to `res.mode === 'wager'` only, which meant standard
+            // (non-wager) opponents never found out the match was over at all —
+            // their own session stays 'active' server-side until this same block
+            // flips it, so without this firing they could keep right on rolling
+            // against a match that had already been won.
+            if (res.session && status === 'active' && res.session.status !== 'active' && !rolling) {
                 status = res.session.status;
                 updateHud(res.session.pot, res.session.position);
                 updateRollButtonState();
-                if (res.session.status === 'lost') { ArcadeSound.play('bust'); showLostOverlay(res.session.pot); }
-                else if (res.session.status === 'forfeited') { showForfeitedOverlay(res.session.pot); }
-                else if (res.session.status === 'won') { ArcadeSound.play('win'); showWinOverlay(res.session); }
+                if (res.mode === 'wager') {
+                    if (res.session.status === 'lost') { ArcadeSound.play('bust'); showLostOverlay(res.session.pot, res.session.amount_lost, res.session.winner_name); }
+                    else if (res.session.status === 'forfeited') { showForfeitedOverlay(res.session.pot); }
+                    else if (res.session.status === 'won') { ArcadeSound.play('win'); showWinOverlay(res.session); }
+                } else {
+                    if (res.session.status === 'won') { ArcadeSound.play('win'); showWinOverlay(res.session); }
+                    else if (res.session.status === 'lost') {
+                        const winnerOpp = (res.opponents || []).find(o => o.status === 'won');
+                        ArcadeSound.play('bust');
+                        showRaceOverOverlay(winnerOpp ? winnerOpp.name : 'A player', res.session.pot);
+                    }
+                }
             }
         }
 
@@ -1600,21 +1672,52 @@
             document.getElementById('cashOutOverlay').style.display = 'flex';
         }
 
+        // No-op if PostHog isn't configured (Admin → Analytics → Tracker Setup) —
+        // see resources/views/partials/trackers.blade.php.
+        function phTrack(event, props) {
+            if (window.posthog) posthog.capture(event, Object.assign({ mode: MATCH_MODE }, props || {}));
+        }
+
         function showWinOverlay(res) {
+            const gain = (res.winner_gain || 0) + (res.forfeit_bonus || 0);
+            const gainLine = document.getElementById('winGainLine');
+            if (gain > 0) {
+                gainLine.textContent = '💰 Won KES ' + Number(gain).toLocaleString() + ' from your opponent' + (res.forfeit_bonus ? ' (incl. forfeit bonus)' : '') + '!';
+                gainLine.style.display = '';
+            } else {
+                gainLine.style.display = 'none';
+            }
             document.getElementById('winPayout').textContent = 'KES ' + Number(res.pot).toLocaleString();
             document.getElementById('winOverlay').style.display = 'flex';
             spawnConfetti();
+            phTrack('pesatrail_round_won', { pot: res.pot, gain: gain });
         }
         function showBustOverlay() {
             document.getElementById('bustOverlay').style.display = 'flex';
+            phTrack('pesatrail_round_busted', {});
         }
-        function showLostOverlay(pot) {
+        function showLostOverlay(pot, amountLost, winnerName) {
+            const amountLine = document.getElementById('lostAmountLine');
+            if (amountLost) {
+                amountLine.textContent = '📤 Lost KES ' + Number(amountLost).toLocaleString() + ' to ' + (winnerName || 'the other player') + '.';
+                amountLine.style.display = '';
+            } else {
+                amountLine.style.display = 'none';
+            }
             document.getElementById('lostPayout').textContent = 'KES ' + Number(pot).toLocaleString();
             document.getElementById('lostOverlay').style.display = 'flex';
+            phTrack('pesatrail_round_lost', { pot: pot, amount_lost: amountLost || 0 });
         }
         function showForfeitedOverlay(pot) {
             document.getElementById('forfeitedPayout').textContent = 'KES ' + Number(pot).toLocaleString();
             document.getElementById('forfeitedOverlay').style.display = 'flex';
+            phTrack('pesatrail_round_forfeited', { pot: pot });
+        }
+        function showRaceOverOverlay(winnerName, pot) {
+            document.getElementById('raceWinnerName').textContent = winnerName || 'A player';
+            document.getElementById('raceOverPayout').textContent = 'KES ' + Number(pot).toLocaleString();
+            document.getElementById('raceOverOverlay').style.display = 'flex';
+            phTrack('pesatrail_round_lost', { pot: pot });
         }
 
         function spawnConfetti() {

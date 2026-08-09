@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="carCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6ba9ff"/>
+      <stop offset="100%" stop-color="#1c4fa8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="url(#carCoin)" stroke="#153c80" stroke-width="3"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.35"/>
+  <path d="M30 78 c0 -8 4 -12 10 -12 l6 -14 c2 -5 6 -8 12 -8 h12 c6 0 10 3 12 8 l6 14 c6 0 10 4 10 12 v6 h-8 a8 8 0 0 1 -16 0 h-20 a8 8 0 0 1 -16 0 h-8 Z" fill="#ffffff"/>
+  <path d="M52 52 l-4 12 h32 l-4 -12 Z" fill="#1c4fa8"/>
+  <circle cx="46" cy="84" r="8" fill="#1c4fa8"/>
+  <circle cx="82" cy="84" r="8" fill="#1c4fa8"/>
+  <ellipse cx="48" cy="66" rx="10" ry="5" fill="#ffffff" opacity="0.4"/>
+</svg>

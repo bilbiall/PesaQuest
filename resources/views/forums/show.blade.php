@@ -12,6 +12,18 @@
     <style>
         body { background: #07060f; font-family: 'Figtree', sans-serif; }
         [x-cloak] { display: none !important; }
+        .rx-chip { display:inline-flex; align-items:center; gap:.4rem; font-size:11.5px; font-weight:900; padding:.5rem .9rem;
+                   border-radius:999px; cursor:pointer; transition:all .15s; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); color:#9ca3af; }
+        .rx-chip:hover { color:#fff; background:rgba(255,255,255,0.08); transform:translateY(-1px); }
+        .rx-chip.rx-on { color:#fcd34d; background:rgba(245,158,11,0.14); border-color:rgba(245,158,11,0.4); }
+        .composer-icon-btn { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:22px;
+                              border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); cursor:pointer; transition:all .15s; flex-shrink:0; }
+        .composer-icon-btn:hover { background:rgba(255,255,255,0.09); transform:translateY(-1px); }
+        #emoji-pop { position:absolute; bottom:calc(100% + 8px); left:0; z-index:60; width:264px;
+                     background:#14121f; border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:10px;
+                     box-shadow:0 16px 40px rgba(0,0,0,0.5); display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+        #emoji-pop button { font-size:20px; padding:5px 0; border-radius:8px; background:none; border:none; cursor:pointer; }
+        #emoji-pop button:hover { background:rgba(255,255,255,0.08); }
     </style>
 </head>
 @php
@@ -57,19 +69,24 @@
 
     {{-- ── Topic header ── --}}
     <div class="mb-6">
-        <div class="flex items-center gap-2 flex-wrap mb-3">
-            <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.14);border:1px solid rgba(139,92,246,0.35);color:#c4b5fd;">{{ $catMeta['icon'] }} {{ $catMeta['label'] }}</span>
-            @if($topic->is_challenge)
-            <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;">🎯 Teacher Challenge</span>
-            @endif
-            @if($topic->isSchoolBoard())
-            <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#34d399;">🏫 {{ $topic->school?->school_name ?? 'School' }} only</span>
-            @endif
+        <div class="flex items-center justify-between gap-2 flex-wrap mb-3">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.14);border:1px solid rgba(139,92,246,0.35);color:#c4b5fd;">{{ $catMeta['icon'] }} {{ $catMeta['label'] }}</span>
+                @if($topic->is_challenge)
+                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;">🎯 Teacher Challenge</span>
+                @endif
+                @if($topic->isSchoolBoard())
+                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#34d399;">🏫 {{ $topic->school?->school_name ?? 'School' }} only</span>
+                @endif
+                @if($topic->isFriendsOnly())
+                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);color:#f9a8d4;">🔒 Friends only</span>
+                @endif
+                @if($topic->is_locked)
+                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;">🔒 Locked</span>
+                @endif
+            </div>
             @if($topic->is_pinned)
             <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;">📌 Pinned</span>
-            @endif
-            @if($topic->is_locked)
-            <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;">🔒 Locked</span>
             @endif
         </div>
         <h1 class="text-2xl sm:text-3xl font-black leading-tight" x-show="!editing">{{ $topic->title }}</h1>
@@ -102,7 +119,7 @@
             <span>👁️ {{ number_format($topic->views) }} views</span>
             <span>💬 {{ $topic->replies_count }} {{ Str::plural('reply', $topic->replies_count) }}</span>
             @if($votesEnabled)
-            <span class="fv-wrap" data-type="topic" data-id="{{ $topic->id }}">
+            <span class="fv-wrap ml-auto" data-type="topic" data-id="{{ $topic->id }}" data-no-loader>
                 <button type="button" class="fv-btn fv-up {{ ($myTopicVotes[$topic->id] ?? 0) === 1 ? 'fv-on' : '' }}" title="Upvote" onclick="fvVote(this,'up')">▲</button>
                 <b class="fv-score">{{ number_format($topic->score ?? 0) }}</b>
                 <button type="button" class="fv-btn fv-down {{ ($myTopicVotes[$topic->id] ?? 0) === -1 ? 'fv-dn' : '' }}" title="Downvote" onclick="fvVote(this,'down')">▼</button>
@@ -158,65 +175,40 @@
     @endif
 
     {{-- ── Topic body ── --}}
-    <div class="rounded-2xl p-5 sm:p-6 mb-8" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);" x-show="!editing">
-        <p class="text-sm sm:text-[15px] text-gray-200 leading-relaxed whitespace-pre-line">{{ $topic->body }}</p>
+    <div class="rounded-2xl p-5 sm:p-6 mb-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);" x-show="!editing">
+        <p class="text-sm sm:text-[15px] text-gray-200 leading-relaxed whitespace-pre-line" style="border-left:2px solid rgba(139,92,246,0.35);padding-left:.9rem;">{{ $topic->body }}</p>
+        @if($topic->image_path)
+        <img src="{{ $topic->image_path }}" alt="" class="mt-4 rounded-xl max-h-[28rem] w-full object-cover" style="border:1px solid rgba(255,255,255,0.08);">
+        @endif
+    </div>
+
+    {{-- ── Reactions ── --}}
+    <div class="flex flex-wrap gap-2 mb-8" id="rx-wrap" data-topic="{{ $topic->id }}">
+        @foreach($reactionTypes as $type => $meta)
+        @php $count = (int) ($reactionCounts[$type] ?? 0); @endphp
+        <button type="button" class="rx-chip {{ in_array($type, $myReactions) ? 'rx-on' : '' }}" data-type="{{ $type }}" onclick="rxToggle(this)">
+            <span>{{ $meta['emoji'] }}</span>
+            <span>{{ $meta['label'] }}</span>
+            <span class="rx-count">{{ $count > 0 ? $count : '' }}</span>
+        </button>
+        @endforeach
     </div>
 
     {{-- ── Replies ── --}}
-    <h2 class="text-sm font-black text-gray-400 uppercase tracking-wider mb-4">💬 Replies ({{ $topic->replies_count }})</h2>
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-black text-gray-400 uppercase tracking-wider">💬 Replies ({{ $topic->replies_count }})</h2>
+        <span class="text-[11px] font-bold text-gray-600">Oldest first</span>
+    </div>
 
-    @if($replies->isEmpty())
+    @if($replyTree->isEmpty())
     <div class="text-center py-10 rounded-2xl mb-8" style="background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.1);">
         <p class="text-3xl mb-2">🦗</p>
         <p class="text-sm font-bold text-gray-400">No replies yet — be the first to weigh in!</p>
     </div>
     @else
-    <div class="space-y-3 mb-6">
-        @foreach($replies as $reply)
-        <div id="reply-{{ $reply->id }}" class="rounded-2xl p-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
-            <div class="flex items-center justify-between gap-2 mb-2">
-                <div class="flex items-center gap-2">
-                    @if($reply->user?->profile_photo)
-                    <img src="{{ $reply->user->profile_photo }}" alt="" class="w-7 h-7 rounded-full object-cover">
-                    @else
-                    <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-violet-300" style="background:rgba(139,92,246,0.2);">{{ strtoupper(substr($reply->user?->name ?? '?', 0, 1)) }}</span>
-                    @endif
-                    <div>
-                        <p class="text-xs font-black text-gray-200 leading-tight">
-                            @if($reply->user)
-                            <a href="{{ route('players.show', $reply->user) }}" class="hover:text-violet-300 transition-colors">{{ $reply->user->name }}</a>
-                            @else
-                            Player
-                            @endif
-                            @if($reply->user?->progress)
-                            <span class="text-[9px] font-black px-1 py-0.5 rounded ml-0.5 text-amber-300" style="background:rgba(245,158,11,0.1);">Lv{{ $reply->user->progress->level ?? 1 }}</span>
-                            @endif
-                            @if($reply->user_id === $topic->user_id)
-                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded ml-1" style="background:rgba(139,92,246,0.15);color:#c4b5fd;">OP</span>
-                            @endif
-                        </p>
-                        <p class="text-[10px] text-gray-600">{{ $reply->created_at?->diffForHumans() }}</p>
-                    </div>
-                </div>
-                @if($isMod || ($me && $me->id === $reply->user_id))
-                <form method="POST" action="{{ route('forums.replies.destroy', $reply) }}" onsubmit="return confirm('Delete this reply?');">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="text-[10px] font-black px-2 py-1 rounded-lg text-red-300/70 hover:text-red-300 transition-colors"
-                            style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.15);">🗑️</button>
-                </form>
-                @endif
-            </div>
-            <p class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{{ $reply->body }}</p>
-            @if($votesEnabled)
-            <div class="mt-2.5">
-                <span class="fv-wrap" data-type="reply" data-id="{{ $reply->id }}">
-                    <button type="button" class="fv-btn fv-up {{ ($myReplyVotes[$reply->id] ?? 0) === 1 ? 'fv-on' : '' }}" title="Upvote" onclick="fvVote(this,'up')">▲</button>
-                    <b class="fv-score">{{ number_format($reply->score ?? 0) }}</b>
-                    <button type="button" class="fv-btn fv-down {{ ($myReplyVotes[$reply->id] ?? 0) === -1 ? 'fv-dn' : '' }}" title="Downvote" onclick="fvVote(this,'down')">▼</button>
-                </span>
-            </div>
-            @endif
-        </div>
+    <div class="space-y-1 mb-6">
+        @foreach($replyTree as $reply)
+            @include('forums.partials.reply', ['reply' => $reply, 'depth' => 0])
         @endforeach
     </div>
 
@@ -248,24 +240,94 @@
     @else
     <div class="rounded-2xl p-5" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);">
         <h3 class="text-sm font-black text-gray-200 mb-3">✍️ Join the conversation</h3>
-        <form method="POST" action="{{ route('forums.reply', $topic) }}" class="space-y-3">
+        <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data" class="space-y-3" x-data="{ fileName: '' }">
             @csrf
-            <textarea name="body" rows="3" required minlength="2" maxlength="3000"
+            <textarea name="body" id="reply-body" rows="3" required minlength="2" maxlength="3000"
                       placeholder="Share your thoughts…"
                       class="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-y"
                       style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">{{ old('body') }}</textarea>
-            <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02]"
-                    style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
-                Reply · +25 XP
-            </button>
+            <div class="flex items-center gap-2.5">
+                <div class="relative">
+                    <button type="button" class="composer-icon-btn" title="Add emoji" onclick="emojiToggle(event, 'reply-body')">😊</button>
+                </div>
+                <label class="composer-icon-btn" title="Attach an image">
+                    📎
+                    <input type="file" name="image" accept="image/*" class="hidden" @change="fileName = $event.target.files[0]?.name ?? ''">
+                </label>
+                <span class="text-[11px] text-gray-500 truncate flex-1" x-text="fileName || 'No image attached'"></span>
+                <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02] flex-shrink-0"
+                        style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
+                    Reply · +25 XP
+                </button>
+            </div>
         </form>
     </div>
     @endif
 </div>
 
+{{-- Shared emoji popover — one instance reused for whichever composer opened it --}}
+<div id="emoji-pop" class="hidden"></div>
+
 @if($votesEnabled)
 @include('forums.partials.vote-assets')
 @endif
+
+<script>
+    const EMOJI_SET = ['😀','😂','😊','😍','🤔','😢','😡','🔥','💯','👍','👎','🙏','💰','💸','🎉','🚀','⭐','❤️','😭','🤯','💪','🎯','👏','🙌'];
+    let emojiTargetId = null;
+
+    function emojiToggle(e, targetId) {
+        e.stopPropagation();
+        const pop = document.getElementById('emoji-pop');
+        if (!pop.classList.contains('hidden') && emojiTargetId === targetId) {
+            pop.classList.add('hidden');
+            return;
+        }
+        emojiTargetId = targetId;
+        pop.innerHTML = EMOJI_SET.map(em => `<button type="button" onclick="emojiInsert('${em}')">${em}</button>`).join('');
+        const btn = e.currentTarget;
+        btn.parentElement.appendChild(pop);
+        pop.classList.remove('hidden');
+    }
+    function emojiInsert(emoji) {
+        const ta = document.getElementById(emojiTargetId);
+        if (ta) {
+            const start = ta.selectionStart ?? ta.value.length;
+            const end = ta.selectionEnd ?? ta.value.length;
+            ta.value = ta.value.slice(0, start) + emoji + ta.value.slice(end);
+            ta.focus();
+            ta.selectionStart = ta.selectionEnd = start + emoji.length;
+        }
+        document.getElementById('emoji-pop').classList.add('hidden');
+    }
+    document.addEventListener('click', function (e) {
+        const pop = document.getElementById('emoji-pop');
+        if (!pop.classList.contains('hidden') && !pop.contains(e.target)) pop.classList.add('hidden');
+    });
+
+    async function rxToggle(btn) {
+        const wrap = document.getElementById('rx-wrap');
+        const type = btn.dataset.type;
+        try {
+            const res = await fetch('{{ route('forums.react', $topic) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                },
+                body: JSON.stringify({ type }),
+            });
+            if (!res.ok) return;
+            const d = await res.json();
+            btn.classList.toggle('rx-on', d.active);
+            wrap.querySelectorAll('.rx-chip').forEach(chip => {
+                const c = d.counts[chip.dataset.type] || 0;
+                chip.querySelector('.rx-count').textContent = c > 0 ? c : '';
+            });
+        } catch (e) {}
+    }
+</script>
 
 <x-mobile-bottom-nav active="city" />
 </body>

@@ -372,6 +372,44 @@
         </div>
         @endif
 
+        {{-- Chairman: launch a Chama Challenge --}}
+        @if($isChairman && $challengeTemplates->isNotEmpty())
+        <div class="glass-card p-5 mb-6">
+            <p class="font-black text-white mb-1">🤝 Launch a Chama Challenge</p>
+            <p class="text-sm text-gray-400 mb-4">Every active member gets auto-enrolled — ranked by who grows the most during the window.</p>
+            <form action="{{ route('chama.challenge.create', $chama) }}" method="POST" class="flex flex-wrap items-end gap-3">
+                @csrf
+                <div class="flex-1 min-w-[160px]">
+                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Challenge</label>
+                    <select name="template_id" required class="w-full rounded-xl px-3 py-2.5 text-sm text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                        @foreach($challengeTemplates as $t)
+                        <option value="{{ $t->id }}">{{ $t->icon }} {{ $t->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="w-28">
+                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Days</label>
+                    <input type="number" name="duration_days" min="1" max="60" placeholder="7"
+                           class="w-full rounded-xl px-3 py-2.5 text-sm text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                </div>
+                <button type="submit" class="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all"
+                        style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.25));border:1px solid rgba(139,92,246,.4);">
+                    🚀 Launch
+                </button>
+            </form>
+            @if($chamaChallenges->isNotEmpty())
+            <div class="mt-4 pt-4 border-t border-white/5 space-y-2">
+                @foreach($chamaChallenges as $cc)
+                <a href="{{ route('challenges.show', $cc) }}" class="flex items-center justify-between text-sm text-gray-300 hover:text-white transition-colors">
+                    <span>{{ $cc->title }}</span>
+                    <span class="text-xs text-gray-500">{{ $cc->participants_count }} joined · {{ ucfirst($cc->status) }}</span>
+                </a>
+                @endforeach
+            </div>
+            @endif
+        </div>
+        @endif
+
         {{-- Members table --}}
         <div class="glass-card overflow-hidden">
             <div class="p-5 border-b border-white/5">

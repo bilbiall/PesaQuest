@@ -1202,6 +1202,23 @@ function pesaCity() {
       filter:  'all',
     },
 
+    // ── Champions' Court panel state ────────────────────────────────
+    champions: {
+      joiningId: null,
+      msg:       '',
+      msgOk:     true,
+    },
+
+    // ── Challenge-result celebration popup ──────────────────────────
+    challengeResult: {
+      show:      false,
+      icon:      '🏆',
+      title:     '',
+      body:      '',
+      isWinner:  false,
+    },
+    _challengeResultQueue: [],
+
     // ── Quest complete celebration overlay ─────────────────────────
     questComplete: {
       show:   false,
@@ -1358,6 +1375,27 @@ function pesaCity() {
           .catch(() => {});
       };
       this._questPollTimer = setInterval(this._pollQuestCompletions, 5000);
+
+      // Poll for challenge results (win/loss/cancelled) — DB-backed via
+      // GameNotification rather than a session queue, since a challenge can
+      // settle while this player is offline (nightly sweep, or another
+      // participant's page load winning a duel first).
+      this._pollChallengeResults = () => {
+        if (document.hidden) return;
+        fetch('/world/challenges/pending-results', {
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+          credentials: 'same-origin',
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(items => {
+            if (!items || !items.length) return;
+            this._challengeResultQueue.push(...items);
+            if (!this.challengeResult.show) this.nextChallengeResult();
+          })
+          .catch(() => {});
+      };
+      this._challengeResultPollTimer = setInterval(this._pollChallengeResults, 5000);
+      this._pollChallengeResults();
 
       // Draw procedural canvas city + start animation layer
       initCityCanvas();
@@ -1595,6 +1633,7 @@ function pesaCity() {
       const f = this.questsData.filter;
       if (f === 'available') return q.filter(x => !x.is_locked && x.user_status !== 'completed');
       if (f === 'completed') return q.filter(x => x.user_status === 'completed');
+      if (f === 'pending_old') return q.filter(x => x.is_previous_level && x.user_status !== 'completed');
       return q;
     },
 
@@ -1673,6 +1712,26 @@ function pesaCity() {
         xp:     data.xp_earned  ?? data.xp ?? 0,
         kes:    data.kes_earned  ?? data.kes ?? 0,
       };
+    },
+
+    // ── Challenge-result celebration popup — one at a time off a queue ──
+    nextChallengeResult() {
+      const item = this._challengeResultQueue.shift();
+      if (!item) { this.challengeResult.show = false; return; }
+      this.challengeResult = {
+        show:     true,
+        icon:     item.icon  ?? (item.is_winner ? '🏆' : '🎗️'),
+        title:    item.title ?? '',
+        body:     item.body  ?? '',
+        isWinner: !!item.is_winner,
+      };
+      if (item.is_winner) SoundMgr.play('badge');
+    },
+    closeChallengeResult() {
+      this.challengeResult.show = false;
+      if (this._challengeResultQueue.length) {
+        setTimeout(() => this.nextChallengeResult(), 300);
+      }
     },
 
     // ── Multi-trigger: show a small step-complete flash ────────────
@@ -1803,6 +1862,36 @@ function pesaCity() {
 
     closeCoursePopup() {
       this.coursePopup = { show: false, course: null, jobs: [], xp: 0 };
+    },
+
+    // Join an open Champions' Court challenge straight from the world-map
+    // popup — mirrors enrollCourse()'s fetch-and-patch-in-place shape.
+    async joinChampionsChallenge(challengeId) {
+      this.champions.joiningId = challengeId;
+      this.champions.msg = '';
+      try {
+        const r = await fetch(`/challenges/${challengeId}/join`, {
+          method: 'POST', headers: HEADERS(), credentials: 'same-origin',
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.ok) {
+          this.champions.msg = data.error ?? 'Could not join. Please try again.';
+          this.champions.msgOk = false;
+          return;
+        }
+        if (this.district?.open_challenges_list) {
+          this.district.open_challenges_list = this.district.open_challenges_list.filter(c => c.id !== challengeId);
+        }
+        this.district.my_active_challenges = (this.district.my_active_challenges ?? 0) + 1;
+        this.champions.msg = "You're in — good luck!";
+        this.champions.msgOk = true;
+        SoundMgr.play('arrive');
+      } catch (_) {
+        this.champions.msg = 'Could not join. Please try again.';
+        this.champions.msgOk = false;
+      } finally {
+        this.champions.joiningId = null;
+      }
     },
 
     async applyJob(jobId) {

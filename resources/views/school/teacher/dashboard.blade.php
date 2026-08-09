@@ -66,6 +66,100 @@
         </div>
         @endif
 
+        {{-- Classes --}}
+        <div class="glass p-5">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="font-black text-white">🧑‍🏫 Classes</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ $classes->count() }}/{{ $school->max_classes }} classes used · split your roster so each teacher's challenges & evaluation scope to their own students.</p>
+                </div>
+                @if($myRole === 'owner')
+                <button @click="classOpen = true" class="btn-p" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">+ New Class</button>
+                @endif
+            </div>
+            @if($classes->isEmpty())
+            <p class="text-sm text-gray-500">No classes yet — everything is scoped to the whole school. {{ $myRole === 'owner' ? 'Create one to split your roster up.' : 'Ask the school owner to create one.' }}</p>
+            @else
+            <div class="space-y-2">
+                @foreach($classes as $c)
+                <div class="flex items-center justify-between p-3 rounded-xl" style="background:rgba(255,255,255,0.02);">
+                    <div>
+                        <p class="text-sm font-bold text-white">{{ $c->name }}</p>
+                        <p class="text-[11px] text-gray-500">{{ $c->members_count }} student(s) · teacher: {{ $c->teacher?->name ?? $c->teacher?->email ?? 'Unassigned' }}</p>
+                    </div>
+                    @if($myRole === 'owner')
+                    <div class="flex items-center gap-2">
+                        <select class="ifield text-xs" style="width:auto;" onchange="assignClassTeacher({{ $c->id }}, this.value)">
+                            <option value="">— Assign teacher —</option>
+                            @foreach($teachers as $t)
+                                <option value="{{ $t->id }}" @selected($c->teacher_id === $t->id)>{{ $t->name ?? $t->email }}</option>
+                            @endforeach
+                        </select>
+                        <button type="button" @click="deleteClass({{ $c->id }}, {{ Js::from($c->name) }})" class="text-gray-600 hover:text-red-400 transition-colors flex-shrink-0 p-1">
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+            @endif
+        </div>
+
+        {{-- Class Challenges --}}
+        @if($challengeTemplates->isNotEmpty())
+        <div class="glass p-5">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <h2 class="font-black text-white">🏆 Class Challenge</h2>
+                <span class="text-xs text-gray-500">A shared leaderboard — students are enrolled automatically, no opt-in needed.</span>
+            </div>
+            @if($myRole !== 'owner' && !$myTeacher?->school_class_id)
+            <p class="text-sm text-amber-300 mb-3">Ask the school owner to assign you to a class before launching a Class Challenge.</p>
+            @else
+            <form method="POST" action="{{ route('school.teacher.challenge.create', $school) }}" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                @csrf
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-bold text-gray-400 block mb-1">Challenge Type</label>
+                    <select name="template_id" class="w-full rounded-xl px-3 py-2 text-sm" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#fff;">
+                        @foreach($challengeTemplates as $t)
+                            <option value="{{ $t->id }}">{{ $t->icon }} {{ $t->name }} ({{ $t->default_duration_days }}d)</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">Duration (days)</label>
+                    <input type="number" name="duration_days" min="1" max="60" class="w-full rounded-xl px-3 py-2 text-sm" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#fff;" placeholder="uses template default">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">Scope</label>
+                    @if($myRole === 'owner')
+                    <select name="school_class_id" class="w-full rounded-xl px-3 py-2 text-sm" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#fff;">
+                        <option value="">Whole School</option>
+                        @foreach($classes as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                    @else
+                    <input type="hidden" name="school_class_id" value="{{ $myTeacher->school_class_id }}">
+                    <div class="w-full rounded-xl px-3 py-2 text-sm text-gray-400" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);">{{ $myTeacher->schoolClass?->name }}</div>
+                    @endif
+                </div>
+                <button type="submit" class="btn-p sm:col-span-4">🚀 Launch Class Challenge</button>
+            </form>
+            @endif
+            @if($classChallenges->isNotEmpty())
+            <div class="mt-4 space-y-2">
+                @foreach($classChallenges as $c)
+                <a href="{{ route('challenges.show', $c) }}" class="flex items-center justify-between p-3 rounded-xl text-sm transition-colors" style="background:rgba(255,255,255,0.02);text-decoration:none;">
+                    <span class="font-bold text-white">{{ $c->title }}</span>
+                    <span class="text-gray-500">{{ $c->participants_count }} enrolled · {{ ucfirst($c->status) }}</span>
+                </a>
+                @endforeach
+            </div>
+            @endif
+        </div>
+        @endif
+
         {{-- Roster --}}
         <div class="glass p-5">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -97,6 +191,14 @@
                         <p class="text-[10px] text-gray-600 mt-0.5">All bills current</p>
                         @endif
                     </div>
+                    @if($classes->isNotEmpty())
+                    <select class="ifield text-xs flex-shrink-0" style="width:auto;" @click.prevent.stop onchange="assignStudentClass({{ $row['member_id'] }}, this.value)">
+                        <option value="">Whole school</option>
+                        @foreach($classes as $c)
+                            <option value="{{ $c->id }}" @selected($row['school_class_id'] === $c->id)>{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                    @endif
                     <button type="button" @click.prevent.stop="removeStudent({{ $row['member_id'] }}, {{ Js::from($row['user']->name ?? 'this student') }})"
                             class="text-gray-600 hover:text-red-400 transition-colors flex-shrink-0 p-1">
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -118,10 +220,10 @@
             <div class="space-y-2">
                 @foreach($teachers as $t)
                 <div class="flex items-center justify-between p-3 rounded-xl" style="background:rgba(255,255,255,0.02);">
-                    <div>
-                        <p class="text-sm font-bold text-white">{{ $t->name ?? $t->email }} @if($t->role === 'owner')<span class="text-[10px] font-bold text-amber-400 ml-1">OWNER</span>@endif</p>
-                        <p class="text-[11px] text-gray-500">{{ $t->email }} · {{ $t->status === 'active' ? '✅ Active' : '⏳ Invited' }}</p>
-                    </div>
+                    <a href="{{ route('school.teacher.teachers.profile', [$school, $t]) }}" class="min-w-0">
+                        <p class="text-sm font-bold text-white hover:text-amber-300 transition-colors">{{ $t->name ?? $t->email }} @if($t->role === 'owner')<span class="text-[10px] font-bold text-amber-400 ml-1">OWNER</span>@endif</p>
+                        <p class="text-[11px] text-gray-500">{{ $t->email }} · {{ $t->status === 'active' ? '✅ Active' : '⏳ Invited' }} · class: {{ $t->schoolClass?->name ?? 'Unassigned' }}</p>
+                    </a>
                     @if($myRole === 'owner' && $t->role !== 'owner')
                     <button type="button" @click="removeTeacher({{ $t->id }}, {{ Js::from($t->name ?? $t->email) }})" class="text-xs font-bold text-red-400/70 hover:text-red-400">Remove</button>
                     @endif
@@ -141,6 +243,20 @@
             <div class="flex gap-3">
                 <button @click="addStudent()" :disabled="adding" class="btn-p flex-1"><span x-show="!adding">Add Student</span><span x-show="adding">Adding…</span></button>
                 <button @click="addOpen=false" class="flex-1 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white" style="border:1px solid rgba(255,255,255,.1);">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- New Class Modal --}}
+    <div x-show="classOpen" style="position:fixed;inset:0;z-index:9990;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;overscroll-behavior:contain;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);" @click.self="classOpen=false">
+        <div class="glass p-6 w-full max-w-sm" style="margin:auto;">
+            <h3 class="font-black text-lg mb-4">+ New Class</h3>
+            <label class="text-xs text-gray-400 font-bold uppercase mb-1 block">Class name</label>
+            <input type="text" x-model="className" class="ifield mb-3" placeholder="e.g. Grade 7 Blue">
+            <p x-show="classError" x-cloak class="text-xs text-red-400 mb-3" x-text="classError"></p>
+            <div class="flex gap-3">
+                <button @click="createClass()" :disabled="classSaving" class="btn-p flex-1" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);"><span x-show="!classSaving">Create Class</span><span x-show="classSaving">Creating…</span></button>
+                <button @click="classOpen=false" class="flex-1 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white" style="border:1px solid rgba(255,255,255,.1);">Cancel</button>
             </div>
         </div>
     </div>
@@ -165,7 +281,34 @@ function teacherPortal() {
     return {
         addOpen: false, addEmail: '', addError: '', adding: false,
         inviteOpen: false, inviteEmail: '', inviteError: '', inviteLink: '', inviting: false,
+        classOpen: false, className: '', classError: '', classSaving: false,
         csrf() { return document.querySelector('meta[name=csrf-token]').content; },
+
+        async createClass() {
+            this.classError = '';
+            if (!this.className.trim()) { this.classError = 'Enter a class name.'; return; }
+            this.classSaving = true;
+            try {
+                const res = await fetch('{{ route('school.teacher.classes.store', $school) }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.csrf() },
+                    body: JSON.stringify({ name: this.className }),
+                });
+                const data = await res.json();
+                if (data.success) { window.location.reload(); }
+                else { this.classError = data.error || 'Could not create class.'; }
+            } catch (e) { this.classError = 'Network error.'; }
+            finally { this.classSaving = false; }
+        },
+
+        async deleteClass(id, name) {
+            if (!confirm(`Delete class "${name}"? Its students and teacher fall back to whole-school scope — nobody is removed.`)) return;
+            const res = await fetch(`{{ route('school.teacher.dashboard', $school) }}/classes/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': this.csrf(), 'Accept': 'application/json' },
+            });
+            if ((await res.json()).success) window.location.reload();
+        },
 
         async addStudent() {
             this.addError = '';
@@ -221,6 +364,22 @@ function teacherPortal() {
             if ((await res.json()).success) window.location.reload();
         },
     }
+}
+
+function assignClassTeacher(classId, teacherId) {
+    fetch(`{{ route('school.teacher.dashboard', $school) }}/classes/${classId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+        body: JSON.stringify({ teacher_id: teacherId || null }),
+    }).then(() => window.location.reload());
+}
+
+function assignStudentClass(memberId, classId) {
+    fetch(`{{ route('school.teacher.dashboard', $school) }}/students/${memberId}/class`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+        body: JSON.stringify({ school_class_id: classId || null }),
+    }).then(() => window.location.reload());
 }
 </script>
 </body>

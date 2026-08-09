@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="goldCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff1b8"/>
+      <stop offset="55%" stop-color="#f2be2e"/>
+      <stop offset="100%" stop-color="#b8860b"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 70 L34 118 L64 104 L94 118 L78 70 Z" fill="#b8860b"/>
+  <path d="M46 68 L32 112 L52 102" fill="none" stroke="#8a640a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M82 68 L96 112 L76 102" fill="none" stroke="#8a640a" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="64" cy="56" r="46" fill="url(#goldCoin)" stroke="#8a640a" stroke-width="3"/>
+  <circle cx="64" cy="56" r="37" fill="none" stroke="#fff8dd" stroke-width="2" opacity="0.75"/>
+  <path d="M64 28 L72 47 L92 47 L75 60 L82 80 L64 68 L46 80 L53 60 L36 47 L56 47 Z" fill="#fffdf3"/>
+  <ellipse cx="46" cy="36" rx="14" ry="8" fill="#ffffff" opacity="0.4"/>
+</svg>

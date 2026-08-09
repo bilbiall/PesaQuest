@@ -180,6 +180,7 @@ class ArcadeSnakesController extends Controller
         $data = $request->validate([
             'visibility'  => 'required|in:public,private',
             'max_players' => 'required|integer|min:2|max:8',
+            'name'        => 'nullable|string|max:40',
         ]);
         $user = auth()->user();
         $game = ArcadeGame::where('slug', 'snakes-and-cash')->firstOrFail();
@@ -187,7 +188,7 @@ class ArcadeSnakesController extends Controller
         if ($err = $this->dailyPlayGateError($user, $game)) return back()->with('error', $err);
 
         try {
-            $match = $service->createMatch($user, $game, $data['visibility'], (int) $data['max_players']);
+            $match = $service->createMatch($user, $game, $data['visibility'], (int) $data['max_players'], $data['name'] ?? null);
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -200,9 +201,15 @@ class ArcadeSnakesController extends Controller
     {
         $data = $request->validate(['code' => 'nullable|string|max:8', 'match_id' => 'nullable|integer']);
 
+        // Excludes Rivals Trail (wager) matches on purpose — that code lookup
+        // must go through joinWagerMatch() instead, which enforces the staked
+        // entry amount every joiner has to match. Without this, a wager
+        // match's code entered here would seat the joiner via the STANDARD
+        // (non-staked) tier system instead, letting them play for a pot they
+        // never bought into at the intended stake.
         $match = $data['code'] ?? null
-            ? ArcadeMatch::where('join_code', strtoupper($data['code']))->first()
-            : ArcadeMatch::find($data['match_id'] ?? 0);
+            ? ArcadeMatch::where('join_code', strtoupper($data['code']))->where('mode', '!=', 'wager')->first()
+            : ArcadeMatch::where('mode', '!=', 'wager')->find($data['match_id'] ?? 0);
 
         if (!$match) {
             return back()->with('error', 'No match found with that code.');
@@ -231,6 +238,7 @@ class ArcadeSnakesController extends Controller
             'stake_amount' => 'required|integer|min:' . ArcadeSnakesService::MIN_WAGER_STAKE . '|max:' . ArcadeSnakesService::MAX_WAGER_STAKE,
             'invite_ids'   => 'nullable|array',
             'invite_ids.*' => 'integer|exists:users,id',
+            'name'         => 'nullable|string|max:40',
         ]);
         $user = auth()->user();
         $game = ArcadeGame::where('slug', 'snakes-and-cash')->firstOrFail();
@@ -238,7 +246,7 @@ class ArcadeSnakesController extends Controller
         if ($err = $this->dailyPlayGateError($user, $game)) return back()->with('error', $err);
 
         try {
-            $match = $service->createWagerMatch($user, $game, $data['visibility'], (int) $data['max_players'], (int) $data['stake_amount']);
+            $match = $service->createWagerMatch($user, $game, $data['visibility'], (int) $data['max_players'], (int) $data['stake_amount'], $data['name'] ?? null);
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -418,6 +426,13 @@ class ArcadeSnakesController extends Controller
                     'stake'        => $s->stake_amount,
                     'missed_turns' => $s->missed_turns,
                     'turn_order'   => $s->turn_order,
+                    // Real opponents only ever report their CURRENT position here
+                    // (no hop_path/events the way bot_roll gets, see below) — this
+                    // is what lets the client still show a same-worded "gained/lost
+                    // KES X" toast for a real opponent's last roll, the same way it
+                    // already does for bots, instead of only telling you they moved.
+                    'money_event'  => collect($s->last_event ?? [])
+                        ->first(fn ($e) => in_array($e['type'] ?? null, ['reward', 'expense', 'mystery', 'golden_boost'])),
                 ])->values();
         }
 
@@ -431,6 +446,14 @@ class ArcadeSnakesController extends Controller
             }
         }
 
+        // A winner who learns about the win via THIS poll rather than their own
+        // roll (e.g. an opponent's forfeit decided it) never sees settleMatchIfDecided()'s
+        // return value directly — the breakdown was persisted onto last_event
+        // for exactly this case (see ArcadeSnakesService::settleMatchIfDecided()).
+        $settlementEvent = in_array($session->status, ['won', 'lost'])
+            ? collect($session->last_event ?? [])->firstWhere('type', 'settlement')
+            : null;
+
         return response()->json([
             'success'               => true,
             'turn_mode'             => $match->turn_mode ?? 'free',
@@ -441,7 +464,12 @@ class ArcadeSnakesController extends Controller
             'current_turn_user'     => $currentTurnName,
             'current_turn_session_id' => $match->current_turn_session_id ?? null,
             'turn_seconds_remaining' => $this->turnSecondsRemaining($match),
-            'session'               => ['position' => $session->position, 'pot' => $session->pot_amount, 'status' => $session->status, 'missed_turns' => $session->missed_turns, 'turn_order' => $session->turn_order],
+            'session'               => [
+                'position' => $session->position, 'pot' => $session->pot_amount, 'status' => $session->status,
+                'missed_turns' => $session->missed_turns, 'turn_order' => $session->turn_order,
+                'winner_gain' => $settlementEvent['winner_gain'] ?? null, 'forfeit_bonus' => $settlementEvent['forfeit_bonus'] ?? null,
+                'amount_lost' => $settlementEvent['amount_lost'] ?? null, 'winner_name' => $settlementEvent['winner_name'] ?? null,
+            ],
             'opponents'             => $opponents,
             'bot_roll'              => $botRoll,
             'reaction'              => $match ? Cache::get("arcade_match_{$match->id}_reaction") : null,

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="jetCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8fd6ff"/>
+      <stop offset="100%" stop-color="#1583b8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="url(#jetCoin)" stroke="#0f5e85" stroke-width="3"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.35"/>
+  <path d="M64 26 L70 56 L96 70 L96 78 L70 72 L68 92 L80 100 L80 106 L64 101 L48 106 L48 100 L60 92 L58 72 L32 78 L32 70 L58 56 Z" fill="#ffffff"/>
+  <ellipse cx="52" cy="52" rx="8" ry="5" fill="#ffffff" opacity="0.4"/>
+</svg>

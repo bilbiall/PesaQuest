@@ -78,6 +78,18 @@ class LifeController extends Controller
             }
         }
 
+        // Spin-wheel "Double Next Salary" prize — a one-shot flag on active_loans
+        // set by SpinController, consumed here at the next real payday.
+        $salaryDoubled = false;
+        $loanFlags = $progress->active_loans ?? [];
+        if (!is_array($loanFlags)) $loanFlags = json_decode($loanFlags, true) ?? [];
+        if ($total > 0 && !empty($loanFlags['salary_2x'])) {
+            $total *= 2;
+            $salaryDoubled = true;
+            unset($loanFlags['salary_2x']);
+            $progress->active_loans = $loanFlags;
+        }
+
         if ($total <= 0) {
             // Nothing to collect — tell the player when the next payday lands
             $nextIn = null;
@@ -106,22 +118,26 @@ class LifeController extends Controller
         $notes = [];
         if ($moodPenalty)      $notes[] = 'low mood −10%';
         if ($crisisCutPct > 0) $notes[] = "crisis cut −{$crisisCutPct}%";
+        if ($salaryDoubled)    $notes[] = '🎡 spin wheel bonus — salary doubled!';
 
         GameNotification::create([
             'user_id' => $user->id,
             'type'    => 'salary',
-            'title'   => '💼 Payday! You reported to work',
+            'title'   => $salaryDoubled ? '💼🎉 Payday! Salary doubled by your spin bonus' : '💼 Payday! You reported to work',
             'body'    => 'Ksh ' . number_format($total) . ' collected' . ($notes ? ' (' . implode(', ', $notes) . ')' : '') . '.',
             'icon'    => '💼',
-            'data'    => ['amount' => $total, 'items' => $items],
+            'data'    => ['amount' => $total, 'items' => $items, 'salary_doubled' => $salaryDoubled],
         ]);
 
         return response()->json([
-            'paid'         => $total,
-            'items'        => $items,
-            'notes'        => $notes,
-            'new_balance'  => $progress->balance,
-            'message'      => 'Ksh ' . number_format($total) . ' collected. Attendance slate wiped clean — keep reporting to work to stay in your employer\'s good books!',
+            'paid'          => $total,
+            'items'         => $items,
+            'notes'         => $notes,
+            'salary_doubled'=> $salaryDoubled,
+            'new_balance'   => $progress->balance,
+            'message'       => $salaryDoubled
+                ? '🎉 Your spin wheel bonus doubled this payday — Ksh ' . number_format($total) . ' collected!'
+                : 'Ksh ' . number_format($total) . ' collected. Attendance slate wiped clean — keep reporting to work to stay in your employer\'s good books!',
         ]);
     }
 
@@ -262,6 +278,90 @@ class LifeController extends Controller
             'nextAsset', 'daysToNextAsset', 'progressToNextAsset',
             'location', 'netWorth', 'lifeFeed', 'statement', 'statementFilter',
             'creditHistory', 'lifeEvents', 'pendingPay'
+        ));
+    }
+
+    /**
+     * Finances tab — the one-stop money view: monthly income/expense
+     * statement (same math as the board screen), plus lightweight
+     * portfolio/savings snapshots that link out to their full pages for
+     * the deep-dive/CRUD actions (buy/sell, deposit/withdraw).
+     */
+    public function finances()
+    {
+        $user     = auth()->user();
+        $progress = $user->getOrCreateProgress();
+
+        $playerAssets = PlayerAsset::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with('asset')
+            ->get();
+
+        $allBills = PlayerBill::where('user_id', $user->id)
+            ->whereIn('status', ['active', 'overdue'])
+            ->with('bill')
+            ->get();
+
+        $activeLoans = \App\Models\PlayerLoan::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with('loanProduct')
+            ->get();
+
+        $cityJobSalary = PlayerCityJob::where('user_id', $user->id)
+            ->where('status', 'employed')
+            ->with('job:id,salary_kes_month')
+            ->get()
+            ->sum(fn ($pj) => $pj->job?->salary_kes_month ?? 0);
+
+        $salaryPerMonth      = max((int) ($progress->career_income_rate ?? 0), (int) $cityJobSalary);
+        $assetIncomePerMonth = (int) $playerAssets->sum(fn ($pa) => ($pa->asset->monthly_income ?? 0) * $pa->quantity);
+        $totalIncome         = $salaryPerMonth + $assetIncomePerMonth;
+
+        $billsBurnPerMonth    = (int) $allBills->sum(fn ($pb) => $pb->amount * (30 / max(1, $pb->frequency_ticks)));
+        $assetCostsPerMonth   = (int) $playerAssets->sum(fn ($pa) => ($pa->asset->monthly_cost ?? 0) * $pa->quantity);
+        $loanPaymentsPerMonth = (int) $activeLoans->sum(fn ($l) => $l->payment_amount * (30 / max(1, $l->payment_period_ticks)));
+        $totalExpenses        = $billsBurnPerMonth + $assetCostsPerMonth + $loanPaymentsPerMonth;
+
+        $netMonthly  = $totalIncome - $totalExpenses;
+        $savingsRate = $totalIncome > 0 ? (int) (($netMonthly / $totalIncome) * 100) : 0;
+
+        $statementFilter = request('stmt_filter', 'all');
+        $stmtTypes = match ($statementFilter) {
+            'income'   => ['salary', 'asset_income', 'arcade_stake_won', 'arcade_forfeit_bonus'],
+            'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost'],
+            default    => ['salary', 'asset_income', 'bill_paid', 'bill_missed', 'life_sim', 'life_event',
+                            'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus'],
+        };
+        $statement = GameNotification::where('user_id', $user->id)
+            ->whereIn('type', $stmtTypes)
+            ->latest()
+            ->take(15)
+            ->get();
+
+        // Portfolio snapshot — enough to show at a glance, full detail lives at /portfolio.
+        $totalValue    = (int) $playerAssets->sum('current_value');
+        $totalInvested = (int) $playerAssets->sum('purchase_price');
+        $unrealisedPL  = $totalValue - $totalInvested;
+        $topHoldings   = $playerAssets->sortByDesc('current_value')->take(3);
+        $activeDealsCount = \App\Models\PlayerDeal::where('user_id', $user->id)->where('status', 'pending')->count();
+        $totalDebt        = (int) $activeLoans->sum('outstanding_balance');
+
+        // Savings snapshot — full CRUD (deposit/withdraw/create) lives at /savings.
+        $savingsSchemes = \App\Models\SavingsScheme::where('user_id', $user->id)
+            ->where('is_archived', false)
+            ->orderByDesc('current_amount')
+            ->get();
+        $totalSaved  = (int) $savingsSchemes->sum('current_amount');
+        $closestGoal = $savingsSchemes->sortByDesc(fn ($s) => $s->target_amount > 0 ? $s->current_amount / $s->target_amount : 0)->first();
+
+        return view('life.finances', compact(
+            'user', 'progress',
+            'salaryPerMonth', 'assetIncomePerMonth', 'totalIncome',
+            'billsBurnPerMonth', 'assetCostsPerMonth', 'loanPaymentsPerMonth', 'totalExpenses',
+            'netMonthly', 'savingsRate', 'statement', 'statementFilter',
+            'totalValue', 'totalInvested', 'unrealisedPL', 'topHoldings', 'playerAssets',
+            'activeDealsCount', 'totalDebt', 'activeLoans',
+            'savingsSchemes', 'totalSaved', 'closestGoal'
         ));
     }
 

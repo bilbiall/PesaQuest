@@ -1,13 +1,22 @@
 {{-- ── Game Calendar HUD ──────────────────────────────────────────────────
-     Ambient date chip (top-left, below the page's top nav) → week strip
-     popover → fortnight modal, both dropping DOWN below the chip.
+     Ambient date chip → week strip popover → fortnight modal, both anchored
+     to the chip's actual position at open-time (not hardcoded coordinates),
+     so this works whether the chip floats or sits inline in a nav bar.
      Self-contained (own CSS/JS, no Alpine dependency). Events are fetched
      lazily from /game/calendar the first time the chip is opened, so pages
      pay ZERO extra queries until the player actually looks at the calendar.
-     Include once per page: @include('partials.game-calendar') --}}
+
+     Two placement modes:
+     - Default (floating): a small ambient pill fixed top-left of the page.
+       Include once per page: @include('partials.game-calendar')
+     - Inline: pass ['inline' => true] to render the chip as a normal flex
+       item inside a nav bar instead (e.g. life-topnav) — avoids the chip
+       floating on top of page content that starts right below the nav.
+       @include('partials.game-calendar', ['inline' => true]) --}}
 @php
     $gcUser = auth()->user();
     if (!$gcUser) return;
+    $gcInline = $inline ?? false;
     $gcToday = app(\App\Services\GameCalendarService::class)->today($gcUser);
     // One cheap query for the attention dot: anything due within 3 game days?
     $gcUrgent = false;
@@ -40,6 +49,16 @@
         color:#e5e7eb; font-size:12.5px; font-weight:800; letter-spacing:.01em;
         opacity:.55; transition:opacity .25s, transform .15s; }
     #gc-chip:hover { opacity:1; transform:translateY(1px); }
+    /* Inline mode: a normal flex item inside the caller's own nav bar, not a
+       floating overlay — so it can never sit on top of in-flow page content. */
+    #gc-chip.gc-inline { position:static; left:auto; top:auto; opacity:1; padding:.42rem .75rem; gap:6px; flex-shrink:0; }
+    #gc-chip.gc-inline .gc-bar { display:none; }
+    /* Narrow phones: collapse to an icon-only tap target (logo + hamburger already
+       fill most of the row) — full info is one tap away in the popover. */
+    @media (max-width:640px) {
+        #gc-chip.gc-inline { padding:.5rem; }
+        #gc-chip.gc-inline .gc-daytext, #gc-chip.gc-inline .gc-paytext { display:none; }
+    }
     #gc-chip .gc-dot { width:7px; height:7px; border-radius:50%; background:#f59e0b; box-shadow:0 0 8px rgba(245,158,11,.8); animation:gcPulse 1.6s infinite; }
     #gc-chip .gc-bar { width:46px; height:3px; border-radius:2px; background:rgba(255,255,255,.12); overflow:hidden; }
     #gc-chip .gc-bar i { display:block; height:100%; border-radius:2px; background:linear-gradient(90deg,#15C77E,#4DA8F7); }
@@ -78,14 +97,14 @@
     @media (max-width:640px){ #gc-chip { top:60px; } #gc-strip { top:106px; } #gc-modal { top:106px; } }
 </style>
 
-<div id="gc-chip" title="Pesa City calendar" onclick="gcToggle()">
+<div id="gc-chip" class="{{ $gcInline ? 'gc-inline' : '' }}" title="Pesa City calendar" onclick="gcToggle()">
     <span>📅</span>
-    <span>Day {{ number_format($gcToday['day']) }} · {{ substr($gcToday['weekday'], 0, 3) }} · Yr {{ $gcToday['year'] }}</span>
+    <span class="gc-daytext">Day {{ number_format($gcToday['day']) }} · {{ substr($gcToday['weekday'], 0, 3) }} · Yr {{ $gcToday['year'] }}</span>
     <span class="gc-bar" title="Month progress"><i style="width:{{ $gcToday['month_progress'] }}%"></i></span>
     @if($gcPayReady)
-    <span style="color:#34d399;font-weight:900;" title="You have uncollected pay — Report to Work on the Career page">💰 Pay ready!</span>
+    <span class="gc-paytext" style="color:#34d399;font-weight:900;" title="You have uncollected pay — Report to Work on the Career page">💰 Pay ready!</span>
     @elseif($gcPayday !== null)
-    <span style="color:#a7f3d0;" title="Game days until your next payslip lands">💰 Payday in {{ $gcPayday }}d</span>
+    <span class="gc-paytext" style="color:#a7f3d0;" title="Game days until your next payslip lands">💰 Payday in {{ $gcPayday }}d</span>
     @endif
     @if($gcUrgent)<span class="gc-dot" title="Something is due within 3 game days"></span>@endif
 </div>
@@ -113,15 +132,32 @@
 (function () {
     let gcData = null, gcLoading = false;
 
+    // Anchor a popover to the chip's ACTUAL rendered position rather than the
+    // hardcoded CSS coordinates — the chip floats on some pages and sits
+    // inline in a nav bar on others, so its real position varies.
+    function gcAnchor(el) {
+        const chip = document.getElementById('gc-chip');
+        const r = chip.getBoundingClientRect();
+        el.style.top = Math.round(r.bottom + 8) + 'px';
+        requestAnimationFrame(() => {
+            const w = el.offsetWidth || 300;
+            let left = Math.min(r.left, window.innerWidth - w - 8);
+            left = Math.max(8, left);
+            el.style.left = Math.round(left) + 'px';
+        });
+    }
+
     window.gcToggle = function () {
         const strip = document.getElementById('gc-strip');
         const opening = !strip.classList.contains('gc-open');
         strip.classList.toggle('gc-open', opening);
-        if (opening) gcLoad();
+        if (opening) { gcAnchor(strip); gcLoad(); }
     };
     window.gcOpenModal  = function () {
         document.getElementById('gc-strip').classList.remove('gc-open'); // panel replaces the week strip in place
-        document.getElementById('gc-modal').classList.add('gc-open');
+        const modal = document.getElementById('gc-modal');
+        modal.classList.add('gc-open');
+        gcAnchor(modal);
         gcLoad();
     };
     window.gcCloseModal = function () { document.getElementById('gc-modal').classList.remove('gc-open'); };

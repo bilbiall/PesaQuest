@@ -124,6 +124,13 @@ window.addEventListener('pageshow', (e) => { if (e.persisted) hide(); });
 
 // ── 2. Outgoing navigation ───────────────────────────────────────────────────
 document.addEventListener('click', (e) => {
+    // Opt-out for JS-driven controls nested inside a real link (e.g. a vote
+    // button inside a clickable forum-topic row) — this listener runs in the
+    // CAPTURE phase, so it fires before the control's own onclick handler gets
+    // a chance to preventDefault()/stopPropagation(), and would otherwise show
+    // the full-screen loader for an action that never actually navigates.
+    if (e.target.closest && e.target.closest('[data-no-loader]')) return;
+
     const a = e.target.closest && e.target.closest('a[href]');
     if (!a) return;
     const href = a.getAttribute('href') || '';

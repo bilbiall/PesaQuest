@@ -39,6 +39,8 @@ body{background:#07060f;}
 .badge-item{display:flex;flex-direction:column;align-items:center;gap:.5rem;animation:popIn .4s ease both;}
 .badge-circle{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.85rem;transition:transform .3s,box-shadow .3s;}
 .badge-circle:hover{transform:scale(1.2);}
+.badge-circle-plain{background:transparent!important;border:none!important;box-shadow:none!important;}
+.badge-circle-plain img{width:82%!important;height:82%!important;filter:drop-shadow(0 2px 8px rgba(0,0,0,.45));}
 .badge-name{font-size:.6rem;color:#9ca3af;text-align:center;max-width:72px;font-weight:600;line-height:1.3;}
 
 .chapter-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .9rem;border-radius:9999px;font-size:.75rem;font-weight:800;letter-spacing:.03em;}
@@ -196,6 +198,18 @@ body{background:#07060f;}
                 <span class="stat-val" style="-webkit-text-fill-color:#f472b6;">{{ $badges->count() }}</span>
                 <span class="stat-lbl">Badges</span>
             </div>
+            @if(($ownedDreams ?? collect())->count())
+            <div class="stat-pill">
+                <span class="stat-val" style="-webkit-text-fill-color:#fbbf24;">{{ $ownedDreams->count() }}</span>
+                <span class="stat-lbl">Dreams</span>
+            </div>
+            @endif
+            @if(($wonChallenges ?? collect())->count())
+            <div class="stat-pill">
+                <span class="stat-val" style="-webkit-text-fill-color:#fb923c;">{{ $wonChallenges->count() }}</span>
+                <span class="stat-lbl">Trophies</span>
+            </div>
+            @endif
             <div class="stat-pill">
                 <span class="stat-val" style="-webkit-text-fill-color:#fb923c;">🔥 {{ $streak?->current_streak ?? 0 }}</span>
                 <span class="stat-lbl">Streak</span>
@@ -253,7 +267,7 @@ body{background:#07060f;}
             <div class="flex flex-wrap gap-4">
                 @foreach($badges as $badge)
                 <div class="badge-item" style="animation-delay:{{ $loop->index * 0.05 }}s;" title="{{ $badge->description ?? $badge->name }}">
-                    <div class="badge-circle" style="background:linear-gradient(135deg,{{ $badge->color ?? '#f59e0b' }}30,{{ $badge->color ?? '#f59e0b' }}12);border:2px solid {{ $badge->color ?? '#f59e0b' }}55;box-shadow:0 0 16px {{ $badge->color ?? '#f59e0b' }}28;">
+                    <div class="badge-circle {{ $badge->image_url ? 'badge-circle-plain' : '' }}" @unless($badge->image_url) style="background:linear-gradient(135deg,{{ $badge->color ?? '#f59e0b' }}30,{{ $badge->color ?? '#f59e0b' }}12);border:2px solid {{ $badge->color ?? '#f59e0b' }}55;box-shadow:0 0 16px {{ $badge->color ?? '#f59e0b' }}28;" @endunless>
                         @if($badge->image_url)
                             <img src="{{ $badge->image_url }}" alt="{{ $badge->name }}" style="width:60%;height:60%;object-fit:contain;">
                         @else
@@ -261,6 +275,37 @@ body{background:#07060f;}
                         @endif
                     </div>
                     <span class="badge-name">{{ $badge->name }}</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- TROPHY CASE — owned Dreams + won Challenges --}}
+    @if(($ownedDreams ?? collect())->count() || ($wonChallenges ?? collect())->count())
+    <div class="px-4 mb-4" style="animation:fadeUp .4s .17s ease both;">
+        <div class="profile-card">
+            <h3 class="text-sm font-black text-white mb-4">🏆 Trophy Case</h3>
+            <div class="flex flex-wrap gap-4">
+                @foreach($wonChallenges ?? [] as $win)
+                <div class="badge-item" style="animation-delay:{{ $loop->index * 0.05 }}s;" title="Won: {{ $win->challenge->title }}">
+                    <div class="badge-circle" style="background:linear-gradient(135deg,#f59e0b30,#f59e0b12);border:2px solid #f59e0b55;box-shadow:0 0 16px #f59e0b28;">
+                        {{ $win->challenge->template?->icon ?? '🏆' }}
+                    </div>
+                    <span class="badge-name">{{ $win->challenge->title }}</span>
+                </div>
+                @endforeach
+                @foreach($ownedDreams ?? [] as $pd)
+                <div class="badge-item" style="animation-delay:{{ ($loop->index + ($wonChallenges->count() ?? 0)) * 0.05 }}s;" title="{{ $pd->dream?->name }} — claimed {{ $pd->purchased_at?->format('M Y') }}">
+                    <div class="badge-circle" style="background:linear-gradient(135deg,#8b5cf630,#8b5cf612);border:2px solid #8b5cf655;box-shadow:0 0 16px #8b5cf628;">
+                        @if($pd->dream?->image_url)
+                            <img src="{{ $pd->dream->image_url }}" alt="{{ $pd->dream->name }}" style="width:60%;height:60%;object-fit:contain;">
+                        @else
+                            {{ $pd->dream?->icon ?? '🌟' }}
+                        @endif
+                    </div>
+                    <span class="badge-name">{{ $pd->dream?->name }}</span>
                 </div>
                 @endforeach
             </div>

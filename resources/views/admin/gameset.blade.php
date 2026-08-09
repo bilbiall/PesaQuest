@@ -71,6 +71,11 @@
             <span class="gsh-kicker">⚙️ GameSet Hub</span>
             <h1>Manage the living economy of Pesa City</h1>
             <p>Everything players earn, spend, learn and survive is configured from here — assets, bills, courses, jobs, quests, deals, loans, life events and server-wide crises.</p>
+            <a href="{{ route('gameset.docs') }}"
+               style="display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-weight:800;font-size:.8rem;color:#a5b4fc;
+                      text-decoration:none;padding:.55rem 1rem;border-radius:.8rem;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.35);">
+                📚 New here? Open the full GameSet Guide →
+            </a>
         </div>
 
         {{-- CRISIS SNAPSHOT --}}
@@ -189,6 +194,18 @@
                     <p>Search player profiles, progress and portfolios.</p>
                     <span class="cnt">lookup tool</span>
                 </a>
+                <a href="{{ route('gameset.dreams.index') }}" class="gsh-card">
+                    <span class="ic">🌟</span><span class="go">→</span>
+                    <h3>Dreams</h3>
+                    <p>Expensive, non-resellable status purchases — a flex on the profile Trophy Case.</p>
+                    <span class="cnt">{{ $stats['dreams']['active'] }} live · {{ $stats['dreams']['total'] }} total</span>
+                </a>
+                <a href="{{ route('gameset.challenges.index') }}" class="gsh-card">
+                    <span class="ic">🏆</span><span class="go">→</span>
+                    <h3>Challenges</h3>
+                    <p>Fair PvP/team duels &amp; PesaCity broadcast challenges, measured by baseline + delta.</p>
+                    <span class="cnt">{{ $stats['challenges']['active'] }} live · {{ $stats['challenges']['total'] }} total</span>
+                </a>
             </div>
         </div>
 
@@ -213,22 +230,30 @@
             <div x-show="error" x-cloak class="mt-3 text-red-400 text-sm font-semibold" x-text="error"></div>
             <div class="mt-4 grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
                 <div>
-                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Max quests started per day</span>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Max quests started per day
+                        <x-help-tip text="Caps how many NEW quests a player may start each real day — quests already in progress can still be finished. 2–3 keeps quests a daily ritual instead of a one-sitting binge." example="2 (0 = unlimited)" />
+                    </span>
                     <input type="number" min="0" max="100" x-model.number="maxQuests" class="ifield">
                     <p class="text-[11px] text-gray-600 mt-1.5">0 = unlimited. Stops players from burning through all quest content in one sitting — a steady drip keeps them coming back daily.</p>
                 </div>
                 <div>
-                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">"While You Were Away" — min game days</span>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">"While You Were Away" — min game days
+                        <x-help-tip text="How many game days must pass since the last visit before the catch-up recap popup is allowed to appear at all. Urgent news — overdue bills, payday, crises, a new life chapter — always breaks through this gate." example="7 (a game week)" />
+                    </span>
                     <input type="number" min="1" max="60" x-model.number="wywaMinTicks" class="ifield">
                     <p class="text-[11px] text-gray-600 mt-1.5">The catch-up popup only appears after at least this many game days passed (default 7 = a game week). Urgent news — overdue bills, payday, crises, new chapters — always shows regardless.</p>
                 </div>
                 <div>
-                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">"While You Were Away" — cooldown (real minutes)</span>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">"While You Were Away" — cooldown (real minutes)
+                        <x-help-tip text="Real-world quiet period after the recap shows once — it stops popup fatigue when a player closes the tab and comes straight back. Counted in real minutes, not game days." example="45 (0 = no cooldown)" />
+                    </span>
                     <input type="number" min="0" max="1440" x-model.number="wywaCooldown" class="ifield">
                     <p class="text-[11px] text-gray-600 mt-1.5">After the popup shows once, it stays quiet for this many real minutes even if more game days pass. 0 = no cooldown.</p>
                 </div>
                 <div>
-                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">🌤 Map ambience</span>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">🌤 Map ambience
+                        <x-help-tip text="How busy the living-world layer on the city map feels. Turn it down to Calm (or Off) if the animation distracts learners in class or stutters on low-end phones." example="Lively" />
+                    </span>
                     <select x-model="ambience" class="ifield">
                         <option value="lively">Lively — birds, clouds, NPCs, weather</option>
                         <option value="calm">Calm — same effects, fewer and slower</option>
@@ -237,7 +262,9 @@
                     <p class="text-[11px] text-gray-600 mt-1.5">The living-world layer on the city map: bird flocks, drifting clouds, real-time day/night, storm clouds before a crisis, strolling NPCs. Auto-disables for players with reduced-motion set.</p>
                 </div>
                 <div>
-                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">✈️ Sky banner text</span>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">✈️ Sky banner text
+                        <x-help-tip text="A short announcement a plane tows across the city map — handy for a theme week or a school campaign. Max 60 characters; leave it empty and the plane never flies." example="Chama week — team up and save! 🤝" />
+                    </span>
                     <input type="text" maxlength="60" x-model="ambBanner" class="ifield" placeholder="e.g. Chama week — team up & save! 🤝">
                     <p class="text-[11px] text-gray-600 mt-1.5">A little plane occasionally tows this banner across the map. Leave empty for no plane (balloon and kite still fly).</p>
                 </div>
@@ -248,7 +275,12 @@
         <div x-data="lifeChaptersMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
                 <div>
-                    <h2 class="text-white font-black text-lg">🌱 Life Chapters</h2>
+                    <h2 class="text-white font-black text-lg">🌱 Life Chapters
+                        <x-help-tip text="Icon column: the emoji shown next to the stage name on the dashboard, Life Timeline and the chapter-up celebration. One emoji reads best." example="🌱" />
+                        <x-help-tip text="Chapter name column: what players call this life stage everywhere in the game. The six stage keys underneath are fixed, so renaming is purely cosmetic — nothing breaks. Max 40 characters." example="Campus Hustler" />
+                        <x-help-tip text="Tagline column: the one-line description shown under the name when a player enters the stage. Max 120 characters; leave blank for none." example="Small money, big lessons." />
+                        <x-help-tip text="From Ksh column: the net worth (cash + assets + savings − debts) that moves a player into this chapter. Stage 1 is locked at 0 and every stage must be strictly higher than the one above it, or saving is rejected. Raise them all if you raise salaries or asset yields." example="Defaults ascend 0 / 50,000 / 200,000 / 1M / 5M / 20M" />
+                    </h2>
                     <p class="text-gray-400 text-sm mt-1">The six life stages every player climbs through, triggered by <b class="text-gray-300">net worth</b> (cash + assets + savings − debts). Rename them, restyle them and set the net-worth trigger for each.</p>
                 </div>
                 <button type="button" @click="save()" :disabled="saving" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition-colors">
@@ -288,7 +320,10 @@
         <div x-data="xpLevelsMgr()" x-init="load()" class="glass rounded-2xl p-6 mt-4">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-white font-black text-lg">⚙️ XP Levels</h2>
+                    <h2 class="text-white font-black text-lg">⚙️ XP Levels
+                        <x-help-tip text="Level name column: the aspirational identity shown on the player's profile, leaderboards and level-up popup — pick words you want learners calling themselves. Max 50 characters." example="Investor" />
+                        <x-help-tip text="XP column: total lifetime XP needed to reach that level. Level 1 is fixed at 0 and values must ascend; the gap between two rows decides how long players sit on a rank before promotion." example="1000 to reach level 5" />
+                    </h2>
                     <p class="text-gray-400 text-sm mt-1">XP thresholds and level names. Changes apply to all players. Values must be ascending; Level 1 always starts at 0 XP.</p>
                 </div>
                 <button type="button" @click="save()" :disabled="saving" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition-colors">
@@ -319,7 +354,10 @@
         <div x-data="hustleTipsMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-white font-black text-lg">💡 Hustle Tips</h2>
+                    <h2 class="text-white font-black text-lg">💡 Hustle Tips
+                        <x-help-tip text="Icon column: the emoji that leads the tip in the Pesa City sidebar. Vary them so the rotation does not look repetitive." example="💰" />
+                        <x-help-tip text="Tip text column: one piece of advice players see rotating in the sidebar while they explore the city. Keep 8–15 tips live, one idea per tip, Kenyan and concrete — vague tips get ignored." example="Pay yourself first — move 10% to savings the day you are paid." />
+                    </h2>
                     <p class="text-gray-400 text-sm mt-1">These financial tips rotate in the Pesa City sidebar for all players.</p>
                 </div>
                 <div class="flex gap-2">
@@ -355,7 +393,13 @@
         <div x-data="journeyMilestonesMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-white font-black text-lg">🗺️ Player Journey Milestones</h2>
+                    <h2 class="text-white font-black text-lg">🗺️ Player Journey Milestones
+                        <x-help-tip text="Icon column: the emoji shown on the milestone's row in the Life Timeline." example="🏘️" />
+                        <x-help-tip text="Title column: the goal as the player reads it on their Life Timeline. Short and aspirational beats descriptive. Max 80 characters." example="Property Owner" />
+                        <x-help-tip text="Description column: optional second line under the title spelling out what the player actually has to do. Max 200 characters." example="Buy your first asset" />
+                        <x-help-tip text="Type column: what the game measures to tick this milestone off — see the legend above for what each type counts. Pick manual for a narrative marker that is always shown and never auto-completes." example="asset (number of assets owned)" />
+                        <x-help-tip text="Value column: the number the chosen type must reach before the milestone gets its checkmark — a KES amount for balance and net_worth, a plain count for level, job, course, quest and asset. Ignored when the type is manual." example="1 for a first asset; 10000 for Save KES 10,000" />
+                    </h2>
                     <p class="text-gray-400 text-sm mt-1">Progression goals players see on their Life Timeline. Completed ones get a checkmark.</p>
                 </div>
                 <div class="flex gap-2">
@@ -435,7 +479,12 @@
             {{-- Tracks --}}
             <div class="rounded-xl p-4 mb-5" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-black text-white/90">📚 Course/Job Tracks</h3>
+                    <h3 class="text-sm font-black text-white/90">📚 Course/Job Tracks
+                        <x-help-tip text="Icon column: the emoji that stands for this track on Course and Job cards and in their filters." example="💻" />
+                        <x-help-tip text="Label column: the human-readable track name learners see in the Courses and Jobs filters. Max 40 characters." example="Technology" />
+                        <x-help-tip text="Key column: the internal code each Course and Job stores to say it belongs to this track — lowercase letters, numbers and underscores only, and unique. Rename the label freely, but changing the key leaves existing courses/jobs pointing at the old one, and any career field aimed at a deleted track falls back to the first track in this list." example="tech" />
+                        <x-help-tip text="Colour column: tints this track's chips and cards across Courses, Jobs and the quiz result screen. Give each track a distinct colour so learners can scan by it." example="#6366f1" />
+                    </h3>
                     <div class="flex gap-2">
                         <button type="button" @click="tracks.push({key:'',label:'',icon:'💼',color:'#6366f1'})" class="text-xs font-bold text-indigo-300 hover:text-indigo-200">+ Add Track</button>
                         <button type="button" @click="saveTracks()" :disabled="savingTracks" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30">
@@ -463,7 +512,14 @@
             {{-- Fields --}}
             <div class="rounded-xl p-4" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-black text-white/90">🎯 Quiz Career Fields</h3>
+                    <h3 class="text-sm font-black text-white/90">🎯 Quiz Career Fields
+                        <x-help-tip text="Icon column: the emoji shown beside this interest on the quiz result screen and on the player's career page." example="🏦" />
+                        <x-help-tip text="Label column: the interest category as players read it in the career quiz. Finer-grained than a track — several fields can point at the same track. Max 40 characters." example="Finance and Banking" />
+                        <x-help-tip text="Key column: the internal code quiz options weight toward — lowercase letters, numbers and underscores only, and unique. Renaming a key does NOT update quiz options already saved below; re-pick the field in each affected option after saving, or its weight is silently dropped." example="finance" />
+                        <x-help-tip text="Recommended track picker: which Course/Job track a player who matches this field gets steered toward on their result screen. It is a recommendation only — nothing is locked away from anyone. The list comes from the Tracks panel above, so add the track first." example="Finance and Banking → finance" />
+                        <x-help-tip text="Colour column: tints this field's chips in the quiz option weights and on the result screen." example="#34d399" />
+                        <x-help-tip text="📝 description (optional): the blurb shown on the result screen when the quiz matches a player to this field. Write it as encouragement addressed to the player. Max 400 characters." example="You like making numbers behave — banking, accounting and investing reward that." />
+                    </h3>
                     <div class="flex gap-2">
                         <button type="button" @click="fields.push({key:'',label:'',icon:'💼',color:'#6366f1',track:tracks[0]?.key||''})" class="text-xs font-bold text-indigo-300 hover:text-indigo-200">+ Add Field</button>
                         <button type="button" @click="saveFields()" :disabled="savingFields" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30">
@@ -502,7 +558,13 @@
         <div x-data="quizQuestionsMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-2">
                 <div>
-                    <h2 class="text-white font-black text-lg">🎯 Career Quiz Questions</h2>
+                    <h2 class="text-white font-black text-lg">🎯 Career Quiz Questions
+                        <x-help-tip text="Question text: what the player is asked on that step of the quiz. Keep 4–6 questions in total (max 10) and max 200 characters each — ask about what they enjoy, not what they know." example="Which of these could you happily do all weekend?" />
+                        <x-help-tip text="Option emoji: the little icon on the answer card. Each question needs 2–8 options." example="📊" />
+                        <x-help-tip text="Option label: the answer exactly as the player reads it on the card. Max 80 characters." example="Balance a shop's books" />
+                        <x-help-tip text="Option sub-text (optional): a quieter second line under the label for a hint or example. Hidden on small phones, so never put anything essential here. Max 120 characters." example="Receipts, totals, making it all add up" />
+                        <x-help-tip text="Career field chips: tap a field to make this answer count toward it, tap again to drop it, and use the ×1–×5 selector for how strongly. Weights add up across every answered question and the highest-scoring field becomes the recommendation, so give each option 1–2 fields rather than all of them." example="Balance the books → Finance ×3, Business ×1" />
+                    </h2>
                     <p class="text-gray-400 text-sm mt-1">These questions appear in the career onboarding quiz. Tap the fields a chosen option should weight toward — the fields list comes from the panel above.</p>
                 </div>
                 <div class="flex gap-2">
@@ -602,17 +664,23 @@
                         <p class="text-sm font-black mb-3" x-text="(cat === 'vehicle' ? '🚗 Vehicle Financing (Car Yard)' : '🏠 Property Mortgage (Estates)')"></p>
                         <div class="space-y-3">
                             <div>
-                                <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Deposit (% of price)</span>
+                                <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Deposit (% of price)
+                                    <x-help-tip text="Share of the listed price the player must pay in cash up front; the remaining balance becomes the loan principal. A higher deposit means a smaller loan and a lighter monthly installment, but the player needs more saved before they can buy at all. Max 90%." example="20% vehicle / 10% property (defaults) — 20% of a 800,000 car is a 160,000 deposit and a 640,000 loan" />
+                                </span>
                                 <input type="number" min="0" max="90" step="1" x-model.number="terms[cat].deposit_pct_display" class="ifield">
                                 <p class="text-[11px] text-gray-600 mt-1.5">Paid up front from the player's balance; the rest becomes the loan principal.</p>
                             </div>
                             <div>
-                                <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Annual Interest Rate (%)</span>
+                                <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Annual Interest Rate (%)
+                                    <x-help-tip text="Yearly rate charged on whatever is still owed — it compounds every game month, so a small change balloons over a 24–36 month term and drives the total-cost-vs-cash-price figure players are shown at purchase. Changes are NOT retroactive: every existing loan keeps the rate it was signed at, so only purchases made after you save use the new number. Below about 8% credit stops feeling like a real cost." example="14% vehicle / 12% property (defaults) — vehicles are deliberately steeper because they depreciate" />
+                                </span>
                                 <input type="number" min="0" max="100" step="0.5" x-model.number="terms[cat].annual_rate" class="ifield">
                                 <p class="text-[11px] text-gray-600 mt-1.5">Compounds every game month (30 ticks) on the outstanding balance.</p>
                             </div>
                             <div>
-                                <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Loan Term (game months)</span>
+                                <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">Loan Term (game months)
+                                    <x-help-tip text="How many game months (30 ticks each) the player has to clear the loan. A longer term splits the same principal into smaller, easier installments but charges interest for longer, so the total paid is higher — that trade-off is the lesson. Like the rate, it only applies to new purchases." example="24 vehicle / 36 property (defaults) — 24 game months = 2 game years" />
+                                </span>
                                 <input type="number" min="1" max="120" step="1" x-model.number="terms[cat].term_months_display" class="ifield">
                                 <p class="text-[11px] text-gray-600 mt-1.5">How long the player has to pay it off (e.g. 24 months = 2 game years).</p>
                             </div>
@@ -626,7 +694,12 @@
         <div x-data="onboardingWizardMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-2">
                 <div>
-                    <h2 class="text-white font-black text-lg">🧭 Onboarding Wizard</h2>
+                    <h2 class="text-white font-black text-lg">🧭 Onboarding Wizard
+                        <x-help-tip text="Icon column: the emoji heading that step of the tutorial." example="💼" />
+                        <x-help-tip text="Category column: a short tag shown above the title so players can see which system the step is about. Max 30 characters." example="Earn" />
+                        <x-help-tip text="Title column: the step's headline — one system per step keeps it skimmable. Max 80 characters." example="Get a job, get paid" />
+                        <x-help-tip text="Body: the paragraph explaining that step. Resist cramming two lessons into one step; add another step instead — the progress dots and Step X of N counter adapt automatically. Max 600 characters." example="Study a course, then apply for a job at the Workplace. Report to work each payday to collect your salary." />
+                    </h2>
                     <p class="text-gray-400 text-sm mt-1">Shown once to every new player after they land on the dashboard, before they've dismissed it. Add, remove or reorder steps freely — there's no fixed count.</p>
                 </div>
                 <div class="flex gap-2">

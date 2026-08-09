@@ -10,6 +10,8 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/world.css') }}?v={{ filemtime(public_path('css/world.css')) }}">
+
+    @include('partials.trackers')
 </head>
 <body class="font-sans antialiased" style="background:#08111A; overflow:hidden;">
     <style>[x-cloak]{display:none!important}</style>
