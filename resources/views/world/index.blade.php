@@ -1058,7 +1058,11 @@
 
                         <template x-if="district.my_shares && district.my_shares.length > 0">
                             <div style="margin-bottom:12px;">
-                                <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">💼 My Holdings</div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                                    <span style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;">💼 My Holdings</span>
+                                    <span style="font-size:11px;font-weight:800;" :style="portfolioTotals(district.my_shares).gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
+                                          x-text="'KES ' + portfolioTotals(district.my_shares).value.toLocaleString() + ' · ' + (portfolioTotals(district.my_shares).gain_loss >= 0 ? '+' : '') + portfolioTotals(district.my_shares).gain_loss.toLocaleString()"></span>
+                                </div>
                                 <template x-for="h in district.my_shares" :key="h.share_id">
                                     <div style="border-radius:12px;border:1px solid rgba(53,195,240,.15);padding:8px 10px;margin-bottom:6px;background:rgba(53,195,240,.03);">
                                         <div style="display:flex;align-items:center;gap:8px;">
@@ -1087,7 +1091,26 @@
                             </div>
                         </template>
 
-                        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">📈 Market — Buy Low, Sell High</div>
+                        {{-- Today's movers --}}
+                        <template x-if="district.top_gainer || district.top_loser">
+                            <div style="display:flex;gap:6px;margin-bottom:10px;">
+                                <template x-if="district.top_gainer">
+                                    <div style="flex:1;border-radius:10px;padding:6px 9px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:11px;font-weight:700;color:#34d399;">
+                                        🔥 <span x-text="district.top_gainer.icon + ' ' + district.top_gainer.symbol"></span>
+                                        <span x-text="'↑' + district.top_gainer.change_pct + '%'"></span>
+                                    </div>
+                                </template>
+                                <template x-if="district.top_loser">
+                                    <div style="flex:1;border-radius:10px;padding:6px 9px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);font-size:11px;font-weight:700;color:#f87171;">
+                                        🥶 <span x-text="district.top_loser.icon + ' ' + district.top_loser.symbol"></span>
+                                        <span x-text="'↓' + Math.abs(district.top_loser.change_pct) + '%'"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">📈 Market — Buy Low, Sell High</div>
+                        <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">Buy executes slightly above and sell slightly below the price shown — that gap is the market's spread, tighter on calm shares, wider on wild ones.</div>
                         <template x-if="!district.shares || district.shares.length === 0">
                             <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No shares listed right now. Check back soon.</div>
                         </template>
@@ -1097,7 +1120,15 @@
                                     <span x-text="s.icon" style="font-size:18px;flex-shrink:0;"></span>
                                     <div style="flex:1;min-width:0;">
                                         <div style="font-size:12px;font-weight:800;color:#f9fafb;" x-text="s.name + ' (' + s.symbol + ')'"></div>
-                                        <div style="font-size:10px;color:#6b7280;" x-text="s.sector"></div>
+                                        <div style="display:flex;gap:4px;align-items:center;margin-top:2px;">
+                                            <span style="font-size:9px;color:#6b7280;" x-text="s.sector"></span>
+                                            <span style="font-size:9px;font-weight:700;" :style="'color:' + s.risk_color" x-text="'· ' + s.risk_label"></span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:flex-end;gap:1.5px;height:20px;flex-shrink:0;">
+                                        <template x-for="(hgt, idx) in sparkHeights(s.history)" :key="idx">
+                                            <div :style="'width:3px;border-radius:1px 1px 0 0;height:' + hgt + '%;background:' + (idx === s.history.length-1 ? (s.direction==='up'?'#34d399':(s.direction==='down'?'#f87171':'#9ca3af')) : 'rgba(255,255,255,.22)') + ';'"></div>
+                                        </template>
                                     </div>
                                     <div style="text-align:right;flex-shrink:0;">
                                         <div style="font-size:13px;font-weight:900;color:#f9fafb;" x-text="'KES ' + s.price.toLocaleString()"></div>
@@ -1106,6 +1137,9 @@
                                              x-text="(s.direction === 'up' ? '↑ ' : (s.direction === 'down' ? '↓ ' : '— ')) + Math.abs(s.change_pct) + '%'"></div>
                                     </div>
                                 </div>
+                                <template x-if="s.event_reason">
+                                    <div style="font-size:10px;color:#9ca3af;font-style:italic;margin-top:4px;" x-text="s.event_reason"></div>
+                                </template>
                                 <div style="display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
                                     <input type="number" x-model.number="shareQty[s.id]" min="1" placeholder="Qty"
                                            style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 9px;color:#fff;font-size:12px;min-width:0;">

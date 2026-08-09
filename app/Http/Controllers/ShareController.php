@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Share;
 use App\Models\PlayerShareHolding;
 use App\Models\ShareTrade;
+use App\Models\GameNotification;
 use App\Services\QuestTriggerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,17 +19,18 @@ class ShareController extends Controller
             'quantity' => 'required|integer|min:1|max:100000',
         ]);
 
-        $user     = auth()->user();
-        $progress = $user->getOrCreateProgress();
-        $share    = Share::where('id', $request->share_id)->where('is_active', true)->firstOrFail();
-        $quantity = (int) $request->quantity;
-        $cost     = round($share->current_price * $quantity, 2);
+        $user      = auth()->user();
+        $progress  = $user->getOrCreateProgress();
+        $share     = Share::where('id', $request->share_id)->where('is_active', true)->firstOrFail();
+        $quantity  = (int) $request->quantity;
+        $execPrice = $share->buyPrice();
+        $cost      = round($execPrice * $quantity, 2);
 
         if ($progress->balance < $cost) {
             return response()->json(['error' => 'You need KES ' . number_format($cost) . ' to buy ' . $quantity . ' ' . $share->symbol . ' share(s).'], 422);
         }
 
-        DB::transaction(function () use ($user, $progress, $share, $quantity, $cost) {
+        DB::transaction(function () use ($user, $progress, $share, $quantity, $cost, $execPrice) {
             $progress->balance -= $cost;
 
             $holding = PlayerShareHolding::firstOrNew(['user_id' => $user->id, 'share_id' => $share->id]);
@@ -42,7 +44,7 @@ class ShareController extends Controller
                 'share_id' => $share->id,
                 'action'   => 'buy',
                 'quantity' => $quantity,
-                'price'    => $share->current_price,
+                'price'    => $execPrice,
                 'total'    => $cost,
             ]);
 
@@ -50,11 +52,20 @@ class ShareController extends Controller
             $progress->save();
         });
 
+        GameNotification::create([
+            'user_id' => $user->id,
+            'type'    => 'share_buy',
+            'title'   => "{$share->icon} Bought {$quantity} {$share->symbol}",
+            'body'    => 'KES ' . number_format($cost, 2) . " @ KES {$execPrice}/share. See it on your Portfolio.",
+            'icon'    => $share->icon,
+            'data'    => ['amount' => $cost, 'url' => '/portfolio'],
+        ]);
+
         app(QuestTriggerService::class)->fire($user, 'buy_share', ['symbol' => $share->symbol]);
 
         return response()->json([
             'success' => true,
-            'message' => "Bought {$quantity} {$share->symbol} @ KES " . number_format($share->current_price),
+            'message' => "Bought {$quantity} {$share->symbol} @ KES " . number_format($execPrice, 2) . " (mkt KES " . number_format($share->current_price, 2) . ')',
             'balance' => $progress->balance,
         ]);
     }
@@ -76,10 +87,11 @@ class ShareController extends Controller
             return response()->json(['error' => "You don't own {$quantity} {$share->symbol} share(s) to sell."], 422);
         }
 
-        $revenue    = round($share->current_price * $quantity, 2);
-        $profitLoss = round(($share->current_price - $holding->avg_cost) * $quantity, 2);
+        $execPrice  = $share->sellPrice();
+        $revenue    = round($execPrice * $quantity, 2);
+        $profitLoss = round(($execPrice - $holding->avg_cost) * $quantity, 2);
 
-        DB::transaction(function () use ($user, $progress, $share, $quantity, $revenue, $profitLoss, $holding) {
+        DB::transaction(function () use ($user, $progress, $share, $quantity, $revenue, $profitLoss, $holding, $execPrice) {
             $progress->balance += $revenue;
 
             $holding->quantity -= $quantity;
@@ -94,7 +106,7 @@ class ShareController extends Controller
                 'share_id'    => $share->id,
                 'action'      => 'sell',
                 'quantity'    => $quantity,
-                'price'       => $share->current_price,
+                'price'       => $execPrice,
                 'total'       => $revenue,
                 'profit_loss' => $profitLoss,
             ]);
@@ -105,9 +117,18 @@ class ShareController extends Controller
 
         $verdict = $profitLoss > 0 ? 'profit' : ($profitLoss < 0 ? 'loss' : 'break-even');
 
+        GameNotification::create([
+            'user_id' => $user->id,
+            'type'    => 'share_sell',
+            'title'   => "{$share->icon} Sold {$quantity} {$share->symbol}",
+            'body'    => 'KES ' . number_format($revenue, 2) . " @ KES {$execPrice}/share — " . ($profitLoss >= 0 ? '+' : '') . number_format($profitLoss, 2) . " {$verdict}.",
+            'icon'    => $share->icon,
+            'data'    => ['amount' => $revenue, 'url' => '/portfolio'],
+        ]);
+
         return response()->json([
             'success'     => true,
-            'message'     => "Sold {$quantity} {$share->symbol} @ KES " . number_format($share->current_price) . " — " . ($profitLoss >= 0 ? '+' : '') . number_format($profitLoss) . " {$verdict}",
+            'message'     => "Sold {$quantity} {$share->symbol} @ KES " . number_format($execPrice, 2) . " (mkt KES " . number_format($share->current_price, 2) . ") — " . ($profitLoss >= 0 ? '+' : '') . number_format($profitLoss, 2) . " {$verdict}",
             'profit_loss' => $profitLoss,
             'balance'     => $progress->balance,
         ]);

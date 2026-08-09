@@ -881,8 +881,8 @@
             <div class="glass rounded-2xl overflow-hidden divide-y divide-white/5">
                 @foreach($statement as $tx)
                 @php
-                    $isIncome  = in_array($tx->type, ['salary','asset_income','arcade_stake_won','arcade_forfeit_bonus']);
-                    $isExpense = in_array($tx->type, ['bill_paid','bill_missed','arcade_stake_joined','arcade_stake_lost']);
+                    $isIncome  = in_array($tx->type, ['salary','asset_income','arcade_stake_won','arcade_forfeit_bonus','share_sell']);
+                    $isExpense = in_array($tx->type, ['bill_paid','bill_missed','arcade_stake_joined','arcade_stake_lost','share_buy']);
                     $isEvent   = !$isIncome && !$isExpense;
                     $rowBg     = $isIncome ? 'bg-emerald-500/4' : ($isExpense ? 'bg-red-500/4' : 'bg-transparent');
                     $amtColor  = $isIncome ? 'text-emerald-400' : ($isExpense ? 'text-red-400' : 'text-gray-400');
@@ -891,6 +891,7 @@
                         'salary'=>'Salary','asset_income'=>'Asset Income','bill_paid'=>'Bill Paid','bill_missed'=>'Bill Missed','life_sim'=>'Event','life_event'=>'Life Event',
                         'arcade_stake_joined'=>'Rivals Trail Entry','arcade_stake_won'=>'Rivals Trail Win','arcade_stake_lost'=>'Rivals Trail Loss',
                         'arcade_forfeit_penalty'=>'Rivals Trail Withdrawal','arcade_forfeit_bonus'=>'Rivals Trail Bonus',
+                        'share_buy'=>'Bought Shares','share_sell'=>'Sold Shares',
                         default=>ucfirst(str_replace('_',' ',$tx->type)),
                     };
                 @endphp

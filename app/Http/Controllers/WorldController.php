@@ -553,15 +553,33 @@ class WorldController extends Controller
 
                 $shares = \App\Models\Share::active()->orderBy('sort_order')->get();
                 $district['shares'] = $shares->map(fn($s) => [
-                    'id'         => $s->id,
-                    'name'       => $s->name,
-                    'symbol'     => $s->symbol,
-                    'icon'       => $s->icon,
-                    'sector'     => $s->sector,
-                    'price'      => (float) $s->current_price,
-                    'change_pct' => $s->priceChangePct(),
-                    'direction'  => $s->priceChangeDirection(),
+                    'id'            => $s->id,
+                    'name'          => $s->name,
+                    'symbol'        => $s->symbol,
+                    'icon'          => $s->icon,
+                    'sector'        => $s->sector,
+                    'price'         => (float) $s->current_price,
+                    'buy_price'     => $s->buyPrice(),
+                    'sell_price'    => $s->sellPrice(),
+                    'change_pct'    => $s->priceChangePct(),
+                    'direction'     => $s->priceChangeDirection(),
+                    'history'       => $s->recentHistory(),
+                    'event_reason'  => $s->last_event_reason,
+                    'risk_label'    => $s->riskLabel(),
+                    'risk_color'    => $s->riskColor(),
                 ])->values();
+
+                // "Today's movers" — biggest gainer/loser among shares that have
+                // actually moved at least once (skip brand-new flat-lined ones).
+                $moved = $shares->filter(fn($s) => $s->previous_price !== null && $s->priceChangePct() != 0);
+                $topGainer = $moved->where('current_price', '>', 0)->sortByDesc(fn($s) => $s->priceChangePct())->first();
+                $topLoser  = $moved->sortBy(fn($s) => $s->priceChangePct())->first();
+                $district['top_gainer'] = ($topGainer && $topGainer->priceChangePct() > 0) ? [
+                    'symbol' => $topGainer->symbol, 'icon' => $topGainer->icon, 'change_pct' => $topGainer->priceChangePct(),
+                ] : null;
+                $district['top_loser'] = ($topLoser && $topLoser->priceChangePct() < 0) ? [
+                    'symbol' => $topLoser->symbol, 'icon' => $topLoser->icon, 'change_pct' => $topLoser->priceChangePct(),
+                ] : null;
 
                 $district['my_shares'] = \App\Models\PlayerShareHolding::where('user_id', $user->id)
                     ->where('quantity', '>', 0)

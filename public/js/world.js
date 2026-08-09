@@ -2129,6 +2129,22 @@ function equitySquare() {
       setTimeout(() => { this.bankMsg = ''; }, 4000);
     },
 
+    portfolioTotals(holdings) {
+      holdings = holdings ?? [];
+      return {
+        value:     holdings.reduce((sum, h) => sum + h.value, 0),
+        gain_loss: holdings.reduce((sum, h) => sum + h.gain_loss, 0),
+      };
+    },
+
+    sparkHeights(history) {
+      if (!history || history.length === 0) return [];
+      const min   = Math.min(...history);
+      const max   = Math.max(...history);
+      const range = (max - min) || 1;
+      return history.map(v => Math.max(12, Math.round(((v - min) / range) * 100)));
+    },
+
     async enterDeal(deal) {
       if (this.dealLoading) return;
       const cs = document.querySelector('meta[name=csrf-token]')?.content ?? '';

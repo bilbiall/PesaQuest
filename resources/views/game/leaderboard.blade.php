@@ -152,15 +152,9 @@
                     @endif
                 </div>
                 {{-- Avatar --}}
-                @if($leader['profile_photo'])
-                <img src="{{ $leader['profile_photo'] }}" alt="" class="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+                <img src="{{ $leader['profile_photo'] ?: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2712%27 fill=%27%232d3348%27/%3E%3Ccircle cx=%2712%27 cy=%279.4%27 r=%273.6%27 fill=%27%236b7280%27/%3E%3Cpath d=%27M4.4 20c0-3.9 3.7-6.4 7.6-6.4s7.6 2.5 7.6 6.4%27 fill=%27%236b7280%27/%3E%3C/svg%3E' }}"
+                     alt="" class="w-9 h-9 rounded-full object-cover flex-shrink-0"
                      style="box-shadow:0 0 0 2px {{ $leader['rank'] === 1 ? 'rgba(245,158,11,0.5)' : 'rgba(99,102,241,0.25)' }};">
-                @else
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base font-black flex-shrink-0"
-                     style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.25);">
-                    {{ mb_strtoupper(mb_substr($leader['name'], 0, 1)) }}
-                </div>
-                @endif
                 {{-- Name, level, title chip & bio --}}
                 <div class="flex-1 min-w-0">
                     <div class="font-bold text-white text-sm flex items-center gap-2">

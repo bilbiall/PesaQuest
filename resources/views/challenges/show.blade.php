@@ -28,6 +28,13 @@ body{background:#07060f;}
 .ch-fill{height:100%;border-radius:9999px;background:linear-gradient(90deg,#6366f1,#a78bfa);}
 .trend{font-size:.68rem;font-weight:800;flex-shrink:0;width:2.2rem;text-align:center;}
 .trend.up{color:#34d399;} .trend.down{color:#f87171;} .trend.flat{color:#fbbf24;} .trend.none{color:#6b7280;}
+.stats-drop{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-top:none;border-radius:0 0 .85rem .85rem;margin:-.5rem 0 .5rem;padding:.7rem .85rem;}
+.stats-drop-inner{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;}
+.stats-drop-avatar{width:40px;height:40px;border-radius:.7rem;overflow:hidden;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff;flex-shrink:0;}
+.stats-drop-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
+.stats-drop-stat{background:rgba(255,255,255,.04);border-radius:.5rem;padding:.4rem .5rem;text-align:center;}
+.stats-drop-stat b{display:block;font-size:.78rem;}
+.stats-drop-stat span{display:block;font-size:.56rem;color:#9ca3af;text-transform:uppercase;font-weight:700;margin-top:.1rem;}
 </style>
 
 <div class="min-h-screen px-4 py-6 max-w-2xl mx-auto" style="background:#07060f;">
@@ -67,6 +74,14 @@ body{background:#07060f;}
                         {{ $challenge->status === 'active' ? 'Ends '.$challenge->ends_at->diffForHumans().' (real time)' : ($challenge->status === 'pending' ? 'Waiting for accept' : 'Finished '.$challenge->ends_at->diffForHumans()) }}
                         {{ $challenge->stake_amount ? ' · KES '.number_format($challenge->stake_amount).' entry fee' : '' }}
                     </p>
+                    @if($challenge->stake_amount && $challenge->status !== 'completed')
+                        @php $estPayout = app(\App\Services\ChallengeService::class)->estimatedWinnerPayout($challenge); @endphp
+                        @if($estPayout > 0)
+                        <p class="text-xs font-black mt-1" style="color:#fbbf24;">
+                            🏆 Winner takes ≈ KES {{ number_format($estPayout) }}
+                        </p>
+                        @endif
+                    @endif
                 </div>
             </div>
             <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -143,7 +158,7 @@ body{background:#07060f;}
             </summary>
             <div class="mt-3 pl-8 space-y-1.5">
                 @foreach($row['members'] as $m)
-                <div class="flex items-center gap-2 text-xs" style="cursor:pointer;" onclick="event.stopPropagation();openStatsModal({{ $challenge->id }}, {{ $m->id }})">
+                <div class="flex items-center gap-2 text-xs" style="cursor:pointer;" onclick="event.stopPropagation();toggleStatsDrop({{ $challenge->id }}, {{ $m->id }})">
                     @if($m->user?->profile_photo)
                     <img src="{{ $m->user->profile_photo }}" alt="" class="w-5 h-5 rounded-full object-cover flex-shrink-0">
                     @else
@@ -152,6 +167,7 @@ body{background:#07060f;}
                     <span class="text-gray-300 flex-1">{{ $m->user?->name ?? 'Player' }}{{ $m->user_id === auth()->id() ? ' (you)' : '' }}</span>
                     <span class="font-bold text-indigo-300">{{ number_format($m->progress, 1) }}{{ $challenge->styleSuffix() }}</span>
                 </div>
+                <div id="statsDrop-{{ $m->id }}" class="stats-drop" style="display:none;margin-left:1.75rem;"></div>
                 @endforeach
             </div>
         </details>
@@ -162,7 +178,7 @@ body{background:#07060f;}
             $pct = $challenge->goal > 0 ? max(0, min(100, ($p->progress / $challenge->goal) * 100)) : 0;
             $change = $p->rank_change ?? null;
         @endphp
-        <div class="rank-row {{ $p->is_winner ? 'win' : '' }} {{ $p->user_id === auth()->id() ? 'me' : '' }}" onclick="openStatsModal({{ $challenge->id }}, {{ $p->id }})">
+        <div class="rank-row {{ $p->is_winner ? 'win' : '' }} {{ $p->user_id === auth()->id() ? 'me' : '' }}" onclick="toggleStatsDrop({{ $challenge->id }}, {{ $p->id }})">
             <span class="font-black text-gray-400 w-5 text-center text-sm">{{ $p->rank ?? ($i + 1) }}</span>
             <span class="win-avatar-wrap">
                 @if($p->is_winner)<span class="win-crown">👑</span>@endif
@@ -187,53 +203,49 @@ body{background:#07060f;}
             </span>
             @endif
         </div>
+        <div id="statsDrop-{{ $p->id }}" class="stats-drop" style="display:none;"></div>
         @endforeach
         @endif
     </div>
 </div>
 
-<div id="statsModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) closeStatsModal()">
-    <div class="profile-card" style="max-width:300px;width:100%;text-align:center;position:relative;">
-        <button type="button" onclick="closeStatsModal()" style="position:absolute;top:.4rem;right:.6rem;background:none;border:none;color:#9ca3af;font-size:1.1rem;cursor:pointer;">✕</button>
-        <div id="statsModalBody" style="padding-top:.5rem;"><p class="text-xs text-gray-500">Loading…</p></div>
-    </div>
-</div>
-
 <script>
-function openStatsModal(challengeId, participantId) {
-    const modal = document.getElementById('statsModal');
-    const body = document.getElementById('statsModalBody');
-    body.innerHTML = '<p class="text-xs text-gray-500">Loading…</p>';
-    modal.style.display = 'flex';
+const statsDropCache = {};
+function toggleStatsDrop(challengeId, participantId) {
+    const drop = document.getElementById('statsDrop-' + participantId);
+    if (!drop) return;
+    const isOpen = drop.style.display !== 'none';
+    if (isOpen) {
+        drop.style.display = 'none';
+        return;
+    }
+    drop.style.display = 'block';
+    if (statsDropCache[participantId]) {
+        drop.innerHTML = statsDropCache[participantId];
+        return;
+    }
+    drop.innerHTML = '<p class="text-xs text-gray-500" style="padding:.3rem 0;">Loading…</p>';
     fetch(`/challenges/${challengeId}/participants/${participantId}/stats`, { headers: { 'Accept': 'application/json' } })
         .then(r => { if (!r.ok) throw new Error(); return r.json(); })
         .then(s => {
             const initial = (s.name || 'P').charAt(0).toUpperCase();
-            body.innerHTML = `
-                <div style="width:56px;height:56px;border-radius:.85rem;margin:0 auto .6rem;overflow:hidden;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.3rem;color:#fff;">
-                    ${s.profile_photo ? `<img src="${s.profile_photo}" style="width:100%;height:100%;object-fit:cover;">` : initial}
+            const html = `
+                <div class="stats-drop-inner">
+                    <div class="stats-drop-avatar">${s.profile_photo ? `<img src="${s.profile_photo}" style="width:100%;height:100%;object-fit:cover;">` : initial}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:900;color:#fff;font-size:.82rem;">${s.name}</div>
+                        <div style="font-size:.64rem;color:#9ca3af;">Level ${s.level} · ${s.played_label}</div>
+                    </div>
                 </div>
-                <div style="font-weight:900;color:#fff;font-size:.95rem;">${s.name}</div>
-                <div style="font-size:.68rem;color:#9ca3af;margin-bottom:.75rem;">Level ${s.level} · ${s.played_label}</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
-                    <div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.5rem;">
-                        <div style="font-weight:900;color:#a78bfa;font-size:.85rem;">${Number(s.xp).toLocaleString()}</div>
-                        <div style="font-size:.6rem;color:#9ca3af;text-transform:uppercase;font-weight:700;">XP</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.5rem;">
-                        <div style="font-weight:900;color:#34d399;font-size:.85rem;">KES ${Number(s.net_worth).toLocaleString()}</div>
-                        <div style="font-size:.6rem;color:#9ca3af;text-transform:uppercase;font-weight:700;">Net Worth</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,.04);border-radius:.6rem;padding:.5rem;grid-column:1/-1;">
-                        <div style="font-weight:900;color:#fbbf24;font-size:.85rem;">🏅 ${s.badges_count}</div>
-                        <div style="font-size:.6rem;color:#9ca3af;text-transform:uppercase;font-weight:700;">Badges</div>
-                    </div>
+                <div class="stats-drop-grid">
+                    <div class="stats-drop-stat"><b style="color:#a78bfa;">${Number(s.xp).toLocaleString()}</b><span>XP</span></div>
+                    <div class="stats-drop-stat"><b style="color:#34d399;">KES ${Number(s.net_worth).toLocaleString()}</b><span>Net Worth</span></div>
+                    <div class="stats-drop-stat" style="grid-column:1/-1;"><b style="color:#fbbf24;">🏅 ${s.badges_count}</b><span>Badges</span></div>
                 </div>`;
+            statsDropCache[participantId] = html;
+            drop.innerHTML = html;
         })
-        .catch(() => { body.innerHTML = '<p class="text-xs" style="color:#f87171;">Could not load stats.</p>'; });
-}
-function closeStatsModal() {
-    document.getElementById('statsModal').style.display = 'none';
+        .catch(() => { drop.innerHTML = '<p class="text-xs" style="color:#f87171;padding:.3rem 0;">Could not load stats.</p>'; });
 }
 
 function pqShareChallenge(btn) {

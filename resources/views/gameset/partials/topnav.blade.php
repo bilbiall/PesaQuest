@@ -8,6 +8,7 @@ $gsnGroups = [
         ['key' => 'assets', 'icon' => '🛒', 'label' => 'Marketplace Assets', 'route' => 'gameset.assets.index'],
         ['key' => 'bills',  'icon' => '🧾', 'label' => 'Bills',              'route' => 'gameset.bills.index'],
         ['key' => 'deals',  'icon' => '📈', 'label' => 'Investment Deals',   'route' => 'gameset.deals.index'],
+        ['key' => 'shares', 'icon' => '📊', 'label' => 'Equity Square Shares','route' => 'gameset.shares.index'],
         ['key' => 'loans',  'icon' => '🏦', 'label' => 'Loan Products',      'route' => 'gameset.loans.index'],
     ]],
     'learning' => ['label' => 'Learning', 'icon' => '🎓', 'items' => [

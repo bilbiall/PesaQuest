@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PlayerAsset;
 use App\Models\PlayerDeal;
 use App\Models\PlayerLoan;
+use App\Models\PlayerShareHolding;
 use App\Models\SavingsScheme;
 use App\Models\StockPriceHistory;
 
@@ -44,6 +45,18 @@ class PortfolioController extends Controller
             ->get();
 
         $totalDealCapital = (int) $activeDeals->sum('amount_invested');
+
+        /* ── Equity Square share holdings (cyan, same "active investments" family) ── */
+        $myShares = PlayerShareHolding::where('user_id', $user->id)
+            ->where('quantity', '>', 0)
+            ->with('share')
+            ->get()
+            ->filter(fn ($h) => $h->share !== null)
+            ->values();
+
+        $totalSharesValue    = (int) $myShares->sum(fn ($h) => $h->currentValue());
+        $totalSharesInvested = (int) $myShares->sum(fn ($h) => $h->quantity * $h->avg_cost);
+        $sharesUnrealisedPL  = $totalSharesValue - $totalSharesInvested;
 
         /* ── Completed deals history ── */
         $completedDeals = PlayerDeal::where('user_id', $user->id)
@@ -142,6 +155,10 @@ class PortfolioController extends Controller
             'activeDeals'      => $activeDeals,
             'totalDealCapital' => $totalDealCapital,
             'completedDeals'   => $completedDeals,
+            'myShares'            => $myShares,
+            'totalSharesValue'    => $totalSharesValue,
+            'totalSharesInvested' => $totalSharesInvested,
+            'sharesUnrealisedPL'  => $sharesUnrealisedPL,
             'savingsSchemes'   => $savingsSchemes,
             'loans'            => $loans,
             'totalDebt'        => $totalDebt,

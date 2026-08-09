@@ -241,10 +241,11 @@ class LifeController extends Controller
         // Full statement history — all money events, paginated
         $statementFilter = request('stmt_filter', 'all');
         $stmtTypes = match($statementFilter) {
-            'income'   => ['salary', 'asset_income', 'arcade_stake_won', 'arcade_forfeit_bonus'],
-            'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost'],
+            'income'   => ['salary', 'asset_income', 'arcade_stake_won', 'arcade_forfeit_bonus', 'share_sell'],
+            'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost', 'share_buy'],
             default    => ['salary', 'asset_income', 'bill_paid', 'bill_missed', 'life_sim', 'life_event',
-                            'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus'],
+                            'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus',
+                            'share_buy', 'share_sell'],
         };
         $statement = GameNotification::where('user_id', $user->id)
             ->whereIn('type', $stmtTypes)
@@ -327,10 +328,11 @@ class LifeController extends Controller
 
         $statementFilter = request('stmt_filter', 'all');
         $stmtTypes = match ($statementFilter) {
-            'income'   => ['salary', 'asset_income', 'arcade_stake_won', 'arcade_forfeit_bonus'],
-            'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost'],
+            'income'   => ['salary', 'asset_income', 'arcade_stake_won', 'arcade_forfeit_bonus', 'share_sell'],
+            'expenses' => ['bill_paid', 'bill_missed', 'arcade_stake_joined', 'arcade_stake_lost', 'share_buy'],
             default    => ['salary', 'asset_income', 'bill_paid', 'bill_missed', 'life_sim', 'life_event',
-                            'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus'],
+                            'arcade_stake_joined', 'arcade_stake_won', 'arcade_stake_lost', 'arcade_forfeit_penalty', 'arcade_forfeit_bonus',
+                            'share_buy', 'share_sell'],
         };
         $statement = GameNotification::where('user_id', $user->id)
             ->whereIn('type', $stmtTypes)

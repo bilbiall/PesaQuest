@@ -154,24 +154,29 @@
         @endif
     </div>
 
-    {{-- ── Active investments (cyan) ── --}}
-    <div class="mb-10">
+    {{-- ── Active investments (cyan) — deals + shares ── --}}
+    <div class="mb-10" x-data="pfShareSell()">
         <div class="flex items-center gap-3 mb-4">
             <span class="text-xl">💹</span>
             <h2 class="text-sm font-black text-cyan-300 uppercase tracking-widest">Active Investments</h2>
             <div class="flex-1 h-px" style="background:rgba(6,182,212,0.15);"></div>
             @if($activeDeals->isNotEmpty())
-            <span class="text-xs text-gray-500 font-semibold">Ksh {{ number_format($totalDealCapital) }} working</span>
+            <span class="text-xs text-gray-500 font-semibold">Ksh {{ number_format($totalDealCapital) }} in deals</span>
+            @endif
+            @if($myShares->isNotEmpty())
+            <span class="text-xs text-gray-500 font-semibold">Ksh {{ number_format($totalSharesValue) }} in shares</span>
             @endif
         </div>
 
-        @if($activeDeals->isEmpty())
+        @if($activeDeals->isEmpty() && $myShares->isEmpty())
         <div class="rounded-2xl p-6 text-center" style="background:rgba(6,182,212,0.04);border:1px dashed rgba(6,182,212,0.2);">
             <p class="text-sm text-gray-400 mb-2">No money working for you right now.</p>
-            <a href="{{ route('marketplace') }}" class="text-xs font-black text-cyan-400 hover:text-cyan-300">Find a deal at Equity Square →</a>
+            <a href="{{ route('marketplace') }}" class="text-xs font-black text-cyan-400 hover:text-cyan-300">Find a deal or trade shares at Equity Square →</a>
         </div>
         @else
-        <div class="grid sm:grid-cols-2 gap-4">
+
+        @if($activeDeals->isNotEmpty())
+        <div class="grid sm:grid-cols-2 gap-4 mb-4">
             @foreach($activeDeals as $pd)
             @php
                 $deal      = $pd->deal;
@@ -212,6 +217,60 @@
             </div>
             @endforeach
         </div>
+        @endif
+
+        @if($myShares->isNotEmpty())
+        <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs font-black text-cyan-300/80 uppercase tracking-wider">📊 Shares</span>
+            <span class="text-[11px] font-bold {{ $sharesUnrealisedPL >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                {{ $sharesUnrealisedPL >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($sharesUnrealisedPL)) }} unrealised
+            </span>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+            @foreach($myShares as $h)
+            <div id="pf-share-{{ $h->share_id }}" class="pf-card pf-appear rounded-2xl p-5" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">{{ $h->share->icon }}</span>
+                        <div>
+                            <p class="font-black text-white text-sm leading-tight">{{ $h->share->name }} ({{ $h->share->symbol }})</p>
+                            <p class="text-[11px] text-gray-500 mt-0.5">{{ $h->quantity }} shares · avg Ksh {{ number_format($h->avg_cost, 2) }}</p>
+                        </div>
+                    </div>
+                    <span class="pf-tag border flex-shrink-0"
+                          style="color:{{ $h->share->riskColor() }};border-color:{{ $h->share->riskColor() }}44;background:{{ $h->share->riskColor() }}11;">
+                        {{ $h->share->riskLabel() }}
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="rounded-xl p-3" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);">
+                        <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider mb-1">Current Value</p>
+                        <p class="text-sm font-black text-cyan-300">Ksh {{ number_format($h->currentValue()) }}</p>
+                        <p class="text-[10px] text-gray-500">Ksh {{ number_format($h->share->current_price, 2) }}/share now</p>
+                    </div>
+                    <div class="rounded-xl p-3" style="background:{{ $h->gainLoss() >= 0 ? 'rgba(16,185,129,0.06)' : 'rgba(248,113,113,0.06)' }};border:1px solid {{ $h->gainLoss() >= 0 ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)' }};">
+                        <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider mb-1">Gain / Loss</p>
+                        <p class="text-sm font-black {{ $h->gainLoss() >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                            {{ $h->gainLoss() >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($h->gainLoss())) }}
+                        </p>
+                        <p class="text-[10px] text-gray-500">{{ $h->gainLossPct() >= 0 ? '+' : '' }}{{ $h->gainLossPct() }}%</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="number" x-model.number="qty[{{ $h->share_id }}]" min="1" max="{{ $h->quantity }}"
+                           placeholder="Qty (up to {{ $h->quantity }})"
+                           class="flex-1 text-xs rounded-lg px-3 py-2 min-w-0" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;">
+                    <button @click="sell({{ $h->share_id }}, {{ $h->quantity }})" :disabled="loading"
+                            class="text-xs font-black px-4 py-2 rounded-lg flex-shrink-0" style="background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.3);">
+                        Sell →
+                    </button>
+                </div>
+                <p x-show="msg[{{ $h->share_id }}]" x-cloak x-text="msg[{{ $h->share_id }}]" class="text-[11px] font-semibold mt-2" :class="ok[{{ $h->share_id }}] ? 'text-emerald-400' : 'text-red-400'"></p>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
         @endif
     </div>
 
@@ -544,6 +603,46 @@
 </div>
 
 <script>
+function pfShareSell() {
+    return {
+        qty: {},
+        loading: false,
+        msg: {},
+        ok: {},
+
+        async sell(shareId, maxQty) {
+            const quantity = parseInt(this.qty[shareId]) || maxQty;
+            if (quantity < 1 || this.loading) return;
+            this.loading = true;
+            this.msg[shareId] = '';
+            try {
+                const res = await fetch('/shares/sell', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ share_id: shareId, quantity }),
+                });
+                const data = await res.json();
+                if (data.error) {
+                    this.ok[shareId]  = false;
+                    this.msg[shareId] = data.error;
+                } else {
+                    this.ok[shareId]  = true;
+                    this.msg[shareId] = data.message;
+                    setTimeout(() => window.location.reload(), 1400);
+                }
+            } catch (e) {
+                this.ok[shareId]  = false;
+                this.msg[shareId] = 'Network error. Please retry.';
+            }
+            this.loading = false;
+        }
+    };
+}
+
 function pfSell() {
     return {
         selling: null,

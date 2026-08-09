@@ -525,6 +525,15 @@ Route::middleware(['auth', 'gameset'])->prefix('gameset')->name('gameset.')->gro
     Route::delete('/assets/{asset}',              [\App\Http\Controllers\GamesetAssetController::class, 'destroy'])->name('assets.destroy');
     Route::post('/assets/{asset}/toggle-active',  [\App\Http\Controllers\GamesetAssetController::class, 'toggleActive'])->name('assets.toggle-active');
 
+    // Equity Square share management
+    Route::get('/shares',                         [\App\Http\Controllers\GamesetShareController::class, 'index'])->name('shares.index');
+    Route::get('/shares/create',                  [\App\Http\Controllers\GamesetShareController::class, 'create'])->name('shares.create');
+    Route::post('/shares',                        [\App\Http\Controllers\GamesetShareController::class, 'store'])->name('shares.store');
+    Route::get('/shares/{share}/edit',            [\App\Http\Controllers\GamesetShareController::class, 'edit'])->name('shares.edit');
+    Route::put('/shares/{share}',                 [\App\Http\Controllers\GamesetShareController::class, 'update'])->name('shares.update');
+    Route::delete('/shares/{share}',              [\App\Http\Controllers\GamesetShareController::class, 'destroy'])->name('shares.destroy');
+    Route::post('/shares/{share}/toggle-active',  [\App\Http\Controllers\GamesetShareController::class, 'toggleActive'])->name('shares.toggle-active');
+
     // Bill templates
     Route::get('/bills',                        [GamesetBillController::class, 'index'])->name('bills.index');
     Route::get('/bills/create',                 [GamesetBillController::class, 'create'])->name('bills.create');

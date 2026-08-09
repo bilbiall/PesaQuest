@@ -273,7 +273,7 @@
 
                 <div
                     class="decision-card"
-                    x-data="decisionCard({{ $pd->id }}, {{ json_encode($decision->choices->map(fn($c) => ['id'=>$c->id,'label'=>$c->label,'description'=>$c->description,'balance_delta'=>$c->balance_delta])) }})"
+                    x-data="decisionCard({{ $pd->id }}, {{ json_encode($decision->choices->map(fn($c) => ['id'=>$c->id,'label'=>$c->label,'description'=>$c->description])) }})"
                     :class="{ 'card-resolving': resolving }"
                     x-ref="card{{ $pd->id }}"
                 >
@@ -323,11 +323,6 @@
                                     <span class="block text-gray-400 text-xs mt-0.5 font-normal">{{ $choice->description }}</span>
                                     @endif
                                 </span>
-                                @if($choice->balance_delta !== 0)
-                                <span class="text-xs font-black whitespace-nowrap {{ $choice->balance_delta > 0 ? 'text-emerald-400' : 'text-red-400' }}">
-                                    {{ $choice->balance_delta > 0 ? '+' : '' }}Ksh {{ number_format(abs($choice->balance_delta)) }}
-                                </span>
-                                @endif
                                 <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
                             @endforeach

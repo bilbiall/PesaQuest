@@ -700,6 +700,35 @@ class ChallengeService
         return $participants->mapWithKeys(fn ($p) => [$p->id => $rankOfGroup[$p->{$groupKey}] ?? (count($rankOfGroup) + 1)])->all();
     }
 
+    /**
+     * Approximate KES payout the eventual winner(s) will split, based on the
+     * CURRENT paid participant count — shown on the challenge page before
+     * settlement so players know what's at stake, not just the entry fee.
+     * Mirrors settle()'s pool/payout math but estimates the winning group's
+     * size instead of using the (not yet known) real winners.
+     */
+    public function estimatedWinnerPayout(Challenge $challenge): int
+    {
+        if (!$challenge->stake_amount) return 0;
+
+        $paid = $challenge->participants()->where('stake_paid', true)->get();
+        if ($paid->isEmpty()) return 0;
+
+        $pool   = (int) $challenge->stake_amount * $paid->count();
+        $payout = (int) round($pool * self::WINNER_POOL_PCT / 100);
+
+        $groupKey = $challenge->is_chama_battle ? 'chama_id' : (($challenge->isDuel() && $challenge->is_team_based) ? 'team_id' : null);
+        if ($groupKey === null) {
+            // Individual ranking — normally a single winner takes the payout (ties split it).
+            return $payout;
+        }
+
+        $groups       = $paid->groupBy($groupKey)->filter(fn ($g) => $g->count() > 0);
+        $avgGroupSize = $groups->isEmpty() ? 1 : max(1, (int) round($groups->avg(fn ($g) => $g->count())));
+
+        return intdiv($payout, $avgGroupSize);
+    }
+
     public function settle(Challenge $challenge): void
     {
         if ($challenge->status !== 'active') return;
