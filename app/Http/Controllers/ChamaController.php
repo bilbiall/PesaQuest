@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Chama;
 use App\Models\ChamaAsset;
+use App\Models\ChamaDividend;
 use App\Models\ChamaInvite;
+use App\Models\ChamaLoan;
 use App\Models\ChamaMember;
 use App\Models\ChamaContribution;
 use App\Models\ChamaProposal;
@@ -207,12 +209,26 @@ class ChamaController extends Controller
             ? Challenge::where('chama_id', $chama->id)->withCount('participants')->latest()->take(5)->get()
             : collect();
 
+        // Loans, withdrawals & dividends
+        $myChamaLoan = $myMember?->loans()->where('status', 'active')->first();
+        $chamaLoans  = Schema::hasTable('chama_loans')
+            ? ChamaLoan::where('chama_id', $chama->id)->with('borrowerMember.user')->latest()->take(10)->get()
+            : collect();
+        $myPendingDividends = ($myMember && Schema::hasTable('chama_dividends'))
+            ? ChamaDividend::where('member_id', $myMember->id)->whereNull('choice')->get()
+            : collect();
+        $loanEligible       = $myMember?->hasContributionStreak(Chama::LOAN_ELIGIBILITY_STREAK) ?? false;
+        $instantLoanLimit   = $myMember ? (int) round($myMember->total_contributed * Chama::INSTANT_LOAN_MULTIPLIER) : 0;
+        $vestedWithdrawable = $myMember?->vestedWithdrawable() ?? 0;
+
         return view('chama.show', compact(
             'chama', 'user', 'myMember', 'isChairman',
             'hasContributedThisMonth', 'allContributions',
             'availableAssets', 'targetPct', 'monthlyIncome',
             'gameMonth', 'progress', 'invitableFriends',
-            'challengeTemplates', 'chamaChallenges'
+            'challengeTemplates', 'chamaChallenges',
+            'myChamaLoan', 'chamaLoans', 'myPendingDividends',
+            'loanEligible', 'instantLoanLimit', 'vestedWithdrawable'
         ));
     }
 
@@ -521,6 +537,310 @@ class ChamaController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Chama loans — instant up to INSTANT_LOAN_MULTIPLIER × contribution, a
+    // member vote above that. Interest flows back into the pool (and into
+    // undistributed_gains) on repayment, so a chama that lends well grows
+    // richer for everyone, not just whoever's lending.
+    // ─────────────────────────────────────────────────────────────────────────
+    public function requestLoan(Request $request, Chama $chama)
+    {
+        $user   = auth()->user();
+        $member = $chama->getMemberRecord($user);
+
+        if (!$member) {
+            return back()->with('error', 'You are not a member of this chama.');
+        }
+
+        $data   = $request->validate(['amount' => 'required|integer|min:500']);
+        $amount = (int) $data['amount'];
+
+        if (!$member->hasContributionStreak(Chama::LOAN_ELIGIBILITY_STREAK)) {
+            return back()->with('error', 'You need ' . Chama::LOAN_ELIGIBILITY_STREAK . ' consecutive on-time contributions before you can borrow from this chama.');
+        }
+
+        if ($member->loans()->where('status', 'active')->exists()) {
+            return back()->with('error', 'You already have an active chama loan — repay it before taking another.');
+        }
+
+        if ($chama->pool_balance < $amount) {
+            return back()->with('error', 'The chama pool doesn\'t have enough funds for this loan yet.');
+        }
+
+        $threshold = (int) round($member->total_contributed * Chama::INSTANT_LOAN_MULTIPLIER);
+
+        if ($amount > $threshold) {
+            ChamaProposal::create([
+                'chama_id'      => $chama->id,
+                'proposer_id'   => $user->id,
+                'type'          => 'take_loan',
+                'title'         => "{$user->name} requests a Ksh " . number_format($amount) . ' loan',
+                'proposal_data' => ['member_id' => $member->id, 'amount' => $amount],
+                'status'        => 'voting',
+                'votes_yes'     => 0,
+                'votes_no'      => 0,
+                'expires_at'    => now()->addSeconds(app(GameClock::class)->realSecondsForTicks(7)),
+            ]);
+
+            return back()->with('success', 'Loan request for Ksh ' . number_format($amount) . ' submitted for a member vote (above your instant limit of Ksh ' . number_format($threshold) . ').');
+        }
+
+        $this->disburseChamaLoan($chama, $member, $amount);
+
+        return back()->with('success', 'Ksh ' . number_format($amount) . ' disbursed instantly from the chama pool!');
+    }
+
+    /** Shared disbursement — used by both the instant path and a passed take_loan proposal. */
+    private function disburseChamaLoan(Chama $chama, ChamaMember $member, int $amount): ChamaLoan
+    {
+        $rate         = $chama->effectiveLoanInterestRate();
+        $periodTicks  = Chama::LOAN_PAYMENT_PERIOD_TICKS;
+        $n            = (int) ceil(Chama::LOAN_TERM_TICKS / $periodTicks);
+        $periodicRate = $rate / 100 / 365 * $periodTicks;
+        $payment      = $periodicRate > 0
+            ? (int) ceil($amount * $periodicRate * pow(1 + $periodicRate, $n) / (pow(1 + $periodicRate, $n) - 1))
+            : (int) ceil($amount / $n);
+
+        $loan = null;
+
+        DB::transaction(function () use (&$loan, $chama, $member, $amount, $rate, $payment, $periodTicks) {
+            $tickCount = $member->user->getOrCreateProgress()->tick_count ?? 0;
+
+            $chama->pool_balance -= $amount;
+            $chama->save();
+
+            $progress = $member->user->getOrCreateProgress();
+            $progress->balance += $amount;
+            $progress->recalculateNetWorth();
+            $progress->save();
+
+            $loan = ChamaLoan::create([
+                'chama_id'             => $chama->id,
+                'borrower_member_id'   => $member->id,
+                'principal'            => $amount,
+                'interest_rate'        => $rate,
+                'outstanding_balance'  => $amount,
+                'payment_amount'       => $payment,
+                'payment_period_ticks' => $periodTicks,
+                'disbursed_at_tick'    => $tickCount,
+                'due_at_tick'          => $tickCount + Chama::LOAN_TERM_TICKS,
+                'next_payment_tick'    => $tickCount + $periodTicks,
+                'status'               => 'active',
+            ]);
+
+            GameNotification::create([
+                'user_id' => $member->user_id,
+                'type'    => 'chama_loan_disbursed',
+                'title'   => '🤝 Chama Loan Disbursed',
+                'body'    => 'Ksh ' . number_format($amount) . " from \"{$chama->name}\" at {$rate}% p.a. — Ksh " . number_format($payment) . '/month.',
+                'icon'    => '🤝',
+                'data'    => ['chama_id' => $chama->id, 'amount' => $amount],
+            ]);
+        });
+
+        return $loan;
+    }
+
+    /** Optional extra/early repayment — the tick-driven settlement in
+     *  LifeSimulator handles normal on-schedule instalments automatically. */
+    public function repayChamaLoan(Request $request, ChamaLoan $loan)
+    {
+        $user = auth()->user();
+
+        if ($loan->borrowerMember->user_id !== $user->id) {
+            return back()->with('error', 'Not your loan.');
+        }
+        if ($loan->status !== 'active') {
+            return back()->with('error', 'This loan is not active.');
+        }
+
+        $request->validate(['amount' => 'required|integer|min:1']);
+        $progress = $user->getOrCreateProgress();
+        $amount   = min((int) $request->amount, (int) $loan->outstanding_balance);
+
+        if ($progress->balance < $amount) {
+            return back()->with('error', 'Insufficient balance. You have Ksh ' . number_format($progress->balance) . '.');
+        }
+
+        DB::transaction(function () use ($progress, $loan, $amount) {
+            $progress->balance -= $amount;
+            $loan->outstanding_balance = max(0, $loan->outstanding_balance - $amount);
+            $loan->payments_made++;
+
+            $chama = $loan->chama;
+            $chama->pool_balance += $amount;
+            $chama->save();
+
+            if ($loan->outstanding_balance <= 0) {
+                $loan->status = 'paid';
+                $progress->adjustCreditScoreWithLog(+15, 'Chama loan fully paid off', ['kind' => 'chama_loan_cleared', 'loan_id' => $loan->id]);
+            }
+            $loan->next_payment_tick = ($progress->tick_count ?? 0) + $loan->payment_period_ticks;
+            $loan->save();
+
+            $progress->recalculateNetWorth();
+            $progress->save();
+        });
+
+        $message = $loan->status === 'paid'
+            ? 'Chama loan fully paid off! +15 credit score.'
+            : 'Payment of Ksh ' . number_format($amount) . ' made. Outstanding: Ksh ' . number_format($loan->outstanding_balance);
+
+        return back()->with('success', $message);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Partial withdrawal — self-service up to your vested share (contribution
+    // minus what you owe the chama); a vote kicks in only if it would leave
+    // the pool short of covering its own outstanding loans.
+    // ─────────────────────────────────────────────────────────────────────────
+    public function withdraw(Request $request, Chama $chama)
+    {
+        $user   = auth()->user();
+        $member = $chama->getMemberRecord($user);
+
+        if (!$member) {
+            return back()->with('error', 'You are not a member of this chama.');
+        }
+
+        $data   = $request->validate(['amount' => 'required|integer|min:1']);
+        $amount = (int) $data['amount'];
+        $vested = (int) floor($member->vestedWithdrawable());
+
+        if ($amount > $vested) {
+            return back()->with('error', 'You can withdraw at most Ksh ' . number_format($vested) . ' right now (your contribution minus anything you owe the chama).');
+        }
+
+        $safeFloor = $chama->outstandingChamaLoansTotal();
+
+        if (($chama->pool_balance - $amount) < $safeFloor) {
+            ChamaProposal::create([
+                'chama_id'      => $chama->id,
+                'proposer_id'   => $user->id,
+                'type'          => 'withdraw',
+                'title'         => "{$user->name} requests to withdraw Ksh " . number_format($amount),
+                'proposal_data' => ['member_id' => $member->id, 'amount' => $amount],
+                'status'        => 'voting',
+                'votes_yes'     => 0,
+                'votes_no'      => 0,
+                'expires_at'    => now()->addSeconds(app(GameClock::class)->realSecondsForTicks(7)),
+            ]);
+
+            return back()->with('success', 'This withdrawal would leave the pool short of its outstanding loans, so it needs a member vote first.');
+        }
+
+        DB::transaction(function () use ($chama, $member, $amount) {
+            $chama->pool_balance -= $amount;
+            $chama->save();
+
+            $member->total_contributed = max(0, $member->total_contributed - $amount);
+            $member->save();
+            $chama->recalculateShares();
+
+            $progress = $member->user->getOrCreateProgress();
+            $progress->balance += $amount;
+            $progress->recalculateNetWorth();
+            $progress->save();
+
+            GameNotification::create([
+                'user_id' => $member->user_id,
+                'type'    => 'chama_withdrawal',
+                'title'   => '🤝 Chama Withdrawal',
+                'body'    => 'Ksh ' . number_format($amount) . " withdrawn from \"{$chama->name}\".",
+                'icon'    => '💸',
+                'data'    => ['chama_id' => $chama->id, 'amount' => $amount],
+            ]);
+        });
+
+        return back()->with('success', 'Ksh ' . number_format($amount) . ' withdrawn successfully.');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Year-end dividend — splits undistributed_gains (loan interest earned,
+    // never members' own principal) by share_pct; each member then chooses
+    // cash-out or reinvest for their own slice.
+    // ─────────────────────────────────────────────────────────────────────────
+    public function declareDividend(Chama $chama)
+    {
+        $user   = auth()->user();
+        $member = $chama->getMemberRecord($user);
+
+        if (!$member?->isChairman() && !$user->is_admin) {
+            return back()->with('error', 'Only the chairman can declare a dividend.');
+        }
+
+        $gains = (float) $chama->undistributed_gains;
+
+        if ($gains <= 0) {
+            return back()->with('error', 'No undistributed gains to declare yet — chama loan interest builds this up over time.');
+        }
+
+        DB::transaction(function () use ($chama, $gains) {
+            $now = now();
+            foreach ($chama->activeMembers()->get() as $m) {
+                $share = round($gains * ($m->share_pct / 100), 2);
+                if ($share <= 0) continue;
+
+                ChamaDividend::create([
+                    'chama_id'    => $chama->id,
+                    'member_id'   => $m->id,
+                    'amount'      => $share,
+                    'declared_at' => $now,
+                ]);
+
+                GameNotification::create([
+                    'user_id' => $m->user_id,
+                    'type'    => 'chama_dividend',
+                    'title'   => "🎉 Dividend Declared — \"{$chama->name}\"",
+                    'body'    => 'Your share is Ksh ' . number_format($share) . ' — choose to cash out or reinvest it on the chama page.',
+                    'icon'    => '🎉',
+                    'data'    => ['chama_id' => $chama->id, 'amount' => $share],
+                ]);
+            }
+
+            $chama->undistributed_gains = 0;
+            $chama->save();
+        });
+
+        return back()->with('success', 'Dividend of Ksh ' . number_format($gains) . ' declared — members can now choose to cash out or reinvest.');
+    }
+
+    public function chooseDividend(Request $request, ChamaDividend $dividend)
+    {
+        $user = auth()->user();
+
+        if ($dividend->member->user_id !== $user->id) {
+            return back()->with('error', 'Not your dividend.');
+        }
+        if (!$dividend->isPending()) {
+            return back()->with('error', 'Already resolved.');
+        }
+
+        $data = $request->validate(['choice' => 'required|in:cash,reinvest']);
+
+        DB::transaction(function () use ($dividend, $data, $user) {
+            $chama  = $dividend->chama;
+            $member = $dividend->member;
+
+            if ($data['choice'] === 'cash') {
+                $progress = $user->getOrCreateProgress();
+                $progress->balance += $dividend->amount;
+                $chama->pool_balance -= $dividend->amount;
+                $chama->save();
+                $progress->recalculateNetWorth();
+                $progress->save();
+            } else {
+                $member->total_contributed += $dividend->amount;
+                $member->save();
+                $chama->recalculateShares();
+            }
+
+            $dividend->update(['choice' => $data['choice'], 'resolved_at' => now()]);
+        });
+
+        return back()->with('success', 'Dividend ' . ($data['choice'] === 'cash' ? 'cashed out' : 'reinvested') . '!');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Create a proposal
     // ─────────────────────────────────────────────────────────────────────────
     public function propose(Request $request, Chama $chama)
@@ -532,7 +852,7 @@ class ChamaController extends Controller
         }
 
         $validated = $request->validate([
-            'type'          => 'required|in:buy_asset,sell_asset,change_contribution,remove_member',
+            'type'          => 'required|in:buy_asset,sell_asset,change_contribution,remove_member,change_loan_terms',
             'title'         => 'required|string|max:120',
             'proposal_data' => 'required|array',
         ]);
@@ -640,6 +960,9 @@ class ChamaController extends Controller
                 'sell_asset'          => $this->executeSellAsset($proposal),
                 'change_contribution' => $this->executeChangeContribution($proposal),
                 'remove_member'       => $this->executeRemoveMember($proposal),
+                'take_loan'           => $this->executeTakeLoan($proposal),
+                'withdraw'            => $this->executeWithdraw($proposal),
+                'change_loan_terms'   => $this->executeChangeLoanTerms($proposal),
                 default               => $proposal->update(['status' => 'executed']),
             };
         });
@@ -724,6 +1047,80 @@ class ChamaController extends Controller
                 'icon'    => '👋',
                 'data'    => ['chama_id' => $chama->id],
             ]);
+        }
+
+        $proposal->update(['status' => 'executed']);
+    }
+
+    /** Apply a passed take_loan proposal — disburse via the same path an instant loan uses. */
+    private function executeTakeLoan(ChamaProposal $proposal): void
+    {
+        $chama    = $proposal->chama;
+        $memberId = (int) ($proposal->proposal_data['member_id'] ?? 0);
+        $amount   = (int) ($proposal->proposal_data['amount'] ?? 0);
+        $member   = ChamaMember::where('id', $memberId)->where('is_active', true)->first();
+
+        if ($member && $amount > 0 && $chama->pool_balance >= $amount && !$member->loans()->where('status', 'active')->exists()) {
+            $this->disburseChamaLoan($chama, $member, $amount);
+        }
+
+        $proposal->update(['status' => 'executed']);
+    }
+
+    /** Apply a passed withdraw proposal — same accounting as the self-service path. */
+    private function executeWithdraw(ChamaProposal $proposal): void
+    {
+        $chama    = $proposal->chama;
+        $memberId = (int) ($proposal->proposal_data['member_id'] ?? 0);
+        $amount   = (int) ($proposal->proposal_data['amount'] ?? 0);
+        $member   = ChamaMember::where('id', $memberId)->where('is_active', true)->first();
+
+        if ($member && $amount > 0 && $amount <= $member->vestedWithdrawable() && $chama->pool_balance >= $amount) {
+            $chama->pool_balance -= $amount;
+            $chama->save();
+
+            $member->total_contributed = max(0, $member->total_contributed - $amount);
+            $member->save();
+            $chama->recalculateShares();
+
+            $progress = $member->user->getOrCreateProgress();
+            $progress->balance += $amount;
+            $progress->recalculateNetWorth();
+            $progress->save();
+
+            GameNotification::create([
+                'user_id' => $member->user_id,
+                'type'    => 'chama_withdrawal',
+                'title'   => '🤝 Chama Withdrawal Approved',
+                'body'    => 'Ksh ' . number_format($amount) . " approved by vote and withdrawn from \"{$chama->name}\".",
+                'icon'    => '💸',
+                'data'    => ['chama_id' => $chama->id, 'amount' => $amount],
+            ]);
+        }
+
+        $proposal->update(['status' => 'executed']);
+    }
+
+    /** Apply a passed change_loan_terms proposal — set the chama's own loan rate. */
+    private function executeChangeLoanTerms(ChamaProposal $proposal): void
+    {
+        $chama   = $proposal->chama;
+        $newRate = (float) ($proposal->proposal_data['new_rate'] ?? -1);
+
+        if ($newRate >= 0 && $newRate <= 100) {
+            $old = $chama->effectiveLoanInterestRate();
+            $chama->update(['loan_interest_rate' => $newRate]);
+
+            foreach ($chama->activeMembers()->get() as $m) {
+                GameNotification::create([
+                    'user_id' => $m->user_id,
+                    'type'    => 'chama_loan_terms_changed',
+                    'title'   => "🤝 {$chama->name}: Loan Rate Changed",
+                    'body'    => "Chama loan interest rate is now {$newRate}% p.a. (was {$old}%) — voted by the members.",
+                    'icon'    => '📜',
+                    'data'    => ['chama_id' => $chama->id, 'old' => $old, 'new' => $newRate],
+                ]);
+            }
         }
 
         $proposal->update(['status' => 'executed']);

@@ -242,6 +242,13 @@ Route::middleware(['auth'])->prefix('chama')->name('chama.')->group(function () 
     Route::post('/{chama}/propose',                  [\App\Http\Controllers\ChamaController::class, 'propose'])->name('propose');
     Route::post('/{chama}/distribute',               [\App\Http\Controllers\ChamaController::class, 'distribute'])->name('distribute');
     Route::post('/{chama}/challenge',                [\App\Http\Controllers\ChamaController::class, 'createChallenge'])->name('challenge.create');
+
+    // Chama loans, withdrawals & dividends
+    Route::post('/{chama}/loans/request',            [\App\Http\Controllers\ChamaController::class, 'requestLoan'])->name('loans.request');
+    Route::post('/loans/{loan}/repay',               [\App\Http\Controllers\ChamaController::class, 'repayChamaLoan'])->name('loans.repay');
+    Route::post('/{chama}/withdraw',                 [\App\Http\Controllers\ChamaController::class, 'withdraw'])->name('withdraw');
+    Route::post('/{chama}/dividend/declare',         [\App\Http\Controllers\ChamaController::class, 'declareDividend'])->name('dividend.declare');
+    Route::post('/dividends/{dividend}/choose',      [\App\Http\Controllers\ChamaController::class, 'chooseDividend'])->name('dividend.choose');
 });
 
 // Friends & P2P friend loans

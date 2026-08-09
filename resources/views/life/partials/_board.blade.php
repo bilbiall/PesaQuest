@@ -881,7 +881,7 @@
             <div class="glass rounded-2xl overflow-hidden divide-y divide-white/5">
                 @foreach($statement as $tx)
                 @php
-                    $isIncome  = in_array($tx->type, ['salary','asset_income','arcade_stake_won','arcade_forfeit_bonus','share_sell']);
+                    $isIncome  = in_array($tx->type, ['salary','asset_income','arcade_stake_won','arcade_forfeit_bonus','share_sell','chama_loan_disbursed','chama_withdrawal']);
                     $isExpense = in_array($tx->type, ['bill_paid','bill_missed','arcade_stake_joined','arcade_stake_lost','share_buy']);
                     $isEvent   = !$isIncome && !$isExpense;
                     $rowBg     = $isIncome ? 'bg-emerald-500/4' : ($isExpense ? 'bg-red-500/4' : 'bg-transparent');
@@ -893,6 +893,7 @@
                         'arcade_forfeit_penalty'=>'Rivals Trail Withdrawal','arcade_forfeit_bonus'=>'Rivals Trail Bonus',
                         'share_buy'=>'Bought Shares','share_sell'=>'Sold Shares',
                         'job_promotion'=>'Promotion','salary_raise'=>'Pay Raise',
+                        'chama_loan_disbursed'=>'Chama Loan','chama_withdrawal'=>'Chama Withdrawal','chama_dividend'=>'Chama Dividend',
                         default=>ucfirst(str_replace('_',' ',$tx->type)),
                     };
                 @endphp

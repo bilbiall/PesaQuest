@@ -68,6 +68,9 @@ class ChamaProposal extends Model
             'sell_asset'          => 'Sell Asset',
             'change_contribution' => 'Change Contribution',
             'remove_member'       => 'Remove Member',
+            'take_loan'           => 'Take Loan',
+            'withdraw'            => 'Withdraw Funds',
+            'change_loan_terms'   => 'Change Loan Rate',
             default               => ucfirst($this->type),
         };
     }

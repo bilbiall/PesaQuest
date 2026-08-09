@@ -119,6 +119,12 @@
             @endif
         </button>
         <button @click="activeTab='assets'"    :class="activeTab==='assets'    ? 'active' : ''" class="tab-pill">Assets</button>
+        <button @click="activeTab='loans'"     :class="activeTab==='loans'     ? 'active' : ''" class="tab-pill">
+            Loans
+            @if($myPendingDividends->isNotEmpty())
+            <span class="ml-1 text-xs font-black px-1.5 py-0.5 rounded-full" style="background:rgba(245,158,11,.3);color:#fde68a;">{{ $myPendingDividends->count() }}</span>
+            @endif
+        </button>
         <button @click="activeTab='history'"   :class="activeTab==='history'   ? 'active' : ''" class="tab-pill">History</button>
     </div>
 
@@ -503,6 +509,7 @@
                         <option value="sell_asset">Sell Asset</option>
                         <option value="change_contribution">Change Contribution</option>
                         <option value="remove_member">Remove Member</option>
+                        <option value="change_loan_terms">Change Loan Interest Rate</option>
                     </select>
                 </div>
                 <div>
@@ -555,6 +562,14 @@
                         @endif
                         @endforeach
                     </select>
+                </div>
+
+                {{-- Change loan terms fields --}}
+                <div x-show="proposalType === 'change_loan_terms'">
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">
+                        New Loan Interest Rate (% p.a.) — currently {{ $chama->effectiveLoanInterestRate() }}%
+                    </label>
+                    <input type="number" name="proposal_data[new_rate]" class="field-input" placeholder="e.g. 6" min="0" max="100" step="0.5">
                 </div>
 
                 <button type="submit"
@@ -796,6 +811,152 @@
         </button>
         @endif
         @endif
+    </div>
+
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- TAB: LOANS — chama loans, withdrawals, dividends --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    <div x-show="activeTab==='loans'" x-cloak>
+
+        {{-- Pending dividend choices — most actionable, shown first --}}
+        @foreach($myPendingDividends as $div)
+        <div class="glass-card p-5 mb-6" style="border-color:rgba(245,158,11,.4);background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(255,255,255,.03));">
+            <p class="font-black text-white mb-1">🎉 Dividend Declared!</p>
+            <p class="text-sm text-gray-300 mb-4">Your share is <strong class="text-amber-300">Ksh {{ number_format($div->amount) }}</strong> — cash it out now, or reinvest it to grow your stake in the chama.</p>
+            <div class="flex gap-2">
+                <form action="{{ route('chama.dividend.choose', $div) }}" method="POST" class="flex-1">
+                    @csrf
+                    <input type="hidden" name="choice" value="cash">
+                    <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
+                            style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;">
+                        💰 Cash Out
+                    </button>
+                </form>
+                <form action="{{ route('chama.dividend.choose', $div) }}" method="POST" class="flex-1">
+                    @csrf
+                    <input type="hidden" name="choice" value="reinvest">
+                    <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
+                            style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#c7d2fe;">
+                        📈 Reinvest
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endforeach
+
+        {{-- My active chama loan --}}
+        @if($myChamaLoan)
+        <div class="glass-card p-5 mb-6">
+            <p class="font-bold text-gray-300 text-sm mb-4">My Chama Loan</p>
+            <div class="grid grid-cols-3 gap-3 text-center mb-4">
+                <div class="glass-card-inner p-3">
+                    <p class="text-xs text-gray-500 mb-1">Outstanding</p>
+                    <p class="text-lg font-black text-white">Ksh {{ number_format($myChamaLoan->outstanding_balance) }}</p>
+                </div>
+                <div class="glass-card-inner p-3">
+                    <p class="text-xs text-gray-500 mb-1">Instalment</p>
+                    <p class="text-lg font-black text-indigo-300">Ksh {{ number_format($myChamaLoan->payment_amount) }}</p>
+                </div>
+                <div class="glass-card-inner p-3">
+                    <p class="text-xs text-gray-500 mb-1">Progress</p>
+                    <p class="text-lg font-black text-emerald-400">{{ $myChamaLoan->payments_made }}/{{ $myChamaLoan->totalInstallments() }}</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">{{ $myChamaLoan->interest_rate }}% p.a. · instalments deduct automatically from your balance each month</p>
+            <form action="{{ route('chama.loans.repay', $myChamaLoan) }}" method="POST" class="flex gap-2">
+                @csrf
+                <input type="number" name="amount" class="field-input" placeholder="Extra repayment (Ksh)" min="1" max="{{ (int) $myChamaLoan->outstanding_balance }}">
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap"
+                        style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;">
+                    Repay Early
+                </button>
+            </form>
+        </div>
+        @elseif($myMember)
+        {{-- Request a loan --}}
+        <div class="glass-card p-5 mb-6">
+            <p class="font-bold text-gray-300 text-sm mb-2">Request a Chama Loan</p>
+            <p class="text-xs text-gray-500 mb-4">
+                Instant approval up to <strong class="text-white">Ksh {{ number_format($instantLoanLimit) }}</strong> (1× your contribution) at {{ $chama->effectiveLoanInterestRate() }}% p.a. — anything more needs a member vote.
+                Interest you pay flows back into the pool for everyone.
+            </p>
+            @if(!$loanEligible)
+            <div class="rounded-xl px-4 py-3 text-xs font-semibold text-amber-300 mb-4" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);">
+                ⚠️ You need {{ \App\Models\Chama::LOAN_ELIGIBILITY_STREAK }} consecutive on-time monthly contributions before you can borrow.
+            </div>
+            @else
+            <form action="{{ route('chama.loans.request', $chama) }}" method="POST" class="flex gap-2">
+                @csrf
+                <input type="number" name="amount" class="field-input" placeholder="Amount (Ksh)" min="500" required>
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap"
+                        style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.2));border:1px solid rgba(139,92,246,.4);">
+                    Request
+                </button>
+            </form>
+            @endif
+        </div>
+        @endif
+
+        {{-- Withdraw --}}
+        @if($myMember)
+        <div class="glass-card p-5 mb-6">
+            <p class="font-bold text-gray-300 text-sm mb-2">Withdraw From My Share</p>
+            <p class="text-xs text-gray-500 mb-4">
+                You can withdraw up to <strong class="text-white">Ksh {{ number_format($vestedWithdrawable) }}</strong> right now (your contribution minus anything you owe the chama).
+                A larger amount that would leave the pool short of its outstanding loans needs a member vote instead.
+            </p>
+            <form action="{{ route('chama.withdraw', $chama) }}" method="POST" class="flex gap-2">
+                @csrf
+                <input type="number" name="amount" class="field-input" placeholder="Amount (Ksh)" min="1" max="{{ (int) $vestedWithdrawable }}" required>
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap"
+                        style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;">
+                    Withdraw
+                </button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Chairman: declare dividend --}}
+        @if($isChairman)
+        @php $undistributedGains = (float) ($chama->undistributed_gains ?? 0); @endphp
+        <div class="glass-card p-5 mb-6">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="font-bold text-gray-300 text-sm">Undistributed Gains</p>
+                    <p class="text-2xl font-black text-amber-300 mt-1">Ksh {{ number_format($undistributedGains, 2) }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Loan interest earned so far, not yet declared as a dividend.</p>
+                </div>
+                @if($undistributedGains > 0)
+                <form action="{{ route('chama.dividend.declare', $chama) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-6 py-3 rounded-2xl text-sm font-bold transition-all"
+                            style="background:linear-gradient(135deg,rgba(245,158,11,.3),rgba(245,158,11,.15));border:1px solid rgba(245,158,11,.4);color:#fde68a;">
+                        🎉 Declare Dividend
+                    </button>
+                </form>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        {{-- All chama loans — transparency --}}
+        <div class="glass-card-inner p-5">
+            <p class="font-bold text-gray-300 text-sm mb-4">Chama Loan Book</p>
+            @if($chamaLoans->isEmpty())
+            <p class="text-sm text-gray-500">No loans have been taken from this chama yet.</p>
+            @else
+            <div class="space-y-2">
+                @foreach($chamaLoans as $cl)
+                @php $statusColor = match($cl->status) { 'active' => '#a5b4fc', 'paid' => '#6ee7b7', 'defaulted' => '#fca5a5', default => '#9ca3af' }; @endphp
+                <div class="flex items-center justify-between gap-3 text-sm py-2 border-b border-white/5 last:border-0">
+                    <span class="text-gray-300">{{ $cl->borrowerMember->user->name ?? 'Member' }}</span>
+                    <span class="text-white font-bold">Ksh {{ number_format($cl->principal) }}</span>
+                    <span class="text-xs font-black px-2 py-0.5 rounded-full" style="background:{{ $statusColor }}22;color:{{ $statusColor }};">{{ $cl->statusLabel() }}</span>
+                </div>
+                @endforeach
+            </div>
+            @endif
+        </div>
     </div>
 
     {{-- ══════════════════════════════════════════════════════════════ --}}

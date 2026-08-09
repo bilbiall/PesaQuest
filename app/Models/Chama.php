@@ -12,10 +12,39 @@ class Chama extends Model
         'name', 'slug', 'description', 'goal_text', 'target_amount',
         'monthly_contribution', 'status', 'creator_id', 'max_members', 'pool_balance',
         'visibility', 'join_code', 'min_level', 'min_credit_score', 'min_savings',
+        'loan_interest_rate', 'undistributed_gains',
+    ];
+
+    protected $attributes = [
+        'undistributed_gains' => 0,
     ];
 
     /** How many chamas a player may belong to at once. */
     public const MAX_MEMBERSHIPS = 3;
+
+    /** Annual rate used when a chama hasn't voted its own via change_loan_terms —
+     *  deliberately cheaper than the individual LoanProduct catalog, since the
+     *  whole point of a chama loan is mutual, lower-cost credit. */
+    public const DEFAULT_LOAN_INTEREST_RATE = 8.0;
+
+    /** Instant-approval loan ceiling, as a multiple of the borrower's own
+     *  total_contributed — anything above needs a member vote. */
+    public const INSTANT_LOAN_MULTIPLIER = 1.0;
+
+    /** Consecutive on-time contributions required before a member may borrow. */
+    public const LOAN_ELIGIBILITY_STREAK = 2;
+
+    /** A chama loan's fixed term — 3 monthly instalments. */
+    public const LOAN_TERM_TICKS = 90;
+    public const LOAN_PAYMENT_PERIOD_TICKS = 30;
+
+    /** Consecutive defaults before the group is asked to vote out the member. */
+    public const DEFAULTS_BEFORE_REMOVAL_VOTE = 2;
+
+    public function effectiveLoanInterestRate(): float
+    {
+        return (float) ($this->loan_interest_rate ?? self::DEFAULT_LOAN_INTEREST_RATE);
+    }
 
     /** Share links use the readable slug (/chama/nairobi-investors), never the numeric ID. */
     public function getRouteKey()
@@ -100,6 +129,23 @@ class Chama extends Model
     public function chamaAssets(): HasMany
     {
         return $this->hasMany(ChamaAsset::class);
+    }
+
+    public function loans(): HasMany
+    {
+        return $this->hasMany(ChamaLoan::class);
+    }
+
+    public function dividends(): HasMany
+    {
+        return $this->hasMany(ChamaDividend::class);
+    }
+
+    /** Total principal still owed across every active chama loan — the pool's
+     *  real exposure, used to gate withdrawals that would leave it uncovered. */
+    public function outstandingChamaLoansTotal(): float
+    {
+        return (float) $this->loans()->where('status', 'active')->sum('outstanding_balance');
     }
 
     public function memberCount(): int

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\Asset;
 use App\Models\Bill;
+use App\Models\Chama;
+use App\Models\ChamaLoan;
+use App\Models\ChamaProposal;
 use App\Models\CityJob;
 use App\Models\GameNotification;
 use App\Models\InvestmentDeal;
@@ -174,6 +177,9 @@ class LifeSimulator
 
             // Process loan payments (compound + auto-deduct)
             $this->settleLoans($user, $progress, $ticks, $events);
+
+            // Process chama loan payments — interest flows back to the pool
+            $this->settleChamaLoans($user, $progress, $events);
 
             $this->settleFriendLoans($user, $progress, $events);
 
@@ -961,6 +967,133 @@ class LifeSimulator
 
             $loan->next_payment_tick = $due;
             $loan->save();
+        }
+    }
+
+    // ── Chama loan settlement ───────────────────────────────────────────────
+    //
+    // Same tick-driven amortized-instalment shape as settleLoans(), with two
+    // real differences: repayments (principal AND interest) land in the
+    // chama's pool_balance instead of vanishing, with the interest portion
+    // also credited to undistributed_gains for the next dividend; and a
+    // default shrinks the defaulting member's own total_contributed (their
+    // stake absorbs the unpaid amount) rather than just hurting their credit
+    // score, plus repeated defaults auto-raise a remove_member vote.
+
+    private function settleChamaLoans(User $user, UserProgress $progress, array &$events): void
+    {
+        if (!Schema::hasTable('chama_loans')) return;
+
+        $loans = ChamaLoan::where('status', 'active')
+            ->whereHas('borrowerMember', fn ($q) => $q->where('user_id', $user->id))
+            ->with('borrowerMember.chama')
+            ->get();
+
+        foreach ($loans as $loan) {
+            $chama = $loan->borrowerMember?->chama;
+            if (!$chama) continue;
+
+            $endTick = $progress->tick_count;
+            $due     = $loan->next_payment_tick;
+
+            while ($due <= $endTick) {
+                $periodicRate    = ($loan->interest_rate / 100 / 365) * $loan->payment_period_ticks;
+                $interestPortion = (int) ceil($loan->outstanding_balance * $periodicRate);
+                $loan->outstanding_balance += $interestPortion;
+
+                if ($progress->balance >= $loan->payment_amount) {
+                    $actual = min($loan->payment_amount, $loan->outstanding_balance);
+                    $progress->balance         -= $actual;
+                    $loan->outstanding_balance  = max(0, $loan->outstanding_balance - $actual);
+                    $loan->payments_made++;
+
+                    $chama->pool_balance        += $actual;
+                    $chama->undistributed_gains += $interestPortion;
+                    $chama->save();
+
+                    $progress->adjustCreditScoreWithLog(+5, 'Chama loan payment made on time', ['kind' => 'chama_loan_paid', 'loan_id' => $loan->id]);
+
+                    $events[] = [
+                        'icon'  => '🤝', 'type' => 'chama_loan_payment',
+                        'text'  => 'Chama loan instalment paid — ' . $chama->name,
+                        'sub'   => 'Ksh ' . number_format($actual) . ' (' . $loan->payments_made . ' of ' . $loan->totalInstallments() . ') · Balance: Ksh ' . number_format($loan->outstanding_balance),
+                        'delta' => -$actual,
+                    ];
+                } else {
+                    $loan->payments_missed++;
+                    $progress->adjustCreditScoreWithLog(-20, 'Missed a chama loan payment', ['kind' => 'chama_loan_missed', 'loan_id' => $loan->id]);
+
+                    $events[] = [
+                        'icon'        => '⚠️', 'type' => 'chama_loan_missed',
+                        'text'        => 'Missed chama loan instalment — ' . $chama->name,
+                        'sub'         => 'Keep at least Ksh ' . number_format($loan->payment_amount) . ' for the next payment.',
+                        'delta'       => 0, 'is_positive' => false,
+                    ];
+                }
+
+                if ($loan->outstanding_balance <= 0) {
+                    $loan->status = 'paid';
+                    $progress->adjustCreditScoreWithLog(+15, 'Chama loan fully paid off', ['kind' => 'chama_loan_cleared', 'loan_id' => $loan->id]);
+                    $events[] = [
+                        'icon'        => '🎉', 'type' => 'chama_loan_paid',
+                        'text'        => 'Chama loan fully paid off!',
+                        'sub'         => '+15 credit score for clearing it with your chama.',
+                        'delta'       => 0, 'is_positive' => true,
+                    ];
+                    break;
+                }
+
+                $due += $loan->payment_period_ticks;
+            }
+
+            if ($loan->status === 'active' && $progress->tick_count > $loan->due_at_tick && $loan->outstanding_balance > 0) {
+                $this->defaultChamaLoan($loan, $chama, $progress, $events);
+            }
+
+            $loan->next_payment_tick = $due;
+            $loan->save();
+        }
+    }
+
+    private function defaultChamaLoan(ChamaLoan $loan, Chama $chama, UserProgress $progress, array &$events): void
+    {
+        $loan->status = 'defaulted';
+        $loan->save(); // persist before the default-count check below, or this default undercounts itself
+        $progress->adjustCreditScoreWithLog(-60, 'Chama loan defaulted', ['kind' => 'chama_loan_default', 'loan_id' => $loan->id]);
+
+        $member = $loan->borrowerMember;
+        $member->total_contributed = max(0, $member->total_contributed - $loan->outstanding_balance);
+        $member->save();
+        $chama->recalculateShares();
+
+        $events[] = [
+            'icon'        => '🔴', 'type' => 'chama_loan_default',
+            'text'        => 'Chama loan defaulted — ' . $chama->name,
+            'sub'         => 'Ksh ' . number_format($loan->outstanding_balance) . ' unpaid. Your chama stake shrank to cover it, and your credit score took a hit.',
+            'delta'       => 0, 'is_positive' => false,
+        ];
+
+        $defaultCount = ChamaLoan::where('borrower_member_id', $member->id)->where('status', 'defaulted')->count();
+        if ($defaultCount >= Chama::DEFAULTS_BEFORE_REMOVAL_VOTE) {
+            $alreadyProposed = ChamaProposal::where('chama_id', $chama->id)
+                ->where('type', 'remove_member')
+                ->where('status', 'voting')
+                ->whereJsonContains('proposal_data->user_id', $member->user_id)
+                ->exists();
+
+            if (!$alreadyProposed) {
+                ChamaProposal::create([
+                    'chama_id'      => $chama->id,
+                    'proposer_id'   => $chama->creator_id,
+                    'type'          => 'remove_member',
+                    'title'         => $member->user->name . ' has defaulted on ' . $defaultCount . ' chama loans',
+                    'proposal_data' => ['user_id' => $member->user_id],
+                    'status'        => 'voting',
+                    'votes_yes'     => 0,
+                    'votes_no'      => 0,
+                    'expires_at'    => now()->addSeconds($this->clock->realSecondsForTicks(7)),
+                ]);
+            }
         }
     }
 
