@@ -175,6 +175,28 @@
             </div>
         </div>
 
+        {{-- Rotation banner --}}
+        @if($chama->is_rotating)
+        @php $rotationRecipient = $chama->currentRotationRecipient(); @endphp
+        <div class="glass-card p-5 mb-6" style="border-color:rgba(139,92,246,.4);background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(255,255,255,.03));">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="font-black text-white mb-1 inline-flex items-center gap-1"><x-icon name="spin" class="w-4 h-4" /> Merry-Go-Round Active</p>
+                    <p class="text-xs text-gray-400">
+                        Contributions pay out in full each round instead of pooling.
+                        @if($rotationRecipient)
+                            <strong class="text-violet-200">{{ $rotationRecipient->user->name }}</strong> collects this round's pot.
+                        @endif
+                    </p>
+                </div>
+                <button @click="activeTab='loans'" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap"
+                        style="background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.35);color:#e9d5ff;">
+                    View Rotation Order
+                </button>
+            </div>
+        </div>
+        @endif
+
         {{-- Contribute this month --}}
         @if($myMember)
         <div class="glass-card p-5 mb-6">
@@ -190,7 +212,7 @@
                         @if($hasContributedThisMonth)
                             You've contributed for {{ $gameMonthLabel }}.
                         @else
-                            Ksh {{ number_format($chama->monthly_contribution) }} due for {{ $gameMonthLabel }}
+                            Ksh {{ number_format($chama->monthly_contribution) }} due for {{ $gameMonthLabel }}{{ $chama->is_rotating ? " — goes straight to this round's pot" : '' }}
                         @endif
                     </p>
                 </div>
@@ -200,7 +222,7 @@
                     <button type="submit"
                             class="px-6 py-3 rounded-2xl text-sm font-bold transition-all"
                             style="background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(16,185,129,.2));border:1px solid rgba(16,185,129,.4);color:#6ee7b7;">
-                        💰 Contribute Ksh {{ number_format($chama->monthly_contribution) }}
+                        <x-icon name="coin" class="w-4 h-4 inline-block" /> Contribute Ksh {{ number_format($chama->monthly_contribution) }}
                     </button>
                 </form>
                 @else
@@ -267,7 +289,7 @@
         <div class="glass-card p-5 mb-6 flex flex-wrap items-center justify-between gap-4"
              style="border:1px solid rgba(139,92,246,.35);">
             <div class="flex-1 min-w-0">
-                <p class="font-black text-white text-sm">🔒 Private chama · Join code</p>
+                <p class="font-black text-white text-sm inline-flex items-center gap-1"><x-icon name="lock" class="w-3.5 h-3.5" /> Private chama · Join code</p>
                 <p class="text-xs text-gray-400 mt-0.5">Anyone with this code can join from the Chamas page (spots permitting). Great for writing on a classroom board.</p>
             </div>
             <div class="flex items-center gap-2">
@@ -281,7 +303,7 @@
         {{-- Invite friends directly (bell + push notification with the link) --}}
         @if($myMember && !$chama->isFull() && ($invitableFriends ?? collect())->isNotEmpty())
         <div class="glass-card p-5 mb-6">
-            <p class="font-black text-white text-sm mb-1">👥 Invite your friends</p>
+            <p class="font-black text-white text-sm mb-1 inline-flex items-center gap-1"><x-icon name="people" class="w-3.5 h-3.5" /> Invite your friends</p>
             <p class="text-xs text-gray-400 mb-3">They get a notification with a one-tap invite — no link sharing needed.</p>
             <div class="flex flex-wrap gap-2">
                 @foreach($invitableFriends as $friend)
@@ -332,7 +354,7 @@
                     :disabled="generating"
                     class="shrink-0 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all"
                     style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.25));border:1px solid rgba(139,92,246,.4);">
-                    <span x-show="!generating">🔗 Generate Invite Link</span>
+                    <span x-show="!generating" class="inline-flex items-center gap-1"><x-icon name="link" class="w-3.5 h-3.5" /> Generate Invite Link</span>
                     <span x-show="generating">Generating…</span>
                 </button>
             </div>
@@ -352,7 +374,7 @@
                         class="shrink-0 px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
                         :style="copied ? 'background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;' : 'background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#9ca3af;'">
                         <span x-show="!copied">Copy</span>
-                        <span x-show="copied">✅ Copied!</span>
+                        <span x-show="copied" class="inline-flex items-center gap-1"><x-icon name="check-circle" class="w-3.5 h-3.5" /> Copied!</span>
                     </button>
                 </div>
                 <p class="text-xs text-gray-600 mt-1.5">Link valid for 7 days · Anyone with this link can join if spots remain.</p>
@@ -372,7 +394,7 @@
                 <button type="submit"
                         class="px-6 py-3 rounded-2xl text-sm font-bold transition-all"
                         style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.25));border:1px solid rgba(139,92,246,.4);">
-                    💸 Distribute Income to Members
+                    <x-icon name="coin" class="w-4 h-4 inline-block" /> Distribute Income to Members
                 </button>
             </form>
         </div>
@@ -381,7 +403,7 @@
         {{-- Chairman: launch a Chama Challenge --}}
         @if($isChairman && $challengeTemplates->isNotEmpty())
         <div class="glass-card p-5 mb-6">
-            <p class="font-black text-white mb-1">🤝 Launch a Chama Challenge</p>
+            <p class="font-black text-white mb-1 inline-flex items-center gap-1"><x-icon name="group" class="w-4 h-4" /> Launch a Chama Challenge</p>
             <p class="text-sm text-gray-400 mb-4">Every active member gets auto-enrolled — ranked by who grows the most during the window.</p>
             <form action="{{ route('chama.challenge.create', $chama) }}" method="POST" class="flex flex-wrap items-end gap-3">
                 @csrf
@@ -400,7 +422,7 @@
                 </div>
                 <button type="submit" class="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all"
                         style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.25));border:1px solid rgba(139,92,246,.4);">
-                    🚀 Launch
+                    <x-icon name="rocket" class="w-4 h-4 inline-block" /> Launch
                 </button>
             </form>
             @if($chamaChallenges->isNotEmpty())
@@ -453,11 +475,11 @@
                             </td>
                             <td class="px-3 py-4">
                                 @if($mem->role === 'chairman')
-                                <span class="text-xs font-bold px-2 py-1 rounded-lg badge-chairman">👑 Chairman</span>
+                                <span class="text-xs font-bold px-2 py-1 rounded-lg badge-chairman inline-flex items-center gap-1"><x-icon name="crown" class="w-3 h-3" /> Chairman</span>
                                 @elseif($mem->role === 'secretary')
-                                <span class="text-xs font-bold px-2 py-1 rounded-lg badge-secretary">📋 Secretary</span>
+                                <span class="text-xs font-bold px-2 py-1 rounded-lg badge-secretary inline-flex items-center gap-1"><x-icon name="clipboard" class="w-3 h-3" /> Secretary</span>
                                 @else
-                                <span class="text-xs font-bold px-2 py-1 rounded-lg badge-member">👤 Member</span>
+                                <span class="text-xs font-bold px-2 py-1 rounded-lg badge-member inline-flex items-center gap-1"><x-icon name="user" class="w-3 h-3" /> Member</span>
                                 @endif
                             </td>
                             <td class="px-3 py-4 text-right">
@@ -507,6 +529,9 @@
                     <select name="type" x-model="proposalType" class="field-input">
                         <option value="buy_asset">Buy Asset</option>
                         <option value="sell_asset">Sell Asset</option>
+                        <option value="buy_share">Buy Shares</option>
+                        <option value="sell_share">Sell Shares</option>
+                        <option value="invest_deal">Invest in a Deal</option>
                         <option value="change_contribution">Change Contribution</option>
                         <option value="remove_member">Remove Member</option>
                         <option value="change_loan_terms">Change Loan Interest Rate</option>
@@ -524,7 +549,7 @@
                         <select name="proposal_data[asset_id]" class="field-input">
                             <option value="">Select an asset...</option>
                             @foreach($availableAssets as $asset)
-                            <option value="{{ $asset->id }}">{{ $asset->icon ?? '' }} {{ $asset->name }} — Ksh {{ number_format($asset->base_price) }}</option>
+                            <option value="{{ $asset->id }}">{{ $asset->name }} — Ksh {{ number_format($asset->base_price) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -543,6 +568,46 @@
                         <option value="{{ $ca->id }}">{{ $ca->asset->name ?? 'Asset' }} ({{ $ca->quantity }}x)</option>
                         @endforeach
                     </select>
+                </div>
+
+                {{-- Buy share fields --}}
+                <div x-show="proposalType === 'buy_share'" class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Share</label>
+                        <select name="proposal_data[share_id]" class="field-input">
+                            <option value="">Select a share...</option>
+                            @foreach($availableShares as $sh)
+                            <option value="{{ $sh->id }}">{{ $sh->symbol }} — {{ $sh->name }} (buy Ksh {{ number_format($sh->buyPrice(), 2) }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Quantity</label>
+                        <input type="number" name="proposal_data[quantity]" class="field-input" value="1" min="1" max="10000">
+                    </div>
+                </div>
+
+                {{-- Sell share fields --}}
+                <div x-show="proposalType === 'sell_share'">
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Chama Share Holding to Sell</label>
+                    <select name="proposal_data[chama_share_holding_id]" class="field-input">
+                        <option value="">Select holding...</option>
+                        @foreach($chama->chamaShareHoldings as $h)
+                        <option value="{{ $h->id }}">{{ $h->share->symbol ?? 'Share' }} — {{ $h->quantity }}x @ avg Ksh {{ number_format($h->avg_cost, 2) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Invest in a deal fields --}}
+                <div x-show="proposalType === 'invest_deal'">
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Investment Deal</label>
+                    <select name="proposal_data[deal_id]" class="field-input">
+                        <option value="">Select a deal...</option>
+                        @foreach($availableDeals as $deal)
+                        <option value="{{ $deal->id }}">{{ $deal->title }} — Ksh {{ number_format($deal->cost) }} ({{ $deal->riskLabel() }} risk)</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Deals are a probabilistic bet, not a guaranteed return — the pool can lose the full stake.</p>
                 </div>
 
                 {{-- Change contribution fields --}}
@@ -646,7 +711,7 @@
                                 <input type="hidden" name="vote" value="yes">
                                 <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
                                         style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;">
-                                    ✅ Vote Yes
+                                    <x-icon name="check-circle" class="w-3.5 h-3.5 inline-block" /> Vote Yes
                                 </button>
                             </form>
                             <form action="{{ route('chama.vote', $prop) }}" method="POST" class="flex-1">
@@ -654,7 +719,7 @@
                                 <input type="hidden" name="vote" value="no">
                                 <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
                                         style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;">
-                                    ❌ Vote No
+                                    <x-icon name="x-circle" class="w-3.5 h-3.5 inline-block" /> Vote No
                                 </button>
                             </form>
                         </div>
@@ -681,7 +746,7 @@
                 <div class="glass-card p-5 flex items-center justify-between gap-4">
                     <div>
                         <p class="font-bold text-white text-sm">{{ $prop->title }}</p>
-                        <p class="text-xs text-emerald-400 mt-0.5">✅ Passed ({{ $prop->votes_yes }} yes / {{ $prop->votes_no }} no)</p>
+                        <p class="text-xs text-emerald-400 mt-0.5 inline-flex items-center gap-1"><x-icon name="check-circle" class="w-3 h-3" /> Passed ({{ $prop->votes_yes }} yes / {{ $prop->votes_no }} no)</p>
                     </div>
                     @if($myMember)
                     <form action="{{ route('chama.execute', $prop) }}" method="POST">
@@ -746,7 +811,7 @@
                 <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">Total Monthly Income</p>
                 <p class="text-3xl font-black text-emerald-400">Ksh {{ number_format($monthlyIncome) }}/mo</p>
             </div>
-            <div class="text-4xl" style="animation:glowpulse 3s ease-in-out infinite;">📊</div>
+            <div style="animation:glowpulse 3s ease-in-out infinite;color:#34d399;"><x-icon name="bar-chart" class="w-9 h-9" /></div>
         </div>
         @endif
 
@@ -775,7 +840,7 @@
             <div class="rounded-3xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
                 {{-- Category header --}}
                 <div class="relative h-20 flex items-center px-5 gap-3 overflow-hidden {{ $catClass }}">
-                    <div class="text-3xl" style="text-shadow:0 2px 8px rgba(0,0,0,.5);">{{ $asset->icon ?? '🏢' }}</div>
+                    <div style="text-shadow:0 2px 8px rgba(0,0,0,.5);"><x-icon :name="$asset->icon ?? 'building'" class="w-7 h-7" /></div>
                     <div class="flex-1 min-w-0">
                         <p class="font-black text-white truncate leading-tight text-sm">{{ $asset->name }}</p>
                         <p class="text-xs text-white/60">{{ ucfirst($asset->category ?? 'asset') }} · Qty {{ $ca->quantity }}</p>
@@ -804,12 +869,99 @@
 
         {{-- Propose another purchase --}}
         @if($myMember)
-        <button @click="activeTab='proposals'; showProposalForm=true; proposalType='buy_asset'"
-                class="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all"
-                style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);">
-            + Propose Another Asset Purchase
-        </button>
+        <div class="flex flex-wrap gap-2">
+            <button @click="activeTab='proposals'; showProposalForm=true; proposalType='buy_asset'"
+                    class="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all"
+                    style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);">
+                + Propose Asset Purchase
+            </button>
+            <button @click="activeTab='proposals'; showProposalForm=true; proposalType='buy_share'"
+                    class="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all"
+                    style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);">
+                + Propose Share Purchase
+            </button>
+            <button @click="activeTab='proposals'; showProposalForm=true; proposalType='invest_deal'"
+                    class="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all"
+                    style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);">
+                + Propose Deal Investment
+            </button>
+        </div>
         @endif
+        @endif
+
+        {{-- Chama share holdings --}}
+        @if($chama->chamaShareHoldings->isNotEmpty())
+        <div class="mt-8">
+            <h3 class="font-black text-white mb-4">Share Holdings</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($chama->chamaShareHoldings as $h)
+                @php
+                    $sh    = $h->share;
+                    $value = $h->currentValue();
+                    $gain  = $h->unrealizedGain();
+                @endphp
+                <div class="glass-card-inner p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <x-icon :name="$sh->icon ?? 'trend-up'" class="w-6 h-6" />
+                        <div>
+                            <p class="font-black text-white text-sm">{{ $sh->symbol ?? '—' }}</p>
+                            <p class="text-xs text-gray-500">{{ $sh->name ?? 'Share' }} · {{ $h->quantity }}x</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="rounded-xl p-2" style="background:rgba(255,255,255,.04);">
+                            <p class="text-xs text-gray-500">Value</p>
+                            <p class="font-black text-white text-sm">Ksh {{ number_format($value) }}</p>
+                        </div>
+                        <div class="rounded-xl p-2" style="background:{{ $gain >= 0 ? 'rgba(16,185,129,.07)' : 'rgba(239,68,68,.07)' }};border:1px solid {{ $gain >= 0 ? 'rgba(16,185,129,.15)' : 'rgba(239,68,68,.15)' }};">
+                            <p class="text-xs" style="color:{{ $gain >= 0 ? '#6ee7b7' : '#fca5a5' }};">Gain/Loss</p>
+                            <p class="font-black text-sm" style="color:{{ $gain >= 0 ? '#34d399' : '#f87171' }};">{{ $gain >= 0 ? '+' : '' }}Ksh {{ number_format($gain) }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Chama investment deals --}}
+        @if($chama->chamaDeals->isNotEmpty())
+        <div class="mt-8">
+            <h3 class="font-black text-white mb-4">Investment Deals</h3>
+            <div class="space-y-2">
+                @foreach($chama->chamaDeals->sortByDesc('created_at') as $cd)
+                @php
+                    $badgeStyle = match($cd->status) {
+                        'pending' => 'background:rgba(99,102,241,.2);color:#a5b4fc;',
+                        'success' => 'background:rgba(16,185,129,.2);color:#6ee7b7;',
+                        'failed'  => 'background:rgba(239,68,68,.2);color:#fca5a5;',
+                        default   => '',
+                    };
+                @endphp
+                <div class="glass-card-inner p-4 flex items-center justify-between gap-3 flex-wrap">
+                    <div class="flex items-center gap-3">
+                        <x-icon :name="$cd->deal->icon ?? 'briefcase'" class="w-5 h-5" />
+                        <div>
+                            <p class="font-bold text-white text-sm">{{ $cd->deal->title ?? 'Deal' }}</p>
+                            <p class="text-xs text-gray-500">Staked Ksh {{ number_format($cd->amount_invested) }}
+                                @if($cd->isPending())
+                                    · resolves in {{ app(\App\Services\GameClock::class)->gameDaysUntil($cd->resolve_at) }} game day(s)
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if(!$cd->isPending() && $cd->profit_loss !== null)
+                        <span class="text-xs font-bold" style="color:{{ $cd->profit_loss >= 0 ? '#34d399' : '#f87171' }};">
+                            {{ $cd->profit_loss >= 0 ? '+' : '' }}Ksh {{ number_format($cd->profit_loss) }}
+                        </span>
+                        @endif
+                        <span class="text-xs font-black px-2 py-0.5 rounded-lg" style="{{ $badgeStyle }}">{{ ucfirst($cd->status) }}</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
         @endif
     </div>
 
@@ -817,6 +969,64 @@
     {{-- TAB: LOANS — chama loans, withdrawals, dividends --}}
     {{-- ══════════════════════════════════════════════════════════════ --}}
     <div x-show="activeTab==='loans'" x-cloak>
+
+        {{-- Merry-go-round rotation --}}
+        @if($chama->is_rotating)
+        @php
+            $rotationOrder     = $chama->rotationOrder();
+            $rotationRecipient = $chama->currentRotationRecipient();
+        @endphp
+        <div class="glass-card p-5 mb-6" style="border-color:rgba(139,92,246,.4);background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(255,255,255,.03));">
+            <div class="flex items-center justify-between gap-4 flex-wrap mb-4">
+                <div>
+                    <p class="font-black text-white mb-1 inline-flex items-center gap-1"><x-icon name="spin" class="w-4 h-4" /> Merry-Go-Round Active</p>
+                    <p class="text-xs text-gray-400">Contributions pay out in full to one member per round instead of pooling. {{ $chama->rotation_cycles_completed }} full cycle{{ $chama->rotation_cycles_completed === 1 ? '' : 's' }} completed.</p>
+                </div>
+                @if($myMember)
+                    @if($chama->canDisableRotation())
+                    <form action="{{ route('chama.rotation.disable', $chama) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap"
+                                style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;">
+                            Propose Disable
+                        </button>
+                    </form>
+                    @else
+                    <span class="text-xs text-gray-500 italic">Needs 1 full cycle before it can be disabled</span>
+                    @endif
+                @endif
+            </div>
+            <div class="space-y-1.5">
+                @foreach($rotationOrder as $i => $rm)
+                @php $isTurn = $rotationRecipient && $rm->id === $rotationRecipient->id; @endphp
+                <div class="flex items-center gap-3 px-3 py-2 rounded-xl {{ $isTurn ? '' : '' }}"
+                     style="{{ $isTurn ? 'background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4);' : 'background:rgba(255,255,255,.03);' }}">
+                    <span class="text-xs font-bold text-gray-500 w-5">{{ $i + 1 }}</span>
+                    <span class="flex-1 text-sm font-semibold {{ $isTurn ? 'text-violet-200' : 'text-gray-300' }}">{{ $rm->user->name }}</span>
+                    @if($isTurn)
+                    <span class="text-xs font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background:rgba(139,92,246,.35);color:#e9d5ff;">Next up <x-icon name="spin" class="w-3 h-3" /></span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @elseif($myMember)
+        <div class="glass-card p-5 mb-6">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="font-bold text-gray-300 text-sm mb-1 inline-flex items-center gap-1"><x-icon name="spin" class="w-4 h-4" /> Try a Merry-Go-Round?</p>
+                    <p class="text-xs text-gray-500">Instead of building up a shared pool, every member's monthly contribution pays out in full to one member per round, in turn. Needs a member vote to switch on.</p>
+                </div>
+                <form action="{{ route('chama.rotation.enable', $chama) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap"
+                            style="background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.35);color:#e9d5ff;">
+                        Propose Rotation
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
 
         {{-- Pending dividend choices — most actionable, shown first --}}
         @foreach($myPendingDividends as $div)
@@ -829,7 +1039,7 @@
                     <input type="hidden" name="choice" value="cash">
                     <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
                             style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;">
-                        💰 Cash Out
+                        <x-icon name="coin" class="w-3.5 h-3.5 inline-block" /> Cash Out
                     </button>
                 </form>
                 <form action="{{ route('chama.dividend.choose', $div) }}" method="POST" class="flex-1">
@@ -837,7 +1047,7 @@
                     <input type="hidden" name="choice" value="reinvest">
                     <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
                             style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.35);color:#c7d2fe;">
-                        📈 Reinvest
+                        <x-icon name="trend-up" class="w-3.5 h-3.5 inline-block" /> Reinvest
                     </button>
                 </form>
             </div>
@@ -898,7 +1108,7 @@
         @endif
 
         {{-- Withdraw --}}
-        @if($myMember)
+        @if($myMember && !$chama->is_rotating)
         <div class="glass-card p-5 mb-6">
             <p class="font-bold text-gray-300 text-sm mb-2">Withdraw From My Share</p>
             <p class="text-xs text-gray-500 mb-4">
@@ -913,6 +1123,13 @@
                     Withdraw
                 </button>
             </form>
+        </div>
+        @elseif($myMember)
+        <div class="glass-card p-5 mb-6">
+            <p class="font-bold text-gray-300 text-sm mb-2">Withdraw From My Share</p>
+            <p class="text-xs text-gray-500">
+                Withdrawals are off while the merry-go-round is running — each round's contributions pay out directly, so there's no pool balance to draw from.
+            </p>
         </div>
         @endif
 
@@ -931,7 +1148,7 @@
                     @csrf
                     <button type="submit" class="px-6 py-3 rounded-2xl text-sm font-bold transition-all"
                             style="background:linear-gradient(135deg,rgba(245,158,11,.3),rgba(245,158,11,.15));border:1px solid rgba(245,158,11,.4);color:#fde68a;">
-                        🎉 Declare Dividend
+                        <x-icon name="coin" class="w-3.5 h-3.5 inline-block" /> Declare Dividend
                     </button>
                 </form>
                 @endif

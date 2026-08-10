@@ -65,7 +65,7 @@
             Dashboard
         </a>
         <div class="flex items-center gap-3">
-            <span class="text-xs text-gray-500 hidden sm:block">💰 Savings</span>
+            <span class="text-xs text-gray-500 hidden sm:block inline-flex items-center gap-1"><x-icon name="coin" class="w-3 h-3" /> Savings</span>
             <a href="{{ route('game.play') }}"
                class="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 px-3 py-1.5 rounded-lg transition-colors">
                 ▶ Play
@@ -84,14 +84,14 @@
              style="background:radial-gradient(circle,#15C77E,transparent 70%);transform:translate(30%,-30%);"></div>
 
         <div class="relative">
-            <h1 class="text-3xl sm:text-4xl font-black shimmer-text mb-1">💰 My Savings</h1>
+            <h1 class="text-3xl sm:text-4xl font-black shimmer-text mb-1 inline-flex items-center gap-2"><x-icon name="coin" class="w-8 h-8" /> My Savings</h1>
             <p class="text-gray-400 text-sm mb-6">Track your goals and watch your money grow</p>
 
             {{-- Summary stats --}}
             <div class="flex flex-wrap gap-3" x-show="!loading">
                 <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
                      style="background:rgba(21,199,126,0.08);border:1px solid rgba(21,199,126,0.2);">
-                    <span class="text-2xl">🏦</span>
+                    <x-icon name="bank" class="w-6 h-6 text-emerald-400" />
                     <div>
                         <div class="text-xl font-black text-emerald-400" x-text="'KSh ' + totalSaved.toLocaleString()">—</div>
                         <div class="text-xs text-gray-400">Total Saved</div>
@@ -99,7 +99,7 @@
                 </div>
                 <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
                      style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);">
-                    <span class="text-2xl">🎯</span>
+                    <x-icon name="target" class="w-6 h-6 text-sky-400" />
                     <div>
                         <div class="text-xl font-black text-sky-400" x-text="schemes.length">—</div>
                         <div class="text-xs text-gray-400">Active Goals</div>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
                      style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);">
-                    <span class="text-2xl">✅</span>
+                    <x-icon name="check-circle" class="w-6 h-6 text-violet-400" />
                     <div>
                         <div class="text-xl font-black text-violet-400" x-text="completedCount">—</div>
                         <div class="text-xs text-gray-400">Completed</div>
@@ -400,7 +400,7 @@
                         :disabled="depositing || !depositModal.amount"
                         class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         style="background:linear-gradient(135deg,#15C77E,#0fa864);color:#07060f;">
-                    <span x-show="!depositing">💰 Deposit</span>
+                    <span x-show="!depositing" class="inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> Deposit</span>
                     <span x-show="depositing" x-cloak class="flex items-center gap-2">
                         <span class="spinner" style="border-top-color:#07060f;border-color:rgba(7,6,15,0.3);width:16px;height:16px;border-width:2px;"></span>
                         Saving…
@@ -461,7 +461,7 @@
 
             <p class="text-[11px] text-amber-300/80 leading-snug rounded-xl px-3 py-2 mb-4"
                style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);">
-                💡 The money goes back to your wallet — but it stops earning interest, and your goal moves further away. Withdraw only what you need.
+                <x-icon name="bulb" class="w-3 h-3 inline-block" /> The money goes back to your wallet — but it stops earning interest, and your goal moves further away. Withdraw only what you need.
             </p>
 
             <div class="flex gap-3">
@@ -469,7 +469,7 @@
                         :disabled="withdrawing || !withdrawModal.amount"
                         class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         style="background:linear-gradient(135deg,#38bdf8,#0284c7);color:#07060f;">
-                    <span x-show="!withdrawing">🏧 Withdraw to Wallet</span>
+                    <span x-show="!withdrawing" class="inline-flex items-center gap-1"><x-icon name="bank" class="w-3.5 h-3.5" /> Withdraw to Wallet</span>
                     <span x-show="withdrawing" x-cloak class="flex items-center gap-2">
                         <span class="spinner" style="border-top-color:#07060f;border-color:rgba(7,6,15,0.3);width:16px;height:16px;border-width:2px;"></span>
                         Processing…

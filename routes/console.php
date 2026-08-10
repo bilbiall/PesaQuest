@@ -20,3 +20,6 @@ Schedule::command('game:settle-challenges')->dailyAt('02:45');
 Schedule::command('game:snapshot-leaderboard')->dailyAt('00:05');
 Schedule::command('game:snapshot-challenge-leaderboards')->everyFifteenMinutes();
 Schedule::command('game:update-share-prices')->everyFiveMinutes();
+Schedule::command('game:settle-chama-deals')->hourly();
+Schedule::command('game:publish-share-news')->dailyAt('09:15');
+Schedule::command('game:resolve-share-news')->hourly();

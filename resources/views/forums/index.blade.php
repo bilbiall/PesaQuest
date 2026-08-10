@@ -31,7 +31,7 @@
             Community
         </a>
         <div class="flex items-center gap-4">
-            <a href="{{ route('friends.index') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors">👥 Friends</a>
+            <a href="{{ route('friends.index') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"><x-icon name="people" class="w-3.5 h-3.5" /> Friends</a>
             <a href="{{ route('dashboard') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors">Dashboard</a>
         </div>
     </div>
@@ -41,7 +41,7 @@
 <div class="border-b border-white/5 py-8"
      style="background: linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(99,102,241,0.05) 100%);">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
-        <h1 class="text-3xl sm:text-4xl font-black mb-2">🗣️ Pesa Forums</h1>
+        <h1 class="text-3xl sm:text-4xl font-black mb-2 inline-flex items-center gap-2"><x-icon name="speech" class="w-8 h-8" /> Pesa Forums</h1>
         <p class="text-gray-400 text-sm sm:text-base leading-relaxed">Talk money. Share real stories.<br class="sm:hidden"> Learn together. Level up together. 🚀</p>
 
         {{-- Stats strip --}}
@@ -54,11 +54,11 @@
                 <div class="text-[10px] text-gray-500 font-bold mt-0.5">Online now</div>
             </div>
             <div class="pf-stat">
-                <div class="text-sm font-black text-white">💬 {{ number_format($discussionsToday) }}</div>
+                <div class="text-sm font-black text-white inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> {{ number_format($discussionsToday) }}</div>
                 <div class="text-[10px] text-gray-500 font-bold mt-0.5">Discussions today</div>
             </div>
             <div class="pf-stat">
-                <div class="text-sm font-black text-white">🗨️ {{ number_format($repliesToday) }}</div>
+                <div class="text-sm font-black text-white inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> {{ number_format($repliesToday) }}</div>
                 <div class="text-[10px] text-gray-500 font-bold mt-0.5">Replies today</div>
             </div>
             <div class="pf-stat flex items-center gap-2">
@@ -81,7 +81,7 @@
         {{-- Trending topics --}}
         @if($trending->isNotEmpty())
         <div class="mt-5">
-            <div class="text-[11px] font-black text-gray-500 uppercase tracking-wider mb-2">🔥 Trending Topics</div>
+            <div class="text-[11px] font-black text-gray-500 uppercase tracking-wider mb-2 inline-flex items-center gap-1"><x-icon name="fire" class="w-3 h-3" /> Trending Topics</div>
             <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
                 @foreach($trending as $t)
                 <a href="{{ route('forums.index', ['category' => $t['key']]) }}" class="pf-trend text-amber-200 hover:text-white"
@@ -97,9 +97,9 @@
         <div class="flex flex-wrap gap-2 mt-5">
             <button @click="newTopicOpen = true" class="text-[12px] font-black px-4 py-2 rounded-full text-white transition-transform hover:scale-[1.02]"
                     style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
-                ✍️ New Discussion
+                <x-icon name="pencil" class="w-3.5 h-3.5 inline-block" /> New Discussion
             </button>
-            <span class="text-[11px] font-black px-3.5 py-2 rounded-full" style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;">💬 Reply +25 XP</span>
+            <span class="text-[11px] font-black px-3.5 py-2 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;"><x-icon name="speech" class="w-3 h-3" /> Reply +25 XP</span>
             <span class="text-[11px] font-bold px-3.5 py-2 rounded-full" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;">XP on your first 5 posts each day</span>
         </div>
     </div>
@@ -129,7 +129,7 @@
                    class="flex-1 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                    style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
             <button type="submit" class="px-4 py-2.5 rounded-xl text-sm font-black text-gray-300 hover:text-white transition-colors"
-                    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">🔍</button>
+                    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><x-icon name="search" class="w-4 h-4" /></button>
         </form>
     </div>
 
@@ -137,7 +137,7 @@
     @if($schoolBoard && $mySchool)
     <div class="mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
          style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);">
-        <span class="text-2xl">🏫</span>
+        <span class="text-2xl"><x-icon name="graduation" class="w-6 h-6 text-emerald-300" /></span>
         <div class="min-w-0">
             <p class="text-sm font-black text-emerald-300">{{ $mySchool->school_name }} — Private Board</p>
             <p class="text-[11px] text-gray-500">Only members of your school can see these discussions. Teacher challenges are marked 🎯.</p>
@@ -150,13 +150,13 @@
         <a href="{{ route('forums.index', array_filter(['q' => $search])) }}"
            class="flex-shrink-0 text-xs font-black px-3.5 py-2 rounded-full transition-colors {{ !$activeCategory && !$schoolBoard ? 'text-white' : 'text-gray-400 hover:text-white' }}"
            style="{{ !$activeCategory && !$schoolBoard ? 'background:rgba(139,92,246,0.25);border:1px solid rgba(139,92,246,0.5);' : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);' }}">
-            ✨ All
+            <x-icon name="star" class="w-3 h-3 inline-block" /> All
         </a>
         @if($mySchool)
         <a href="{{ route('forums.index', ['board' => 'school']) }}"
            class="flex-shrink-0 text-xs font-black px-3.5 py-2 rounded-full transition-colors {{ $schoolBoard ? 'text-white' : 'text-emerald-400 hover:text-emerald-300' }}"
            style="{{ $schoolBoard ? 'background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.5);' : 'background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);' }}">
-            🏫 My School
+            <x-icon name="graduation" class="w-3 h-3 inline-block" /> My School
             @if($schoolTopicCount > 0)
             <span class="text-gray-500 font-bold ml-1">{{ $schoolTopicCount }}</span>
             @endif
@@ -232,7 +232,7 @@
                             <span class="font-black px-1.5 py-0.5 rounded text-[9px] text-amber-300" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);">Lv{{ $topic->user->progress->level ?? 1 }}</span>
                             @endif
                             @foreach($topBadges as $b)
-                            <span title="{{ $b->name }}" class="text-[13px]">@if($b->image_url)<img src="{{ $b->image_url }}" class="w-4 h-4 rounded-full inline object-cover" alt="{{ $b->name }}">@else{{ $b->icon }}@endif</span>
+                            <span title="{{ $b->name }}" class="text-[13px]">@if($b->image_url)<img src="{{ $b->image_url }}" class="w-4 h-4 rounded-full inline object-cover" alt="{{ $b->name }}">@else<x-icon :name="$b->icon" class="w-4 h-4 inline-block" />@endif</span>
                             @endforeach
                         </div>
                         <div class="text-[10.5px] text-gray-500 mt-0.5">
@@ -245,7 +245,7 @@
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
                     @if($topic->is_pinned)
-                    <span class="text-[10px] font-black px-2 py-1 rounded-full" style="background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;">📌</span>
+                    <span class="text-[10px] font-black px-2 py-1 rounded-full" style="background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;"><x-icon name="pin" class="w-2.5 h-2.5" /></span>
                     @endif
                     <span class="text-[10px] font-black px-2.5 py-1 rounded-full text-gray-400 whitespace-nowrap" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">{{ $categories[$topic->category]['icon'] ?? '💬' }} {{ $categories[$topic->category]['label'] ?? ucfirst($topic->category) }}</span>
                 </div>
@@ -255,13 +255,13 @@
             @if($topic->is_challenge || $topic->isFriendsOnly() || $topic->is_locked)
             <div class="flex items-center gap-2 flex-wrap mb-1.5">
                 @if($topic->is_challenge)
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-full" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;">🎯 Teacher Challenge</span>
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;"><x-icon name="target" class="w-2.5 h-2.5" /> Teacher Challenge</span>
                 @endif
                 @if($topic->isFriendsOnly())
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-full" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);color:#f9a8d4;">🔒 Friends only</span>
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);color:#f9a8d4;"><x-icon name="lock" class="w-2.5 h-2.5" /> Friends only</span>
                 @endif
                 @if($topic->is_locked)
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-full" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;">🔒 Locked</span>
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;"><x-icon name="lock" class="w-2.5 h-2.5" /> Locked</span>
                 @endif
             </div>
             @endif
@@ -317,7 +317,7 @@
     <div class="w-full sm:max-w-lg rounded-3xl p-6 my-auto"
          style="background:#0d0b1a;border:1px solid rgba(139,92,246,0.25);">
         <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-black">✍️ New Discussion</h2>
+            <h2 class="text-lg font-black inline-flex items-center gap-2"><x-icon name="pencil" class="w-4 h-4" /> New Discussion</h2>
             <button @click="newTopicOpen = false" class="text-gray-500 hover:text-white text-xl leading-none">&times;</button>
         </div>
 
@@ -330,8 +330,8 @@
         <form method="POST" action="{{ route('forums.store') }}" enctype="multipart/form-data" class="space-y-4">
             @if($schoolBoard)
             <input type="hidden" name="board" value="school">
-            <p class="rounded-xl px-3 py-2 text-[11px] font-bold text-emerald-300" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
-                🏫 Posting to your school's private board — only {{ $mySchool->school_name }} members will see this.
+            <p class="rounded-xl px-3 py-2 text-[11px] font-bold text-emerald-300 inline-flex items-center gap-1" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
+                <x-icon name="graduation" class="w-3 h-3" /> Posting to your school's private board — only {{ $mySchool->school_name }} members will see this.
             </p>
             @endif
             @csrf
@@ -348,6 +348,7 @@
                         class="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                         style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
                     @foreach($categories as $key => $meta)
+                    @continue($key === 'market-watch')
                     <option value="{{ $key }}" style="background:#0d0b1a;" {{ old('category', $activeCategory) === $key ? 'selected' : '' }}>{{ $meta['icon'] }} {{ $meta['label'] }}</option>
                     @endforeach
                 </select>
@@ -371,11 +372,11 @@
                 <div class="flex gap-3">
                     <label class="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-gray-200 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
                         <input type="radio" name="visibility" value="general" {{ old('visibility', 'general') === 'general' ? 'checked' : '' }}>
-                        🌍 General
+                        <x-icon name="globe" class="w-3.5 h-3.5 inline-block" /> General
                     </label>
                     <label class="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-gray-200 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
                         <input type="radio" name="visibility" value="friends" {{ old('visibility') === 'friends' ? 'checked' : '' }}>
-                        🔒 Friends only
+                        <x-icon name="lock" class="w-3.5 h-3.5 inline-block" /> Friends only
                     </label>
                 </div>
             </div>

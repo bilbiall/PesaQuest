@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/icons.js') }}"></script>
 <style>
 *{box-sizing:border-box;}
 body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:100vh;}
@@ -280,7 +281,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         </a>
         <span class="mob-nav-title">All Assets</span>
     </div>
-    <a href="{{ route('portfolio') }}" class="mob-nav-portfolio">🎒 Portfolio</a>
+    <a href="{{ route('portfolio') }}" class="mob-nav-portfolio"><x-icon name="bar-chart" class="w-3.5 h-3.5 inline-block" /> Portfolio</a>
 </nav>
 
 {{-- ═══════════════ MOBILE SEARCH + FILTER CHIPS ═══════════════ --}}
@@ -296,7 +297,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         <div class="search-suggestions" x-show="suggestions.length > 0 && query.length >= 3" x-cloak @click.outside="suggestions=[]">
             <template x-for="s in suggestions" :key="s.id">
                 <div class="suggestion-item" @click="selectSuggestion(s)">
-                    <div class="suggestion-icon"><span x-text="s.icon"></span></div>
+                    <div class="suggestion-icon"><span class="w-4 h-4" x-html="pqIcon(s.icon, 'w-4 h-4')"></span></div>
                     <div style="flex:1;min-width:0;">
                         <div style="display:flex;align-items:center;gap:.4rem;">
                             <span class="suggestion-name" x-text="s.name"></span>
@@ -314,17 +315,17 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
     <div class="mob-chip-row">
         @php $currentCat = request('cat','all'); @endphp
         <a href="{{ route('marketplace.all', request()->except('cat','page')) }}"
-           class="mob-chip {{ $currentCat === 'all' ? 'active' : '' }}">🏪 All</a>
+           class="mob-chip {{ $currentCat === 'all' ? 'active' : '' }}"><x-icon name="store" class="w-3 h-3 inline-block" /> All</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'vehicle'])) }}"
-           class="mob-chip {{ $currentCat === 'vehicle' ? 'active' : '' }}">🚗 Vehicles</a>
+           class="mob-chip {{ $currentCat === 'vehicle' ? 'active' : '' }}"><x-icon name="car" class="w-3 h-3 inline-block" /> Vehicles</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'property'])) }}"
-           class="mob-chip {{ $currentCat === 'property' ? 'active' : '' }}">🏠 Property</a>
+           class="mob-chip {{ $currentCat === 'property' ? 'active' : '' }}"><x-icon name="house" class="w-3 h-3 inline-block" /> Property</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'business'])) }}"
-           class="mob-chip {{ $currentCat === 'business' ? 'active' : '' }}">💼 Business</a>
+           class="mob-chip {{ $currentCat === 'business' ? 'active' : '' }}"><x-icon name="briefcase" class="w-3 h-3 inline-block" /> Business</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'investment'])) }}"
-           class="mob-chip {{ $currentCat === 'investment' ? 'active' : '' }}">📈 Investments</a>
+           class="mob-chip {{ $currentCat === 'investment' ? 'active' : '' }}"><x-icon name="trend-up" class="w-3 h-3 inline-block" /> Investments</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'gadget'])) }}"
-           class="mob-chip {{ $currentCat === 'gadget' ? 'active' : '' }}">📱 Gadgets</a>
+           class="mob-chip {{ $currentCat === 'gadget' ? 'active' : '' }}"><x-icon name="phone" class="w-3 h-3 inline-block" /> Gadgets</a>
     </div>
 
     {{-- Section chips --}}
@@ -333,15 +334,15 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         <a href="{{ route('marketplace.all', request()->except('section','page')) }}"
            class="mob-chip {{ $currentSection === '' ? 'active' : '' }}">All Types</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('section','page'), ['section'=>'starter_moves'])) }}"
-           class="mob-chip {{ $currentSection === 'starter_moves' ? 'active' : '' }}">🎯 Starter</a>
+           class="mob-chip {{ $currentSection === 'starter_moves' ? 'active' : '' }}"><x-icon name="target" class="w-3 h-3 inline-block" /> Starter</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('section','page'), ['section'=>'high_growth'])) }}"
-           class="mob-chip {{ $currentSection === 'high_growth' ? 'active' : '' }}">🚀 High Growth</a>
+           class="mob-chip {{ $currentSection === 'high_growth' ? 'active' : '' }}"><x-icon name="rocket" class="w-3 h-3 inline-block" /> High Growth</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('section','page'), ['section'=>'serious_money'])) }}"
-           class="mob-chip {{ $currentSection === 'serious_money' ? 'active' : '' }}">♟️ Serious</a>
+           class="mob-chip {{ $currentSection === 'serious_money' ? 'active' : '' }}"><x-icon name="diamond" class="w-3 h-3 inline-block" /> Serious</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('section','page'), ['section'=>'dividend_builders'])) }}"
-           class="mob-chip {{ $currentSection === 'dividend_builders' ? 'active' : '' }}">💰 Dividend</a>
+           class="mob-chip {{ $currentSection === 'dividend_builders' ? 'active' : '' }}"><x-icon name="coin" class="w-3 h-3 inline-block" /> Dividend</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('section','page'), ['section'=>'lifestyle_upgrades'])) }}"
-           class="mob-chip {{ $currentSection === 'lifestyle_upgrades' ? 'active' : '' }}">🎧 Lifestyle</a>
+           class="mob-chip {{ $currentSection === 'lifestyle_upgrades' ? 'active' : '' }}"><x-icon name="headphones" class="w-3 h-3 inline-block" /> Lifestyle</a>
     </div>
 </div>
 
@@ -392,7 +393,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 {{-- ═══════════════ PAGE HEADER ═══════════════ --}}
 <div class="page-header">
     <div class="ph-inner">
-        <div class="ph-icon">🏪</div>
+        <div class="ph-icon"><x-icon name="store" class="w-6 h-6" /></div>
         <div>
             <div class="ph-title">All Assets</div>
             <div class="ph-count">{{ $totalCount }} items available</div>
@@ -412,7 +413,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
             <div class="search-suggestions" x-show="suggestions.length > 0 && query.length >= 3" x-cloak @click.outside="suggestions=[]">
                 <template x-for="s in suggestions" :key="s.id">
                     <div class="suggestion-item" @click="selectSuggestion(s)">
-                        <div class="suggestion-icon"><span x-text="s.icon"></span></div>
+                        <div class="suggestion-icon"><span class="w-4 h-4" x-html="pqIcon(s.icon, 'w-4 h-4')"></span></div>
                         <div style="flex:1;min-width:0;">
                             <div style="display:flex;align-items:center;gap:.4rem;">
                                 <span class="suggestion-name" x-text="s.name"></span>
@@ -460,18 +461,18 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         @php
             $currentSection = request('section', '');
             $sections = [
-                '' => ['icon'=>'🏪','label'=>'All Assets'],
-                'starter_moves'      => ['icon'=>'🎯','label'=>'Starter Moves'],
-                'high_growth'        => ['icon'=>'🚀','label'=>'High Growth'],
-                'serious_money'      => ['icon'=>'♟️','label'=>'Serious Money'],
-                'dividend_builders'  => ['icon'=>'💰','label'=>'Dividend Builders'],
-                'lifestyle_upgrades' => ['icon'=>'🎧','label'=>'Lifestyle Upgrades'],
+                '' => ['icon'=>'store','label'=>'All Assets'],
+                'starter_moves'      => ['icon'=>'target','label'=>'Starter Moves'],
+                'high_growth'        => ['icon'=>'rocket','label'=>'High Growth'],
+                'serious_money'      => ['icon'=>'diamond','label'=>'Serious Money'],
+                'dividend_builders'  => ['icon'=>'coin','label'=>'Dividend Builders'],
+                'lifestyle_upgrades' => ['icon'=>'headphones','label'=>'Lifestyle Upgrades'],
             ];
         @endphp
         @foreach($sections as $sKey => $sec)
         <a href="{{ route('marketplace.all', array_merge(request()->except('section','page'), $sKey ? ['section'=>$sKey] : [])) }}"
            class="sec-tab {{ $currentSection === $sKey ? 'active' : '' }}">
-            {{ $sec['icon'] }} {{ $sec['label'] }}
+            <x-icon :name="$sec['icon']" class="w-3.5 h-3.5 inline-block" /> {{ $sec['label'] }}
         </a>
         @endforeach
     </div>
@@ -489,19 +490,19 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
             @php
                 $currentCat = request('cat', 'all');
                 $sbCats = [
-                    'all'        => ['emoji'=>'🏪','label'=>'All Assets',    'count'=>$totalCount],
-                    'vehicle'    => ['emoji'=>'🚗','label'=>'Vehicles',      'count'=>$categoryCounts['vehicle']    ?? 0],
-                    'property'   => ['emoji'=>'🏠','label'=>'Property',      'count'=>$categoryCounts['property']   ?? 0],
-                    'business'   => ['emoji'=>'💼','label'=>'Business',      'count'=>$categoryCounts['business']   ?? 0],
-                    'investment' => ['emoji'=>'📈','label'=>'Investments',   'count'=>$categoryCounts['investment'] ?? 0],
-                    'gadget'     => ['emoji'=>'📱','label'=>'Gadgets',       'count'=>$categoryCounts['gadget']     ?? 0],
+                    'all'        => ['icon'=>'store','label'=>'All Assets',    'count'=>$totalCount],
+                    'vehicle'    => ['icon'=>'car','label'=>'Vehicles',      'count'=>$categoryCounts['vehicle']    ?? 0],
+                    'property'   => ['icon'=>'house','label'=>'Property',      'count'=>$categoryCounts['property']   ?? 0],
+                    'business'   => ['icon'=>'briefcase','label'=>'Business',      'count'=>$categoryCounts['business']   ?? 0],
+                    'investment' => ['icon'=>'trend-up','label'=>'Investments',   'count'=>$categoryCounts['investment'] ?? 0],
+                    'gadget'     => ['icon'=>'phone','label'=>'Gadgets',       'count'=>$categoryCounts['gadget']     ?? 0],
                 ];
             @endphp
             @foreach($sbCats as $cKey => $c)
             <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), $cKey !== 'all' ? ['cat'=>$cKey] : [])) }}"
                class="sb-cat-item {{ $currentCat === $cKey ? 'active' : '' }}">
                 <div class="sb-cat-left">
-                    <span>{{ $c['emoji'] }}</span>
+                    <x-icon :name="$c['icon']" class="w-4 h-4" />
                     <span class="sb-cat-name">{{ $c['label'] }}</span>
                 </div>
                 <span class="sb-cat-count">{{ $c['count'] }}</span>
@@ -539,10 +540,10 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
             @php
                 $activeIncome = (array) request('income', []);
                 $incomeTypes = [
-                    'passive'  => ['emoji'=>'💚','label'=>'Passive Income'],
-                    'use_earn' => ['emoji'=>'🚗','label'=>'Use & Earn'],
-                    'business' => ['emoji'=>'🏢','label'=>'Business Income'],
-                    'capital'  => ['emoji'=>'📈','label'=>'Capital Growth'],
+                    'passive'  => ['icon'=>'heart','label'=>'Passive Income'],
+                    'use_earn' => ['icon'=>'car','label'=>'Use & Earn'],
+                    'business' => ['icon'=>'building','label'=>'Business Income'],
+                    'capital'  => ['icon'=>'trend-up','label'=>'Capital Growth'],
                 ];
             @endphp
             @foreach($incomeTypes as $iKey => $iType)
@@ -552,7 +553,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
             )) }}" style="text-decoration:none;">
                 <label class="sb-checkbox" style="cursor:pointer;">
                     <input type="checkbox" {{ in_array($iKey,$activeIncome) ? 'checked' : '' }} style="pointer-events:none;">
-                    <span class="sb-checkbox-label">{{ $iType['emoji'] }} {{ $iType['label'] }}</span>
+                    <span class="sb-checkbox-label inline-flex items-center gap-1"><x-icon :name="$iType['icon']" class="w-3.5 h-3.5" /> {{ $iType['label'] }}</span>
                 </label>
             </a>
             @endforeach
@@ -622,14 +623,11 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                 <div class="card-img" style="background:{{ $asset->categoryGradient() }}">
                     @if($asset->image_url)
                     <img src="{{ $asset->image_url }}" alt="{{ $asset->name }}" loading="lazy"
-                         style="{{ $asset->icon ? 'opacity:.6' : 'opacity:.92' }}"
+                         style="opacity:.92"
                          onerror="this.style.display='none'">
-                    @endif
-                    @if($asset->icon)
-                    <div class="card-img-overlay"></div>
-                    <span class="card-emoji">{{ $asset->icon }}</span>
-                    @elseif(!$asset->image_url)
-                    <span class="card-emoji" style="opacity:.5;">{{ $asset->categoryEmoji() }}</span>
+                    @else
+                    {{-- No image? Show the icon in its place — never over an actual item photo. --}}
+                    <span class="card-emoji" style="opacity:.75;"><x-icon :name="$asset->icon ?? 'store'" class="w-8 h-8" /></span>
                     @endif
 
                     @if($asset->badge)
@@ -736,12 +734,15 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
             <div>
                 <div class="relative h-40 overflow-hidden rounded-t-3xl" :class="'cat-' + inspecting.category">
                     <template x-if="inspecting.image">
-                        <img :src="inspecting.image" class="absolute inset-0 w-full h-full object-cover" style="opacity:.45;">
+                        <img :src="inspecting.image" class="absolute inset-0 w-full h-full object-cover" style="opacity:.85;">
                     </template>
                     <div class="absolute inset-0" style="background:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:28px 28px;"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="icon-bob-sm" style="font-size:4rem;" x-text="inspecting.icon"></span>
-                    </div>
+                    {{-- No image? Show the icon in its place — never over an actual item photo. --}}
+                    <template x-if="!inspecting.image">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="icon-bob-sm w-16 h-16" x-html="pqIcon(inspecting.icon, 'w-16 h-16')"></span>
+                        </div>
+                    </template>
                     <button @click="inspecting=null;buyMsg='';" class="absolute top-4 right-4 w-8 h-8 rounded-xl flex items-center justify-center"
                             style="background:rgba(0,0,0,.4);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -776,7 +777,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 
                     <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
                         <div class="px-4 py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
-                            <p class="text-xs font-black text-white">💰 How this works financially</p>
+                            <p class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> How this works financially</p>
                         </div>
                         <div class="p-4 space-y-2">
                             <template x-if="inspecting.income > 0">
@@ -823,7 +824,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     <template x-if="inspecting.afford_pct > 0">
                         <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
                             <div class="px-4 py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
-                                <p class="text-xs font-black text-white">📊 Affordability check</p>
+                                <p class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="bar-chart" class="w-3.5 h-3.5" /> Affordability check</p>
                             </div>
                             <div class="p-4">
                                 <div class="flex justify-between items-center mb-2">
@@ -855,7 +856,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     <template x-if="inspecting.financing && !inspecting.maxed">
                         <div class="mb-4 rounded-2xl overflow-hidden" style="border:1px solid rgba(245,158,11,.25);">
                             <div class="px-4 py-2" style="background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.15);">
-                                <p class="text-xs font-black text-amber-300">🏦 Or finance it — deposit now, pay monthly</p>
+                                <p class="text-xs font-black text-amber-300 inline-flex items-center gap-1"><x-icon name="bank" class="w-3.5 h-3.5" /> Or finance it — deposit now, pay monthly</p>
                             </div>
                             <div class="p-4 space-y-1.5 text-sm">
                                 <div class="flex justify-between"><span class="text-gray-400">Deposit (pay now)</span><span class="font-bold text-white" x-text="'Ksh ' + inspecting.financing.deposit.toLocaleString()"></span></div>

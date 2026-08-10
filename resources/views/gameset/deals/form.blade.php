@@ -44,10 +44,10 @@
             {{-- Left column --}}
             <div class="space-y-5">
                 <div>
-                    <label class="field-label">Icon (emoji)
-                        <x-help-tip text="Emoji shown next to the deal on the Equity Square board." example="💼" />
+                    <label class="field-label">Icon (name)
+                        <x-help-tip text="Icon shown next to the deal on the Equity Square board." example="briefcase" />
                     </label>
-                    <input type="text" name="icon" value="{{ old('icon', $deal->icon ?? '💼') }}" class="field-input" maxlength="8">
+                    <input type="text" name="icon" value="{{ old('icon', $deal->icon ?? 'briefcase') }}" class="field-input" maxlength="30">
                 </div>
                 <div>
                     <label class="field-label">Title *

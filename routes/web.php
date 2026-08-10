@@ -249,6 +249,10 @@ Route::middleware(['auth'])->prefix('chama')->name('chama.')->group(function () 
     Route::post('/{chama}/withdraw',                 [\App\Http\Controllers\ChamaController::class, 'withdraw'])->name('withdraw');
     Route::post('/{chama}/dividend/declare',         [\App\Http\Controllers\ChamaController::class, 'declareDividend'])->name('dividend.declare');
     Route::post('/dividends/{dividend}/choose',      [\App\Http\Controllers\ChamaController::class, 'chooseDividend'])->name('dividend.choose');
+
+    // Merry-go-round rotation toggle (vote-gated)
+    Route::post('/{chama}/rotation/enable',          [\App\Http\Controllers\ChamaController::class, 'proposeEnableRotation'])->name('rotation.enable');
+    Route::post('/{chama}/rotation/disable',         [\App\Http\Controllers\ChamaController::class, 'proposeDisableRotation'])->name('rotation.disable');
 });
 
 // Friends & P2P friend loans

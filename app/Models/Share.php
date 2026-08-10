@@ -10,18 +10,20 @@ class Share extends Model
     protected $fillable = [
         'name', 'symbol', 'icon', 'sector',
         'current_price', 'previous_price', 'price_history', 'min_price', 'max_price',
-        'volatility', 'drift', 'last_event_reason', 'is_active', 'sort_order',
+        'volatility', 'drift', 'temp_drift', 'temp_drift_expires_at', 'last_event_reason', 'is_active', 'sort_order',
     ];
 
     protected $casts = [
-        'current_price'  => 'float',
-        'previous_price' => 'float',
-        'price_history'  => 'array',
-        'min_price'      => 'float',
-        'max_price'      => 'float',
-        'volatility'     => 'float',
-        'drift'          => 'float',
-        'is_active'      => 'boolean',
+        'current_price'         => 'float',
+        'previous_price'        => 'float',
+        'price_history'         => 'array',
+        'min_price'             => 'float',
+        'max_price'             => 'float',
+        'volatility'            => 'float',
+        'drift'                 => 'float',
+        'temp_drift'            => 'float',
+        'temp_drift_expires_at' => 'datetime',
+        'is_active'             => 'boolean',
     ];
 
     public function holdings(): HasMany

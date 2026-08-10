@@ -271,7 +271,7 @@ body{background:#07060f;}
                         @if($badge->image_url)
                             <img src="{{ $badge->image_url }}" alt="{{ $badge->name }}" style="width:60%;height:60%;object-fit:contain;">
                         @else
-                            {{ $badge->icon ?? '🏅' }}
+                            <x-icon :name="$badge->icon ?? 'medal'" class="w-6 h-6" />
                         @endif
                     </div>
                     <span class="badge-name">{{ $badge->name }}</span>

@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/icons.js') }}"></script>
     <style>
         body { background: #07060f; font-family: 'Figtree', sans-serif; }
         [x-cloak] { display: none !important; }
@@ -44,10 +45,10 @@
             Dashboard
         </a>
         <div class="flex items-center gap-3">
-            <span class="text-xs text-gray-500 hidden sm:block">📊 Investments &amp; Assets</span>
+            <span class="text-xs text-gray-500 hidden sm:block inline-flex items-center gap-1"><x-icon name="bar-chart" class="w-3 h-3" /> Investments &amp; Assets</span>
             <a href="{{ route('marketplace') }}"
-               class="text-xs text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/60 px-3 py-1.5 rounded-lg transition-colors">
-                🛒 Marketplace
+               class="text-xs text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/60 px-3 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1">
+                <x-icon name="cart" class="w-3.5 h-3.5" /> Marketplace
             </a>
         </div>
     </div>
@@ -57,7 +58,7 @@
 
     {{-- ── Header ── --}}
     <div class="mb-6">
-        <h1 class="text-3xl sm:text-4xl font-black mb-1">📊 Your Portfolio</h1>
+        <h1 class="text-3xl sm:text-4xl font-black mb-1 inline-flex items-center gap-2"><x-icon name="bar-chart" class="w-8 h-8" /> Your Portfolio</h1>
         <p class="text-gray-400 text-sm">Assets, investments, savings and debts — your whole money picture on day {{ number_format($tick) }}.</p>
     </div>
 
@@ -95,7 +96,7 @@
     <div class="pf-card rounded-3xl p-5 sm:p-6 mb-8" style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h2 class="text-sm font-black text-white uppercase tracking-widest">📈 Asset Value Over Time</h2>
+                <h2 class="text-sm font-black text-white uppercase tracking-widest inline-flex items-center gap-1"><x-icon name="trend-up" class="w-3.5 h-3.5" /> Asset Value Over Time</h2>
                 <p class="text-xs text-gray-500 mt-0.5">Combined value of everything you own, day by day</p>
             </div>
             @if(count($netWorthSeries) >= 2)
@@ -157,7 +158,7 @@
     {{-- ── Active investments (cyan) — deals + shares ── --}}
     <div class="mb-10" x-data="pfShareSell()">
         <div class="flex items-center gap-3 mb-4">
-            <span class="text-xl">💹</span>
+            <x-icon name="trend-up" class="w-5 h-5 text-cyan-300" />
             <h2 class="text-sm font-black text-cyan-300 uppercase tracking-widest">Active Investments</h2>
             <div class="flex-1 h-px" style="background:rgba(6,182,212,0.15);"></div>
             @if($activeDeals->isNotEmpty())
@@ -187,7 +188,7 @@
             <div class="pf-card pf-appear rounded-2xl p-5" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="flex items-center gap-3">
-                        <span class="text-3xl">{{ $deal->icon ?? '💼' }}</span>
+                        <x-icon :name="$deal->icon ?? 'briefcase'" class="w-7 h-7" />
                         <div>
                             <p class="font-black text-white text-sm leading-tight">{{ $deal->title ?? 'Investment Deal' }}</p>
                             <p class="text-[11px] text-gray-500 mt-0.5">Ksh {{ number_format($pd->amount_invested) }} invested</p>
@@ -221,7 +222,7 @@
 
         @if($myShares->isNotEmpty())
         <div class="flex items-center gap-2 mb-3">
-            <span class="text-xs font-black text-cyan-300/80 uppercase tracking-wider">📊 Shares</span>
+            <span class="text-xs font-black text-cyan-300/80 uppercase tracking-wider inline-flex items-center gap-1"><x-icon name="bar-chart" class="w-3 h-3" /> Shares</span>
             <span class="text-[11px] font-bold {{ $sharesUnrealisedPL >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                 {{ $sharesUnrealisedPL >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($sharesUnrealisedPL)) }} unrealised
             </span>
@@ -231,7 +232,7 @@
             <div id="pf-share-{{ $h->share_id }}" class="pf-card pf-appear rounded-2xl p-5" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="flex items-center gap-3">
-                        <span class="text-3xl">{{ $h->share->icon }}</span>
+                        <x-icon :name="$h->share->icon" class="w-7 h-7" />
                         <div>
                             <p class="font-black text-white text-sm leading-tight">{{ $h->share->name }} ({{ $h->share->symbol }})</p>
                             <p class="text-[11px] text-gray-500 mt-0.5">{{ $h->quantity }} shares · avg Ksh {{ number_format($h->avg_cost, 2) }}</p>
@@ -277,7 +278,7 @@
     {{-- ── Owned assets by category ── --}}
     <div class="mb-10" x-data="pfSell()">
         <div class="flex items-center gap-3 mb-4">
-            <span class="text-xl">🏠</span>
+            <x-icon name="house" class="w-5 h-5" />
             <h2 class="text-sm font-black text-white uppercase tracking-widest">Owned Assets</h2>
             <div class="flex-1 h-px" style="background:rgba(255,255,255,0.06);"></div>
             <span class="text-xs text-gray-500 font-semibold">{{ $portfolioCount }} owned</span>
@@ -321,7 +322,7 @@
                     <div class="relative h-28 overflow-hidden">
                         <img src="{{ $pa->asset->image_url }}" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.55;" loading="lazy" alt="" onerror="this.parentElement.style.display='none'"/>
                         <div class="absolute inset-0" style="background:linear-gradient(to bottom, rgba(7,6,15,0.1), rgba(7,6,15,0.85));"></div>
-                        <span class="absolute bottom-2 left-3 text-3xl" style="filter:drop-shadow(0 0 10px rgba(0,0,0,0.6));">{{ $pa->asset->icon }}</span>
+                        <span class="absolute bottom-2 left-3" style="filter:drop-shadow(0 0 10px rgba(0,0,0,0.6));"><x-icon :name="$pa->asset->icon" class="w-7 h-7 text-white" /></span>
                         @if($pa->quantity > 1)
                         <span class="absolute top-2 right-2 bg-black/60 backdrop-blur text-white text-[11px] font-black px-2 py-0.5 rounded-full">×{{ $pa->quantity }}</span>
                         @endif
@@ -331,7 +332,7 @@
                         <div class="flex items-start justify-between gap-2 mb-3">
                             <div class="flex items-center gap-2 min-w-0">
                                 @if(!$pa->asset->image_url)
-                                <span class="text-2xl flex-shrink-0">{{ $pa->asset->icon }}</span>
+                                <x-icon :name="$pa->asset->icon" class="w-6 h-6 flex-shrink-0" />
                                 @endif
                                 <p class="font-black text-white text-sm leading-tight truncate">{{ $pa->asset->name }}</p>
                             </div>
@@ -415,7 +416,7 @@
                     <div>
                         <div class="p-6 border-b border-white/5">
                             <div class="flex items-center gap-3">
-                                <div class="text-4xl" x-text="selling.icon"></div>
+                                <div class="w-9 h-9" x-html="pqIcon(selling.icon, 'w-9 h-9')"></div>
                                 <div>
                                     <p class="font-black text-white" x-text="selling.name"></p>
                                     <p class="text-xs text-gray-400">Confirm sale — proceeds go to your balance</p>
@@ -468,7 +469,7 @@
         {{-- Savings schemes (emerald) --}}
         <div>
             <div class="flex items-center gap-3 mb-4">
-                <span class="text-xl">🏦</span>
+                <x-icon name="bank" class="w-5 h-5 text-emerald-300" />
                 <h2 class="text-sm font-black text-emerald-300 uppercase tracking-widest">Savings Goals</h2>
                 <div class="flex-1 h-px" style="background:rgba(16,185,129,0.15);"></div>
             </div>
@@ -507,7 +508,7 @@
         {{-- Loans tracker (amber/red) --}}
         <div>
             <div class="flex items-center gap-3 mb-4">
-                <span class="text-xl">💳</span>
+                <x-icon name="card" class="w-5 h-5 text-amber-300" />
                 <h2 class="text-sm font-black text-amber-300 uppercase tracking-widest">Loans Tracker</h2>
                 <div class="flex-1 h-px" style="background:rgba(245,158,11,0.15);"></div>
                 @if($loans->isNotEmpty())
@@ -563,7 +564,7 @@
     {{-- ── Completed deals history ── --}}
     <div class="mb-10">
         <div class="flex items-center gap-3 mb-4">
-            <span class="text-xl">🗂️</span>
+            <x-icon name="folder" class="w-5 h-5" />
             <h2 class="text-sm font-black text-gray-400 uppercase tracking-widest">Deal History</h2>
             <div class="flex-1 h-px" style="background:rgba(255,255,255,0.06);"></div>
         </div>
@@ -581,7 +582,7 @@
                  style="background:rgba(255,255,255,0.02);border:1px solid {{ $won ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)' }};">
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <span class="text-2xl {{ $won ? '' : 'grayscale' }}">{{ $pd->deal->icon ?? '💼' }}</span>
+                        <x-icon :name="$pd->deal->icon ?? 'briefcase'" class="w-6 h-6 {{ $won ? '' : 'grayscale' }}" />
                         <div class="min-w-0">
                             <p class="font-bold text-gray-200 text-sm leading-tight truncate">{{ $pd->deal->title ?? 'Deal' }}</p>
                             <p class="text-[10px] text-gray-600">Ksh {{ number_format($pd->amount_invested) }} in · {{ $won ? 'Paid off' : 'Went south' }}</p>

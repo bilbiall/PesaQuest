@@ -29,15 +29,20 @@ class PlayerShareHolding extends Model
         return (int) round($this->quantity * ($this->share->current_price ?? 0));
     }
 
+    /** What you'd actually pocket if you sold right now (uses the real sell
+     *  price, same number the "you'll receive" estimate is built from) minus
+     *  what you paid — not the mark-to-market value, so it never confusingly
+     *  disagrees with the sell button sitting right next to it. */
     public function gainLoss(): int
     {
-        return $this->currentValue() - (int) round($this->quantity * $this->avg_cost);
+        $sellValue = (int) round($this->quantity * ($this->share->sellPrice() ?? 0));
+        return $sellValue - (int) round($this->quantity * $this->avg_cost);
     }
 
     public function gainLossPct(): float
     {
         if ($this->avg_cost <= 0) return 0;
-        return round((($this->share->current_price - $this->avg_cost) / $this->avg_cost) * 100, 1);
+        return round((($this->share->sellPrice() - $this->avg_cost) / $this->avg_cost) * 100, 1);
     }
 
     /** The exact shape the "My Shares" list renders — shared by WorldController

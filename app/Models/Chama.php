@@ -13,11 +13,24 @@ class Chama extends Model
         'monthly_contribution', 'status', 'creator_id', 'max_members', 'pool_balance',
         'visibility', 'join_code', 'min_level', 'min_credit_score', 'min_savings',
         'loan_interest_rate', 'undistributed_gains',
+        'is_rotating', 'rotation_index', 'rotation_cycles_completed',
+    ];
+
+    protected $casts = [
+        'is_rotating' => 'boolean',
     ];
 
     protected $attributes = [
-        'undistributed_gains' => 0,
+        'undistributed_gains'       => 0,
+        'is_rotating'               => false,
+        'rotation_index'            => 0,
+        'rotation_cycles_completed' => 0,
     ];
+
+    /** Full cycles required before disable_rotation can be proposed — stops a
+     *  member voting to bail out right before a contribution would otherwise
+     *  fund a rival's upcoming payout. */
+    public const ROTATION_CYCLES_BEFORE_DISABLE = 1;
 
     /** How many chamas a player may belong to at once. */
     public const MAX_MEMBERSHIPS = 3;
@@ -141,6 +154,29 @@ class Chama extends Model
         return $this->hasMany(ChamaDividend::class);
     }
 
+    public function chamaShareHoldings(): HasMany
+    {
+        return $this->hasMany(ChamaShareHolding::class);
+    }
+
+    public function chamaDeals(): HasMany
+    {
+        return $this->hasMany(ChamaDeal::class);
+    }
+
+    /** Mark-to-market value of every share the chama currently holds. */
+    public function chamaShareHoldingsValue(): float
+    {
+        return $this->chamaShareHoldings()->with('share')->get()->sum(fn ($h) => $h->currentValue());
+    }
+
+    /** Pending deals are valued at cost (outcome unknown); settled ones have
+     *  already paid out or been written off, so they don't carry value here. */
+    public function chamaDealsValue(): float
+    {
+        return (float) $this->chamaDeals()->where('status', 'pending')->sum('amount_invested');
+    }
+
     /** Total principal still owed across every active chama loan — the pool's
      *  real exposure, used to gate withdrawals that would leave it uncovered. */
     public function outstandingChamaLoansTotal(): float
@@ -158,7 +194,7 @@ class Chama extends Model
         $assetValue = $this->chamaAssets()->with('asset')->get()->sum(function ($ca) {
             return ($ca->asset->base_price ?? $ca->purchase_price) * $ca->quantity;
         });
-        return $this->pool_balance + $assetValue;
+        return (int) round($this->pool_balance + $assetValue + $this->chamaShareHoldingsValue() + $this->chamaDealsValue());
     }
 
     public function monthlyAssetIncome(): int
@@ -207,5 +243,26 @@ class Chama extends Model
             $pct = round(($m->total_contributed / $total) * 100, 2);
             $m->update(['share_pct' => $pct]);
         }
+    }
+
+    /** Merry-go-round payout order — join order, the simplest deterministic
+     *  rule that needs no extra setup step when rotation is enabled. */
+    public function rotationOrder(): \Illuminate\Support\Collection
+    {
+        return $this->activeMembers()->orderBy('joined_at')->get();
+    }
+
+    /** Whose turn is next, or null if the chama has no active members. */
+    public function currentRotationRecipient(): ?ChamaMember
+    {
+        $order = $this->rotationOrder();
+        if ($order->isEmpty()) return null;
+
+        return $order[$this->rotation_index % $order->count()];
+    }
+
+    public function canDisableRotation(): bool
+    {
+        return (int) $this->rotation_cycles_completed >= self::ROTATION_CYCLES_BEFORE_DISABLE;
     }
 }

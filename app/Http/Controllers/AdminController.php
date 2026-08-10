@@ -1247,6 +1247,7 @@ class AdminController extends Controller
             'seed:fun-world'      => ['cmd' => 'db:seed', 'args' => ['--class' => 'FunWorldActivitySeeder',   '--force' => true]],
             'seed:dreams'         => ['cmd' => 'db:seed', 'args' => ['--class' => 'DreamSeeder',              '--force' => true]],
             'seed:challenge-templates' => ['cmd' => 'db:seed', 'args' => ['--class' => 'ChallengeTemplateSeeder', '--force' => true]],
+            'seed:share-news'     => ['cmd' => 'db:seed', 'args' => ['--class' => 'ShareNewsTemplateSeeder',     '--force' => true]],
             // Destructive seeders (truncate first — danger!)
             'seed:assets'         => ['cmd' => 'db:seed', 'args' => ['--class' => 'AssetSeeder',             '--force' => true]],
             'seed:bills'          => ['cmd' => 'db:seed', 'args' => ['--class' => 'BillSeeder',              '--force' => true]],

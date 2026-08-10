@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/icons.js') }}"></script>
     <style>
         body { background:#07060f; font-family:'Figtree',sans-serif; }
         [x-cloak]{ display:none !important; }
@@ -108,7 +109,7 @@
                         </template>
                         <div class="absolute inset-0" style="background:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:28px 28px;"></div>
                         <template x-if="form.icon">
-                            <div class="iconbob relative z-10" style="font-size:4.5rem;" x-text="form.icon"></div>
+                            <div class="iconbob relative z-10 w-16 h-16" x-html="pqIcon(form.icon, 'w-16 h-16')"></div>
                         </template>
                         <div class="absolute top-3 right-3 text-xs font-black px-2 py-0.5 rounded-xl"
                              style="background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);"
@@ -214,12 +215,12 @@
                                    value="{{ old('brand', $asset?->brand) }}">
                         </div>
                         <div>
-                            <label class="form-label">Icon (emoji) <span class="text-gray-600 font-normal normal-case">— optional, leave blank to hide</span>
-                                <x-help-tip text="A single emoji shown as the big icon on this asset's marketplace card and live preview. Leave blank and the icon area is simply hidden." example="🚗" />
+                            <label class="form-label">Icon (name) <span class="text-gray-600 font-normal normal-case">— optional, leave blank to hide</span>
+                                <x-help-tip text="A name from the app's icon set (e.g. car, house, briefcase) shown as the big icon on this asset's marketplace card and live preview. Leave blank and the icon area is simply hidden." example="car" />
                             </label>
-                            <input type="text" name="icon" class="form-input text-center text-2xl"
-                                   x-model="form.icon" placeholder="🚗"
-                                   value="{{ old('icon', $asset?->icon ?? '') }}" maxlength="8">
+                            <input type="text" name="icon" class="form-input text-center"
+                                   x-model="form.icon" placeholder="car"
+                                   value="{{ old('icon', $asset?->icon ?? '') }}" maxlength="30">
                         </div>
                         <div>
                             <label class="form-label">Category *

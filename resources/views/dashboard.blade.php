@@ -307,12 +307,12 @@
 @if($needsOnboarding)
 <div class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9990;overflow-y:auto;overscroll-behavior:contain;">
     <div class="max-w-md w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-10 text-center my-auto">
-        <div class="text-6xl mb-4 animate-bounce">🚀</div>
+        <div class="mb-4 animate-bounce flex justify-center"><x-icon name="rocket" class="w-16 h-16 text-indigo-400" /></div>
         <h2 class="text-2xl font-black mb-2">Start Your Career Journey</h2>
         <p class="text-gray-400 text-sm leading-relaxed mb-6">Take a quick 5-question quiz and we'll match you to the perfect career in PesaQuest's world.</p>
         <a href="{{ route('life.quiz') }}"
-           class="block bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-2xl text-base shadow-xl shadow-indigo-500/40 hover:scale-105 transition-transform">
-            📝 Take the Career Quiz
+           class="block bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-2xl text-base shadow-xl shadow-indigo-500/40 hover:scale-105 transition-transform flex items-center justify-center gap-2">
+            <x-icon name="pencil" class="w-4 h-4" /> Take the Career Quiz
         </a>
         <p class="text-[11px] text-gray-600 mt-3">Takes 2 minutes — Fully personalised</p>
     </div>
@@ -464,7 +464,7 @@
         <div class="hidden xl:flex items-center gap-1.5 flex-shrink-0">
             {{-- Cash --}}
             <div class="stat-chip flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
-                <span class="text-emerald-400 text-sm">💰</span>
+                <x-icon name="coin" class="w-3.5 h-3.5 text-emerald-400" />
                 <div class="leading-none">
                     <div class="text-[9px] text-gray-500 font-semibold uppercase">Cash</div>
                     <div class="text-xs font-black {{ $balance < 500 ? 'text-red-400' : 'text-emerald-400' }}">
@@ -474,7 +474,7 @@
             </div>
             {{-- Net Worth --}}
             <div class="stat-chip flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
-                <span class="text-blue-400 text-sm">📊</span>
+                <x-icon name="bar-chart" class="w-3.5 h-3.5 text-blue-400" />
                 <div class="leading-none">
                     <div class="text-[9px] text-gray-500 font-semibold uppercase">Net Worth</div>
                     <div class="text-xs font-black text-blue-400">Ksh {{ number_format($netWorth) }}</div>
@@ -482,7 +482,7 @@
             </div>
             {{-- Credit Score --}}
             <div class="stat-chip flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
-                <span class="text-amber-400 text-sm">🎯</span>
+                <x-icon name="target" class="w-3.5 h-3.5 text-amber-400" />
                 <div class="leading-none">
                     <div class="text-[9px] text-gray-500 font-semibold uppercase">Credit</div>
                     <div class="text-xs font-black {{ $creditScore >= 650 ? 'text-emerald-400' : ($creditScore >= 500 ? 'text-amber-400' : 'text-red-400') }}">
@@ -492,7 +492,7 @@
             </div>
             {{-- Energy --}}
             <div class="stat-chip flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
-                <span class="text-yellow-400 text-sm">⚡</span>
+                <x-icon name="bolt" class="w-3.5 h-3.5 text-yellow-400" />
                 <div class="leading-none">
                     <div class="text-[9px] text-gray-500 font-semibold uppercase">Energy</div>
                     <div class="text-xs font-black text-yellow-400">{{ $energyPct }}/100</div>
@@ -505,16 +505,16 @@
 
         {{-- Admin/GameSet badges (desktop) --}}
         @if(auth()->user()->is_admin)
-        <a href="{{ route('admin.index') }}" class="hidden sm:inline-flex text-xs text-orange-400 border border-orange-500/30 px-2.5 py-1 rounded-lg hover:border-orange-500/60 transition-colors items-center gap-1 flex-shrink-0">🛠️ Admin</a>
+        <a href="{{ route('admin.index') }}" class="hidden sm:inline-flex text-xs text-orange-400 border border-orange-500/30 px-2.5 py-1 rounded-lg hover:border-orange-500/60 transition-colors items-center gap-1 flex-shrink-0"><x-icon name="wrench" class="w-3.5 h-3.5" /> Admin</a>
         @endif
         @if(auth()->user()->is_gameset || auth()->user()->is_admin)
-        <a href="{{ route('gameset.index') }}" class="hidden sm:inline-flex text-xs text-purple-400 border border-purple-500/30 px-2.5 py-1 rounded-lg hover:border-purple-500/60 transition-colors items-center gap-1 flex-shrink-0">🎛️ GameSet</a>
+        <a href="{{ route('gameset.index') }}" class="hidden sm:inline-flex text-xs text-purple-400 border border-purple-500/30 px-2.5 py-1 rounded-lg hover:border-purple-500/60 transition-colors items-center gap-1 flex-shrink-0"><x-icon name="gear" class="w-3.5 h-3.5" /> GameSet</a>
         @endif
 
         {{-- Daily Spin chip --}}
         <a href="{{ route('spin.index') }}" class="hidden sm:flex flex-shrink-0 items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all hover:scale-105"
            style="{{ $canSpin ? 'background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.45);color:#fbbf24;' : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#4b5563;' }}">
-            <span style="{{ $canSpin ? 'animation:pulse-spin 1.5s ease-in-out infinite;' : '' }}">🎡</span>
+            <span style="{{ $canSpin ? 'animation:pulse-spin 1.5s ease-in-out infinite;' : '' }}"><x-icon name="spin" class="w-3.5 h-3.5" /></span>
             <span>{{ $canSpin ? 'Spin!' : 'Spun ✓' }}</span>
         </a>
 
@@ -698,7 +698,7 @@
                 <a href="{{ route('profile.edit') }}"
                    class="text-center py-2.5 rounded-xl text-sm font-black transition-all hover:scale-105"
                    style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;">
-                    ⚙️ Customize
+                    <span class="inline-flex items-center gap-1"><x-icon name="gear" class="w-3.5 h-3.5" /> Customize</span>
                 </a>
             </div>
         </div>
@@ -733,7 +733,7 @@
             {{-- Badges earned — pinned at the very bottom --}}
             <div class="flex-shrink-0 px-3 py-2" style="background:linear-gradient(to right,#0d0b1e,#110f28);border-top:1px solid rgba(99,102,241,0.18);">
                 <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[9px] font-black uppercase tracking-wider text-amber-400">🏅 Badges Earned</span>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-amber-400 inline-flex items-center gap-1"><x-icon name="medal" class="w-3 h-3" /> Badges Earned</span>
                     <span class="text-[9px] text-gray-500">{{ $badges->count() }} total</span>
                 </div>
                 @if($badges->isEmpty())
@@ -747,7 +747,7 @@
                         <img src="{{ $badge->image_url }}" alt="{{ $badge->name }}"
                              class="w-7 h-7 rounded-full mx-auto object-cover">
                         @else
-                        <div class="text-lg leading-none">{{ $badge->icon ?? '🏅' }}</div>
+                        <div class="text-lg leading-none"><x-icon :name="$badge->icon ?? 'medal'" class="w-4 h-4" /></div>
                         @endif
                         <div class="text-[8px] font-bold mt-0.5 leading-none text-amber-400 truncate">{{ Str::limit($badge->name, 7) }}</div>
                     </div>
@@ -767,8 +767,8 @@
             <div class="rounded-2xl p-3"
                  style="{{ $balance < 500 ? 'background:linear-gradient(135deg,#1f0f0f,#150a0a);border:1px solid rgba(239,68,68,0.45);' : 'background:linear-gradient(135deg,#0d1f14,#091510);border:1px solid rgba(16,185,129,0.45);' }}">
                 <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[10px] font-black uppercase tracking-wider {{ $balance < 500 ? 'text-red-400' : 'text-emerald-400' }}">
-                        {{ $balance < 500 ? '⚠️ Low Balance' : '💰 Cash Balance' }}
+                    <span class="text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1 {{ $balance < 500 ? 'text-red-400' : 'text-emerald-400' }}">
+                        @if($balance < 500)<x-icon name="warning" class="w-3 h-3" /> Low Balance @else<x-icon name="coin" class="w-3 h-3" /> Cash Balance @endif
                     </span>
                     @if($canClaimBonus)<span class="text-[9px] font-bold text-emerald-400 animate-pulse px-1.5 py-0.5 rounded-full" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">Bonus!</span>@endif
                 </div>
@@ -779,13 +779,13 @@
                 @if($canClaimBonus)
                 <button @click="claimBonus()" :disabled="claimingBonus"
                         class="bonus-btn w-full text-white font-bold py-1.5 rounded-xl text-[10px] transition-all flex items-center justify-center gap-1">
-                    <span x-show="!claimingBonus">🎁 Claim Bonus</span>
+                    <span x-show="!claimingBonus" class="inline-flex items-center gap-1"><x-icon name="gift" class="w-3 h-3" /> Claim Bonus</span>
                     <span x-show="claimingBonus" class="flex items-center gap-1">
                         <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>...
                     </span>
                 </button>
                 @else
-                <div class="text-[9px] text-center text-gray-500 bg-white/4 rounded-xl py-1.5">✅ Claimed today</div>
+                <div class="text-[9px] text-center text-gray-500 bg-white/4 rounded-xl py-1.5 inline-flex items-center justify-center gap-1 w-full"><x-icon name="check-circle" class="w-3 h-3" /> Claimed today</div>
                 @endif
                 <a href="{{ route('portfolio') }}" class="block text-center mt-1.5 text-[9px] text-emerald-400 font-semibold hover:text-emerald-300 transition-colors">View Wallet →</a>
             </div>
@@ -794,13 +794,13 @@
             @if($activeQuest)
             <div class="rounded-2xl p-3" style="background:linear-gradient(135deg,#110f28,#0d0b20);border:1px solid rgba(99,102,241,0.45);">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400">📜 Active Quest</span>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 inline-flex items-center gap-1"><x-icon name="checklist" class="w-3 h-3" /> Active Quest</span>
                     @if($activeQuest->isPending())
-                    <span class="text-[9px] font-bold text-amber-400 px-1.5 py-0.5 rounded-full" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);">⏳ Reviewing</span>
+                    <span class="text-[9px] font-bold text-amber-400 px-1.5 py-0.5 rounded-full inline-flex items-center gap-1" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);"><x-icon name="clock" class="w-2.5 h-2.5" /> Reviewing</span>
                     @endif
                 </div>
                 <div class="flex items-start gap-2 mb-2">
-                    <span class="text-xl flex-shrink-0 leading-none">{{ $activeQuest->quest->icon ?? '📜' }}</span>
+                    <span class="text-xl flex-shrink-0 leading-none"><x-icon :name="$activeQuest->quest->icon ?? 'checklist'" class="w-5 h-5" /></span>
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-black text-white leading-snug">{{ $activeQuest->quest->title }}</div>
                         <div class="text-[10px] text-gray-400 mt-0.5 leading-snug">{{ Str::limit($activeQuest->quest->description ?? '', 75) }}</div>
@@ -817,15 +817,15 @@
             </div>
             @else
             <div class="rounded-2xl p-3 flex flex-col" style="background:linear-gradient(135deg,#110f28,#0d0b20);border:1px solid rgba(99,102,241,0.3);">
-                <div class="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2">📜 Current Quest</div>
+                <div class="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2 inline-flex items-center gap-1"><x-icon name="checklist" class="w-3 h-3" /> Current Quest</div>
                 <div class="flex-1 flex flex-col items-center justify-center text-center py-2">
-                    <div class="text-3xl mb-2">🎯</div>
+                    <div class="mb-2 flex justify-center"><x-icon name="target" class="w-8 h-8 text-indigo-300" /></div>
                     <div class="text-[10px] text-gray-400 mb-2">No active quest — head to Pesa City to start one</div>
                 </div>
                 <a href="{{ route('world') }}"
                    class="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-xs font-black text-white transition-all hover:scale-105 mt-auto"
                    style="background:linear-gradient(135deg,#6366f1,#a78bfa);">
-                    🎯 Start a Quest
+                    <x-icon name="target" class="w-3.5 h-3.5" /> Start a Quest
                 </a>
             </div>
             @endif
@@ -837,7 +837,7 @@
             <div class="px-4 py-2 flex items-center justify-between flex-shrink-0" style="background:rgba(16,185,129,0.07);">
                 <div class="flex items-center gap-2">
                     <h3 class="font-black text-white text-sm">ENTER PESA CITY</h3>
-                    <span class="text-[9px] font-black text-emerald-400 px-2 py-0.5 rounded-full" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">🟢 LIVE</span>
+                    <span class="text-[9px] font-black text-emerald-400 px-2 py-0.5 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> LIVE</span>
                 </div>
                 <span class="text-[10px] text-emerald-400/70 font-semibold">Your world. Your rules.</span>
             </div>
@@ -849,7 +849,7 @@
                 <div class="absolute bottom-3 left-0 right-0 flex justify-center">
                     <a href="{{ route('world') }}" class="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-black text-white transition-all hover:scale-105"
                        style="background:rgba(5,46,22,0.62);backdrop-filter:blur(10px);border:1px solid rgba(16,185,129,0.6);text-shadow:0 1px 5px rgba(0,0,0,0.9);">
-                        🏙️ Enter Pesa City
+                        <x-icon name="city" class="w-4 h-4" /> Enter Pesa City
                     </a>
                 </div>
             </div>
@@ -874,21 +874,21 @@
 
         {{-- Quick Actions --}}
         <div class="card rounded-2xl p-3">
-            <div class="text-[9px] font-black uppercase tracking-wider text-gray-500 mb-2">⚡ Quick Actions</div>
+            <div class="text-[9px] font-black uppercase tracking-wider text-gray-500 mb-2 inline-flex items-center gap-1"><x-icon name="bolt" class="w-3 h-3" /> Quick Actions</div>
             <div class="grid grid-cols-3 gap-1.5">
                 @php
                 $qActions = [
-                    ['icon'=>'🏦','label'=>'Bank','href'=>route('savings.index')],
-                    ['icon'=>'🛍️','label'=>'Market','href'=>route('marketplace')],
-                    ['icon'=>'💼','label'=>'Jobs','href'=>route('life.career')],
-                    ['icon'=>'👥','label'=>'Friends','href'=>route('friends.index')],
-                    ['icon'=>'📈','label'=>'Invest','href'=>route('portfolio')],
-                    ['icon'=>'🏠','label'=>'Home','href'=>route('life.board')],
+                    ['icon'=>'bank','label'=>'Bank','href'=>route('savings.index')],
+                    ['icon'=>'shopping-bag','label'=>'Market','href'=>route('marketplace')],
+                    ['icon'=>'briefcase','label'=>'Jobs','href'=>route('life.career')],
+                    ['icon'=>'people','label'=>'Friends','href'=>route('friends.index')],
+                    ['icon'=>'trend-up','label'=>'Invest','href'=>route('portfolio')],
+                    ['icon'=>'house','label'=>'Home','href'=>route('life.board')],
                 ];
                 @endphp
                 @foreach($qActions as $qa)
                 <a href="{{ $qa['href'] }}" class="qa-tile rounded-xl py-2 text-center flex flex-col items-center gap-0.5">
-                    <span class="text-lg leading-none">{{ $qa['icon'] }}</span>
+                    <x-icon :name="$qa['icon']" class="w-4 h-4" />
                     <span class="text-[8px] font-bold text-gray-400">{{ $qa['label'] }}</span>
                 </a>
                 @endforeach
@@ -899,7 +899,7 @@
         <div class="rounded-2xl p-3" style="background:linear-gradient(135deg,#1a1008,#120b05);border:1px solid rgba(249,115,22,0.4);">
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-base">🔥</span>
+                    <x-icon name="fire" class="w-4 h-4 text-orange-400" />
                     <div>
                         <div class="text-xs font-black text-white leading-none">Login Streak</div>
                         <div class="text-[9px] text-gray-500">Keep it going!</div>
@@ -919,14 +919,14 @@
             </div>
             <div class="text-[9px] text-gray-600">Best: {{ $streak->longest_streak ?? 0 }} days</div>
             @if($streakAtRisk)
-            <div class="mt-1 text-[9px] font-bold text-red-400 animate-pulse">⚠️ Play today or lose your streak!</div>
+            <div class="mt-1 text-[9px] font-bold text-red-400 animate-pulse inline-flex items-center gap-1"><x-icon name="warning" class="w-3 h-3" /> Play today or lose your streak!</div>
             @endif
         </div>
 
         {{-- Daily Reward --}}
         <div class="rounded-2xl p-3" style="background:linear-gradient(135deg,#0d1f14,#091510);border:1px solid rgba(16,185,129,0.4);">
             <div class="flex items-center gap-1.5 mb-2">
-                <span class="text-base">🎁</span>
+                <x-icon name="gift" class="w-4 h-4 text-emerald-400" />
                 <div>
                     <div class="text-xs font-black text-white leading-none">Daily Reward</div>
                     <div class="text-[9px] text-gray-500">Log in daily</div>
@@ -948,11 +948,11 @@
             @if($canClaimBonus)
             <button @click="claimBonus()" :disabled="claimingBonus"
                     class="w-full py-1.5 rounded-xl text-[10px] font-black text-white bonus-btn transition-all">
-                <span x-show="!claimingBonus">🎁 Claim +200 XP</span>
+                <span x-show="!claimingBonus" class="inline-flex items-center justify-center gap-1"><x-icon name="gift" class="w-3 h-3" /> Claim +200 XP</span>
                 <span x-show="claimingBonus">Claiming...</span>
             </button>
             @else
-            <div class="text-center text-[9px] text-emerald-400 font-bold bg-emerald-500/10 rounded-xl py-1.5">✅ Claimed today!</div>
+            <div class="text-center text-[9px] text-emerald-400 font-bold bg-emerald-500/10 rounded-xl py-1.5 inline-flex items-center justify-center gap-1 w-full"><x-icon name="check-circle" class="w-3 h-3" /> Claimed today!</div>
             @endif
         </div>
 
@@ -966,7 +966,7 @@
             <div class="space-y-1.5">
                 @foreach($questGoals as $uq)
                 <a href="{{ route('world', ['open' => 'quests']) }}" class="flex items-center gap-2 group">
-                    <span class="text-base flex-shrink-0 leading-none">{{ $uq->quest->icon ?? '📜' }}</span>
+                    <span class="text-base flex-shrink-0 leading-none"><x-icon :name="$uq->quest->icon ?? 'checklist'" class="w-4 h-4" /></span>
                     <div class="flex-1 min-w-0">
                         <div class="text-[10px] font-semibold text-white truncate group-hover:text-indigo-300 transition-colors">{{ $uq->quest->title ?? 'Quest' }}</div>
                         <div class="text-[8px] {{ $uq->isPending() ? 'text-amber-400' : 'text-indigo-400' }}">
@@ -1062,7 +1062,7 @@
     <div class="desktop-only mt-4 rounded-2xl p-5"
          style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.07));border:1px solid rgba(16,185,129,0.4);animation:bonusPulse 2s ease-in-out infinite;">
         <h3 class="font-black text-emerald-400 mb-3 flex items-center gap-2">
-            <span class="animate-bounce" style="animation-duration:1.5s">💰</span>
+            <span class="animate-bounce" style="animation-duration:1.5s"><x-icon name="coin" class="w-5 h-5" /></span>
             Investment{{ $maturedInvestments->count()>1?'s':'' }} Ready to Claim!
             <span class="ml-auto bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2 py-0.5 rounded-full">{{ $maturedInvestments->count() }}</span>
         </h3>
@@ -1071,14 +1071,14 @@
             @php $returnAmt = round($inv->amount * (1 + $inv->return_rate / 100), 2); @endphp
             <div class="rounded-xl p-4 flex items-center gap-3" id="matured-inv-{{ $inv->id }}"
                  style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
-                <div class="text-2xl flex-shrink-0">💰</div>
+                <div class="flex-shrink-0"><x-icon name="coin" class="w-6 h-6 text-emerald-400" /></div>
                 <div class="flex-1 min-w-0">
                     <div class="font-bold text-emerald-300 text-xs truncate">{{ $inv->label }}</div>
-                    <div class="text-xs text-gray-400">📈 <span class="text-emerald-400 font-black">Ksh {{ number_format($returnAmt) }}</span></div>
+                    <div class="text-xs text-gray-400 inline-flex items-center gap-1"><x-icon name="trend-up" class="w-3 h-3" /> <span class="text-emerald-400 font-black">Ksh {{ number_format($returnAmt) }}</span></div>
                 </div>
                 <button onclick="claimDashInvestment({{ $inv->id }}, this)"
-                        class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-black text-white"
-                        style="background:linear-gradient(135deg,#10b981,#059669);">💰 Claim</button>
+                        class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-black text-white inline-flex items-center gap-1"
+                        style="background:linear-gradient(135deg,#10b981,#059669);"><x-icon name="coin" class="w-3 h-3" /> Claim</button>
             </div>
             @endforeach
         </div>
@@ -1089,19 +1089,19 @@
     <div class="desktop-stats-strip grid-cols-4 xl:grid-cols-8 gap-3 mt-4">
         @php
         $statsRow = [
-            ['icon'=>'⭐','val'=>number_format($xp),'label'=>'Total XP','color'=>'text-indigo-400'],
-            ['icon'=>'🎚️','val'=>$level,'label'=>'Level','color'=>'text-purple-400'],
-            ['icon'=>'🔥','val'=>$streak->current_streak ?? 0,'label'=>'Day Streak','color'=>'text-orange-400'],
-            ['icon'=>'🏆','val'=>'Top '.max(1,100-$percentile+1).'%','label'=>'Ranking','color'=>'text-emerald-400'],
-            ['icon'=>'💰','val'=>'Ksh '.number_format($balance),'label'=>'Cash Balance','color'=>'text-emerald-400'],
-            ['icon'=>'📊','val'=>$investmentCount,'label'=>'Investments','color'=>'text-amber-400'],
-            ['icon'=>'🎯','val'=>$creditScore,'label'=>'Credit Score','color'=>$creditScore>=650?'text-emerald-400':($creditScore>=500?'text-amber-400':'text-red-400')],
-            ['icon'=>'🏅','val'=>$badges->count(),'label'=>'Badges','color'=>'text-purple-400'],
+            ['icon'=>'star','val'=>number_format($xp),'label'=>'Total XP','color'=>'text-indigo-400'],
+            ['icon'=>'layers','val'=>$level,'label'=>'Level','color'=>'text-purple-400'],
+            ['icon'=>'fire','val'=>$streak->current_streak ?? 0,'label'=>'Day Streak','color'=>'text-orange-400'],
+            ['icon'=>'trophy','val'=>'Top '.max(1,100-$percentile+1).'%','label'=>'Ranking','color'=>'text-emerald-400'],
+            ['icon'=>'coin','val'=>'Ksh '.number_format($balance),'label'=>'Cash Balance','color'=>'text-emerald-400'],
+            ['icon'=>'bar-chart','val'=>$investmentCount,'label'=>'Investments','color'=>'text-amber-400'],
+            ['icon'=>'target','val'=>$creditScore,'label'=>'Credit Score','color'=>$creditScore>=650?'text-emerald-400':($creditScore>=500?'text-amber-400':'text-red-400')],
+            ['icon'=>'medal','val'=>$badges->count(),'label'=>'Badges','color'=>'text-purple-400'],
         ];
         @endphp
         @foreach($statsRow as $s)
         <a href="{{ route('portfolio') }}" class="stat-tile rounded-2xl p-4 text-center transition-all hover:scale-105 card-hover">
-            <div class="text-xl mb-1">{{ $s['icon'] }}</div>
+            <div class="mb-1 flex justify-center"><x-icon :name="$s['icon']" class="w-5 h-5 {{ $s['color'] }}" /></div>
             <div class="text-lg font-black {{ $s['color'] }}">{{ $s['val'] }}</div>
             <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{{ $s['label'] }}</div>
         </a>
@@ -1130,7 +1130,7 @@
                     <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black"
                          style="background:linear-gradient(135deg,#f59e0b,#fbbf24);border:2px solid #07060f;box-shadow:0 0 8px rgba(245,158,11,0.5);">{{ $level }}</div>
                     @if(($streak->current_streak ?? 0) > 1)
-                    <div class="absolute -top-1 -right-1 text-base">🔥</div>
+                    <div class="absolute -top-1 -right-1"><x-icon name="fire" class="w-4 h-4 text-orange-400" /></div>
                     @endif
                 </div>
                 <div class="flex-1 min-w-0">
@@ -1176,13 +1176,15 @@
         <div class="rounded-2xl p-4 flex items-center justify-between"
              style="{{ $balance < 500 ? 'background:linear-gradient(135deg,#1f0f0f,#150a0a);border:1px solid rgba(239,68,68,0.45);' : 'background:linear-gradient(135deg,#0d1f14,#091510);border:1px solid rgba(16,185,129,0.45);' }}">
             <div>
-                <div class="text-xs {{ $balance < 500 ? 'text-red-400' : 'text-emerald-400' }} font-semibold uppercase tracking-wider mb-0.5">{{ $balance < 500 ? '⚠️ Low Balance' : '💰 Cash Balance' }}</div>
+                <div class="text-xs {{ $balance < 500 ? 'text-red-400' : 'text-emerald-400' }} font-semibold uppercase tracking-wider mb-0.5 inline-flex items-center gap-1">
+                    @if($balance < 500)<x-icon name="warning" class="w-3 h-3" /> Low Balance @else<x-icon name="coin" class="w-3 h-3" /> Cash Balance @endif
+                </div>
                 <div class="text-2xl font-black {{ $balance < 500 ? 'text-red-400' : 'text-emerald-400' }}">Ksh {{ number_format($balance) }}</div>
             </div>
             @if($canClaimBonus)
-            <button @click="claimBonus()" class="bonus-btn text-white font-bold px-4 py-2 rounded-xl text-xs">🎁 Claim</button>
+            <button @click="claimBonus()" class="bonus-btn text-white font-bold px-4 py-2 rounded-xl text-xs inline-flex items-center gap-1"><x-icon name="gift" class="w-3 h-3" /> Claim</button>
             @else
-            <div class="text-xs text-emerald-400 font-bold">✅ Claimed</div>
+            <div class="text-xs text-emerald-400 font-bold inline-flex items-center gap-1"><x-icon name="check-circle" class="w-3 h-3" /> Claimed</div>
             @endif
         </div>
 
@@ -1236,25 +1238,25 @@
             <a href="{{ route('profile.edit') }}"
                class="mt-2 block text-center py-2 rounded-xl text-xs font-black"
                style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;">
-                ⚙️ Customize
+                <span class="inline-flex items-center gap-1"><x-icon name="gear" class="w-3.5 h-3.5" /> Customize</span>
             </a>
         </div>
 
         {{-- Mobile active quest --}}
         <div class="rounded-2xl p-4" style="background:linear-gradient(135deg,#110f28,#0d0b20);border:1px solid rgba(99,102,241,0.45);">
-            <div class="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2">📜 Current Quest</div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2 inline-flex items-center gap-1"><x-icon name="checklist" class="w-3 h-3" /> Current Quest</div>
             @if($activeQuest && $activeQuest->quest)
             @php $mAq = $activeQuest->quest; $mAqPending = $activeQuest->submitted_at && !$activeQuest->completed_at; @endphp
             <div class="flex items-center gap-3 mb-3">
-                <span class="text-3xl flex-shrink-0">{{ $mAq->icon ?? '📜' }}</span>
+                <span class="text-3xl flex-shrink-0"><x-icon :name="$mAq->icon ?? 'checklist'" class="w-7 h-7" /></span>
                 <div class="min-w-0">
                     <div class="font-black text-white text-sm leading-tight">{{ $mAq->title }}</div>
                     <div class="text-xs text-gray-400 mt-0.5 leading-tight">{{ Str::limit($mAq->description, 70) }}</div>
                     <div class="flex items-center gap-2 mt-1.5 text-xs flex-wrap">
                         @if($mAqPending)
-                        <span style="color:#f59e0b;font-weight:800;">⏳ Pending review</span>
+                        <span style="color:#f59e0b;font-weight:800;" class="inline-flex items-center gap-1"><x-icon name="clock" class="w-3 h-3" /> Pending review</span>
                         @else
-                        <span style="color:#10b981;font-weight:800;">📜 In progress</span>
+                        <span style="color:#10b981;font-weight:800;" class="inline-flex items-center gap-1"><x-icon name="checklist" class="w-3 h-3" /> In progress</span>
                         @endif
                         @if($mAq->xp_reward)
                         <span class="text-indigo-400 font-bold">+{{ $mAq->xp_reward }} XP</span>
@@ -1265,17 +1267,17 @@
             <a href="{{ route('world') }}"
                class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-black text-white"
                style="background:linear-gradient(135deg,#6366f1,#a78bfa);">
-                📜 Continue Quest
+                <x-icon name="checklist" class="w-4 h-4" /> Continue Quest
             </a>
             @else
             <div class="flex flex-col items-center text-center py-3 gap-2">
-                <span class="text-3xl">🎯</span>
+                <x-icon name="target" class="w-8 h-8 text-indigo-300" />
                 <div class="text-xs text-gray-400">No active quest — head to Pesa City to start one</div>
             </div>
             <a href="{{ route('world') }}"
                class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-black text-white mt-2"
                style="background:linear-gradient(135deg,#6366f1,#a78bfa);">
-                🎯 Start a Quest
+                <x-icon name="target" class="w-4 h-4" /> Start a Quest
             </a>
             @endif
         </div>
@@ -1295,7 +1297,7 @@
                     <a href="{{ route('world') }}"
                        class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white transition-all hover:scale-105"
                        style="background:rgba(5,46,22,0.62);backdrop-filter:blur(10px);border:1px solid rgba(16,185,129,0.6);text-shadow:0 1px 5px rgba(0,0,0,0.9);">
-                        🏙️ Enter Pesa City
+                        <x-icon name="city" class="w-4 h-4" /> Enter Pesa City
                     </a>
                 </div>
             </div>
@@ -1321,11 +1323,11 @@
             @if($canClaimBonus)
             <button @click="claimBonus()" :disabled="claimingBonus"
                     class="w-full py-3 rounded-xl text-sm font-black text-white bonus-btn">
-                <span x-show="!claimingBonus">🎁 Claim Reward +100 XP</span>
+                <span x-show="!claimingBonus" class="inline-flex items-center justify-center gap-1"><x-icon name="gift" class="w-3.5 h-3.5" /> Claim Reward +100 XP</span>
                 <span x-show="claimingBonus">Claiming...</span>
             </button>
             @else
-            <div class="text-center text-xs text-emerald-400 font-bold bg-emerald-500/10 rounded-xl py-2.5">✅ Daily Reward Claimed!</div>
+            <div class="text-center text-xs text-emerald-400 font-bold bg-emerald-500/10 rounded-xl py-2.5 inline-flex items-center justify-center gap-1 w-full"><x-icon name="check-circle" class="w-3.5 h-3.5" /> Daily Reward Claimed!</div>
             @endif
         </div>
 
@@ -1363,15 +1365,15 @@
         {{-- Mobile stats grid --}}
         <div class="grid grid-cols-3 gap-2.5">
             @foreach([
-                ['⭐','XP',$xp,'text-indigo-400'],
-                ['🎚️','Level',$level,'text-purple-400'],
-                ['🔥','Streak',($streak->current_streak??0),'text-orange-400'],
-                ['🏆','Ranking','Top '.max(1,100-$percentile+1).'%','text-emerald-400'],
-                ['🎯','Credit',$creditScore,'text-amber-400'],
-                ['🏅','Badges',$badges->count(),'text-purple-400'],
+                ['star','XP',$xp,'text-indigo-400'],
+                ['layers','Level',$level,'text-purple-400'],
+                ['fire','Streak',($streak->current_streak??0),'text-orange-400'],
+                ['trophy','Ranking','Top '.max(1,100-$percentile+1).'%','text-emerald-400'],
+                ['target','Credit',$creditScore,'text-amber-400'],
+                ['medal','Badges',$badges->count(),'text-purple-400'],
             ] as [$ico,$lbl,$v,$col])
             <div class="stat-tile rounded-xl p-3 text-center">
-                <div class="text-lg mb-0.5">{{ $ico }}</div>
+                <div class="mb-0.5 flex justify-center"><x-icon :name="$ico" class="w-4 h-4 {{ $col }}" /></div>
                 <div class="font-black text-sm {{ $col }}">{{ is_int($v) ? number_format($v) : $v }}</div>
                 <div class="text-[9px] text-gray-500 uppercase tracking-wider">{{ $lbl }}</div>
             </div>
@@ -1424,15 +1426,15 @@
             <div class="text-xs font-black text-white mb-3">Quick Actions</div>
             <div class="grid grid-cols-3 gap-2">
                 @foreach([
-                    ['🏦','Bank',route('savings.index')],
-                    ['🛍️','Market',route('marketplace')],
-                    ['💼','Jobs',route('life.career')],
-                    ['📚','Study',route('money-toolkit')],
-                    ['📈','Invest',route('portfolio')],
-                    ['🏠','Home',route('life.board')],
+                    ['bank','Bank',route('savings.index')],
+                    ['shopping-bag','Market',route('marketplace')],
+                    ['briefcase','Jobs',route('life.career')],
+                    ['book','Study',route('money-toolkit')],
+                    ['trend-up','Invest',route('portfolio')],
+                    ['house','Home',route('life.board')],
                 ] as [$ico,$lbl,$url])
                 <a href="{{ $url }}" class="qa-tile rounded-xl py-3 text-center flex flex-col items-center gap-1.5">
-                    <span class="text-xl">{{ $ico }}</span>
+                    <x-icon :name="$ico" class="w-5 h-5" />
                     <span class="text-[10px] font-bold text-gray-400">{{ $lbl }}</span>
                 </a>
                 @endforeach
@@ -1443,7 +1445,7 @@
         @if($maturedInvestments->count() > 0)
         <div class="rounded-2xl p-4" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.07));border:1px solid rgba(16,185,129,0.4);animation:bonusPulse 2s ease-in-out infinite;">
             <h3 class="font-black text-emerald-400 mb-3 flex items-center gap-2">
-                <span class="animate-bounce">💰</span> Investment{{ $maturedInvestments->count()>1?'s':'' }} Ready!
+                <span class="animate-bounce"><x-icon name="coin" class="w-4 h-4" /></span> Investment{{ $maturedInvestments->count()>1?'s':'' }} Ready!
                 <span class="ml-auto bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2 py-0.5 rounded-full">{{ $maturedInvestments->count() }}</span>
             </h3>
             <div class="space-y-2">
@@ -1451,14 +1453,14 @@
                 @php $returnAmt = round($inv->amount * (1 + $inv->return_rate / 100), 2); @endphp
                 <div class="rounded-xl p-3 flex items-center gap-3" id="matured-inv-mob-{{ $inv->id }}"
                      style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
-                    <span class="text-xl">💰</span>
+                    <x-icon name="coin" class="w-5 h-5 text-emerald-400" />
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-bold text-emerald-300 truncate">{{ $inv->label }}</div>
-                        <div class="text-xs text-gray-400">📈 <span class="text-emerald-400 font-black">Ksh {{ number_format($returnAmt) }}</span></div>
+                        <div class="text-xs text-gray-400 inline-flex items-center gap-1"><x-icon name="trend-up" class="w-3 h-3" /> <span class="text-emerald-400 font-black">Ksh {{ number_format($returnAmt) }}</span></div>
                     </div>
                     <button onclick="claimDashInvestment({{ $inv->id }}, this)"
-                            class="px-3 py-1.5 rounded-lg text-xs font-black text-white"
-                            style="background:linear-gradient(135deg,#10b981,#059669);">💰 Claim</button>
+                            class="px-3 py-1.5 rounded-lg text-xs font-black text-white inline-flex items-center gap-1"
+                            style="background:linear-gradient(135deg,#10b981,#059669);"><x-icon name="coin" class="w-3 h-3" /> Claim</button>
                 </div>
                 @endforeach
             </div>
@@ -1474,7 +1476,7 @@
     <a href="{{ route('money-toolkit') }}"
        class="flex items-center gap-4 rounded-3xl p-5 sm:p-6 transition-all hover:scale-[1.01]"
        style="background:linear-gradient(135deg,rgba(16,185,129,0.09),rgba(6,182,212,0.04));border:1px solid rgba(16,185,129,0.25);">
-        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.15));border:1px solid rgba(16,185,129,0.3);">🧰</div>
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.15));border:1px solid rgba(16,185,129,0.3);"><x-icon name="toolbox" class="w-6 h-6 text-emerald-400" /></div>
         <div class="flex-1 min-w-0">
             <h2 class="text-lg sm:text-xl font-black text-white">Smart Money Tools</h2>
             <p class="text-gray-400 text-sm mt-0.5">Bajeti, Lengo, real bills, savings goals &amp; expense tracking — all in one place.</p>

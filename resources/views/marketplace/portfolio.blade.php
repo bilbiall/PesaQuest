@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/icons.js') }}"></script>
     <style>
         body { background: #07060f; font-family: 'Figtree', sans-serif; }
         [x-cloak] { display: none !important; }
@@ -338,7 +339,7 @@
                         <div class="particle p3"></div>
                         <div class="particle p4"></div>
                         @if($pa->asset->icon)
-                        <span class="iconbob text-6xl z-10 relative" style="filter:drop-shadow(0 0 14px rgba(255,255,255,0.25));">{{ $pa->asset->icon }}</span>
+                        <span class="iconbob z-10 relative" style="filter:drop-shadow(0 0 14px rgba(255,255,255,0.25));"><x-icon :name="$pa->asset->icon" class="w-16 h-16" /></span>
                         @endif
 
                         {{-- Quantity badge --}}
@@ -515,7 +516,7 @@
             @endphp
             <div class="rounded-2xl p-4 opacity-70" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="text-3xl opacity-60">{{ $sa->asset->icon }}</div>
+                    <div class="opacity-60"><x-icon :name="$sa->asset->icon" class="w-7 h-7" /></div>
                     <div>
                         <p class="font-bold text-gray-300 text-sm leading-tight">{{ $sa->asset->name }}</p>
                         <p class="text-[10px] text-gray-600">Sold</p>
@@ -551,7 +552,7 @@
                     {{-- Modal header --}}
                     <div class="p-6 border-b border-white/5">
                         <div class="flex items-center gap-3">
-                            <div class="text-4xl" x-text="selling.icon"></div>
+                            <div class="w-9 h-9" x-html="pqIcon(selling.icon, 'w-9 h-9')"></div>
                             <div>
                                 <p class="font-black text-white" x-text="selling.name"></p>
                                 <p class="text-xs text-gray-400">Confirm sale — proceeds go to your balance</p>

@@ -6,7 +6,7 @@
 $tabs = [
     ['key'=>'home',      'href'=>route('dashboard'),        'label'=>'Home',    'path'=>'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
     ['key'=>'city',      'href'=>route('world'),             'label'=>'City',    'path'=>'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
-    ['key'=>'quests',    'href'=>route('world', ['open' => 'quests']), 'label'=>'Quests',  'path'=>'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7'],
+    ['key'=>'arcade',    'href'=>route('arcade.snakes.lobby'), 'label'=>'Arcade',  'svg'=>'<rect x="2.5" y="8" width="19" height="9" rx="4.5"/><line x1="6.5" y1="11" x2="6.5" y2="14"/><line x1="5" y1="12.5" x2="8" y2="12.5"/><circle cx="15.5" cy="11.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="17.8" cy="13.8" r="0.9" fill="currentColor" stroke="none"/>'],
     ['key'=>'life',      'href'=>route('life.board'),        'label'=>'Life',    'path'=>'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
 ];
 $pqUser = auth()->user();
@@ -57,18 +57,21 @@ $pqUser = auth()->user();
 .pq-hero{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:12px;text-decoration:none;
     font-size:11px;font-weight:900;color:#fff;transition:transform .14s,filter .14s;animation:pqItemIn .35s both;}
 .pq-hero:hover{transform:translateY(-1px) scale(1.02);filter:brightness(1.15);}
-.pq-hero .pq-hero-ic{font-size:17px;animation:pqWiggle 3.2s ease-in-out infinite;}
+.pq-hero .pq-hero-ic{display:inline-flex;animation:pqWiggle 3.2s ease-in-out infinite;}
+.pq-hero .pq-hero-ic svg{width:18px;height:18px;display:block;}
 .pq-hero small{display:block;font-size:8.5px;font-weight:700;opacity:.75;}
 @keyframes pqWiggle{0%,88%,100%{transform:rotate(0);}92%{transform:rotate(-12deg);}96%{transform:rotate(10deg);}}
 
 .pq-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;}
 .pq-group{border-radius:13px;padding:7px 8px;border:1px solid var(--pq-gc,rgba(255,255,255,.09));background:rgba(255,255,255,.025);animation:pqItemIn .4s both;}
-.pq-group-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;color:var(--pq-gt,#9ca3af);}
+.pq-group-title{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;color:var(--pq-gt,#9ca3af);}
+.pq-group-title svg{width:12px;height:12px;flex-shrink:0;}
 .pq-item{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:8px;text-decoration:none;
     font-size:11px;font-weight:800;color:#e5e7eb;transition:background .12s,transform .12s;cursor:pointer;background:none;border:none;width:100%;text-align:left;}
 .pq-item:hover{background:rgba(255,255,255,.06);transform:translateX(2px);}
 .pq-item:active{transform:scale(.97);}
-.pq-item .pq-item-ic{font-size:13px;width:18px;text-align:center;}
+.pq-item .pq-item-ic{display:inline-flex;width:18px;justify-content:center;flex-shrink:0;}
+.pq-item .pq-item-ic svg{width:15px;height:15px;display:block;}
 .pq-item small{margin-left:auto;font-size:8px;color:#6b7280;font-weight:600;}
 
 /* Staggered pop-in */
@@ -84,7 +87,7 @@ $pqUser = auth()->user();
         <a href="{{ $tab['href'] }}"
            class="pq-bn-tab {{ $active === $tab['key'] ? 'pq-bn-active' : '' }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <path d="{{ $tab['path'] }}"/>
+                @if(isset($tab['svg'])){!! $tab['svg'] !!}@else<path d="{{ $tab['path'] }}"/>@endif
             </svg>
             {{ $tab['label'] }}
         </a>
@@ -117,58 +120,58 @@ $pqUser = auth()->user();
         {{-- Standalone: How to Play + Spin (deliberately outside the themes) --}}
         <div class="pq-heroes">
             <a href="{{ route('how-to') }}" class="pq-hero" data-stagger style="--i:0;background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(79,70,229,.18));border:1px solid rgba(99,102,241,.4);" onclick="pqGo(event,this)">
-                <span class="pq-hero-ic">🧭</span>
+                <span class="pq-hero-ic"><x-icon name="compass" /></span>
                 <span>How to Play<small>the full guide</small></span>
             </a>
             <a href="{{ route('spin.index') }}" class="pq-hero" data-stagger style="--i:1;background:linear-gradient(135deg,rgba(245,158,11,.28),rgba(217,119,6,.16));border:1px solid rgba(245,158,11,.4);" onclick="pqGo(event,this)">
-                <span class="pq-hero-ic">🎡</span>
+                <span class="pq-hero-ic"><x-icon name="spin" /></span>
                 <span>Spin the Wheel<small>daily luck, zero risk</small></span>
             </a>
         </div>
 
         <div class="pq-groups">
             <div class="pq-group" data-stagger style="--i:2;--pq-gc:rgba(16,185,129,.25);--pq-gt:#6ee7b7;">
-                <div class="pq-group-title">💰 Money</div>
-                <a class="pq-item" href="{{ route('savings.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🏦</span> Savings</a>
-                <a class="pq-item" href="{{ route('portfolio') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📊</span> Portfolio</a>
-                <a class="pq-item" href="{{ route('marketplace') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🛍️</span> Marketplace</a>
-                <a class="pq-item" href="{{ route('money-toolkit') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🧰</span> Money Toolkit <small>premium</small></a>
+                <div class="pq-group-title"><x-icon name="wallet" /> Money</div>
+                <a class="pq-item" href="{{ route('savings.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="bank" /></span> Savings</a>
+                <a class="pq-item" href="{{ route('portfolio') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="bar-chart" /></span> Portfolio</a>
+                <a class="pq-item" href="{{ route('marketplace') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="shopping-bag" /></span> Marketplace</a>
+                <a class="pq-item" href="{{ route('money-toolkit') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="toolbox" /></span> Money Toolkit <small>premium</small></a>
             </div>
             <div class="pq-group" data-stagger style="--i:3;--pq-gc:rgba(77,168,247,.25);--pq-gt:#7cc0ff;">
-                <div class="pq-group-title">🎓 Grow</div>
-                <a class="pq-item" href="{{ route('opportunities.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📚</span> Courses &amp; Jobs</a>
-                <a class="pq-item" href="{{ route('world', ['open' => 'quests']) }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📜</span> Quests</a>
-                <a class="pq-item" href="{{ route('game.leaderboard') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🏆</span> Leaderboard</a>
+                <div class="pq-group-title"><x-icon name="graduation" /> Grow</div>
+                <a class="pq-item" href="{{ route('opportunities.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="book" /></span> Courses &amp; Jobs</a>
+                <a class="pq-item" href="{{ route('world', ['open' => 'quests']) }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="checklist" /></span> Quests</a>
+                <a class="pq-item" href="{{ route('game.leaderboard') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="trophy" /></span> Leaderboard</a>
             </div>
             <div class="pq-group" data-stagger style="--i:4;--pq-gc:rgba(245,158,11,.28);--pq-gt:#fbbf24;">
-                <div class="pq-group-title">🎮 Play</div>
-                <a class="pq-item" href="{{ route('arcade.snakes.lobby') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🕹️</span> Arcade <small>Pesa Trail</small></a>
-                <a class="pq-item" href="{{ route('dreams.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🌟</span> Dreams</a>
-                <a class="pq-item" href="{{ route('challenges.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🏆</span> Champions' Court</a>
+                <div class="pq-group-title"><x-icon name="gamepad" /> Play</div>
+                <a class="pq-item" href="{{ route('arcade.snakes.lobby') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="gamepad" /></span> Arcade <small>Pesa Trail</small></a>
+                <a class="pq-item" href="{{ route('dreams.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="star" /></span> Dreams</a>
+                <a class="pq-item" href="{{ route('challenges.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="shield" /></span> Champions' Court</a>
             </div>
             <div class="pq-group" data-stagger style="--i:5;--pq-gc:rgba(167,139,250,.28);--pq-gt:#c4b5fd;">
-                <div class="pq-group-title">👥 People</div>
-                <a class="pq-item" href="{{ route('friends.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">👥</span> Friends &amp; Loans</a>
-                <a class="pq-item" href="{{ route('chama.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🤝</span> Chamas</a>
-                <a class="pq-item" href="{{ route('forums.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🗣️</span> Forums</a>
+                <div class="pq-group-title"><x-icon name="people" /> People</div>
+                <a class="pq-item" href="{{ route('friends.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="people" /></span> Friends &amp; Loans</a>
+                <a class="pq-item" href="{{ route('chama.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="group" /></span> Chamas</a>
+                <a class="pq-item" href="{{ route('forums.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="speech" /></span> Forums</a>
             </div>
             <div class="pq-group" data-stagger style="--i:6;--pq-gc:rgba(245,158,11,.25);--pq-gt:#fcd34d;">
-                <div class="pq-group-title">🏠 Life</div>
-                <a class="pq-item" href="{{ route('life.board') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📋</span> Life HQ</a>
-                <a class="pq-item" href="{{ route('life.career') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">💼</span> Career &amp; Work</a>
-                <a class="pq-item" href="{{ route('life.timeline') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🗓️</span> My Timeline</a>
-                <a class="pq-item" href="{{ route('inbox.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">📬</span> Life Inbox</a>
+                <div class="pq-group-title"><x-icon name="house" /> Life</div>
+                <a class="pq-item" href="{{ route('life.board') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="clipboard" /></span> Life HQ</a>
+                <a class="pq-item" href="{{ route('life.career') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="briefcase" /></span> Career &amp; Work</a>
+                <a class="pq-item" href="{{ route('life.timeline') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="calendar" /></span> My Timeline</a>
+                <a class="pq-item" href="{{ route('inbox.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="mail" /></span> Life Inbox</a>
             </div>
             <div class="pq-group" data-stagger style="--i:7;--pq-gc:rgba(236,72,153,.25);--pq-gt:#f9a8d4;">
-                <div class="pq-group-title">🙍 Profile</div>
+                <div class="pq-group-title"><x-icon name="id-card" /> Profile</div>
                 @if($pqUser)
-                <a class="pq-item" href="{{ route('players.show', $pqUser) }}" onclick="pqGo(event,this)"><span class="pq-item-ic">🪪</span> My Profile</a>
+                <a class="pq-item" href="{{ route('players.show', $pqUser) }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="id-card" /></span> My Profile</a>
                 @endif
-                <a class="pq-item" href="{{ route('profile.edit') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">⚙️</span> Settings</a>
-                <a class="pq-item" href="{{ route('subscribe.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic">✨</span> Subscription</a>
+                <a class="pq-item" href="{{ route('profile.edit') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="gear" /></span> Settings</a>
+                <a class="pq-item" href="{{ route('subscribe.index') }}" onclick="pqGo(event,this)"><span class="pq-item-ic"><x-icon name="badge" /></span> Subscription</a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                     @csrf
-                    <button type="submit" class="pq-item" onclick="pqBlip()"><span class="pq-item-ic">👋</span> Log out</button>
+                    <button type="submit" class="pq-item" onclick="pqBlip()"><span class="pq-item-ic"><x-icon name="logout" /></span> Log out</button>
                 </form>
             </div>
         </div>

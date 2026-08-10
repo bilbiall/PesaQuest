@@ -72,9 +72,9 @@
                            value="{{ old('slug', $asset->slug ?? '') }}" placeholder="e.g. honda-fit-2015">
                 </div>
                 <div>
-                    <label class="form-label">Icon (emoji)</label>
-                    <input type="text" name="icon" class="form-input text-center text-2xl" maxlength="10"
-                           value="{{ old('icon', $asset->icon ?? '📦') }}" placeholder="📦">
+                    <label class="form-label">Icon (name, e.g. car, house, briefcase)</label>
+                    <input type="text" name="icon" class="form-input text-center" maxlength="30"
+                           value="{{ old('icon', $asset->icon ?? 'store') }}" placeholder="store">
                 </div>
                 <div>
                     <label class="form-label">Category *</label>

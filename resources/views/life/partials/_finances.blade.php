@@ -157,7 +157,7 @@
                     <div class="space-y-1.5 mb-4">
                         @foreach($topHoldings as $h)
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-400 flex items-center gap-1.5 truncate"><span>{{ $h->asset->icon ?? '📦' }}</span> {{ $h->asset->name ?? 'Asset' }}</span>
+                            <span class="text-gray-400 flex items-center gap-1.5 truncate"><x-icon :name="$h->asset->icon ?? 'store'" class="w-3.5 h-3.5" /> {{ $h->asset->name ?? 'Asset' }}</span>
                             <span class="font-bold text-white flex-shrink-0">Ksh {{ number_format($h->current_value) }}</span>
                         </div>
                         @endforeach

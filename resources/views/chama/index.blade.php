@@ -38,7 +38,7 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             <span class="hidden sm:inline">Back to Game</span>
         </a>
-        <h1 class="text-lg font-black tracking-tight">🤝 Chamas</h1>
+        <h1 class="text-lg font-black tracking-tight inline-flex items-center gap-2"><x-icon name="group" class="w-4 h-4" /> Chamas</h1>
         <a href="{{ route('chama.create') }}"
            class="flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl transition-all"
            style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.3));border:1px solid rgba(139,92,246,.4);">
@@ -125,13 +125,13 @@
                 <div class="relative h-16 flex items-center px-5 gap-3 overflow-hidden"
                      style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.25),rgba(15,14,26,.8));">
                     <div class="absolute inset-0 opacity-20" style="background:radial-gradient(circle at 20% 50%,#6366f1,transparent 60%);"></div>
-                    <div class="relative text-2xl">🤝</div>
+                    <div class="relative"><x-icon name="group" class="w-6 h-6" /></div>
                     <div class="relative flex-1 min-w-0">
                         <p class="font-black text-white truncate leading-tight">{{ $chama->name }}</p>
-                        <p class="text-xs text-indigo-300 font-semibold">
-                            @if($myRec?->role === 'chairman') 👑 Chairman
-                            @elseif($myRec?->role === 'secretary') 📋 Secretary
-                            @else 👤 Member
+                        <p class="text-xs text-indigo-300 font-semibold inline-flex items-center gap-1">
+                            @if($myRec?->role === 'chairman') <x-icon name="crown" class="w-3 h-3" /> Chairman
+                            @elseif($myRec?->role === 'secretary') <x-icon name="clipboard" class="w-3 h-3" /> Secretary
+                            @else <x-icon name="user" class="w-3 h-3" /> Member
                             @endif
                         </p>
                     </div>
@@ -192,7 +192,7 @@
         <div class="rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
              style="background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.25);">
             <div class="flex-1">
-                <p class="font-black text-white text-sm">🔑 Have a join code?</p>
+                <p class="font-black text-white text-sm inline-flex items-center gap-1"><x-icon name="key" class="w-3.5 h-3.5" /> Have a join code?</p>
                 <p class="text-xs text-gray-500 mt-0.5">Private chamas don't appear below — enter the 6-character code a friend (or your teacher) shared.</p>
             </div>
             <form action="{{ route('chama.join-code') }}" method="POST" class="flex gap-2">
@@ -250,13 +250,13 @@
                     <div class="flex flex-wrap gap-1.5">
                         <span class="text-[10px] text-gray-500 font-bold self-center">Entry:</span>
                         @if((int)($chama->min_level ?? 0) > 0)
-                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full text-amber-300" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);">⭐ Lvl {{ $chama->min_level }}+</span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full text-amber-300 inline-flex items-center gap-1" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);"><x-icon name="star" class="w-2.5 h-2.5" /> Lvl {{ $chama->min_level }}+</span>
                         @endif
                         @if((int)($chama->min_credit_score ?? 0) > 0)
-                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full text-sky-300" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);">💳 Credit {{ $chama->min_credit_score }}+</span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full text-sky-300 inline-flex items-center gap-1" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);"><x-icon name="card" class="w-2.5 h-2.5" /> Credit {{ $chama->min_credit_score }}+</span>
                         @endif
                         @if((int)($chama->min_savings ?? 0) > 0)
-                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full text-emerald-300" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);">🏦 Savings {{ number_format($chama->min_savings) }}+</span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full text-emerald-300 inline-flex items-center gap-1" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);"><x-icon name="bank" class="w-2.5 h-2.5" /> Savings {{ number_format($chama->min_savings) }}+</span>
                         @endif
                     </div>
                     @endif

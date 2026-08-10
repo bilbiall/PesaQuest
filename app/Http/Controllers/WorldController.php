@@ -340,7 +340,7 @@ class WorldController extends Controller
                 ->take(8)
                 ->map(fn($pa) => [
                     'name'           => $pa->asset?->name ?? 'Asset',
-                    'icon'           => $pa->asset?->icon ?? '💼',
+                    'icon'           => $pa->asset?->icon ?? 'briefcase',
                     'category'       => $pa->asset?->category ?? '',
                     'purchase_price' => $pa->purchase_price,
                     'current_value'  => $pa->current_value,

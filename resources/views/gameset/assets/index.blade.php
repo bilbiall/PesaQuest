@@ -128,7 +128,7 @@
                 @if($asset->image_url)
                 <img src="{{ $asset->image_url }}" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.4;mix-blend-mode:overlay;" loading="lazy" alt="" onerror="this.style.display='none'"/>
                 @endif
-                <span class="relative z-10 text-5xl" style="filter:drop-shadow(0 0 10px rgba(255,255,255,.2));">{{ $asset->icon }}</span>
+                <span class="relative z-10" style="filter:drop-shadow(0 0 10px rgba(255,255,255,.2));"><x-icon :name="$asset->icon" class="w-10 h-10" /></span>
                 {{-- Image indicator --}}
                 @if($asset->image_url)
                 <div class="absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full"

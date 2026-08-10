@@ -128,7 +128,7 @@
         {{-- Center: stats --}}
         <div class="pc-hud-center">
             <div class="pc-stat">
-                <span class="pc-stat-icon">⚡</span>
+                <span class="pc-stat-icon"><x-icon name="bolt" /></span>
                 <span class="pc-stat-label">LV {{ $level }}</span>
                 <div class="pc-xp-track">
                     <div class="pc-xp-fill" style="width: {{ $xpPercent }}%"></div>
@@ -137,7 +137,7 @@
             </div>
             <div class="pc-stat-divider"></div>
             <div class="pc-stat">
-                <span class="pc-stat-icon">💵</span>
+                <span class="pc-stat-icon"><x-icon name="coin" /></span>
                 <span class="pc-stat-label">Balance</span>
                 <span class="pc-stat-val pc-balance"
                       x-text="'KES ' + liveBalance.toLocaleString()"
@@ -145,13 +145,13 @@
             </div>
             <div class="pc-stat-divider"></div>
             <div class="pc-stat">
-                <span class="pc-stat-icon">📊</span>
+                <span class="pc-stat-icon"><x-icon name="bar-chart" /></span>
                 <span class="pc-stat-label">Net Worth</span>
                 <span class="pc-stat-val">KES {{ number_format($netWorth) }}</span>
             </div>
             <div class="pc-stat-divider"></div>
             <div class="pc-stat">
-                <span class="pc-stat-icon">🏅</span>
+                <span class="pc-stat-icon"><x-icon name="medal" /></span>
                 <span class="pc-stat-label">Credit</span>
                 <span class="pc-stat-val" style="color: {{ $creditScore >= 650 ? '#15C77E' : ($creditScore >= 500 ? '#FFBC00' : '#EF5350') }}">
                     {{ $creditScore }}
@@ -169,17 +169,17 @@
 
         {{-- Right: actions --}}
         <div class="pc-hud-right">
-            <a href="{{ route('marketplace') }}" class="pc-hud-btn" title="Marketplace">🛒</a>
-            <a href="{{ route('portfolio') }}" class="pc-hud-btn" title="Portfolio">💼</a>
-            <a href="{{ route('life.board') }}" class="pc-hud-btn" title="Life Board">🏠</a>
-            <a href="{{ route('dashboard') }}" class="pc-hud-btn" title="Dashboard">📊</a>
+            <a href="{{ route('marketplace') }}" class="pc-hud-btn" title="Marketplace"><x-icon name="cart" /></a>
+            <a href="{{ route('portfolio') }}" class="pc-hud-btn" title="Portfolio"><x-icon name="bar-chart" /></a>
+            <a href="{{ route('life.board') }}" class="pc-hud-btn" title="Life Board"><x-icon name="house" /></a>
+            <a href="{{ route('dashboard') }}" class="pc-hud-btn" title="Dashboard"><x-icon name="monitor" /></a>
 
             {{-- ── NOTIFICATION BELL ── --}}
             <div class="pc-notif-wrap" @click.outside="notifOpen = false">
                 <button class="pc-hud-btn pc-notif-btn"
                         @click="toggleNotifications()"
                         title="Notifications">
-                    🔔
+                    <x-icon name="bell" />
                     <span class="pc-notif-badge"
                           x-show="notifUnread > 0"
                           x-text="notifUnread > 9 ? '9+' : notifUnread"
@@ -247,36 +247,36 @@
         {{-- ── LEFT NAV ── --}}
         <nav class="pc-left-nav" aria-label="City navigation">
             <a href="{{ route('world') }}" class="pc-lnav-item pc-lnav-active" title="City Map">
-                <span class="pc-lnav-icon">🗺️</span>
+                <span class="pc-lnav-icon"><x-icon name="map" /></span>
                 <span class="pc-lnav-label">Map</span>
             </a>
             <a href="{{ route('marketplace') }}" class="pc-lnav-item" title="Marketplace">
-                <span class="pc-lnav-icon">🛒</span>
+                <span class="pc-lnav-icon"><x-icon name="cart" /></span>
                 <span class="pc-lnav-label">Market</span>
             </a>
             <a href="/opportunities" class="pc-lnav-item" title="Courses & Jobs">
-                <span class="pc-lnav-icon">🎓</span>
+                <span class="pc-lnav-icon"><x-icon name="graduation" /></span>
                 <span class="pc-lnav-label">Skills</span>
             </a>
             <button class="pc-lnav-item" @click="walkToDistrict('quests')" title="Quests" style="background:none;border:none;width:100%;cursor:pointer;">
-                <span class="pc-lnav-icon">📜</span>
+                <span class="pc-lnav-icon"><x-icon name="checklist" /></span>
                 <span class="pc-lnav-label">Quests</span>
             </button>
             <div class="pc-lnav-divider"></div>
             <a href="{{ route('savings.index') }}" class="pc-lnav-item" title="Savings & Bank">
-                <span class="pc-lnav-icon">🏦</span>
+                <span class="pc-lnav-icon"><x-icon name="bank" /></span>
                 <span class="pc-lnav-label">Bank</span>
             </a>
             <a href="{{ route('life.board') }}" class="pc-lnav-item" title="Life Board">
-                <span class="pc-lnav-icon">🏠</span>
+                <span class="pc-lnav-icon"><x-icon name="house" /></span>
                 <span class="pc-lnav-label">Home</span>
             </a>
             <a href="{{ route('portfolio') }}" class="pc-lnav-item" title="Portfolio">
-                <span class="pc-lnav-icon">📈</span>
+                <span class="pc-lnav-icon"><x-icon name="trend-up" /></span>
                 <span class="pc-lnav-label">Invest</span>
             </a>
             <a href="{{ route('chama.index') }}" class="pc-lnav-item" title="Chama">
-                <span class="pc-lnav-icon">🤝</span>
+                <span class="pc-lnav-icon"><x-icon name="group" /></span>
                 <span class="pc-lnav-label">Chama</span>
             </a>
             <div class="pc-lnav-divider"></div>
@@ -401,17 +401,17 @@
             <div class="pc-home-spot" x-data="{ homeOpen: false }" @click.outside="homeOpen = false">
                 <button type="button" class="pc-home-chip" title="Your home — life shortcuts"
                         @click="homeOpen = !homeOpen; if (homeOpen) _returnToPlaza()">
-                    🏠 <span>Home</span>
+                    <x-icon name="house" class="w-4 h-4 inline-block" /> <span>Home</span>
                 </button>
                 <div class="pc-home-panel" x-show="homeOpen" x-cloak
                      x-transition:enter="pc-panel-enter" x-transition:enter-start="pc-panel-enter-start" x-transition:enter-end="pc-panel-enter-end">
-                    <div class="pc-home-title">🏠 Karibu nyumbani!</div>
-                    <a href="{{ route('life.board') }}">📋 Life HQ <small>bills · assets · mood</small></a>
-                    <a href="{{ route('life.timeline') }}">🗓️ My Timeline <small>your story so far</small></a>
-                    <a href="{{ route('life.career') }}">💼 Career &amp; Work <small>report to work · payslips</small></a>
-                    <a href="{{ route('portfolio') }}">📊 Portfolio <small>investments &amp; net worth</small></a>
-                    <a href="{{ route('dashboard') }}">🖥️ Dashboard <small>your command centre</small></a>
-                    <a href="{{ route('how-to') }}">🧭 How to Play <small>the full guide</small></a>
+                    <div class="pc-home-title"><x-icon name="house" class="w-4 h-4 inline-block" /> Karibu nyumbani!</div>
+                    <a href="{{ route('life.board') }}"><x-icon name="clipboard" class="w-3.5 h-3.5 inline-block" /> Life HQ <small>bills · assets · mood</small></a>
+                    <a href="{{ route('life.timeline') }}"><x-icon name="calendar" class="w-3.5 h-3.5 inline-block" /> My Timeline <small>your story so far</small></a>
+                    <a href="{{ route('life.career') }}"><x-icon name="briefcase" class="w-3.5 h-3.5 inline-block" /> Career &amp; Work <small>report to work · payslips</small></a>
+                    <a href="{{ route('portfolio') }}"><x-icon name="bar-chart" class="w-3.5 h-3.5 inline-block" /> Portfolio <small>investments &amp; net worth</small></a>
+                    <a href="{{ route('dashboard') }}"><x-icon name="monitor" class="w-3.5 h-3.5 inline-block" /> Dashboard <small>your command centre</small></a>
+                    <a href="{{ route('how-to') }}"><x-icon name="compass" class="w-3.5 h-3.5 inline-block" /> How to Play <small>the full guide</small></a>
                 </div>
             </div>
 
@@ -477,7 +477,7 @@
                     {{-- Jobs unlocked --}}
                     <template x-if="coursePopup.jobs && coursePopup.jobs.length > 0">
                         <div class="pc-cpop-jobs">
-                            <div class="pc-cpop-section-label">💼 Jobs Progress</div>
+                            <div class="pc-cpop-section-label"><x-icon name="briefcase" class="w-3 h-3 inline-block" /> Jobs Progress</div>
                             <template x-for="job in coursePopup.jobs" :key="job.title">
                                 <div class="pc-cpop-job-row">
                                     <span class="pc-cpop-job-logo" x-text="job.employer_logo"></span>
@@ -494,7 +494,7 @@
                     {{-- Financial tip --}}
                     <template x-if="coursePopup.course.financial_tip">
                         <div class="pc-cpop-tip">
-                            <div class="pc-cpop-tip-label">💡 Financial Insight</div>
+                            <div class="pc-cpop-tip-label"><x-icon name="bulb" class="w-3 h-3 inline-block" /> Financial Insight</div>
                             <p class="pc-cpop-tip-text" x-text="coursePopup.course.financial_tip"></p>
                         </div>
                     </template>
@@ -553,7 +553,7 @@
                         <div>
                             <template x-if="courseReader.course.intro_content">
                                 <div style="padding:14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);margin-bottom:12px;">
-                                    <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:8px;">📖 What you'll learn</div>
+                                    <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:8px;"><x-icon name="book" class="w-2.5 h-2.5 inline-block" /> What you'll learn</div>
                                     <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;white-space:pre-line;" x-text="courseReader.course.intro_content"></div>
                                 </div>
                             </template>
@@ -577,7 +577,7 @@
                         <div>
                             <template x-if="courseReader.course.content">
                                 <div style="padding:14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);margin-bottom:12px;">
-                                    <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:8px;">📚 Course Content</div>
+                                    <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:8px;"><x-icon name="book" class="w-2.5 h-2.5 inline-block" /> Course Content</div>
                                     <div style="font-size:13px;color:rgba(255,255,255,.78);line-height:1.75;white-space:pre-line;" x-text="courseReader.course.content"></div>
                                 </div>
                             </template>
@@ -681,7 +681,7 @@
                      next() { this.idx = (this.idx + 1) % this.quests.length; }
                  }">
                 <div class="pc-card-label" style="display:flex;align-items:center;justify-content:space-between;">
-                    <span>📜 ACTIVE QUESTS</span>
+                    <span class="inline-flex items-center gap-1"><x-icon name="checklist" class="w-3 h-3" /> ACTIVE QUESTS</span>
                     <div style="display:flex;align-items:center;gap:6px;">
                         <template x-if="quests.length > 0">
                             <span style="font-size:9px;color:var(--pc-gold);font-weight:700;"
@@ -721,7 +721,7 @@
                 {{-- Current quest --}}
                 <template x-if="current">
                     <div class="pc-aq-item" style="margin-top:4px;">
-                        <span class="pc-aq-icon" x-text="current.icon"></span>
+                        <span class="pc-aq-icon" x-html="pqIcon(current.icon, 'w-5 h-5')"></span>
                         <div class="pc-aq-body" style="flex:1;min-width:0;">
                             <div class="pc-aq-title" x-text="current.title"></div>
                             <div class="pc-aq-status"
@@ -749,7 +749,7 @@
             {{-- ── HUSTLE TIP CARD (contextual, rotating) ── --}}
             <div class="pc-card pc-tip-card" x-show="tips.length > 0">
                 <div class="pc-tip-header">
-                    <span class="pc-card-label" style="margin-bottom:0;">💡 HUSTLE TIP</span>
+                    <span class="pc-card-label inline-flex items-center gap-1" style="margin-bottom:0;"><x-icon name="bulb" class="w-3 h-3" /> HUSTLE TIP</span>
                     <div class="pc-tip-nav">
                         <button class="pc-tip-prev" @click="nextTip()" title="Next tip">→</button>
                         <span class="pc-tip-count"
@@ -770,7 +770,7 @@
             {{-- Active Investments --}}
             <div class="pc-card">
                 <div class="pc-card-label" style="display:flex;align-items:center;justify-content:space-between;">
-                    <span>📈 ACTIVE INVESTMENTS</span>
+                    <span class="inline-flex items-center gap-1"><x-icon name="trend-up" class="w-3 h-3" /> ACTIVE INVESTMENTS</span>
                     <a href="{{ route('portfolio') }}" style="font-size:10px;color:#818cf8;font-weight:700;text-decoration:none;">View All →</a>
                 </div>
 
@@ -779,7 +779,7 @@
                     @foreach($activeInvestments as $inv)
                     <div style="flex:0 0 130px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 10px 8px;min-width:130px;">
                         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <span style="font-size:18px;flex-shrink:0;">{{ $inv['icon'] }}</span>
+                            <span style="flex-shrink:0;"><x-icon :name="$inv['icon']" class="w-4 h-4" /></span>
                             <div style="font-size:11px;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{{ Str::limit($inv['name'], 14) }}</div>
                         </div>
                         {{-- Value progress bar: current vs purchase --}}
@@ -829,7 +829,7 @@
                          style="width:72px;height:72px;border-radius:14px;object-fit:cover;margin:0 auto 8px;border:2px solid rgba(124,58,237,0.4);">
                 </template>
                 <template x-if="!questPopup.image">
-                    <div x-text="questPopup.icon" style="font-size:44px;margin-bottom:8px;"></div>
+                    <div x-html="pqIcon(questPopup.icon, 'w-11 h-11')" style="margin-bottom:8px;display:flex;justify-content:center;"></div>
                 </template>
                 <div x-text="questPopup.title" style="font-size:17px;font-weight:800;color:#e2e8f0;line-height:1.3;"></div>
                 <div x-show="questPopup.status === 'reviewing'"
@@ -845,14 +845,14 @@
 
             <template x-if="questPopup.instructions">
                 <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.18);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
-                    <div style="font-size:10px;color:#10b981;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">💡 How to Complete</div>
+                    <div style="font-size:10px;color:#10b981;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;"><x-icon name="bulb" class="w-2.5 h-2.5 inline-block" /> How to Complete</div>
                     <div x-text="questPopup.instructions" style="font-size:13px;color:#a7f3d0;line-height:1.55;"></div>
                 </div>
             </template>
 
             <template x-if="questPopup.lesson">
                 <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.18);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
-                    <div style="font-size:10px;color:#818cf8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">🎓 Lesson</div>
+                    <div style="font-size:10px;color:#818cf8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;"><x-icon name="graduation" class="w-2.5 h-2.5 inline-block" /> Lesson</div>
                     <div x-text="questPopup.lesson" style="font-size:13px;color:#c7d2fe;line-height:1.55;font-style:italic;"></div>
                 </div>
             </template>
@@ -951,7 +951,7 @@
 
                     {{-- Identity header --}}
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(53,195,240,.07);border:1px solid rgba(53,195,240,.22);">
-                        <div style="font-size:28px;flex-shrink:0;">💹</div>
+                        <div style="flex-shrink:0;color:#35C3F0;"><x-icon name="trend-up" class="w-7 h-7" /></div>
                         <div>
                             <div style="font-size:12px;font-weight:900;color:#35C3F0;letter-spacing:.04em;text-transform:uppercase;">Equity Square</div>
                             <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;margin-top:2px;">Risk-based investment deals — put your money to work</div>
@@ -969,17 +969,17 @@
                         <button @click="eqTab='deals'"
                                 :style="eqTab==='deals' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            🎯 Deals
+                            <x-icon name="target" class="w-3 h-3 inline-block" /> Deals
                         </button>
                         <button @click="eqTab='my-shares'"
                                 :style="eqTab==='my-shares' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            💼 My Shares
+                            <x-icon name="bar-chart" class="w-3 h-3 inline-block" /> My Shares
                         </button>
                         <button @click="eqTab='market'"
                                 :style="eqTab==='market' ? 'background:rgba(53,195,240,0.18);color:#67e8f9;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            📈 Market
+                            <x-icon name="trend-up" class="w-3 h-3 inline-block" /> Market
                         </button>
                     </div>
 
@@ -989,10 +989,10 @@
                     {{-- Active positions --}}
                     <template x-if="district.my_deals && district.my_deals.filter(d=>d.status==='pending').length > 0">
                         <div style="margin-bottom:12px;">
-                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">⏳ Your Active Positions</div>
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;"><x-icon name="clock" class="w-2.5 h-2.5 inline-block" /> Your Active Positions</div>
                             <template x-for="md in district.my_deals.filter(d=>d.status==='pending')" :key="md.id">
                                 <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(53,195,240,.04);border:1px solid rgba(53,195,240,.15);margin-bottom:4px;">
-                                    <span x-text="md.icon" style="font-size:18px;"></span>
+                                    <span x-html="pqIcon(md.icon, 'w-4 h-4')" style="display:inline-flex;"></span>
                                     <div style="flex:1;min-width:0;">
                                         <div style="font-size:12px;font-weight:700;color:#e5e7eb;" x-text="md.title"></div>
                                         <div style="font-size:11px;color:#6b7280;" x-text="'KES ' + md.amount.toLocaleString() + ' · resolves at tick ' + md.resolve_at"></div>
@@ -1006,10 +1006,10 @@
                     {{-- Recently resolved --}}
                     <template x-if="district.my_deals && district.my_deals.filter(d=>d.status!=='pending').length > 0">
                         <div style="margin-bottom:12px;">
-                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📋 Recent Results</div>
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;"><x-icon name="clipboard" class="w-2.5 h-2.5 inline-block" /> Recent Results</div>
                             <template x-for="md in district.my_deals.filter(d=>d.status!=='pending').slice(0,3)" :key="md.id">
                                 <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,.06);margin-bottom:4px;">
-                                    <span x-text="md.icon" style="font-size:16px;"></span>
+                                    <span x-html="pqIcon(md.icon, 'w-4 h-4')" style="display:inline-flex;"></span>
                                     <div style="flex:1;min-width:0;">
                                         <div style="font-size:12px;font-weight:700;color:#e5e7eb;" x-text="md.title"></div>
                                     </div>
@@ -1022,14 +1022,14 @@
                     </template>
 
                     {{-- Available deals --}}
-                    <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">🎯 Open Deals</div>
+                    <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;"><x-icon name="target" class="w-2.5 h-2.5 inline-block" /> Open Deals</div>
                     <template x-if="!district.deals || district.deals.length === 0">
                         <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No deals available right now. Check back soon.</div>
                     </template>
                     <template x-for="deal in (district.deals ?? [])" :key="deal.id">
                         <div style="border-radius:12px;border:1px solid rgba(53,195,240,.15);padding:10px 12px;margin-bottom:8px;background:rgba(53,195,240,.03);">
                             <div style="display:flex;align-items:flex-start;gap:10px;">
-                                <span x-text="deal.icon" style="font-size:22px;flex-shrink:0;line-height:1.2;"></span>
+                                <span x-html="pqIcon(deal.icon, 'w-5 h-5')" style="flex-shrink:0;display:inline-flex;"></span>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:800;color:#f9fafb;" x-text="deal.title"></div>
                                     <div style="font-size:11px;color:#9ca3af;margin-top:2px;" x-text="deal.description"></div>
@@ -1065,9 +1065,8 @@
                         <div style="border-radius:12px;padding:10px 12px;margin-bottom:12px;background:rgba(53,195,240,.05);border:1px solid rgba(53,195,240,.15);">
                             <div style="font-size:11px;font-weight:800;color:#67e8f9;margin-bottom:4px;">📚 How shares work</div>
                             <div style="font-size:10.5px;color:#9ca3af;line-height:1.5;">
-                                Each share's price moves on its own, all the time — nobody controls it. The goal is <strong style="color:#e5e7eb;">buy low, sell high</strong>:
-                                buy when the price looks cheap next to its own recent range, sell when it looks rich. Buying costs a touch <em>above</em> the price shown and selling pays a touch <em>below</em> it —
-                                that gap is the spread, a real cost of trading that's wider on wilder shares. Shares you own count toward your net worth at their current price, even before you sell.
+                                Share prices move up and down on their own — nobody controls them. Try to <strong style="color:#e5e7eb;">buy low, sell high</strong>.
+                                Buying costs a little more than the price shown, and selling gets a little less — that small gap is normal. Shares you own add to your net worth right away, even before you sell.
                             </div>
                         </div>
 
@@ -1078,11 +1077,14 @@
                                     <span style="font-size:11px;font-weight:800;" :style="portfolioTotals(district.my_shares).gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
                                           x-text="'KES ' + portfolioTotals(district.my_shares).value.toLocaleString() + ' · ' + (portfolioTotals(district.my_shares).gain_loss >= 0 ? '+' : '') + portfolioTotals(district.my_shares).gain_loss.toLocaleString()"></span>
                                 </div>
+                                <div style="font-size:9.5px;color:#6b7280;margin-top:-4px;margin-bottom:8px;">
+                                    What you'd gain or lose if you sold right now — it moves with the price, so red today can turn green later.
+                                </div>
                                 <template x-for="h in district.my_shares" :key="h.share_id">
                                     <div class="share-card">
                                         <div class="share-card-top">
                                             <div class="share-icon-badge" style="background:rgba(53,195,240,.12);border-color:rgba(53,195,240,.32);">
-                                                <span x-text="h.icon"></span>
+                                                <span x-html="pqIcon(h.icon, 'w-5 h-5')"></span>
                                             </div>
                                             <div class="share-card-info">
                                                 <div class="share-name" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
@@ -1138,13 +1140,13 @@
                             <div style="display:flex;gap:6px;margin-bottom:10px;">
                                 <template x-if="district.top_gainer">
                                     <div style="flex:1;border-radius:10px;padding:6px 9px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:11px;font-weight:700;color:#34d399;">
-                                        🔥 <span x-text="district.top_gainer.icon + ' ' + district.top_gainer.symbol"></span>
+                                        🔥 <span class="inline-flex items-center gap-1"><span class="w-3 h-3" x-html="pqIcon(district.top_gainer.icon, 'w-3 h-3')"></span> <span x-text="district.top_gainer.symbol"></span></span>
                                         <span x-text="'↑' + district.top_gainer.change_pct + '%'"></span>
                                     </div>
                                 </template>
                                 <template x-if="district.top_loser">
                                     <div style="flex:1;border-radius:10px;padding:6px 9px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);font-size:11px;font-weight:700;color:#f87171;">
-                                        🥶 <span x-text="district.top_loser.icon + ' ' + district.top_loser.symbol"></span>
+                                        🥶 <span class="inline-flex items-center gap-1"><span class="w-3 h-3" x-html="pqIcon(district.top_loser.icon, 'w-3 h-3')"></span> <span x-text="district.top_loser.symbol"></span></span>
                                         <span x-text="'↓' + Math.abs(district.top_loser.change_pct) + '%'"></span>
                                     </div>
                                 </template>
@@ -1160,7 +1162,7 @@
                             <div class="share-card">
                                 <div class="share-card-top">
                                     <div class="share-icon-badge" :style="'background:' + s.risk_color + '18;border-color:' + s.risk_color + '40;'">
-                                        <span x-text="s.icon"></span>
+                                        <span x-html="pqIcon(s.icon, 'w-5 h-5')"></span>
                                     </div>
                                     <div class="share-card-info">
                                         <div class="share-name" x-text="s.name + ' (' + s.symbol + ')'"></div>
@@ -1213,11 +1215,11 @@
                          x-transition:leave-end="opacity-0 scale-95"
                          class="share-trade-card" :class="shareTradeResult && shareTradeResult.ok ? 'ok' : 'bad'">
                         <div style="display:flex;align-items:center;gap:8px;">
-                            <span class="stc-icon" x-text="shareTradeResult ? shareTradeResult.icon : '📈'"></span>
+                            <span class="stc-icon w-6 h-6" x-html="pqIcon(shareTradeResult ? shareTradeResult.icon : 'trend-up', 'w-6 h-6')"></span>
                             <span style="font-size:13px;font-weight:800;color:#f9fafb;flex:1;" x-text="shareTradeResult ? shareTradeResult.message : ''"></span>
                         </div>
                         <div x-show="shareTradeResult && shareTradeResult.basics" class="stc-basics">
-                            📚 <strong>First trade!</strong> <span x-text="shareTradeResult ? shareTradeResult.basics : ''"></span>
+                            <x-icon name="book" class="w-3.5 h-3.5 inline-block" /> <strong>First trade!</strong> <span x-text="shareTradeResult ? shareTradeResult.basics : ''"></span>
                         </div>
                         <div x-show="shareTradeResult && shareTradeResult.education" class="stc-edu">
                             💡 <span x-text="shareTradeResult ? shareTradeResult.education : ''"></span>
@@ -1232,7 +1234,7 @@
                          x-text="bankMsg"></div>
 
                     <div class="pc-panel-actions" style="margin-top:14px;">
-                        <a href="/portfolio" class="pc-action-btn pc-action-primary">📊 My Portfolio</a>
+                        <a href="/portfolio" class="pc-action-btn pc-action-primary"><x-icon name="bar-chart" class="w-3.5 h-3.5 inline-block" /> My Portfolio</a>
                     </div>
                 </div>
             </template>
@@ -1245,7 +1247,7 @@
 
                     {{-- Identity header --}}
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22);">
-                        <div style="font-size:28px;flex-shrink:0;">🏦</div>
+                        <div style="flex-shrink:0;color:#F59E0B;"><x-icon name="bank" class="w-7 h-7" /></div>
                         <div>
                             <div style="font-size:12px;font-weight:900;color:#F59E0B;letter-spacing:.04em;text-transform:uppercase;">Bank &amp; Savings</div>
                             <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;margin-top:2px;">Savings, loans, credit score &amp; account management</div>
@@ -1280,17 +1282,17 @@
                         <button @click="bankTab='savings'"
                                 :style="bankTab==='savings' ? 'background:rgba(245,158,11,0.18);color:#fbbf24;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            💰 Savings
+                            <x-icon name="coin" class="w-3 h-3 inline-block" /> Savings
                         </button>
                         <button @click="bankTab='loans'"
                                 :style="bankTab==='loans' ? 'background:rgba(59,130,246,0.18);color:#93c5fd;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            🏦 Loans
+                            <x-icon name="bank" class="w-3 h-3 inline-block" /> Loans
                         </button>
                         <button @click="bankTab='account'"
                                 :style="bankTab==='account' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;font-weight:700;' : 'color:#9ca3af;'"
                                 style="flex:1;padding:6px 4px;border-radius:8px;font-size:11px;border:none;cursor:pointer;transition:all .15s;">
-                            👤 Account
+                            <x-icon name="user" class="w-3 h-3 inline-block" /> Account
                         </button>
                     </div>
 
@@ -1298,7 +1300,7 @@
                     <div x-show="bankTab==='savings'" style="margin-top:10px;">
                         <template x-if="district.savings_schemes && district.savings_schemes.length > 0">
                             <div class="pc-eq-schemes">
-                                <div class="pc-eq-schemes-label">💰 My Savings Schemes</div>
+                                <div class="pc-eq-schemes-label"><x-icon name="coin" class="w-3 h-3 inline-block" /> My Savings Schemes</div>
                                 <template x-for="scheme in district.savings_schemes" :key="scheme.name">
                                     <div class="pc-eq-scheme-row">
                                         <span x-text="scheme.emoji" style="font-size:16px;"></span>
@@ -1333,7 +1335,7 @@
                     <div x-show="bankTab==='loans'" style="margin-top:10px;">
                         <template x-if="district.my_loans && district.my_loans.length > 0">
                             <div style="margin-bottom:12px;">
-                                <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📋 My Active Loans</div>
+                                <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;"><x-icon name="clipboard" class="w-2.5 h-2.5 inline-block" /> My Active Loans</div>
                                 <template x-for="loan in district.my_loans" :key="loan.id">
                                     <div style="border-radius:12px;border:1px solid rgba(59,130,246,0.2);padding:10px 12px;margin-bottom:6px;background:rgba(59,130,246,0.05);">
                                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -1355,7 +1357,7 @@
                                 </template>
                             </div>
                         </template>
-                        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">🏦 Available Loans</div>
+                        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;"><x-icon name="bank" class="w-2.5 h-2.5 inline-block" /> Available Loans</div>
                         <template x-if="!district.loan_products || district.loan_products.length === 0">
                             <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No loan products available.</div>
                         </template>
@@ -1426,7 +1428,7 @@
                         </div>
                         <template x-if="district.credit_tips && district.credit_tips.length > 0">
                             <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px;margin-bottom:10px;">
-                                <div style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">💡 Improve Credit Score</div>
+                                <div style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;"><x-icon name="bulb" class="w-2.5 h-2.5 inline-block" /> Improve Credit Score</div>
                                 <template x-for="tip in district.credit_tips" :key="tip">
                                     <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
                                         <span style="color:#fbbf24;font-size:11px;flex-shrink:0;margin-top:1px;">→</span>
@@ -1437,7 +1439,7 @@
                         </template>
                         <div class="pc-panel-actions" style="margin-top:10px;">
                             <a href="/savings" class="pc-action-btn pc-action-primary">💰 Manage Savings</a>
-                            <a href="{{ route('life.board') }}#statement" class="pc-action-btn pc-action-secondary">📄 View Statement</a>
+                            <a href="{{ route('life.board') }}#statement" class="pc-action-btn pc-action-secondary"><x-icon name="document" class="w-3.5 h-3.5 inline-block" /> View Statement</a>
                         </div>
                     </div>
 
@@ -1456,7 +1458,7 @@
             <template x-if="district && district.slug === 'champions-court'">
                 <div>
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.22);">
-                        <div style="font-size:28px;flex-shrink:0;">🏆</div>
+                        <div style="flex-shrink:0;color:#f59e0b;"><x-icon name="trophy" class="w-7 h-7" /></div>
                         <div>
                             <div style="font-size:12px;font-weight:900;color:#f59e0b;letter-spacing:.04em;text-transform:uppercase;">Champions' Court</div>
                             <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;margin-top:2px;">Dreams &amp; fair challenges — progress made DURING the race is all that counts</div>
@@ -1548,7 +1550,7 @@
 
                     {{-- Panel identity header --}}
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.18);">
-                        <div style="font-size:28px;flex-shrink:0;">💼</div>
+                        <div style="flex-shrink:0;color:#10b981;"><x-icon name="briefcase" class="w-7 h-7" /></div>
                         <div>
                             <div style="font-size:12px;font-weight:900;color:#10b981;letter-spacing:.04em;text-transform:uppercase;">Your Career</div>
                             <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;margin-top:2px;">Manage your active jobs, salary &amp; work performance</div>
@@ -1565,7 +1567,7 @@
                             </div>
                             <button @click="walkToDistrict('opportunity-hub')"
                                     class="pc-action-btn pc-action-primary" style="display:inline-flex;cursor:pointer;">
-                                🎓 Go to Opportunity Hub
+                                <x-icon name="graduation" class="w-3.5 h-3.5 inline-block" /> Go to Opportunity Hub
                             </button>
                         </div>
                     </template>
@@ -1694,7 +1696,7 @@
                 <div>
                     {{-- Panel identity header --}}
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:12px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);">
-                        <div style="font-size:28px;flex-shrink:0;">🎓</div>
+                        <div style="flex-shrink:0;color:#a5b4fc;"><x-icon name="graduation" class="w-7 h-7" /></div>
                         <div>
                             <div style="font-size:12px;font-weight:900;color:#a5b4fc;letter-spacing:.04em;text-transform:uppercase;">Learn &amp; Apply</div>
                             <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.4;margin-top:2px;">Take courses, earn skills &amp; apply for new jobs</div>
@@ -1704,13 +1706,13 @@
                     {{-- Tabs --}}
                     <div class="pc-opp-tabs">
                         <button class="pc-opp-tab" :class="{ active: oppTab === 'courses' }" @click="oppTab = 'courses'">
-                            🎓 Courses
+                            <x-icon name="graduation" class="w-3.5 h-3.5 inline-block" /> Courses
                         </button>
                         <button class="pc-opp-tab" :class="{ active: oppTab === 'jobs' }" @click="oppTab = 'jobs'">
-                            💼 Jobs
+                            <x-icon name="briefcase" class="w-3.5 h-3.5 inline-block" /> Jobs
                             <span class="pc-opp-tab-lock"
                                   x-show="!oppCourses.some(c => c.player_status === 'completed')"
-                                  x-cloak>🔒</span>
+                                  x-cloak><x-icon name="lock" class="w-3 h-3 inline-block" /></span>
                         </button>
                     </div>
 
@@ -1964,10 +1966,10 @@
                     <div style="display:flex;gap:6px;margin-bottom:12px;">
                         <button type="button" @click="fwTab = 'activities'"
                                 :style="fwTab === 'activities' ? 'background:rgba(255,107,53,.2);border:1px solid rgba(255,107,53,.4);color:#FF6B35;' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);'"
-                                style="flex:1;padding:8px;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;">🎟️ Activities</button>
+                                style="flex:1;padding:8px;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;"><x-icon name="ticket" class="w-3.5 h-3.5 inline-block" /> Activities</button>
                         <button type="button" @click="fwTab = 'arcade'"
                                 :style="fwTab === 'arcade' ? 'background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;' : 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);'"
-                                style="flex:1;padding:8px;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;">🕹️ Arcade</button>
+                                style="flex:1;padding:8px;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;"><x-icon name="gamepad" class="w-3.5 h-3.5 inline-block" /> Arcade</button>
                     </div>
 
                     {{-- Arcade tab — mini-games that play with your wallet, not just spend from it --}}
@@ -1984,7 +1986,7 @@
 
                     {{-- Experience cards with spend buttons --}}
                     <div class="pc-fw-experiences" x-show="fwTab === 'activities'" x-cloak>
-                        <div class="pc-fw-xp-title">🎟️ Experiences in Fun World</div>
+                        <div class="pc-fw-xp-title"><x-icon name="ticket" class="w-3.5 h-3.5 inline-block" /> Experiences in Fun World</div>
                         <template x-for="xp in (district.experiences || [])" :key="xp.name">
                             <div class="pc-fw-xp-card">
                                 <div class="pc-fw-xp-icon" x-text="xp.icon"></div>
@@ -2031,10 +2033,10 @@
             {{-- ── COMMUNITY CENTRE — Dreams Board + Stats ── --}}
             <template x-if="district && district.slug === 'community'">
                 <div>
-                    <a href="{{ route('forums.index') }}" class="pc-action-btn pc-action-primary" style="display:block;text-align:center;margin-bottom:8px;">🗣️ Visit Forums →</a>
+                    <a href="{{ route('forums.index') }}" class="pc-action-btn pc-action-primary" style="display:block;text-align:center;margin-bottom:8px;"><x-icon name="speech" class="w-3.5 h-3.5 inline-block" /> Visit Forums →</a>
                     <div style="display:flex;gap:8px;margin-bottom:10px;">
-                        <a href="{{ route('friends.index') }}" class="pc-action-btn" style="flex:1;text-align:center;">👥 Friends &amp; Loans</a>
-                        <a href="{{ route('chama.index') }}" class="pc-action-btn" style="flex:1;text-align:center;">🤝 Chamas</a>
+                        <a href="{{ route('friends.index') }}" class="pc-action-btn" style="flex:1;text-align:center;"><x-icon name="people" class="w-3.5 h-3.5 inline-block" /> Friends &amp; Loans</a>
+                        <a href="{{ route('chama.index') }}" class="pc-action-btn" style="flex:1;text-align:center;"><x-icon name="group" class="w-3.5 h-3.5 inline-block" /> Chamas</a>
                     </div>
 
                     <p class="pc-panel-desc" x-text="district.description"></p>
@@ -2053,7 +2055,7 @@
 
                     {{-- Dreams Board --}}
                     <div class="pc-dreams-board">
-                        <div class="pc-dreams-title">📌 Dreams Board</div>
+                        <div class="pc-dreams-title"><x-icon name="pin" class="w-3.5 h-3.5 inline-block" /> Dreams Board</div>
                         <div class="pc-dreams-sub">What Pesa City players are working towards</div>
                         <div class="pc-dreams-list">
                             <template x-for="item in (district.dreams || [])" :key="item.dream">
@@ -2079,7 +2081,7 @@
             <template x-if="district && district.slug === 'estates' && district.status === 'locked'">
                 <div style="padding:4px 0;">
                     <div style="text-align:center;padding:16px 8px 12px;">
-                        <div style="font-size:40px;margin-bottom:8px;">🏘️</div>
+                        <div style="margin-bottom:8px;display:flex;justify-content:center;color:#9ca3af;"><x-icon name="building" class="w-10 h-10" /></div>
                         <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:6px;">Property Quarter — Locked</div>
                         <div style="font-size:12px;color:var(--pc-muted);line-height:1.5;margin-bottom:14px;">
                             Unlock by saving KES 200,000 <em>or</em> completing 3 missions.
@@ -2089,7 +2091,7 @@
                     {{-- Savings progress bar --}}
                     <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:8px;">
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                            <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);">💰 Savings Progress</span>
+                            <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);"><x-icon name="coin" class="w-3 h-3 inline-block" /> Savings Progress</span>
                             <span style="font-size:11px;font-weight:900;color:#10b981;"
                                   x-text="'KES ' + (district.unlock_balance ?? 0).toLocaleString() + ' / 200,000'"></span>
                         </div>
@@ -2145,7 +2147,7 @@
                         </div>
                     </div>
 
-                    <div class="pc-estates-label">🏘️ Available Properties</div>
+                    <div class="pc-estates-label"><x-icon name="building" class="w-3.5 h-3.5 inline-block" /> Available Properties</div>
                     <div x-data="{ estMsg: '', estOk: true, estBuying: null }">
                     <template x-if="estMsg">
                         <div style="margin-bottom:10px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;"
@@ -2234,7 +2236,7 @@
                         </div>
                     </div>
 
-                    <div class="pc-estates-label">🚗 Available Vehicles</div>
+                    <div class="pc-estates-label"><x-icon name="car" class="w-3.5 h-3.5 inline-block" /> Available Vehicles</div>
                     <div x-data="{ cyMsg: '', cyOk: true, cyBuying: null }">
                     <template x-if="cyMsg">
                         <div style="margin-bottom:10px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;"
@@ -2332,12 +2334,12 @@
                         <button class="pc-opp-tab"
                                 :class="{ active: questsData.filter === 'available' }"
                                 @click="questsData.filter = 'available'">
-                            🎯 Available
+                            <x-icon name="target" class="w-3.5 h-3.5 inline-block" /> Available
                         </button>
                         <button class="pc-opp-tab"
                                 :class="{ active: questsData.filter === 'completed' }"
                                 @click="questsData.filter = 'completed'">
-                            ✅ Completed
+                            <x-icon name="check-circle" class="w-3.5 h-3.5 inline-block" /> Completed
                         </button>
                         <template x-if="questsData.quests.some(x => x.is_previous_level && x.user_status !== 'completed')">
                             <button class="pc-opp-tab"
@@ -2359,7 +2361,7 @@
                                  }">
                                 {{-- Quest header --}}
                                 <div class="pc-quest-item-header">
-                                    <span class="pc-quest-item-icon" x-text="quest.icon"></span>
+                                    <span class="pc-quest-item-icon" x-html="pqIcon(quest.icon, 'w-5 h-5')"></span>
                                     <div class="pc-quest-item-meta">
                                         <div class="pc-quest-item-title">
                                             <span x-text="quest.title"></span>
@@ -2405,7 +2407,7 @@
                                 {{-- Action hint (when in progress) --}}
                                 <template x-if="quest.user_status === 'in_progress' && quest.hint">
                                     <div class="pc-quest-hint-box">
-                                        <div class="pc-quest-hint-label">📌 How to complete:</div>
+                                        <div class="pc-quest-hint-label"><x-icon name="pin" class="w-3 h-3 inline-block" /> How to complete:</div>
                                         <div x-text="quest.hint"></div>
                                     </div>
                                 </template>
@@ -2441,7 +2443,7 @@
                                     </button>
                                 </template>
                                 <template x-if="quest.user_status === 'completed'">
-                                    <div class="pc-quest-done-label">🏆 Completed!</div>
+                                    <div class="pc-quest-done-label"><x-icon name="trophy" class="w-3 h-3 inline-block" /> Completed!</div>
                                 </template>
                             </div>
                         </template>
@@ -2486,23 +2488,23 @@
     {{-- ── MOBILE BOTTOM NAV (hidden on desktop via CSS) ── --}}
     <nav class="pc-mobile-nav">
         <a href="{{ route('world') }}" class="pc-mn-item pc-mn-active" title="City Map">
-            <span class="pc-mn-icon">🗺️</span>
+            <span class="pc-mn-icon"><x-icon name="map" /></span>
             <span>Map</span>
         </a>
         <button class="pc-mn-item" @click="walkToDistrict('marketplace')" title="Market">
-            <span class="pc-mn-icon">🛒</span>
+            <span class="pc-mn-icon"><x-icon name="cart" /></span>
             <span>Market</span>
         </button>
         <button class="pc-mn-item" @click="walkToDistrict('opportunity-hub')" title="Skills">
-            <span class="pc-mn-icon">🎓</span>
+            <span class="pc-mn-icon"><x-icon name="graduation" /></span>
             <span>Skills</span>
         </button>
         <button class="pc-mn-item" @click="walkToDistrict('quests')" title="Quests">
-            <span class="pc-mn-icon">📜</span>
+            <span class="pc-mn-icon"><x-icon name="checklist" /></span>
             <span>Quests</span>
         </button>
         <button class="pc-mn-item" @click="toggleSidebar()" :class="{ 'pc-mn-active': sidebarOpen }" title="Profile">
-            <span class="pc-mn-icon">👤</span>
+            <span class="pc-mn-icon"><x-icon name="user" /></span>
             <span>Profile</span>
         </button>
         <button class="pc-mn-item" onclick="pqMenuOpen()" title="Menu">
@@ -2762,7 +2764,7 @@
             <div class="qc-star" style="background:#f59e0b;--tx:-130px;--ty:-45px;animation-delay:.07s;width:9px;height:9px;border-radius:2px;"></div>
         </div>
 
-        <span class="qc-icon" x-text="questComplete.icon"></span>
+        <span class="qc-icon w-10 h-10" x-html="pqIcon(questComplete.icon, 'w-10 h-10')"></span>
         <div class="qc-eyebrow">QUEST COMPLETE!</div>
         <div class="qc-title" x-text="questComplete.title"></div>
         <div class="qc-lesson" x-show="questComplete.lesson" x-text="questComplete.lesson"></div>
@@ -2930,8 +2932,8 @@
 
             <div class="pc-badge-eyebrow">Achievement Unlocked</div>
 
-            <div class="pc-badge-big-icon"
-                 x-text="badge.icon"
+            <div class="pc-badge-big-icon w-14 h-14"
+                 x-html="pqIcon(badge.icon, 'w-14 h-14')"
                  :style="`color: ${badge.color};`"></div>
 
             <div class="pc-badge-popup-name" x-text="badge.name"></div>

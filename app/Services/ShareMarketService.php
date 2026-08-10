@@ -11,7 +11,7 @@ class ShareMarketService
     private const STEP_INTERVAL_SECONDS = 180;
 
     /** How many recent prices to keep for the sparkline. */
-    private const HISTORY_LENGTH = 15;
+    public const HISTORY_LENGTH = 15;
 
     /** Sector-flavored reasons for a big "news jolt" move — generic fallback
      *  covers any sector not listed. Purely cosmetic context, doesn't affect
@@ -78,7 +78,15 @@ class ShareMarketService
 
     public function step(Share $share): void
     {
-        $pctChange = $share->drift + (lcg_value() * 2 - 1) * $share->volatility;
+        // A Market Watch drift boost has run its course — clear it before
+        // this step, so it doesn't linger past its intended window.
+        if ($share->temp_drift_expires_at && $share->temp_drift_expires_at->isPast()) {
+            $share->temp_drift            = 0;
+            $share->temp_drift_expires_at = null;
+        }
+
+        $effectiveDrift = $share->drift + ($share->temp_drift ?? 0);
+        $pctChange      = $effectiveDrift + (lcg_value() * 2 - 1) * $share->volatility;
 
         // ~6% chance of a bigger real-world-style shock (earnings surprise,
         // scandal, market-wide swing) — 2-4x the normal daily swing.
@@ -101,6 +109,24 @@ class ShareMarketService
         $share->current_price      = $newPrice;
         $share->price_history      = $history;
         $share->last_event_reason  = $isJolt ? $this->pickReason($share->sector, $newPrice >= $share->previous_price) : null;
+        $share->save();
+    }
+
+    /** Sets up the resolved outcome of a Market Watch news item as a
+     *  temporary drift boost rather than an instant jump — the regular
+     *  step() cron then trends the price toward it over several real-time
+     *  steps, each with its own ordinary randomness. That's deliberate: the
+     *  move should look like an organic few-day trend, not a scripted jump,
+     *  and the total realized move staying uncertain (some steps go the
+     *  "wrong" way, same as any real trend) is what keeps a correct read
+     *  from being a guaranteed payout. */
+    public function applyNewsDrift(Share $share, string $direction, float $magnitudePct, int $windowSteps = 8): void
+    {
+        $sign          = $direction === 'up' ? 1 : -1;
+        $totalFraction = $magnitudePct / 100;
+
+        $share->temp_drift            = $sign * ($totalFraction / max(1, $windowSteps));
+        $share->temp_drift_expires_at = now()->addSeconds(self::STEP_INTERVAL_SECONDS * $windowSteps);
         $share->save();
     }
 

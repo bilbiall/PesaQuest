@@ -59,7 +59,7 @@
                         @foreach($myListings as $ml)
                         <div class="rounded-2xl p-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-lg">{{ $ml->playerAsset->asset->icon ?? '📦' }}</span>
+                                <x-icon :name="$ml->playerAsset->asset->icon ?? 'store'" class="w-4 h-4" />
                                 <span class="text-xs font-bold text-white flex-1 truncate">{{ $ml->playerAsset->asset->name }}</span>
                             </div>
                             <div class="flex items-center justify-between">
@@ -95,9 +95,9 @@
                 @forelse($listings as $listing)
                 <div class="listing-card rounded-3xl p-5 mb-4">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
                              style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
-                            {{ $listing->playerAsset->asset->icon ?? '📦' }}
+                            <x-icon :name="$listing->playerAsset->asset->icon ?? 'store'" class="w-6 h-6" />
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">

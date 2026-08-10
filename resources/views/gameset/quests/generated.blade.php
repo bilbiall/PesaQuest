@@ -130,7 +130,7 @@
              data-icon="{{ $q->icon }}"
              style="background:linear-gradient(135deg,rgba(15,13,30,0.9),rgba(9,7,20,0.95));border:1px solid {{ $q->is_active ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)' }};">
             <div class="flex items-start gap-4">
-                <div class="text-3xl flex-shrink-0" style="width:44px;text-align:center;">{{ $q->icon }}</div>
+                <div class="flex-shrink-0 flex items-center justify-center" style="width:44px;"><x-icon :name="$q->icon" class="w-8 h-8" /></div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap mb-1">
                         <span class="font-black text-white text-sm">{{ $q->title }}</span>

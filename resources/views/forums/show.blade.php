@@ -73,20 +73,20 @@
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.14);border:1px solid rgba(139,92,246,0.35);color:#c4b5fd;">{{ $catMeta['icon'] }} {{ $catMeta['label'] }}</span>
                 @if($topic->is_challenge)
-                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;">🎯 Teacher Challenge</span>
+                <span class="text-[11px] font-black px-3 py-1 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;"><x-icon name="target" class="w-3 h-3" /> Teacher Challenge</span>
                 @endif
                 @if($topic->isSchoolBoard())
-                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#34d399;">🏫 {{ $topic->school?->school_name ?? 'School' }} only</span>
+                <span class="text-[11px] font-black px-3 py-1 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#34d399;"><x-icon name="graduation" class="w-3 h-3" /> {{ $topic->school?->school_name ?? 'School' }} only</span>
                 @endif
                 @if($topic->isFriendsOnly())
-                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);color:#f9a8d4;">🔒 Friends only</span>
+                <span class="text-[11px] font-black px-3 py-1 rounded-full inline-flex items-center gap-1" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);color:#f9a8d4;"><x-icon name="lock" class="w-3 h-3" /> Friends only</span>
                 @endif
                 @if($topic->is_locked)
-                <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;">🔒 Locked</span>
+                <span class="text-[11px] font-black px-3 py-1 rounded-full inline-flex items-center gap-1" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;"><x-icon name="lock" class="w-3 h-3" /> Locked</span>
                 @endif
             </div>
             @if($topic->is_pinned)
-            <span class="text-[11px] font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;">📌 Pinned</span>
+            <span class="text-[11px] font-black px-3 py-1 rounded-full inline-flex items-center gap-1" style="background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;"><x-icon name="pin" class="w-3 h-3" /> Pinned</span>
             @endif
         </div>
         <h1 class="text-2xl sm:text-3xl font-black leading-tight" x-show="!editing">{{ $topic->title }}</h1>
@@ -109,7 +109,7 @@
                 <span class="font-black px-1.5 py-0.5 rounded text-[9px] text-amber-300" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);">Lv{{ $topic->user->progress->level ?? 1 }}</span>
                 @endif
                 @foreach($topBadges as $b)
-                <span title="{{ $b->name }}" class="text-sm">@if($b->image_url)<img src="{{ $b->image_url }}" class="w-4 h-4 rounded-full inline object-cover" alt="{{ $b->name }}">@else{{ $b->icon }}@endif</span>
+                <span title="{{ $b->name }}" class="text-sm">@if($b->image_url)<img src="{{ $b->image_url }}" class="w-4 h-4 rounded-full inline object-cover" alt="{{ $b->name }}">@else<x-icon :name="$b->icon" class="w-4 h-4 inline-block" />@endif</span>
                 @endforeach
                 @if($votesEnabled && ($topic->user->forum_karma ?? 0) != 0)
                 <span class="text-gray-500 font-bold" title="Forum karma">✦ {{ number_format($topic->user->forum_karma) }}</span>
@@ -132,22 +132,22 @@
         <div class="flex items-center gap-2 flex-wrap mt-4">
             <button @click="editing = !editing"
                     class="text-[11px] font-black px-3 py-1.5 rounded-lg text-gray-300 hover:text-white transition-colors"
-                    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">✏️ Edit</button>
+                    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);"><x-icon name="pencil" class="w-3 h-3 inline-block" /> Edit</button>
             <form method="POST" action="{{ route('forums.destroy', $topic) }}" onsubmit="return confirm('Delete this discussion and all its replies?');">
                 @csrf @method('DELETE')
                 <button type="submit" class="text-[11px] font-black px-3 py-1.5 rounded-lg text-red-300 hover:text-red-200 transition-colors"
-                        style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);">🗑️ Delete</button>
+                        style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);"><x-icon name="trash" class="w-3 h-3 inline-block" /> Delete</button>
             </form>
             @if($isMod)
             <form method="POST" action="{{ route('forums.pin', $topic) }}">
                 @csrf
                 <button type="submit" class="text-[11px] font-black px-3 py-1.5 rounded-lg text-violet-300 hover:text-violet-200 transition-colors"
-                        style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);">📌 {{ $topic->is_pinned ? 'Unpin' : 'Pin' }}</button>
+                        style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);"><x-icon name="pin" class="w-3 h-3 inline-block" /> {{ $topic->is_pinned ? 'Unpin' : 'Pin' }}</button>
             </form>
             <form method="POST" action="{{ route('forums.lock', $topic) }}">
                 @csrf
                 <button type="submit" class="text-[11px] font-black px-3 py-1.5 rounded-lg text-amber-300 hover:text-amber-200 transition-colors"
-                        style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">🔒 {{ $topic->is_locked ? 'Unlock' : 'Lock' }}</button>
+                        style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);"><x-icon name="lock" class="w-3 h-3 inline-block" /> {{ $topic->is_locked ? 'Unlock' : 'Lock' }}</button>
             </form>
             @endif
         </div>
@@ -157,7 +157,7 @@
     {{-- ── Edit form (author/mod) ── --}}
     @if($isAuthor || $isMod)
     <div x-show="editing" x-cloak class="mb-6 rounded-2xl p-5" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.25);">
-        <h2 class="text-sm font-black text-violet-300 mb-4">✏️ Edit Discussion</h2>
+        <h2 class="text-sm font-black text-violet-300 mb-4 inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" /> Edit Discussion</h2>
         <form method="POST" action="{{ route('forums.update', $topic) }}" class="space-y-3">
             @csrf @method('PUT')
             <input type="text" name="title" value="{{ old('title', $topic->title) }}" required minlength="5" maxlength="150"
@@ -196,7 +196,7 @@
 
     {{-- ── Replies ── --}}
     <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-black text-gray-400 uppercase tracking-wider">💬 Replies ({{ $topic->replies_count }})</h2>
+        <h2 class="text-sm font-black text-gray-400 uppercase tracking-wider inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> Replies ({{ $topic->replies_count }})</h2>
         <span class="text-[11px] font-bold text-gray-600">Oldest first</span>
     </div>
 
@@ -239,7 +239,7 @@
     </div>
     @else
     <div class="rounded-2xl p-5" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);">
-        <h3 class="text-sm font-black text-gray-200 mb-3">✍️ Join the conversation</h3>
+        <h3 class="text-sm font-black text-gray-200 mb-3 inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" /> Join the conversation</h3>
         <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data" class="space-y-3" x-data="{ fileName: '' }">
             @csrf
             <textarea name="body" id="reply-body" rows="3" required minlength="2" maxlength="3000"

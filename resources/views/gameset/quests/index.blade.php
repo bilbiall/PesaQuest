@@ -163,7 +163,7 @@
                 <img src="{{ asset('storage/'.$quest->image) }}" alt="{{ $quest->title }}"
                      style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,0.1);">
                 @else
-                <div class="text-3xl leading-none" style="height:48px;display:flex;align-items:center;justify-content:center;">{{ $quest->icon }}</div>
+                <div style="height:48px;display:flex;align-items:center;justify-content:center;"><x-icon :name="$quest->icon" class="w-8 h-8" /></div>
                 @endif
                 <div class="text-[9px] font-black mt-1 rounded-full px-1.5 py-0.5"
                      style="background:rgba(124,58,237,0.2);color:#a78bfa;border:1px solid rgba(124,58,237,0.3);">

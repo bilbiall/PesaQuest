@@ -68,11 +68,11 @@
             <div class="st">📜 Quest Basics</div>
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
-                    <label class="fl">Icon (emoji)
-                        <x-help-tip text="The emoji shown on the quest card when no custom image is uploaded — purely cosmetic, it has no effect on detection or rewards." example="🏦" />
+                    <label class="fl">Icon (name)
+                        <x-help-tip text="A name from the app's icon set (e.g. bank, target, checklist) shown on the quest card when no custom image is uploaded — purely cosmetic, it has no effect on detection or rewards." example="bank" />
                     </label>
-                    <input type="text" name="icon" class="fi text-center text-2xl" maxlength="4"
-                           value="{{ old('icon', $quest->icon ?? '📜') }}" placeholder="📜"/>
+                    <input type="text" name="icon" class="fi text-center" maxlength="30"
+                           value="{{ old('icon', $quest->icon ?? 'target') }}" placeholder="target"/>
                 </div>
                 <div class="sm:col-span-3">
                     <label class="fl">Quest Title *

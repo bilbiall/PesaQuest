@@ -23,6 +23,10 @@ class ForumController extends Controller
         'saving-tips'  => ['icon' => '🏦', 'label' => 'Saving & Chamas'],
         'school'       => ['icon' => '🎓', 'label' => 'School Corner'],
         'help'         => ['icon' => '🆘', 'label' => 'Help & Questions'],
+        // System-authored only (Pesa City Wire) — kept out of the player
+        // create-form / submit validation below so nobody can post a fake
+        // "official" market bulletin under this category.
+        'market-watch' => ['icon' => '📰', 'label' => 'Market Watch'],
     ];
 
     public const REACTIONS = [
@@ -393,7 +397,7 @@ class ForumController extends Controller
         $data = $request->validate([
             'title'      => ['required', 'string', 'min:5', 'max:150'],
             'body'       => ['required', 'string', 'min:10', 'max:5000'],
-            'category'   => ['required', Rule::in(array_keys(self::CATEGORIES))],
+            'category'   => ['required', Rule::in(array_diff(array_keys(self::CATEGORIES), ['market-watch']))],
             'board'      => ['nullable', 'in:school'],
             'visibility' => ['nullable', 'in:general,friends'],
             'image'      => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:4096'],

@@ -1706,7 +1706,7 @@ function pesaCity() {
     showQuestComplete(data) {
       this.questComplete = {
         show:   true,
-        icon:   data.icon       ?? '🏆',
+        icon:   data.icon       ?? 'trophy',
         title:  data.title      ?? 'Quest Complete!',
         lesson: data.lesson     ?? '',
         xp:     data.xp_earned  ?? data.xp ?? 0,
@@ -1745,7 +1745,7 @@ function pesaCity() {
       if (!q) return;
       this.questPopup = {
         show:          true,
-        icon:          q.icon          ?? '📜',
+        icon:          q.icon          ?? 'checklist',
         image:         q.image         ?? null,
         title:         q.title         ?? '',
         description:   q.description   ?? '',
@@ -1990,7 +1990,7 @@ function pesaCity() {
         SoundMgr.play('badge');
         this.badge = {
           show:    true,
-          icon:    data.badge.icon    ?? '🏅',
+          icon:    data.badge.icon    ?? 'medal',
           name:    data.badge.name    ?? 'Badge Unlocked',
           desc:    data.mission_title ?? '',
           color:   data.badge.color   ?? '#15C77E',

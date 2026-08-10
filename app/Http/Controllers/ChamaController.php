@@ -5,16 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Chama;
 use App\Models\ChamaAsset;
+use App\Models\ChamaDeal;
 use App\Models\ChamaDividend;
 use App\Models\ChamaInvite;
 use App\Models\ChamaLoan;
 use App\Models\ChamaMember;
 use App\Models\ChamaContribution;
 use App\Models\ChamaProposal;
+use App\Models\ChamaShareHolding;
 use App\Models\ChamaVote;
 use App\Models\Challenge;
 use App\Models\ChallengeTemplate;
 use App\Models\GameNotification;
+use App\Models\InvestmentDeal;
+use App\Models\Share;
 use App\Services\ChallengeService;
 use App\Services\GameClock;
 use App\Services\PlanGate;
@@ -165,6 +169,8 @@ class ChamaController extends Controller
             'proposals.proposer',
             'proposals.votes',
             'chamaAssets.asset',
+            'chamaShareHoldings.share',
+            'chamaDeals.deal',
             'creator',
         ]);
 
@@ -184,8 +190,10 @@ class ChamaController extends Controller
             ->latest()
             ->get();
 
-        // Available assets to propose for purchase
+        // Available assets/shares/deals to propose for purchase
         $availableAssets = Asset::active()->orderBy('tier')->orderBy('base_price')->get();
+        $availableShares = Share::active()->orderBy('sector')->orderBy('name')->get();
+        $availableDeals  = InvestmentDeal::where('is_active', true)->orderBy('sort_order')->get();
 
         // Progress toward target
         $targetPct = $chama->target_amount > 0
@@ -224,7 +232,7 @@ class ChamaController extends Controller
         return view('chama.show', compact(
             'chama', 'user', 'myMember', 'isChairman',
             'hasContributedThisMonth', 'allContributions',
-            'availableAssets', 'targetPct', 'monthlyIncome',
+            'availableAssets', 'availableShares', 'availableDeals', 'targetPct', 'monthlyIncome',
             'gameMonth', 'progress', 'invitableFriends',
             'challengeTemplates', 'chamaChallenges',
             'myChamaLoan', 'chamaLoans', 'myPendingDividends',
@@ -496,7 +504,9 @@ class ChamaController extends Controller
             return back()->with('error', "Insufficient balance. You need Ksh {$shortfall} more.");
         }
 
-        DB::transaction(function () use ($chama, $user, $progress, $amount, $gameMonth) {
+        $roundRecipientName = null;
+
+        DB::transaction(function () use ($chama, $user, $progress, $amount, $gameMonth, &$roundRecipientName) {
             $progress->balance -= $amount;
 
             ChamaContribution::create([
@@ -507,33 +517,109 @@ class ChamaController extends Controller
                 'status'     => 'paid',
             ]);
 
-            $chama->pool_balance += $amount;
-            $chama->save();
-
-            // Update member's total_contributed
+            // Update member's total_contributed — tracked the same either way,
+            // used for loan eligibility/history regardless of rotation mode.
             $member = $chama->getMemberRecord($user);
             if ($member) {
                 $member->total_contributed += $amount;
                 $member->save();
             }
 
-            $chama->recalculateShares();
-
-            // Cash moved into the pool — the member's chama share offsets it in net worth
+            // Persist this contributor's deduction now — if rotation settles
+            // below and they're this round's recipient, the settlement reloads
+            // their progress fresh and must not have its credit clobbered by
+            // this object's stale in-memory balance saving afterward.
             $progress->recalculateNetWorth();
             $progress->save();
+
+            if ($chama->is_rotating) {
+                // Bypasses pool_balance entirely — this round's contributions
+                // pay out directly once everyone's in, not into the pool.
+                $roundRecipientName = $this->maybeSettleRotationRound($chama, $gameMonth);
+            } else {
+                $chama->pool_balance += $amount;
+                $chama->save();
+            }
+
+            $chama->recalculateShares();
 
             GameNotification::create([
                 'user_id' => $user->id,
                 'type'    => 'chama_contribution',
                 'title'   => 'Chama Contribution Made',
-                'body'    => "Ksh " . number_format($amount) . " contributed to \"{$chama->name}\" for Game Month " . ((int) substr($gameMonth, 3) + 1) . ". Pool: Ksh " . number_format($chama->pool_balance),
+                'body'    => $chama->is_rotating
+                    ? 'Ksh ' . number_format($amount) . " contributed to \"{$chama->name}\"'s rotation for Game Month " . ((int) substr($gameMonth, 3) + 1) . '.'
+                    : 'Ksh ' . number_format($amount) . " contributed to \"{$chama->name}\" for Game Month " . ((int) substr($gameMonth, 3) + 1) . '. Pool: Ksh ' . number_format($chama->pool_balance),
                 'icon'    => '🤝',
                 'data'    => ['chama_id' => $chama->id, 'amount' => $amount, 'game_month' => $gameMonth],
             ]);
         });
 
-        return back()->with('success', 'Contribution of Ksh ' . number_format($amount) . ' made successfully!');
+        $message = 'Contribution of Ksh ' . number_format($amount) . ' made successfully!';
+        if ($roundRecipientName) {
+            $message .= " The round is complete — {$roundRecipientName} just received the full pot!";
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /** Settles the current rotation round once every active member has paid
+     *  for this game_month — pays the full pot straight to whoever's turn it
+     *  is, then advances the rotation, counting a completed cycle whenever it
+     *  wraps back to the start. Returns the recipient's name if a round just
+     *  settled (for the contributor's own confirmation message), else null. */
+    private function maybeSettleRotationRound(Chama $chama, string $gameMonth): ?string
+    {
+        $activeMemberIds = $chama->activeMembers()->pluck('user_id');
+        if ($activeMemberIds->isEmpty()) return null;
+
+        $paidUserIds = ChamaContribution::where('chama_id', $chama->id)
+            ->where('game_month', $gameMonth)
+            ->where('status', 'paid')
+            ->pluck('user_id');
+
+        if (!$activeMemberIds->diff($paidUserIds)->isEmpty()) return null; // still waiting on someone
+
+        $recipient = $chama->currentRotationRecipient();
+        if (!$recipient) return null;
+
+        $pot = (float) ChamaContribution::where('chama_id', $chama->id)
+            ->where('game_month', $gameMonth)
+            ->where('status', 'paid')
+            ->sum('amount');
+        if ($pot <= 0) return null;
+
+        $recipientProgress = $recipient->user->getOrCreateProgress();
+        $recipientProgress->balance += $pot;
+        $recipientProgress->recalculateNetWorth();
+        $recipientProgress->save();
+
+        $order = $chama->rotationOrder();
+        $chama->rotation_index = ($chama->rotation_index + 1) % max(1, $order->count());
+        if ($chama->rotation_index === 0) {
+            $chama->rotation_cycles_completed += 1;
+        }
+        $chama->save();
+
+        $nextRecipient = $chama->currentRotationRecipient();
+
+        foreach ($chama->activeMembers()->get() as $m) {
+            $isRecipient = $m->user_id === $recipient->user_id;
+            GameNotification::create([
+                'user_id' => $m->user_id,
+                'type'    => $isRecipient ? 'chama_rotation_payout' : 'chama_rotation_round_settled',
+                'title'   => $isRecipient
+                    ? "🎡 It's your turn! Ksh " . number_format($pot) . ' received'
+                    : "🎡 {$chama->name}: round settled",
+                'body'    => $isRecipient
+                    ? "The full round pot from \"{$chama->name}\" just landed in your balance."
+                    : "{$recipient->user->name} received this round's pot (Ksh " . number_format($pot) . ')' . ($nextRecipient ? " {$nextRecipient->user->name} is next." : ''),
+                'icon'    => '🎡',
+                'data'    => ['chama_id' => $chama->id, 'amount' => $pot],
+            ]);
+        }
+
+        return $recipient->user->name;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -702,6 +788,10 @@ class ChamaController extends Controller
             return back()->with('error', 'You are not a member of this chama.');
         }
 
+        if ($chama->is_rotating) {
+            return back()->with('error', 'This chama is running a rotation — contributions pay out directly each round, so there\'s no pool balance to withdraw from. Propose disabling rotation first if you want the old savings-pool behaviour back.');
+        }
+
         $data   = $request->validate(['amount' => 'required|integer|min:1']);
         $amount = (int) $data['amount'];
         $vested = (int) floor($member->vestedWithdrawable());
@@ -841,6 +931,76 @@ class ChamaController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Merry-go-round rotation — an optional mode, toggled by member vote,
+    // where contributions pay out in full to one member per round instead of
+    // accumulating in pool_balance. Kept fully separate from pool_balance so
+    // loans/dividends/asset-buying keep working on whatever the pool already
+    // holds, unaffected by whether rotation is on.
+    // ─────────────────────────────────────────────────────────────────────────
+    public function proposeEnableRotation(Chama $chama)
+    {
+        $user   = auth()->user();
+        $member = $chama->getMemberRecord($user);
+
+        if (!$member) {
+            return back()->with('error', 'You are not a member of this chama.');
+        }
+        if ($chama->is_rotating) {
+            return back()->with('error', 'This chama is already rotating.');
+        }
+        if (ChamaProposal::where('chama_id', $chama->id)->where('type', 'enable_rotation')->where('status', 'voting')->exists()) {
+            return back()->with('error', 'A rotation proposal is already up for a vote.');
+        }
+
+        ChamaProposal::create([
+            'chama_id'      => $chama->id,
+            'proposer_id'   => $user->id,
+            'type'          => 'enable_rotation',
+            'title'         => "{$user->name} proposes turning on the merry-go-round",
+            'proposal_data' => [],
+            'status'        => 'voting',
+            'votes_yes'     => 0,
+            'votes_no'      => 0,
+            'expires_at'    => now()->addSeconds(app(GameClock::class)->realSecondsForTicks(7)),
+        ]);
+
+        return back()->with('success', 'Rotation proposal submitted for a member vote.');
+    }
+
+    public function proposeDisableRotation(Chama $chama)
+    {
+        $user   = auth()->user();
+        $member = $chama->getMemberRecord($user);
+
+        if (!$member) {
+            return back()->with('error', 'You are not a member of this chama.');
+        }
+        if (!$chama->is_rotating) {
+            return back()->with('error', "This chama isn't rotating.");
+        }
+        if (!$chama->canDisableRotation()) {
+            return back()->with('error', 'Rotation needs to complete at least one full cycle before it can be turned off.');
+        }
+        if (ChamaProposal::where('chama_id', $chama->id)->where('type', 'disable_rotation')->where('status', 'voting')->exists()) {
+            return back()->with('error', 'A proposal to stop rotation is already up for a vote.');
+        }
+
+        ChamaProposal::create([
+            'chama_id'      => $chama->id,
+            'proposer_id'   => $user->id,
+            'type'          => 'disable_rotation',
+            'title'         => "{$user->name} proposes turning off the merry-go-round",
+            'proposal_data' => [],
+            'status'        => 'voting',
+            'votes_yes'     => 0,
+            'votes_no'      => 0,
+            'expires_at'    => now()->addSeconds(app(GameClock::class)->realSecondsForTicks(7)),
+        ]);
+
+        return back()->with('success', 'Proposal to stop rotation submitted for a member vote.');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Create a proposal
     // ─────────────────────────────────────────────────────────────────────────
     public function propose(Request $request, Chama $chama)
@@ -852,7 +1012,7 @@ class ChamaController extends Controller
         }
 
         $validated = $request->validate([
-            'type'          => 'required|in:buy_asset,sell_asset,change_contribution,remove_member,change_loan_terms',
+            'type'          => 'required|in:buy_asset,sell_asset,change_contribution,remove_member,change_loan_terms,buy_share,sell_share,invest_deal',
             'title'         => 'required|string|max:120',
             'proposal_data' => 'required|array',
         ]);
@@ -921,9 +1081,15 @@ class ChamaController extends Controller
             // Check quorum (>50% of active members voted yes)
             if ($proposal->quorum()) {
                 $proposal->update(['status' => 'passed']);
-                // Auto-execute buy_asset proposals immediately
-                if ($proposal->type === 'buy_asset') {
-                    $this->executeBuyAsset($proposal);
+                // Auto-execute acquisition proposals immediately — the price
+                // (asset/share/deal) is time-sensitive, so once the members have
+                // said yes there's nothing left to gain from a manual step.
+                if (in_array($proposal->type, ['buy_asset', 'buy_share', 'invest_deal'], true)) {
+                    match ($proposal->type) {
+                        'buy_asset'   => $this->executeBuyAsset($proposal),
+                        'buy_share'   => $this->executeBuyShare($proposal),
+                        'invest_deal' => $this->executeInvestDeal($proposal),
+                    };
                 }
             } else {
                 // Check if all members have voted and quorum not reached
@@ -963,6 +1129,11 @@ class ChamaController extends Controller
                 'take_loan'           => $this->executeTakeLoan($proposal),
                 'withdraw'            => $this->executeWithdraw($proposal),
                 'change_loan_terms'   => $this->executeChangeLoanTerms($proposal),
+                'enable_rotation'     => $this->executeEnableRotation($proposal),
+                'disable_rotation'    => $this->executeDisableRotation($proposal),
+                'buy_share'           => $this->executeBuyShare($proposal),
+                'sell_share'          => $this->executeSellShare($proposal),
+                'invest_deal'         => $this->executeInvestDeal($proposal),
                 default               => $proposal->update(['status' => 'executed']),
             };
         });
@@ -1126,6 +1297,53 @@ class ChamaController extends Controller
         $proposal->update(['status' => 'executed']);
     }
 
+    /** Apply a passed enable_rotation proposal. */
+    private function executeEnableRotation(ChamaProposal $proposal): void
+    {
+        $chama = $proposal->chama;
+
+        if (!$chama->is_rotating) {
+            $chama->update(['is_rotating' => true, 'rotation_index' => 0]);
+            $first = $chama->rotationOrder()->first();
+
+            foreach ($chama->activeMembers()->get() as $m) {
+                GameNotification::create([
+                    'user_id' => $m->user_id,
+                    'type'    => 'chama_rotation_enabled',
+                    'title'   => "🎡 {$chama->name} is now a merry-go-round!",
+                    'body'    => 'Contributions now pay out in full to one member per round instead of pooling.' . ($first ? " {$first->user->name} goes first." : ''),
+                    'icon'    => '🎡',
+                    'data'    => ['chama_id' => $chama->id],
+                ]);
+            }
+        }
+
+        $proposal->update(['status' => 'executed']);
+    }
+
+    /** Apply a passed disable_rotation proposal. */
+    private function executeDisableRotation(ChamaProposal $proposal): void
+    {
+        $chama = $proposal->chama;
+
+        if ($chama->is_rotating) {
+            $chama->update(['is_rotating' => false]);
+
+            foreach ($chama->activeMembers()->get() as $m) {
+                GameNotification::create([
+                    'user_id' => $m->user_id,
+                    'type'    => 'chama_rotation_disabled',
+                    'title'   => "🤝 {$chama->name} is back to pooling",
+                    'body'    => 'Contributions now build up in the shared pool again.',
+                    'icon'    => '🤝',
+                    'data'    => ['chama_id' => $chama->id],
+                ]);
+            }
+        }
+
+        $proposal->update(['status' => 'executed']);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Distribute asset income to members (chairman or admin only)
     // ─────────────────────────────────────────────────────────────────────────
@@ -1214,6 +1432,124 @@ class ChamaController extends Controller
                 'body'    => "\"{$chama->name}\" acquired {$quantity}x {$asset->name} for Ksh " . number_format($totalCost) . ". Pool remaining: Ksh " . number_format($chama->pool_balance),
                 'icon'    => $asset->icon ?? '🏢',
                 'data'    => ['chama_id' => $chama->id, 'asset_id' => $asset->id],
+            ]);
+        });
+    }
+
+    /** Apply a passed buy_share proposal — buys at the live spread price,
+     *  same as a player would, and folds into any existing chama position
+     *  with a recomputed weighted-average cost. */
+    protected function executeBuyShare(ChamaProposal $proposal): void
+    {
+        $chama    = $proposal->chama;
+        $data     = $proposal->proposal_data;
+        $shareId  = $data['share_id'] ?? null;
+        $quantity = max(1, (int) ($data['quantity'] ?? 1));
+
+        if (!$shareId) {
+            $proposal->update(['status' => 'rejected']);
+            return;
+        }
+
+        $share    = Share::find($shareId);
+        $execPrice = $share?->buyPrice() ?? 0;
+        $cost      = round($execPrice * $quantity, 2);
+
+        if (!$share || $chama->pool_balance < $cost) {
+            $proposal->update(['status' => 'rejected']);
+            return;
+        }
+
+        $holding = ChamaShareHolding::firstOrNew(['chama_id' => $chama->id, 'share_id' => $share->id]);
+        $newQuantity = $holding->quantity + $quantity;
+        $holding->avg_cost = round((($holding->quantity * $holding->avg_cost) + $cost) / $newQuantity, 2);
+        $holding->quantity = $newQuantity;
+        $holding->save();
+
+        $chama->pool_balance -= $cost;
+        $chama->save();
+
+        $proposal->update(['status' => 'executed']);
+
+        $chama->activeMembers()->each(function ($m) use ($chama, $share, $quantity, $cost) {
+            GameNotification::create([
+                'user_id' => $m->user_id,
+                'type'    => 'chama_share_purchased',
+                'title'   => "Chama Bought {$share->symbol} Shares!",
+                'body'    => "\"{$chama->name}\" bought {$quantity}x {$share->name} for Ksh " . number_format($cost) . ". Pool remaining: Ksh " . number_format($chama->pool_balance),
+                'icon'    => $share->icon ?? '📈',
+                'data'    => ['chama_id' => $chama->id, 'share_id' => $share->id],
+            ]);
+        });
+    }
+
+    /** Apply a passed sell_share proposal — sells the entire position at the
+     *  live spread price; the spread already prices in the trading friction,
+     *  so unlike sell_asset there's no extra fee on top. */
+    protected function executeSellShare(ChamaProposal $proposal): void
+    {
+        $chama   = $proposal->chama;
+        $holding = ChamaShareHolding::where('chama_id', $chama->id)
+            ->find((int) ($proposal->proposal_data['chama_share_holding_id'] ?? 0));
+
+        if ($holding && $holding->share) {
+            $share    = $holding->share;
+            $revenue  = round($share->sellPrice() * $holding->quantity, 2);
+
+            $chama->pool_balance += $revenue;
+            $chama->save();
+            $holding->delete();
+
+            $chama->activeMembers()->each(function ($m) use ($chama, $share, $revenue) {
+                GameNotification::create([
+                    'user_id' => $m->user_id,
+                    'type'    => 'chama_income',
+                    'title'   => "🤝 {$chama->name}: Shares Sold",
+                    'body'    => "Sold {$share->name} shares for Ksh " . number_format($revenue) . '. Funds added to the pool.',
+                    'icon'    => '💰',
+                    'data'    => ['chama_id' => $chama->id, 'share_id' => $share->id, 'amount' => $revenue],
+                ]);
+            });
+        }
+
+        $proposal->update(['status' => 'executed']);
+    }
+
+    /** Apply a passed invest_deal proposal — stakes the deal's fixed cost from
+     *  the pool now; the win/loss outcome resolves later on wall-clock time
+     *  (game:settle-chama-deals), same probabilistic shape as a player's deal. */
+    protected function executeInvestDeal(ChamaProposal $proposal): void
+    {
+        $chama  = $proposal->chama;
+        $dealId = $proposal->proposal_data['deal_id'] ?? null;
+        $deal   = $dealId ? InvestmentDeal::where('is_active', true)->find($dealId) : null;
+
+        if (!$deal || $chama->pool_balance < $deal->cost) {
+            $proposal->update(['status' => 'rejected']);
+            return;
+        }
+
+        $chama->pool_balance -= $deal->cost;
+        $chama->save();
+
+        ChamaDeal::create([
+            'chama_id'        => $chama->id,
+            'deal_id'         => $deal->id,
+            'amount_invested' => $deal->cost,
+            'resolve_at'      => now()->addSeconds(app(GameClock::class)->realSecondsForTicks($deal->maturity_ticks)),
+            'status'          => 'pending',
+        ]);
+
+        $proposal->update(['status' => 'executed']);
+
+        $chama->activeMembers()->each(function ($m) use ($chama, $deal) {
+            GameNotification::create([
+                'user_id' => $m->user_id,
+                'type'    => 'chama_deal_invested',
+                'title'   => "Chama Invested in {$deal->title}!",
+                'body'    => "\"{$chama->name}\" put Ksh " . number_format($deal->cost) . " into \"{$deal->title}\". Outcome pending — {$deal->risk_level}/5 risk.",
+                'icon'    => $deal->icon ?? '🎲',
+                'data'    => ['chama_id' => $chama->id, 'deal_id' => $deal->id],
             ]);
         });
     }

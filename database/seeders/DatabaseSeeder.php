@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
             SpinSegmentSeeder::class,
             DreamSeeder::class,
             ChallengeTemplateSeeder::class,
+            ShareNewsTemplateSeeder::class,
         ]);
     }
 }

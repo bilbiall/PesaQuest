@@ -39,7 +39,7 @@
             Dashboard
         </a>
         <div class="flex items-center gap-3">
-            <span class="text-xs text-gray-500 hidden sm:block">🗺️ Quest Board</span>
+            <span class="text-xs text-gray-500 hidden sm:block inline-flex items-center gap-1"><x-icon name="map" class="w-3 h-3" /> Quest Board</span>
             <a href="{{ route('game.play') }}"
                class="text-xs text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/60 px-3 py-1.5 rounded-lg transition-colors">
                 ▶ Play
@@ -55,14 +55,14 @@
          style="background:radial-gradient(circle,#a78bfa,transparent 70%);transform:translate(30%,-30%);"></div>
 
     <div class="relative max-w-5xl mx-auto px-4 sm:px-6">
-        <h1 class="text-3xl sm:text-4xl font-black shimmer-text mb-2">🗺️ Quest Board</h1>
+        <h1 class="text-3xl sm:text-4xl font-black shimmer-text mb-2 inline-flex items-center gap-2"><x-icon name="map" class="w-8 h-8" /> Quest Board</h1>
         <p class="text-gray-400 text-sm mb-6">Complete real-world financial challenges to earn bonus XP</p>
 
         {{-- Summary stats --}}
         <div class="flex flex-wrap gap-4">
             <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
                  style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
-                <span class="text-2xl">✅</span>
+                <x-icon name="check-circle" class="w-6 h-6 text-emerald-400" />
                 <div>
                     <div class="text-xl font-black text-emerald-400">{{ $completedCount }}</div>
                     <div class="text-xs text-gray-400">Completed</div>
@@ -70,7 +70,7 @@
             </div>
             <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
                  style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
-                <span class="text-2xl">⭐</span>
+                <x-icon name="star" class="w-6 h-6 text-amber-400" />
                 <div>
                     <div class="text-xl font-black text-amber-400">{{ number_format($totalPoints) }}</div>
                     <div class="text-xs text-gray-400">XP Earned</div>
@@ -78,7 +78,7 @@
             </div>
             <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
                  style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
-                <span class="text-2xl">🎯</span>
+                <x-icon name="target" class="w-6 h-6 text-indigo-400" />
                 <div>
                     <div class="text-xl font-black text-indigo-400">{{ $quests->where('user_status', 'available')->count() }}</div>
                     <div class="text-xs text-gray-400">Available</div>
@@ -101,11 +101,11 @@
 
     {{-- Filter tabs --}}
     <div class="flex flex-wrap gap-2 mb-6">
-        @foreach(['all' => 'All', 'available' => '🎯 Available', 'pending' => '⏳ In Progress', 'approved' => '✅ Completed'] as $key => $label)
+        @foreach(['all' => ['label'=>'All'], 'available' => ['label'=>'Available','icon'=>'target'], 'pending' => ['label'=>'In Progress','icon'=>'clock'], 'approved' => ['label'=>'Completed','icon'=>'check-circle']] as $key => $label)
         <button @click="filter='{{ $key }}'"
                 :class="filter==='{{ $key }}' ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'border-white/10 text-gray-400 hover:text-white'"
-                class="px-4 py-2 rounded-xl text-xs font-bold border transition-all">
-            {{ $label }}
+                class="px-4 py-2 rounded-xl text-xs font-bold border transition-all inline-flex items-center gap-1">
+            @if(isset($label['icon']))<x-icon :name="$label['icon']" class="w-3 h-3" />@endif {{ $label['label'] }}
             <span class="ml-1 opacity-60">
                 @if($key === 'all') {{ $quests->count() }}
                 @elseif($key === 'available') {{ $quests->whereIn('user_status', ['available'])->count() }}
@@ -133,7 +133,7 @@
             {{-- Header --}}
             <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <span class="text-3xl">{{ $quest->icon ?? '🎯' }}</span>
+                    <span class="text-3xl"><x-icon :name="$quest->icon ?? 'target'" class="w-7 h-7" /></span>
                     <div>
                         <p class="font-black text-white leading-tight">{{ $quest->title }}</p>
                         @if($quest->age_group)
@@ -177,7 +177,7 @@
                 @elseif($quest->user_status === 'pending')
                 <span class="text-xs text-amber-500 font-semibold">⏳ In Progress</span>
                 @else
-                <span class="text-xs text-emerald-400 font-semibold">🏆 Completed!</span>
+                <span class="text-xs text-emerald-400 font-semibold inline-flex items-center gap-1"><x-icon name="trophy" class="w-3.5 h-3.5" /> Completed!</span>
                 @endif
             </div>
         </div>
@@ -237,6 +237,6 @@ function questBoard() {
     };
 }
 </script>
-<x-mobile-bottom-nav active="quests" />
+<x-mobile-bottom-nav active="city" />
 </body>
 </html>

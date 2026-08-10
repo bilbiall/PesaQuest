@@ -616,7 +616,7 @@
 
                     <div class="flex items-start justify-between gap-4 mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="text-4xl">{{ $nextAsset->icon }}</div>
+                            <div><x-icon :name="$nextAsset->icon" class="w-9 h-9" /></div>
                             <div>
                                 <div class="text-base font-bold text-white">{{ $nextAsset->name }}</div>
                                 <div class="text-xs text-gray-400">Ksh {{ number_format($nextAsset->base_price) }} · {{ $nextAsset->categoryLabel() }}</div>
@@ -704,7 +704,7 @@
                             {{-- Card header --}}
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center gap-2.5">
-                                    <span class="text-3xl leading-none">{{ $pa->asset->icon }}</span>
+                                    <x-icon :name="$pa->asset->icon" class="w-7 h-7" />
                                     <div>
                                         <div class="text-sm font-bold text-white leading-tight">{{ $pa->asset->name }}</div>
                                         <div class="text-[10px] text-gray-500 mt-0.5">

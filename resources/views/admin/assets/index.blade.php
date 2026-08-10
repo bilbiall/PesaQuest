@@ -115,7 +115,7 @@
                 @foreach($group as $asset)
                 <tr>
                     <td>
-                        <span class="text-lg mr-2">{{ $asset->icon }}</span>
+                        <span class="mr-2"><x-icon :name="$asset->icon" class="w-4 h-4 inline-block" /></span>
                         <span class="font-bold text-white">{{ $asset->name }}</span>
                     </td>
                     <td class="text-gray-500 font-mono text-xs">{{ $asset->slug }}</td>

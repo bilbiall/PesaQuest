@@ -168,12 +168,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 overflow-x-auto">
         <button @click="tab='courses'" :class="tab==='courses' ? 'active' : ''"
                 class="tab-pill whitespace-nowrap" :style="tab==='courses' ? 'background:rgba(77,168,247,.2);border-color:rgba(77,168,247,.4);color:#fff;' : ''">
-            📚 Courses
+            <x-icon name="book" class="w-3.5 h-3.5 inline-block" /> Courses
             <span class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-black" style="background:rgba(255,255,255,.08);">{{ $courses->count() }}</span>
         </button>
         <button @click="tab='jobs'" :class="tab==='jobs' ? 'active' : ''"
                 class="tab-pill whitespace-nowrap" :style="tab==='jobs' ? 'background:rgba(21,199,126,.18);border-color:rgba(21,199,126,.4);color:#fff;' : ''">
-            💼 Jobs & Gigs
+            <x-icon name="briefcase" class="w-3.5 h-3.5 inline-block" /> Jobs & Gigs
             <span class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-black" style="background:rgba(255,255,255,.08);">{{ $jobs->count() }}</span>
         </button>
         {{-- Track filters (visible in courses tab) --}}
@@ -191,11 +191,11 @@
         {{-- Job filters (visible in jobs tab) --}}
         <div x-show="tab==='jobs'" class="flex items-center gap-2 ml-2">
             <div class="w-px h-5 bg-white/10"></div>
-            @foreach(['full_time' => '🏢 Full-time', 'part_time' => '⏰ Part-time', 'freelance' => '⚡ Gigs'] as $jtKey => $jtLabel)
+            @foreach(['full_time' => ['icon'=>'building','label'=>'Full-time'], 'part_time' => ['icon'=>'clock','label'=>'Part-time'], 'freelance' => ['icon'=>'bolt','label'=>'Gigs']] as $jtKey => $jt)
             <button @click="jobType = jobType === '{{ $jtKey }}' ? '' : '{{ $jtKey }}'; applyFilters()"
-                    class="tab-pill text-[11px] whitespace-nowrap"
+                    class="tab-pill text-[11px] whitespace-nowrap inline-flex items-center gap-1"
                     :style="jobType === '{{ $jtKey }}' ? 'background:rgba(21,199,126,.18);border-color:rgba(21,199,126,.45);color:#fff;' : ''">
-                {{ $jtLabel }}
+                <x-icon :name="$jt['icon']" class="w-3 h-3" /> {{ $jt['label'] }}
             </button>
             @endforeach
             <button @click="qualifiedOnly = !qualifiedOnly; applyFilters()"

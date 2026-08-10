@@ -32,8 +32,8 @@
             Dashboard
         </a>
         <div class="flex items-center gap-4">
-            <a href="{{ route('forums.index') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors">🗣️ Forums</a>
-            <a href="{{ route('chama.index') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors">🤝 Chamas</a>
+            <a href="{{ route('forums.index') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> Forums</a>
+            <a href="{{ route('chama.index') }}" class="text-xs font-bold text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"><x-icon name="group" class="w-3.5 h-3.5" /> Chamas</a>
         </div>
     </div>
 </nav>
@@ -43,7 +43,7 @@
      style="background: linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(16,185,129,0.05) 100%);">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 class="text-3xl sm:text-4xl font-black mb-2">👥 Friends</h1>
+            <h1 class="text-3xl sm:text-4xl font-black mb-2 inline-flex items-center gap-2"><x-icon name="people" class="w-8 h-8" /> Friends</h1>
             <p class="text-gray-400">Team up: lend and borrow with agreed rates, and build chamas together.</p>
         </div>
         @if($code)
@@ -76,7 +76,7 @@
 
     {{-- Add friend --}}
     <div class="fr-card rounded-2xl p-5 mb-6">
-        <h2 class="text-sm font-black text-white mb-3">➕ Add a friend</h2>
+        <h2 class="text-sm font-black text-white mb-3">+ Add a friend</h2>
         <form method="POST" action="{{ route('friends.request') }}" class="flex flex-col sm:flex-row gap-2">
             @csrf
             <input type="text" name="q" required maxlength="120" placeholder="@username, friend code (PQ-XXXXXX) or exact name…"
@@ -84,13 +84,13 @@
                    style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
             <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02]"
                     style="background:linear-gradient(135deg,#6366f1,#a78bfa);box-shadow:0 4px 20px rgba(99,102,241,0.3);">
-                👋 Send Request
+                <x-icon name="send" class="w-3.5 h-3.5 inline-block" /> Send Request
             </button>
         </form>
 
         @if($classmates->isNotEmpty())
         <div class="mt-4">
-            <div class="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-2">🎓 Classmates you may know</div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-2 inline-flex items-center gap-1"><x-icon name="graduation" class="w-3 h-3" /> Classmates you may know</div>
             <div class="flex flex-wrap gap-2">
                 @foreach($classmates as $cm)
                 <form method="POST" action="{{ route('friends.request') }}">
@@ -111,7 +111,7 @@
     @if($incoming->isNotEmpty() || $outgoing->isNotEmpty())
     <div class="grid sm:grid-cols-2 gap-4 mb-6">
         <div class="fr-card rounded-2xl p-5">
-            <h2 class="text-sm font-black text-white mb-3">📥 Requests for you <span class="text-indigo-300">({{ $incoming->count() }})</span></h2>
+            <h2 class="text-sm font-black text-white mb-3 inline-flex items-center gap-1"><x-icon name="inbox" class="w-3.5 h-3.5" /> Requests for you <span class="text-indigo-300">({{ $incoming->count() }})</span></h2>
             @forelse($incoming as $f)
             <div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
                 <a href="{{ route('players.show', $f->requester) }}" class="flex items-center gap-2 flex-1 min-w-0 hover:opacity-80">
@@ -137,7 +137,7 @@
             @endforelse
         </div>
         <div class="fr-card rounded-2xl p-5">
-            <h2 class="text-sm font-black text-white mb-3">📤 Sent by you <span class="text-indigo-300">({{ $outgoing->count() }})</span></h2>
+            <h2 class="text-sm font-black text-white mb-3 inline-flex items-center gap-1"><x-icon name="send" class="w-3.5 h-3.5" /> Sent by you <span class="text-indigo-300">({{ $outgoing->count() }})</span></h2>
             @forelse($outgoing as $f)
             <div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
                 <span class="text-xs font-bold text-white flex-1 truncate">{{ $f->addressee->name }}</span>
@@ -155,7 +155,7 @@
 
     {{-- Friends list --}}
     <div class="fr-card rounded-2xl p-5 mb-6">
-        <h2 class="text-sm font-black text-white mb-3">👥 My friends <span class="text-indigo-300">({{ $friends->count() }})</span></h2>
+        <h2 class="text-sm font-black text-white mb-3 inline-flex items-center gap-1"><x-icon name="people" class="w-3.5 h-3.5" /> My friends <span class="text-indigo-300">({{ $friends->count() }})</span></h2>
         @if($friends->isEmpty())
         <div class="text-center py-6">
             <p class="text-3xl mb-2">🫂</p>
@@ -216,7 +216,7 @@
     @if($loansEnabled)
     <div class="fr-card rounded-2xl p-5">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
-            <h2 class="text-sm font-black text-white">💸 Friend loans</h2>
+            <h2 class="text-sm font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> Friend loans</h2>
             <span class="text-[10px] text-gray-500">Rates {{ implode('–', [min(\App\Models\FriendLoan::RATE_PRESETS), max(\App\Models\FriendLoan::RATE_PRESETS)]) }}% · repay in {{ implode('/', \App\Models\FriendLoan::TERM_PRESETS) }} game days · lenders risk max 20% of their cash</span>
         </div>
         <p class="text-[11px] text-gray-500 mb-4">You negotiate with choices, not chat: they ask → you offer a rate → they accept or counter once. Miss the due date and the game collects what it can — the rest becomes a default that wrecks your credit.</p>
@@ -338,7 +338,7 @@
      class="fixed inset-0 z-[9995] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);">
     <div class="rounded-2xl p-6 w-full max-w-md" style="background:#100e1e;border:1px solid rgba(99,102,241,0.35);">
         <div class="flex items-center justify-between mb-1">
-            <h3 class="text-base font-black text-white">💸 Borrow from <span x-text="loanFriendName" class="text-indigo-300"></span></h3>
+            <h3 class="text-base font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-4 h-4" /> Borrow from <span x-text="loanFriendName" class="text-indigo-300"></span></h3>
             <button @click="loanOpen = false" class="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
         <p class="text-[11px] text-gray-500 mb-4">Pick an amount and repayment period. Your friend then offers an interest rate ({{ implode('–', [min(\App\Models\FriendLoan::RATE_PRESETS), max(\App\Models\FriendLoan::RATE_PRESETS)]) }}%) which you can accept or counter once.</p>
@@ -379,7 +379,7 @@
      class="fixed inset-0 z-[9995] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);">
     <div class="rounded-2xl p-6 w-full max-w-md" style="background:#100e1e;border:1px solid rgba(245,158,11,0.35);">
         <div class="flex items-center justify-between mb-1">
-            <h3 class="text-base font-black text-white">💰 Send money to <span x-text="giftFriendName" class="text-amber-300"></span></h3>
+            <h3 class="text-base font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-4 h-4" /> Send money to <span x-text="giftFriendName" class="text-amber-300"></span></h3>
             <button @click="giftOpen = false" class="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
         <p class="text-[11px] text-gray-500 mb-4">An instant gift, straight from your balance — no interest, no repayment. Up to {{ \App\Models\FriendGift::DAILY_LIMIT }} gifts a day, max 20% of your cash each time.</p>

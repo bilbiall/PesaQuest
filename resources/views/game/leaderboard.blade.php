@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/icons.js') }}"></script>
     <style>
         body { background: #07060f; }
         [x-cloak] { display: none !important; }
@@ -103,11 +104,11 @@
         <div class="pill-row mb-3">
             <a href="{{ route('game.leaderboard', ['age_group' => $ageGroup, 'sort' => $sort, 'scope' => 'global']) }}"
                class="age-tab {{ ($scope ?? 'global') !== 'school' ? 'active' : '' }}">
-                🌍 Global
+                <x-icon name="globe" class="w-3.5 h-3.5 inline-block" /> Global
             </a>
             <a href="{{ route('game.leaderboard', ['age_group' => $ageGroup, 'sort' => $sort, 'scope' => 'school']) }}"
                class="age-tab {{ ($scope ?? 'global') === 'school' ? 'active' : '' }}">
-                🏫 {{ $mySchoolName }}
+                <x-icon name="graduation" class="w-3.5 h-3.5 inline-block" /> {{ $mySchoolName }}
             </a>
         </div>
         @endif
@@ -116,11 +117,11 @@
         <div class="pill-row mb-3">
             <a href="{{ route('game.leaderboard', ['age_group' => $ageGroup, 'sort' => 'xp', 'scope' => $scope ?? 'global']) }}"
                class="age-tab {{ $sort !== 'networth' ? 'active' : '' }}">
-                ⭐ XP
+                <x-icon name="star" class="w-3.5 h-3.5 inline-block" /> XP
             </a>
             <a href="{{ route('game.leaderboard', ['age_group' => $ageGroup, 'sort' => 'networth', 'scope' => $scope ?? 'global']) }}"
                class="age-tab {{ $sort === 'networth' ? 'active' : '' }}">
-                💰 Net Worth
+                <x-icon name="coin" class="w-3.5 h-3.5 inline-block" /> Net Worth
             </a>
         </div>
 
@@ -160,7 +161,7 @@
                     <div class="font-bold text-white text-sm flex items-center gap-2">
                         <span class="truncate">{{ $leader['name'] }}</span>
                         @if($leader['is_me']) <span class="text-[.65rem] bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-1.5 py-0.5 rounded-full flex-shrink-0">You</span>@endif
-                        @if($leader['top_badge']) <span class="top-badge-chip">{{ $leader['top_badge']['icon'] }} {{ $leader['top_badge']['name'] }}</span>@endif
+                        @if($leader['top_badge']) <span class="top-badge-chip inline-flex items-center gap-1"><x-icon :name="$leader['top_badge']['icon']" class="w-3 h-3" /> {{ $leader['top_badge']['name'] }}</span>@endif
                     </div>
                     <div class="text-[.68rem] text-gray-500">
                         Level {{ $leader['level'] }} · {{ $leader['played_label'] }}
@@ -196,16 +197,16 @@
                 </template>
                 <template x-if="cache[{{ $leader['user_id'] }}]">
                     <div>
-                        <div class="drop-label">🏅 Badges Earned</div>
+                        <div class="drop-label inline-flex items-center gap-1"><x-icon name="medal" class="w-3 h-3" /> Badges Earned</div>
                         <div class="drop-chips mb-1">
                             <template x-for="b in cache[{{ $leader['user_id'] }}].badges" :key="b.name">
-                                <span class="drop-chip" x-text="b.icon + ' ' + b.name"></span>
+                                <span class="drop-chip inline-flex items-center gap-1"><span class="w-3 h-3" x-html="pqIcon(b.icon, 'w-3 h-3')"></span> <span x-text="b.name"></span></span>
                             </template>
                             <template x-if="cache[{{ $leader['user_id'] }}].badges.length === 0">
                                 <span class="text-xs text-gray-500">No badges yet</span>
                             </template>
                         </div>
-                        <div class="drop-label" style="margin-top:.55rem;">🌟 Dreams Achieved</div>
+                        <div class="drop-label inline-flex items-center gap-1" style="margin-top:.55rem;"><x-icon name="star" class="w-3 h-3" /> Dreams Achieved</div>
                         <div class="drop-chips">
                             <template x-for="d in cache[{{ $leader['user_id'] }}].dreams" :key="d.name">
                                 <span class="drop-chip dream" x-text="d.icon + ' ' + d.name"></span>
@@ -254,7 +255,7 @@
 
         <div class="text-center mt-8">
             <a href="{{ route('game.play') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl shadow-xl hover:shadow-indigo-500/30 transition-all hover:-translate-y-1 text-sm">
-                🚀 Keep Playing to Climb
+                <x-icon name="rocket" class="w-3.5 h-3.5 inline-block" /> Keep Playing to Climb
             </a>
         </div>
     </div>

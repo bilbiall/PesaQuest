@@ -61,7 +61,7 @@
          x-data="{ deleting: false }">
         <div class="flex items-start gap-4 p-4 sm:p-5">
             <div class="flex-shrink-0 text-center" style="width:52px;">
-                <div class="text-3xl leading-none" style="height:48px;display:flex;align-items:center;justify-content:center;">{{ $share->icon }}</div>
+                <div style="height:48px;display:flex;align-items:center;justify-content:center;"><x-icon :name="$share->icon" class="w-8 h-8" /></div>
                 <div class="text-[9px] font-black mt-1 rounded-full px-1.5 py-0.5" style="background:rgba(8,145,178,0.2);color:#67e8f9;border:1px solid rgba(8,145,178,0.3);">
                     {{ $share->symbol }}
                 </div>

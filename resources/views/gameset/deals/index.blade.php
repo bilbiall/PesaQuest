@@ -61,7 +61,7 @@
          x-data="{ deleting: false }">
         <div class="flex items-start gap-4 p-4 sm:p-5">
             <div class="flex-shrink-0 text-center" style="width:52px;">
-                <div class="text-3xl leading-none" style="height:48px;display:flex;align-items:center;justify-content:center;">{{ $deal->icon }}</div>
+                <div style="height:48px;display:flex;align-items:center;justify-content:center;"><x-icon :name="$deal->icon" class="w-8 h-8" /></div>
                 <div class="text-[9px] font-black mt-1 rounded-full px-1.5 py-0.5"
                      style="background:rgba({{ $deal->risk_level >= 4 ? '239,68,68' : ($deal->risk_level >= 3 ? '251,191,36' : '16,185,129') }},0.2);color:{{ $deal->riskColor() }};border:1px solid {{ $deal->riskColor() }}44;">
                     R{{ $deal->risk_level }}

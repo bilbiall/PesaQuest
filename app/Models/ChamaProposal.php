@@ -71,6 +71,11 @@ class ChamaProposal extends Model
             'take_loan'           => 'Take Loan',
             'withdraw'            => 'Withdraw Funds',
             'change_loan_terms'   => 'Change Loan Rate',
+            'enable_rotation'     => 'Enable Rotation',
+            'disable_rotation'    => 'Disable Rotation',
+            'buy_share'           => 'Buy Shares',
+            'sell_share'          => 'Sell Shares',
+            'invest_deal'         => 'Invest in a Deal',
             default               => ucfirst($this->type),
         };
     }

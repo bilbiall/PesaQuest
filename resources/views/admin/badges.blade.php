@@ -67,7 +67,7 @@ body{background:#08070f;}
                 @if($badge->image_url)
                     <img src="{{ $badge->image_url }}" alt="{{ $badge->name }}" class="w-12 h-12 object-contain">
                 @else
-                    <span class="text-3xl">{{ $badge->icon ?? '🏅' }}</span>
+                    <x-icon :name="$badge->icon ?? 'medal'" class="w-7 h-7" />
                 @endif
             </div>
 
@@ -133,8 +133,8 @@ body{background:#08070f;}
                     <input type="text" x-model="form.description" required maxlength="255" class="ifield" placeholder="Short motivating description">
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Emoji Icon<x-help-tip text="The emoji shown as the badge's icon on the grid and player profile — used only if no image is uploaded below." example="🏅" /></label>
-                    <input type="text" x-model="form.icon" maxlength="4" class="ifield" placeholder="🏅">
+                    <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Icon (name)<x-help-tip text="A name from the app's icon set (e.g. medal, trophy, star) shown as the badge's icon on the grid and player profile — used only if no image is uploaded below." example="medal" /></label>
+                    <input type="text" x-model="form.icon" maxlength="30" class="ifield" placeholder="medal">
                 </div>
                 <div>
                     <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Color<x-help-tip text="The accent color used for the badge card's glow, border, and icon background so it stands out in its own theme." example="#f59e0b" /></label>
@@ -239,7 +239,7 @@ function badgeManager() {
         awardMsg: '',
 
         form: {
-            name: '', description: '', icon: '🏅', color: '#f59e0b',
+            name: '', description: '', icon: 'medal', color: '#f59e0b',
             trigger_type: 'level', trigger_value: 1, is_active: true,
             previewUrl: '', imageFile: null,
         },
@@ -263,14 +263,14 @@ function badgeManager() {
 
         openCreate() {
             this.editId = null;
-            this.form = { name:'', description:'', icon:'🏅', color:'#f59e0b', trigger_type:'level', trigger_value:1, is_active:true, previewUrl:'', imageFile:null };
+            this.form = { name:'', description:'', icon:'medal', color:'#f59e0b', trigger_type:'level', trigger_value:1, is_active:true, previewUrl:'', imageFile:null };
             this.showModal = true;
         },
 
         openEdit(badge) {
             this.editId = badge.id;
             this.form = {
-                name: badge.name, description: badge.description, icon: badge.icon || '🏅',
+                name: badge.name, description: badge.description, icon: badge.icon || 'medal',
                 color: badge.color || '#f59e0b', trigger_type: badge.trigger_type || 'level',
                 trigger_value: badge.trigger_value || 1, is_active: badge.is_active,
                 previewUrl: badge.image_url || '', imageFile: null,

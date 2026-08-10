@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/icons.js') }}"></script>
 <style>
 *{box-sizing:border-box;}
 body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:100vh;}
@@ -306,7 +307,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         <span class="tagline">it's possible</span>
     </div>
     <a href="{{ route('portfolio') }}" class="nav-portfolio-btn" style="font-size:.78rem;padding:.45rem 1rem;">
-        🎒 <span class="nav-portfolio-label">Portfolio</span>
+        <x-icon name="bar-chart" class="w-3.5 h-3.5 inline-block" /> <span class="nav-portfolio-label">Portfolio</span>
     </a>
 </nav>
 
@@ -320,7 +321,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         <div class="nav-stat">Monthly income: <span>Ksh {{ number_format($totalMonthlyIncome) }}</span></div>
         <div class="nav-stat bal">Balance: <span>Ksh {{ number_format($progress->balance ?? 0) }}</span></div>
         <a href="{{ route('portfolio') }}" class="nav-portfolio-btn">
-            🎒 <span class="nav-portfolio-label">Portfolio</span>
+            <x-icon name="bar-chart" class="w-3.5 h-3.5 inline-block" /> <span class="nav-portfolio-label">Portfolio</span>
         </a>
     </div>
 </nav>
@@ -338,7 +339,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 
         <div x-data="{open:false}" class="mt-4 hero-faq">
             <button class="faq-btn" @click="open=!open">
-                <span>💡 How do assets make you money?</span>
+                <span class="inline-flex items-center gap-1.5"><x-icon name="bulb" class="w-4 h-4" /> How do assets make you money?</span>
                 <svg class="w-4 h-4 transition-transform" :class="open?'rotate-180':''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div class="faq-body" x-show="open" x-cloak x-transition>
@@ -378,7 +379,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 {{-- ═══════════════ MOBILE FAQ (below stat cards) ═══════════════ --}}
 <div class="mob-show" style="padding:.125rem 1rem .5rem;" x-data="{open:false}">
     <button class="faq-btn" @click="open=!open">
-        <span>💡 How do assets make you money?</span>
+        <span class="inline-flex items-center gap-1.5"><x-icon name="bulb" class="w-4 h-4" /> How do assets make you money?</span>
         <svg class="w-4 h-4 transition-transform" :class="open?'rotate-180':''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
     <div class="faq-body" x-show="open" x-cloak x-transition>
@@ -391,22 +392,22 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
     <div class="mob-why-title">Why buy assets?</div>
     <div class="mob-features-grid">
         <div class="mob-feature-card">
-            <div class="mob-feature-icon" style="background:rgba(16,185,129,.15);color:#10b981;">💰</div>
+            <div class="mob-feature-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><x-icon name="coin" class="w-4 h-4" /></div>
             <div class="mob-feature-label">Earn while you sleep</div>
             <div class="mob-feature-sub">Passive income assets</div>
         </div>
         <div class="mob-feature-card">
-            <div class="mob-feature-icon" style="background:rgba(99,102,241,.15);color:#818cf8;">🛡</div>
+            <div class="mob-feature-icon" style="background:rgba(99,102,241,.15);color:#818cf8;"><x-icon name="shield" class="w-4 h-4" /></div>
             <div class="mob-feature-label">Build long-term wealth</div>
             <div class="mob-feature-sub">Appreciate over time</div>
         </div>
         <div class="mob-feature-card">
-            <div class="mob-feature-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;">⚡</div>
+            <div class="mob-feature-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;"><x-icon name="bolt" class="w-4 h-4" /></div>
             <div class="mob-feature-label">Improve your life</div>
             <div class="mob-feature-sub">Tools that level you up</div>
         </div>
         <div class="mob-feature-card">
-            <div class="mob-feature-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;">📊</div>
+            <div class="mob-feature-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;"><x-icon name="bar-chart" class="w-4 h-4" /></div>
             <div class="mob-feature-label">Diversify &amp; grow</div>
             <div class="mob-feature-sub">Spread risk, build security</div>
         </div>
@@ -423,16 +424,16 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 <div class="mob-cats-wrap mob-show">
     <div class="mob-cats-scroller">
         @foreach($cats ?? [
-            'all'        => ['label'=>'All',       'emoji'=>'🏪','count'=>$totalCount],
-            'vehicle'    => ['label'=>'Vehicles',  'emoji'=>'🚗','count'=>$categoryCounts['vehicle']    ?? 0],
-            'property'   => ['label'=>'Property',  'emoji'=>'🏠','count'=>$categoryCounts['property']   ?? 0],
-            'business'   => ['label'=>'Business',  'emoji'=>'💼','count'=>$categoryCounts['business']   ?? 0],
-            'investment' => ['label'=>'Investments','emoji'=>'📈','count'=>$categoryCounts['investment'] ?? 0],
-            'gadget'     => ['label'=>'Gadgets',   'emoji'=>'📱','count'=>$categoryCounts['gadget']     ?? 0],
+            'all'        => ['label'=>'All',       'icon'=>'store','count'=>$totalCount],
+            'vehicle'    => ['label'=>'Vehicles',  'icon'=>'car','count'=>$categoryCounts['vehicle']    ?? 0],
+            'property'   => ['label'=>'Property',  'icon'=>'house','count'=>$categoryCounts['property']   ?? 0],
+            'business'   => ['label'=>'Business',  'icon'=>'briefcase','count'=>$categoryCounts['business']   ?? 0],
+            'investment' => ['label'=>'Investments','icon'=>'trend-up','count'=>$categoryCounts['investment'] ?? 0],
+            'gadget'     => ['label'=>'Gadgets',   'icon'=>'phone','count'=>$categoryCounts['gadget']     ?? 0],
         ] as $key => $cat)
         <button class="mob-cat-chip" :class="activeCategory === '{{ $key }}' ? 'active' : ''"
                 @click="activeCategory = '{{ $key }}'">
-            {{ $cat['emoji'] }} {{ $cat['label'] }}
+            <x-icon :name="$cat['icon']" class="w-3.5 h-3.5 inline-block" /> {{ $cat['label'] }}
             <span class="mob-cnt">{{ $cat['count'] }}</span>
         </button>
         @endforeach
@@ -443,19 +444,19 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 <div class="features-wrap fade-up-2">
     <div class="features-bar">
         <div class="feature-item">
-            <div class="feature-icon" style="background:rgba(16,185,129,.15);color:#10b981;">💰</div>
+            <div class="feature-icon" style="background:rgba(16,185,129,.15);color:#10b981;"><x-icon name="coin" class="w-5 h-5" /></div>
             <div><div class="feature-label">Earn while you sleep</div><div class="feature-sub">Passive income assets</div></div>
         </div>
         <div class="feature-item">
-            <div class="feature-icon" style="background:rgba(99,102,241,.15);color:#818cf8;">🛡</div>
+            <div class="feature-icon" style="background:rgba(99,102,241,.15);color:#818cf8;"><x-icon name="shield" class="w-5 h-5" /></div>
             <div><div class="feature-label">Build long-term wealth</div><div class="feature-sub">Appreciate over time</div></div>
         </div>
         <div class="feature-item">
-            <div class="feature-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;">⚡</div>
+            <div class="feature-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;"><x-icon name="bolt" class="w-5 h-5" /></div>
             <div><div class="feature-label">Improve your life</div><div class="feature-sub">Tools that level you up</div></div>
         </div>
         <div class="feature-item">
-            <div class="feature-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;">📊</div>
+            <div class="feature-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;"><x-icon name="bar-chart" class="w-5 h-5" /></div>
             <div><div class="feature-label">Diversify &amp; grow</div><div class="feature-sub">Spread risk, build security</div></div>
         </div>
     </div>
@@ -466,18 +467,18 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
     <div class="tabs-scroller" x-ref="tabsScroller">
         @php
             $cats = [
-                'all'        => ['label'=>'All',         'emoji'=>'🏪', 'count'=>$totalCount],
-                'vehicle'    => ['label'=>'Vehicles',    'emoji'=>'🚗', 'count'=>$categoryCounts['vehicle']    ?? 0],
-                'property'   => ['label'=>'Property',    'emoji'=>'🏠', 'count'=>$categoryCounts['property']   ?? 0],
-                'business'   => ['label'=>'Business',    'emoji'=>'💼', 'count'=>$categoryCounts['business']   ?? 0],
-                'investment' => ['label'=>'Investments', 'emoji'=>'📈', 'count'=>$categoryCounts['investment'] ?? 0],
-                'gadget'     => ['label'=>'Gadgets',     'emoji'=>'📱', 'count'=>$categoryCounts['gadget']     ?? 0],
+                'all'        => ['label'=>'All',         'icon'=>'store', 'count'=>$totalCount],
+                'vehicle'    => ['label'=>'Vehicles',    'icon'=>'car', 'count'=>$categoryCounts['vehicle']    ?? 0],
+                'property'   => ['label'=>'Property',    'icon'=>'house', 'count'=>$categoryCounts['property']   ?? 0],
+                'business'   => ['label'=>'Business',    'icon'=>'briefcase', 'count'=>$categoryCounts['business']   ?? 0],
+                'investment' => ['label'=>'Investments', 'icon'=>'trend-up', 'count'=>$categoryCounts['investment'] ?? 0],
+                'gadget'     => ['label'=>'Gadgets',     'icon'=>'phone', 'count'=>$categoryCounts['gadget']     ?? 0],
             ];
         @endphp
         @foreach($cats as $key => $cat)
         <button class="cat-tab" :class="activeCategory === '{{ $key }}' ? 'active' : ''"
                 @click="activeCategory = '{{ $key }}'">
-            {{ $cat['emoji'] }} {{ $cat['label'] }}
+            <x-icon :name="$cat['icon']" class="w-3.5 h-3.5 inline-block" /> {{ $cat['label'] }}
             <span class="cnt">{{ $cat['count'] }}</span>
         </button>
         @endforeach
@@ -496,13 +497,13 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
         <div>
             {{-- Desktop label --}}
             <div class="desk-show" style="display:flex;align-items:center;gap:.5rem;">
-                <span style="font-size:1.25rem;">🎯</span>
+                <x-icon name="target" class="w-5 h-5" />
                 <span class="section-title">Starter Moves</span>
             </div>
             {{-- Mobile label --}}
             <div class="mob-section-header mob-show" style="padding-bottom:.35rem;">
                 <div style="display:flex;align-items:center;gap:.4rem;">
-                    <span style="font-size:1.1rem;">⭐</span>
+                    <x-icon name="star" class="w-4 h-4" />
                     <span class="mob-section-title">Featured Assets</span>
                 </div>
                 <a href="{{ route('marketplace.all') }}" class="mob-view-all">View all assets <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
@@ -551,17 +552,12 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     <div class="card-img" :style="'background:' + catGradient(asset.category)">
                         <template x-if="asset.image">
                             <img :src="asset.image" :alt="asset.name" loading="lazy"
-                                 :style="asset.icon ? 'opacity:.6' : 'opacity:.92'"
+                                 style="opacity:.92"
                                  onerror="this.style.display='none'">
                         </template>
-                        {{-- Overlay darkens image for emoji contrast; skip when image-only --}}
-                        <div class="card-img-overlay" x-show="!!asset.icon"></div>
-                        <template x-if="asset.icon">
-                            <span class="card-emoji" x-text="asset.icon"></span>
-                        </template>
-                        {{-- Fallback: no icon AND no image → show category emoji --}}
-                        <template x-if="!asset.icon && !asset.image">
-                            <span class="card-emoji" x-text="catEmoji(asset.category)" style="opacity:.5;"></span>
+                        {{-- No image? Show the icon in its place — never over an actual item photo. --}}
+                        <template x-if="!asset.image">
+                            <span class="card-emoji w-10 h-10" x-html="pqIcon(asset.icon, 'w-10 h-10')" style="opacity:.75"></span>
                         </template>
 
                         {{-- Badge --}}
@@ -580,7 +576,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     {{-- Body --}}
                     <div class="card-body">
                         <span class="card-chip" :style="'background:' + catChipBg(asset.category) + ';color:' + catChipColor(asset.category)">
-                            <span x-text="catEmoji(asset.category)"></span>
+                            <span class="inline-block w-3 h-3" x-html="pqIcon(catEmoji(asset.category), 'w-3 h-3')"></span>
                             <span x-text="catLabel(asset.category)"></span>
                         </span>
                         <div class="card-name" x-text="asset.name"></div>
@@ -622,7 +618,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 <div class="section-wrap fade-up-5" style="padding-top:.5rem;">
     <div class="section-header">
         <div style="display:flex;align-items:center;gap:.5rem;">
-            <span style="font-size:1.25rem;">📈</span>
+            <x-icon name="trend-up" class="w-5 h-5" />
             <span class="section-title">Growth Plays</span>
         </div>
         <span class="section-sub desk-show">Assets with higher potential returns</span>
@@ -679,14 +675,16 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                 <div class="relative h-40 overflow-hidden rounded-t-3xl" :class="'cat-' + inspecting.category">
                     <template x-if="inspecting.image">
                         <img :src="inspecting.image" class="absolute inset-0 w-full h-full object-cover"
-                             :style="inspecting.icon ? 'opacity:.45' : 'opacity:.85'"
+                             style="opacity:.85"
                              onerror="this.style.display='none'">
                     </template>
                     <div class="absolute inset-0" style="background:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:28px 28px;"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="icon-bob" style="font-size:4rem;"
-                              x-text="inspecting.icon || catEmoji(inspecting.category)"></span>
-                    </div>
+                    {{-- No image? Show the icon in its place — never over an actual item photo. --}}
+                    <template x-if="!inspecting.image">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="icon-bob w-16 h-16" x-html="pqIcon(inspecting.icon || catEmoji(inspecting.category), 'w-16 h-16')"></span>
+                        </div>
+                    </template>
                     <button @click="inspecting=null;buyMsg='';"
                             class="absolute top-4 right-4 w-8 h-8 rounded-xl flex items-center justify-center"
                             style="background:rgba(0,0,0,.4);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);">
@@ -722,7 +720,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 
                     <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
                         <div class="px-4 py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
-                            <p class="text-xs font-black text-white">💰 How this works financially</p>
+                            <p class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> How this works financially</p>
                         </div>
                         <div class="p-4 space-y-2">
                             <template x-if="inspecting.income > 0">
@@ -769,7 +767,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     <template x-if="inspecting.afford_pct > 0">
                         <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
                             <div class="px-4 py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
-                                <p class="text-xs font-black text-white">📊 Can you really afford this?</p>
+                                <p class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="bar-chart" class="w-3.5 h-3.5" /> Can you really afford this?</p>
                             </div>
                             <div class="p-4">
                                 <div class="flex justify-between items-center mb-2">
@@ -801,7 +799,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     <template x-if="inspecting.financing && !inspecting.maxed">
                         <div class="mb-4 rounded-2xl overflow-hidden" style="border:1px solid rgba(245,158,11,.25);">
                             <div class="px-4 py-2" style="background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.15);">
-                                <p class="text-xs font-black text-amber-300">🏦 Or finance it — deposit now, pay monthly</p>
+                                <p class="text-xs font-black text-amber-300 inline-flex items-center gap-1"><x-icon name="bank" class="w-3.5 h-3.5" /> Or finance it — deposit now, pay monthly</p>
                             </div>
                             <div class="p-4 space-y-1.5 text-sm">
                                 <div class="flex justify-between"><span class="text-gray-400">Deposit (pay now)</span><span class="font-bold text-white" x-text="'Ksh ' + inspecting.financing.deposit.toLocaleString()"></span></div>
@@ -913,8 +911,8 @@ function marketplace() {
         },
 
         catEmoji(cat) {
-            const m = {vehicle:'🚗',property:'🏠',business:'🏢',investment:'📈',gadget:'📱'};
-            return m[cat] || '📦';
+            const m = {vehicle:'car',property:'house',business:'building',investment:'trend-up',gadget:'phone'};
+            return m[cat] || 'store';
         },
         catLabel(cat) {
             const m = {vehicle:'Use & Earn',property:'Passive Income',business:'Business',investment:'Investment',gadget:'Gadget'};

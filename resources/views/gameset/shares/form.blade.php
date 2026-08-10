@@ -52,10 +52,10 @@
             {{-- Left column --}}
             <div class="space-y-5">
                 <div>
-                    <label class="field-label">Icon (emoji)
-                        <x-help-tip text="Emoji shown next to the share in the Equity Square Shares tab." example="📱" />
+                    <label class="field-label">Icon (name)
+                        <x-help-tip text="Icon shown next to the share in the Equity Square Shares tab." example="trend-up" />
                     </label>
-                    <input type="text" name="icon" value="{{ old('icon', $share->icon ?? '📈') }}" class="field-input" maxlength="8">
+                    <input type="text" name="icon" value="{{ old('icon', $share->icon ?? 'trend-up') }}" class="field-input" maxlength="30">
                 </div>
                 <div>
                     <label class="field-label">Company Name *

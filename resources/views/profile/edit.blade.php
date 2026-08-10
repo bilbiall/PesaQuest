@@ -401,7 +401,7 @@ textarea.ifield   { resize:vertical;min-height:80px }
           <div class="pf-badge-circle" title="{{ $badge->description }}"
                style="background:linear-gradient(135deg,{{ $badge->color ?: '#f59e0b' }}22,{{ $badge->color ?: '#f59e0b' }}0c);border:1px solid {{ $badge->color ?: '#f59e0b' }}30">
             @if($badge->image_url)<img src="{{ $badge->image_url }}" alt="{{ $badge->name }}">
-            @else{{ $badge->icon ?? '🏆' }}@endif
+            @else<x-icon :name="$badge->icon ?? 'trophy'" class="w-5 h-5" />@endif
           </div>
           <div class="pf-badge-name">{{ $badge->name }}</div>
         </div>
@@ -416,7 +416,7 @@ textarea.ifield   { resize:vertical;min-height:80px }
           <div class="pf-badge-circle"
                style="background:linear-gradient(135deg,{{ $badge->color ?: '#f59e0b' }}22,{{ $badge->color ?: '#f59e0b' }}0c);border:1px solid {{ $badge->color ?: '#f59e0b' }}30">
             @if($badge->image_url)<img src="{{ $badge->image_url }}" alt="{{ $badge->name }}">
-            @else{{ $badge->icon ?? '🏆' }}@endif
+            @else<x-icon :name="$badge->icon ?? 'trophy'" class="w-5 h-5" />@endif
           </div>
           <div class="pf-badge-name">{{ $badge->name }}</div>
         </div>

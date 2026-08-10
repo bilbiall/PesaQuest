@@ -3600,6 +3600,7 @@ function artisanRunner() {
             { key: 'seed:fun-world',       label: 'Fun World Activities', icon: '🎡', danger: false },
             { key: 'seed:dreams',          label: 'Dreams Catalog',   icon: '🏆', danger: false },
             { key: 'seed:challenge-templates', label: 'Challenge Templates', icon: '⚔️', danger: false },
+            { key: 'seed:share-news',      label: 'Market Watch News Pool', icon: '📰', danger: false },
             { key: 'seed:scenarios-bulk',  label: 'Bulk Scenarios',   icon: '📖', danger: false },
             { key: 'seed:scenarios-adult', label: 'Adult Scenarios',  icon: '📋', danger: false },
             { key: 'seed:asset-events',    label: 'Asset Events',     icon: '💼', danger: false },
