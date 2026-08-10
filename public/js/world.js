@@ -1143,6 +1143,14 @@ function pesaCity() {
     loading:    false,
     district:   null,
 
+    // Pull-down-to-dismiss on the district panel — only engages once the
+    // panel's own content is already scrolled to the top, so it never
+    // hijacks a normal scroll gesture partway down a long list.
+    panelDragY:      0,
+    panelDragging:   false,
+    panelSnapping:   false,
+    _panelDragStartY: null,
+
     // ── Opportunity Hub state ──────────────────────────────────────
     oppTab:      'courses',   // 'courses' | 'jobs'
     oppCourses:  [],
@@ -1580,11 +1588,50 @@ function pesaCity() {
         });
     },
 
+    panelTouchStart(e) {
+      const panelEl = document.getElementById('pc-panel');
+      // Only arm the drag-to-close once the panel's own content is already
+      // scrolled to the top — otherwise this would hijack a normal scroll
+      // partway down a long list.
+      if (!panelEl || panelEl.scrollTop > 0) { this._panelDragStartY = null; return; }
+      this._panelDragStartY = e.touches[0].clientY;
+      this.panelDragging = false;
+      this.panelDragY = 0;
+    },
+
+    panelTouchMove(e) {
+      if (this._panelDragStartY === null) return;
+      const panelEl = document.getElementById('pc-panel');
+      if (panelEl && panelEl.scrollTop > 0) { this._panelDragStartY = null; this.panelDragY = 0; return; }
+      const delta = e.touches[0].clientY - this._panelDragStartY;
+      if (delta <= 0) { this.panelDragY = 0; return; } // only a downward pull counts
+      this.panelDragging = true;
+      this.panelDragY = delta;
+      e.preventDefault(); // stop the page/panel's own scroll bounce while we're dragging the sheet
+    },
+
+    panelTouchEnd() {
+      const shouldClose = this.panelDragY > 90;
+      this.panelDragging    = false;
+      this._panelDragStartY = null;
+      if (shouldClose) {
+        this.panelDragY = 0;
+        this.closePanel();
+        return;
+      }
+      // Below the threshold — snap back smoothly instead of just vanishing.
+      this.panelSnapping = true;
+      this.panelDragY    = 0;
+      setTimeout(() => { this.panelSnapping = false; }, 220);
+    },
+
     closePanel() {
       SoundMgr.play('close');
       SoundMgr.stopZone();
       SoundMgr.playWorld();
       this.panelOpen = false;
+      this.panelDragging = false;
+      this.panelDragY    = 0;
       // The piece stays where you left it — no auto-walk back to the plaza.
       // (Walk home anytime via the 🏠 Home marker on the map.)
       clearTimeout(this._returnTimer);

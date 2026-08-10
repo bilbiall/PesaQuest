@@ -613,6 +613,18 @@
                 </div>
             </div>
 
+            {{-- Waiting room state — a Rivals Trail (wager) match with nobody
+                 else in it yet isn't "solo", it's a challenge sitting unanswered.
+                 Hidden the instant polling picks up an opponent (same JS hook
+                 that reveals #oppHeading), so this page IS the waiting area:
+                 leave and come back anytime via "Resume your game" in the
+                 Arcade lobby, or just leave this tab open — it updates live. --}}
+            @if(($match->mode ?? null) === 'wager' && $opponents->isEmpty())
+            <div class="turn-banner waiting" id="waitingForOpponentBanner" style="display:flex;">
+                ⏳ Waiting for your opponent to accept the challenge — this updates the moment they join.
+            </div>
+            @endif
+
             {{-- Only meaningful with 3+ total players — a 1v1 already has an
                  obvious "them or you" via the turn banner alone. --}}
             <div class="turn-order-strip" id="turnOrderStrip" style="display:none;"></div>
@@ -686,7 +698,7 @@
             </div>
             @endforeach
             </div>
-            <p class="text-xs text-gray-500 italic mt-4" id="noOpponentsMsg" style="{{ $opponents->isNotEmpty() ? 'display:none;' : '' }}">Solo game — no opponents in this session.</p>
+            <p class="text-xs text-gray-500 italic mt-4" id="noOpponentsMsg" style="{{ $opponents->isNotEmpty() ? 'display:none;' : '' }}">{{ ($match->mode ?? null) === 'wager' ? 'Waiting for your opponent to join…' : 'Solo game — no opponents in this session.' }}</p>
 
             {{-- How To Play — collapsible so it doesn't compete with the game itself for space --}}
             <button type="button" class="htp-toggle" id="htpToggle" onclick="toggleHowToPlay()">
@@ -1303,6 +1315,7 @@
             if (isNew) {
                 document.getElementById('noOpponentsMsg').style.display = 'none';
                 document.getElementById('oppHeading').style.display = 'block';
+                document.getElementById('waitingForOpponentBanner')?.style.setProperty('display', 'none');
 
                 const safeName = escapeHtml(opp.name || 'Player');
                 const initial = escapeHtml((opp.name || 'P').charAt(0).toUpperCase());

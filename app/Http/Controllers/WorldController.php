@@ -417,6 +417,24 @@ class WorldController extends Controller
             ? \App\Models\PlayerMission::where('user_id', $user->id)->where('status', 'completed')->count()
             : 0;
 
+        if ($slug === 'marketplace') {
+            // A small taste of what's on offer — full browsing still happens
+            // on the real Marketplace page, this is just enough to make the
+            // district panel feel alive instead of two bare buttons.
+            $district['featured_assets'] = \App\Models\Asset::active()
+                ->orderBy('base_price')
+                ->limit(4)
+                ->get(['id', 'name', 'icon', 'image_url', 'base_price', 'monthly_income'])
+                ->map(fn ($a) => [
+                    'id'             => $a->id,
+                    'name'           => $a->name,
+                    'icon'           => $a->icon,
+                    'image_url'      => $a->image_url,
+                    'base_price'     => $a->base_price,
+                    'monthly_income' => $a->monthly_income,
+                ])->values();
+        }
+
         if ($slug === 'estates') {
             $district['unlock_balance']  = $balance;
             $district['unlock_required'] = 200000;

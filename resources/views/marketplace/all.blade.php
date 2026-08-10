@@ -241,30 +241,29 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
     .mob-sort-bar{display:flex;}
     .all-bottom-bar{display:block;}
 
-    /* Full-width single-column compact list */
+    /* Full-width, 2 cards per row */
     .main-layout{grid-template-columns:1fr;padding:0!important;}
     .assets-main{padding:.5rem .75rem;}
-    .assets-grid{grid-template-columns:1fr;gap:.4rem;}
+    .assets-grid{grid-template-columns:repeat(2,1fr);gap:.6rem;}
     .pagination-wrap{flex-direction:column;gap:.75rem;text-align:center;padding:1rem .875rem;}
 
-    /* Compact horizontal card on mobile */
-    .asset-card{flex-direction:row;border-radius:.875rem;align-items:stretch;min-height:68px;}
-    .asset-card .card-img{width:68px;min-width:68px;height:auto;min-height:68px;align-self:stretch;flex-shrink:0;border-radius:.625rem 0 0 .625rem;}
-    .asset-card .card-emoji{font-size:1.7rem;}
-    .asset-card .card-badge{font-size:.5rem;padding:.1rem .3rem;top:4px;left:4px;}
-    .asset-card .card-heart{width:20px;height:20px;font-size:.6rem;top:4px;right:4px;}
-    .asset-card .card-owned-badge{font-size:.5rem;padding:.1rem .3rem;bottom:3px;}
-    /* Two rows: name on top, amounts + button beneath */
-    .asset-card .card-body{padding:.5rem .6rem .55rem .6rem;flex-direction:column;align-items:stretch;gap:.35rem;flex:1;min-width:0;}
-    .asset-card .card-chip{margin-bottom:.15rem;font-size:.58rem;padding:.12rem .4rem;}
-    .asset-card .card-name{font-size:.78rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    /* Compact vertical card — image on top, name, then stats, then the
+       View Details button last so everything reads top-to-bottom cleanly
+       instead of being squeezed into one row. */
+    .asset-card{border-radius:.875rem;}
+    .asset-card .card-img{height:88px;}
+    .asset-card .card-emoji{font-size:1.9rem;}
+    .asset-card .card-badge{font-size:.5rem;padding:.1rem .3rem;top:6px;left:6px;}
+    .asset-card .card-heart{width:22px;height:22px;font-size:.62rem;top:6px;right:6px;}
+    .asset-card .card-owned-badge{font-size:.5rem;padding:.1rem .3rem;bottom:6px;}
+    .asset-card .card-body{padding:.6rem .65rem .7rem;}
+    .asset-card .card-chip{margin-bottom:.3rem;font-size:.56rem;padding:.12rem .4rem;}
+    .asset-card .card-name{font-size:.76rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0;}
     .asset-card .card-desc{display:none;}
-    .asset-card .card-bottom{display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
-    .asset-card .card-stats{display:flex;flex-direction:row;border:none;padding:0;margin:0;gap:.75rem;flex-shrink:0;}
-    .asset-card .card-stats>div{display:flex;align-items:center;gap:.25rem;}
-    .asset-card .card-stat-lbl{display:none;}
-    .asset-card .card-stat-val{font-size:.7rem;}
-    .asset-card .card-view-btn{margin:0;padding:.4rem .6rem;font-size:.65rem;white-space:nowrap;flex-shrink:0;border-radius:.5rem;}
+    .asset-card .card-stats{gap:.35rem;margin-top:.5rem;padding-top:.5rem;}
+    .asset-card .card-stat-lbl{font-size:.5rem;}
+    .asset-card .card-stat-val{font-size:.72rem;}
+    .asset-card .card-view-btn{margin-top:.5rem;padding:.45rem;font-size:.68rem;}
 
     /* Card left info section */
     .mob-card-info{flex:1;min-width:0;}

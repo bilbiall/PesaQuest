@@ -31,14 +31,28 @@ class ArcadeSnakesController extends Controller
             ->whereHas('match', fn ($q) => $q->whereIn('status', ['open', 'active']))
             ->with(['match:id,stake_amount', 'inviter:id,name'])
             ->latest()
-            ->get()
-            ->map(fn (ArcadeMatchInvite $i) => [
-                'id'           => $i->id,
-                'inviter_name' => $i->inviter->name ?? 'A friend',
-                'stake_amount' => $i->match->stake_amount ?? 0,
-            ]);
+            ->get();
 
-        return response()->json(['invites' => $invites]);
+        // Same "is the inviter online right now" check the lobby page uses,
+        // so the global popup and the lobby's inline invite card never
+        // disagree about what a player sees.
+        $onlineUserIds = \Illuminate\Support\Facades\Schema::hasTable('sessions')
+            ? \Illuminate\Support\Facades\DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
+                ->pluck('user_id')
+                ->all()
+            : [];
+
+        $payload = $invites->map(fn (ArcadeMatchInvite $i) => [
+            'id'             => $i->id,
+            'inviter_name'   => $i->inviter->name ?? 'A friend',
+            'stake_amount'   => $i->match->stake_amount ?? 0,
+            'sent_at'        => $i->created_at?->diffForHumans(),
+            'inviter_online' => in_array($i->invited_by, $onlineUserIds),
+        ]);
+
+        return response()->json(['invites' => $payload]);
     }
 
     public function index()

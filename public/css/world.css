@@ -31,7 +31,15 @@
 .pc-root {
   display: flex;
   flex-direction: column;
+  /* 100vh on mobile is measured against the browser's tallest possible
+     chrome state (URL bar hidden), not what's actually visible right now —
+     after an interaction changes the address bar's state (e.g. closing the
+     district panel), the page can end up taller than the true viewport,
+     leaving a gap below fixed elements like the bottom nav. 100dvh tracks
+     the real, current viewport and fixes that; the plain 100vh above stays
+     as the fallback for browsers that don't support dvh yet. */
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: var(--pc-bg);
   color: var(--pc-text);
@@ -403,22 +411,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 0 var(--district-color, var(--pc-green));
+  /* Floats over the map art — only reveal it on hover/touch so the map
+     itself stays the visual focus; the name label underneath (kept subtle,
+     see .pc-district-name) is what stays always visible. */
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+.pc-district:hover .pc-district-icon,
+.pc-district:focus-visible .pc-district-icon,
+.pc-district:active .pc-district-icon {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .pc-district-name {
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--pc-muted);
+  color: rgba(255,255,255,0.55);
   text-align: center;
   white-space: nowrap;
-  background: rgba(8,17,26,0.8);
+  background: rgba(8,17,26,0.55);
   padding: 2px 6px;
   border-radius: 4px;
-  transition: color 0.2s;
+  transition: color 0.2s, background 0.2s;
 }
 
 .pc-district-lock {
@@ -436,27 +456,27 @@
   box-shadow: 0 4px 16px rgba(0,0,0,0.6);
 }
 
-/* Active districts — label styled as a visible clickable banner */
+/* Active districts — label kept subtle; the icon (hover-reveal above) and
+   the always-on glow border are what signal "clickable", not a bold banner. */
 .pc-district-active .pc-district-name {
-  font-size: 9.5px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.9);
-  background: rgba(4,10,18,0.88);
-  border: 1px solid rgba(21,199,126,0.35);
-  padding: 3px 9px;
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  background: rgba(4,10,18,0.6);
+  border: 1px solid rgba(21,199,126,0.18);
+  padding: 2px 8px;
   border-radius: 6px 6px 0 0;
-  letter-spacing: 0.06em;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  letter-spacing: 0.05em;
 }
 
 /* Always show the sub-tagline for active districts */
 .pc-district-active .pc-district-sub {
   display: block;
   font-size: 7.5px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.45);
-  background: rgba(4,10,18,0.82);
-  border: 1px solid rgba(21,199,126,0.2);
+  font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  background: rgba(4,10,18,0.55);
+  border: 1px solid rgba(21,199,126,0.12);
   border-top: none;
   border-radius: 0 0 6px 6px;
   padding: 1px 9px 3px;
@@ -915,6 +935,12 @@
 }
 .pc-panel-enter-start { transform: translateY(100%); opacity: 0; }
 .pc-panel-enter-end   { transform: translateY(0);    opacity: 1; }
+
+/* While actively dragging, the inline transform must track the finger with
+   zero lag — no transition. On release (didn't clear the threshold), a
+   transition is added back just long enough to snap smoothly to rest. */
+.pc-panel-dragging { transition: none !important; }
+.pc-panel-snapping { transition: transform 0.22s ease !important; }
 
 .pc-panel-handle {
   width: 36px;
@@ -1732,11 +1758,23 @@
     width: 300px;
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: -20px 0 50px rgba(0,0,0,0.55);
-    z-index: 200;
+    /* Above the shared bottom nav (.pq-bottom-nav is z-index:9000) so the
+       drawer is never rendered behind it. */
+    z-index: 9100;
   }
 
   .pc-sidebar.pc-sidebar-open {
     right: 0;
+  }
+
+  .pc-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    top: var(--hud-h);
+    bottom: 60px;
+    z-index: 9090;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(2px);
   }
 
   .pc-sidebar-toggle {
@@ -3236,16 +3274,16 @@
   /* The panel must NEVER extend behind the bottom tab bar: pin its bottom
      above the nav (incl. iOS/Android gesture safe area), hard-cap its height
      to the space between HUD and nav, and let the inside scroll.
-     Nav is 60px tall (see .pc-mobile-nav) — reserve 64px (extra 4px buffer)
-     so rounding/browser vh-vs-dvh differences never eat into the gap. */
+     The shared nav (.pq-bottom-nav) is ~52-60px tall — reserve 64px so
+     rounding/browser vh-vs-dvh differences never eat into the gap. */
   .pc-panel {
     bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     max-height: calc(100vh  - 64px - 66px);
     max-height: calc(100dvh - 64px - 66px - env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
-    /* Above .pc-mobile-nav (z-index 150) so a stray px of overlap can never
-       hide panel content/buttons behind the opaque nav bar. */
-    z-index: 160;
+    /* Above the shared bottom nav (.pq-bottom-nav is z-index:9000) so a
+       stray px of overlap can never hide panel content/buttons behind it. */
+    z-index: 9050;
   }
   /* Breathing room so the last button always clears the panel edge */
   .pc-panel-body { padding-bottom: 56px; }

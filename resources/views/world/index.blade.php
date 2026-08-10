@@ -605,6 +605,10 @@
             </div>
         </template>
 
+        {{-- Backdrop — mobile-only (sidebar is an off-canvas drawer there); tap
+             anywhere outside the drawer to close it, same as the Menu sheet. --}}
+        <div class="pc-sidebar-backdrop" x-show="sidebarOpen" x-cloak x-transition.opacity @click="sidebarOpen = false"></div>
+
         {{-- ── RIGHT SIDEBAR ── --}}
         <div class="pc-sidebar" :class="{ 'pc-sidebar-open': sidebarOpen }">
 
@@ -897,6 +901,11 @@
          x-transition:leave="pc-panel-enter"
          x-transition:leave-start="pc-panel-enter-end"
          x-transition:leave-end="pc-panel-enter-start"
+         :class="{ 'pc-panel-dragging': panelDragging, 'pc-panel-snapping': panelSnapping }"
+         :style="panelDragY > 0 ? ('transform:translateY(' + panelDragY + 'px)') : ''"
+         @touchstart="panelTouchStart($event)"
+         @touchmove="panelTouchMove($event)"
+         @touchend="panelTouchEnd($event)"
          x-cloak>
 
         {{-- Drag handle --}}
@@ -943,6 +952,29 @@
                                x-text="action.label"></a>
                         </template>
                     </div>
+
+                    {{-- A taste of what's actually for sale — full browsing on /marketplace --}}
+                    <template x-if="district.slug === 'marketplace' && district.featured_assets && district.featured_assets.length > 0">
+                        <div style="margin-top:14px;">
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">
+                                <x-icon name="store" class="w-2.5 h-2.5 inline-block" /> A Few Things on Sale
+                            </div>
+                            <div class="pc-card-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
+                                <template x-for="a in district.featured_assets" :key="a.id">
+                                    <a :href="'/marketplace?highlight=' + a.id" style="display:block;border-radius:12px;border:1px solid rgba(255,255,255,0.08);padding:10px;background:rgba(255,255,255,0.03);text-decoration:none;transition:border-color .15s;">
+                                        <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:6px;">
+                                            <template x-if="a.image_url"><img :src="a.image_url" style="width:100%;height:100%;object-fit:cover;" alt=""></template>
+                                            <template x-if="!a.image_url"><span x-html="pqIcon(a.icon, 'w-4 h-4')" style="color:#9ca3af;"></span></template>
+                                        </div>
+                                        <div style="font-size:11px;font-weight:800;color:#e5e7eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="a.name"></div>
+                                        <div style="font-size:10px;color:#67e8f9;font-weight:700;margin-top:2px;" x-text="'KES ' + a.base_price.toLocaleString()"></div>
+                                        <div x-show="a.monthly_income > 0" style="font-size:9px;color:#34d399;margin-top:1px;" x-text="'+KES ' + (a.monthly_income ?? 0).toLocaleString() + '/mo'"></div>
+                                    </a>
+                                </template>
+                            </div>
+                            <a href="/marketplace" style="display:block;text-align:center;font-size:11px;font-weight:700;color:#67e8f9;margin-top:10px;">See all assets in Marketplace →</a>
+                        </div>
+                    </template>
                 </div>
             </template>
 
@@ -1058,6 +1090,7 @@
                     <template x-if="!district.deals || district.deals.length === 0">
                         <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No deals available right now. Check back soon.</div>
                     </template>
+                    <div class="pc-card-grid">
                     <template x-for="deal in (district.deals ?? [])" :key="deal.id">
                         <div style="border-radius:12px;border:1px solid rgba(53,195,240,.15);padding:10px 12px;margin-bottom:8px;background:rgba(53,195,240,.03);">
                             <div style="display:flex;align-items:flex-start;gap:10px;">
@@ -1086,6 +1119,7 @@
                             </div>
                         </div>
                     </template>
+                    </div>
 
                     </div>
                     {{-- /TAB: Deals --}}
@@ -1116,12 +1150,13 @@
                                 <div style="font-size:9.5px;color:#6b7280;margin-top:-4px;margin-bottom:8px;">
                                     What you'd gain or lose if you sold right now — it moves with the price, so red today can turn green later.
                                 </div>
+                                <div class="pc-card-grid">
                                 <template x-for="h in district.my_shares" :key="h.share_id">
                                     <div class="share-card">
                                         <div class="share-card-top">
                                             <div class="share-icon-badge" style="background:rgba(53,195,240,.12);border-color:rgba(53,195,240,.32);">
                                                 <template x-if="h.image_url"><img :src="h.image_url" alt=""></template>
-                                                <template x-if="!h.image_url"><span x-html="pqIcon(h.icon, 'w-5 h-5')"></span></template>
+                                                <template x-if="!h.image_url"><span x-html="pqIcon(h.icon, 'w-6 h-6')"></span></template>
                                             </div>
                                             <div class="share-card-info">
                                                 <div class="share-name" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
@@ -1158,6 +1193,7 @@
                                         </div>
                                     </div>
                                 </template>
+                                </div>
                                 <a href="/portfolio" style="display:block;text-align:center;font-size:11px;font-weight:700;color:#67e8f9;margin-top:4px;">See full details in Portfolio →</a>
                             </div>
                         </template>
@@ -1195,12 +1231,13 @@
                         <template x-if="!district.shares || district.shares.length === 0">
                             <div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">No shares listed right now. Check back soon.</div>
                         </template>
+                        <div class="pc-card-grid">
                         <template x-for="s in (district.shares ?? [])" :key="s.id">
                             <div class="share-card">
                                 <div class="share-card-top">
                                     <div class="share-icon-badge" :style="'background:' + s.risk_color + '18;border-color:' + s.risk_color + '40;'">
                                         <template x-if="s.image_url"><img :src="s.image_url" alt=""></template>
-                                        <template x-if="!s.image_url"><span x-html="pqIcon(s.icon, 'w-5 h-5')"></span></template>
+                                        <template x-if="!s.image_url"><span x-html="pqIcon(s.icon, 'w-6 h-6')"></span></template>
                                     </div>
                                     <div class="share-card-info">
                                         <div class="share-name" x-text="s.name + ' (' + s.symbol + ')'"></div>
@@ -1239,6 +1276,7 @@
                                 </div>
                             </div>
                         </template>
+                        </div>
 
                     </div>
                     {{-- /TAB: Market --}}
@@ -1899,9 +1937,14 @@
                         </div>
                     </template>
 
-                    {{-- Celebration popup --}}
+                    {{-- Celebration popup — centering uses the child's margin:auto
+                         (not align-items:center on the wrapper) so on short mobile
+                         viewports the card top-aligns and scrolls into view instead
+                         of clipping above the visible area. Auto-closes after ~3s;
+                         still dismissable early via the button or a tap outside. --}}
                     <div x-show="fwParty.show" x-cloak x-transition.opacity
-                         style="position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);overflow-y:auto;overscroll-behavior:contain;"
+                         x-effect="if (fwParty.show) { clearTimeout(window.__fwPartyTimer); window.__fwPartyTimer = setTimeout(() => fwParty.show = false, 3000); }"
+                         style="position:fixed;inset:0;z-index:9500;display:flex;justify-content:center;padding:20px;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);overflow-y:auto;overscroll-behavior:contain;"
                          @click.self="fwParty.show = false">
                         <div x-show="fwParty.show" x-transition.scale.origin.center
                              style="width:100%;max-width:340px;margin:auto;border-radius:24px;padding:28px 24px;text-align:center;background:linear-gradient(160deg,#1a0f0a,#2d1608);border:1px solid rgba(255,107,53,.45);box-shadow:0 20px 60px rgba(255,107,53,.25);">
@@ -2495,38 +2538,14 @@
 
     </div>
 
-    {{-- ── MOBILE BOTTOM NAV (hidden on desktop via CSS) ── --}}
-    <nav class="pc-mobile-nav">
-        <a href="{{ route('world') }}" class="pc-mn-item pc-mn-active" title="City Map">
-            <span class="pc-mn-icon"><x-icon name="map" /></span>
-            <span>Map</span>
-        </a>
-        <button class="pc-mn-item" @click="walkToDistrict('marketplace')" title="Market">
-            <span class="pc-mn-icon"><x-icon name="cart" /></span>
-            <span>Market</span>
-        </button>
-        <button class="pc-mn-item" @click="walkToDistrict('opportunity-hub')" title="Skills">
-            <span class="pc-mn-icon"><x-icon name="graduation" /></span>
-            <span>Skills</span>
-        </button>
-        <button class="pc-mn-item" @click="walkToDistrict('quests')" title="Quests">
-            <span class="pc-mn-icon"><x-icon name="checklist" /></span>
-            <span>Quests</span>
-        </button>
-        <button class="pc-mn-item" @click="toggleSidebar()" :class="{ 'pc-mn-active': sidebarOpen }" title="Profile">
-            <span class="pc-mn-icon"><x-icon name="user" /></span>
-            <span>Profile</span>
-        </button>
-        <button class="pc-mn-item" onclick="pqMenuOpen()" title="Menu">
-            <span class="pc-mn-icon">☰</span>
-            <span>Menu</span>
-        </button>
-    </nav>
-
-    {{-- Themed grouped menu (Money/Grow/People/Life/Profile) — shares the
-         exact same sheet, sounds and animations as every other page's Menu.
-         bar=false because this page already has its own bottom tab bar above. --}}
-    <x-mobile-bottom-nav :bar="false" />
+    {{-- Bottom nav — the exact same shared bar every other page uses
+         (Home/City/Arcade/Life/Menu), so mobile navigation is consistent
+         everywhere instead of the World map having its own one-off bar.
+         The map-specific shortcuts this used to carry (Market/Skills/Quests)
+         are still one tap away via the Menu sheet; the character sidebar has
+         its own dedicated toggle in the top HUD (the ☰ button), independent
+         of this bar. --}}
+    <x-mobile-bottom-nav active="city" />
 
     {{-- ── BOTTOM JOURNEY BAR — real admin-configured Journey Milestones
          (GameSet Hub → Journey Milestones), same data/logic as /life timeline ── --}}
@@ -2697,14 +2716,23 @@
 .stc-bar { height: 3px; margin-top: 8px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
 .stc-bar-fill { height: 100%; background: rgba(255,255,255,0.35); animation: stc-shrink 6s linear forwards; }
 
+/* Multi-column layout for share/deal card lists — the Equity Square panel
+   is a full-bleed bottom sheet, so on wide screens a single stacked column
+   stretches each card edge-to-edge. auto-fill naturally collapses back to
+   one column on narrow/mobile widths without needing a breakpoint. */
+.pc-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; align-items: start; }
+
 /* Equity Square share cards (Market + My Shares) */
 .share-card { border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
     background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
     border: 1px solid rgba(255,255,255,.08); transition: transform .18s ease, border-color .18s ease; }
 .share-card:hover { transform: translateY(-2px); border-color: rgba(53,195,240,.32); }
-.share-card-top { display: flex; align-items: flex-start; gap: 10px; }
-.share-icon-badge { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
-    justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid; overflow: hidden; }
+.share-card-top { display: flex; align-items: flex-start; gap: 12px; }
+/* Sized to actually show a company logo, not just a symbolic icon glyph —
+   the old 38px box cropped real photos/crests down to an illegible smear. */
+.share-icon-badge { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center;
+    justify-content: center; font-size: 22px; flex-shrink: 0; border: 1px solid; overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,.25); background-color: rgba(255,255,255,.03); }
 .share-icon-badge img { width: 100%; height: 100%; object-fit: cover; }
 .share-card-info { flex: 1; min-width: 0; }
 .share-name { font-size: 13px; font-weight: 800; color: #f9fafb; margin-bottom: 4px;

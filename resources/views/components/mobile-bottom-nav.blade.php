@@ -276,9 +276,10 @@ document.addEventListener('DOMContentLoaded', function () {
     <div style="background:#14121f;border:1px solid rgba(236,72,153,.35);border-radius:1.25rem;padding:1.5rem;max-width:340px;width:100%;text-align:center;font-family:'Figtree',sans-serif;">
         <p style="font-size:2rem;margin-bottom:.4rem;">🎲</p>
         <p style="font-size:.95rem;font-weight:900;color:#fff;margin-bottom:.3rem;" id="pq-invite-text"></p>
+        <p style="font-size:.7rem;color:#6b7280;margin-bottom:.3rem;" id="pq-invite-meta"></p>
         <p style="font-size:.75rem;color:#9ca3af;margin-bottom:1.2rem;">Rivals Trail — head-to-head Pesa Trail round</p>
         <div style="display:flex;gap:.6rem;">
-            <button id="pq-invite-decline" style="flex:1;padding:.7rem;border-radius:.8rem;font-size:.8rem;font-weight:800;color:#9ca3af;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);cursor:pointer;">Close</button>
+            <button id="pq-invite-decline" style="flex:1;padding:.7rem;border-radius:.8rem;font-size:.8rem;font-weight:800;color:#9ca3af;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);cursor:pointer;">Decline</button>
             <button id="pq-invite-accept" style="flex:1;padding:.7rem;border-radius:.8rem;font-size:.8rem;font-weight:800;color:#fff;background:linear-gradient(135deg,#ec4899,#be185d);border:none;cursor:pointer;">Accept →</button>
         </div>
     </div>
@@ -320,6 +321,10 @@ document.addEventListener('DOMContentLoaded', function () {
         currentInvite = invite;
         document.getElementById('pq-invite-text').textContent =
             `${invite.inviter_name} invited you to a round — entry KES ${Number(invite.stake_amount).toLocaleString()}`;
+        const bits = [];
+        if (invite.sent_at) bits.push(`Sent ${invite.sent_at}`);
+        bits.push(invite.inviter_online ? '🟢 Online now' : '⚪ Offline');
+        document.getElementById('pq-invite-meta').textContent = bits.join(' · ');
         document.getElementById('pq-invite-popup').style.display = 'flex';
     }
 
@@ -337,8 +342,19 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (_) { /* silent — this is a background nicety, not core functionality */ }
     }
 
+    const DECLINE_URL_TEMPLATE = '{{ route("arcade.snakes.wager.invite.decline", ["invite" => "__ID__"]) }}';
     document.getElementById('pq-invite-decline')?.addEventListener('click', () => {
-        if (currentInvite) dismiss(currentInvite.id);
+        if (currentInvite) {
+            const id = currentInvite.id;
+            dismiss(id); // instant local hide, in case the request below is slow
+            // A real decline, not just a client-side hide — otherwise the
+            // same invite keeps resurfacing in a new tab/session, and it
+            // never leaves the Arcade lobby's own invite list either.
+            fetch(DECLINE_URL_TEMPLATE.replace('__ID__', id), {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf(), 'Accept': 'application/json' },
+            }).catch(() => {});
+        }
         document.getElementById('pq-invite-popup').style.display = 'none';
         currentInvite = null;
     });

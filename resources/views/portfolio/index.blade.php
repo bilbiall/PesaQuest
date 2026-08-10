@@ -233,9 +233,11 @@
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="flex items-center gap-3">
                         @if($h->share->image_url)
-                            <img src="{{ $h->share->image_url }}" alt="" class="w-7 h-7 rounded-lg object-cover flex-shrink-0">
+                            <img src="{{ $h->share->image_url }}" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" style="box-shadow:0 3px 10px rgba(0,0,0,.25);">
                         @else
-                            <x-icon :name="$h->share->icon" class="w-7 h-7" />
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                                <x-icon :name="$h->share->icon" class="w-6 h-6" />
+                            </div>
                         @endif
                         <div>
                             <p class="font-black text-white text-sm leading-tight">{{ $h->share->name }} ({{ $h->share->symbol }})</p>
