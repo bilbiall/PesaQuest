@@ -856,5 +856,6 @@ class CasinoWheel {
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 </script>
+<x-mobile-bottom-nav active="city" />
 </body>
 </html>

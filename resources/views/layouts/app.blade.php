@@ -411,5 +411,7 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <x-mobile-bottom-nav active="city" />
     </body>
 </html>

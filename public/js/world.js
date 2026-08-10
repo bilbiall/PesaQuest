@@ -2164,7 +2164,7 @@ function equitySquare() {
       }));
     },
 
-    async enterDeal(deal) {
+    async enterDeal(deal, district) {
       if (this.dealLoading) return;
       const cs = document.querySelector('meta[name=csrf-token]')?.content ?? '';
       this.dealLoading = true;
@@ -2178,13 +2178,12 @@ function equitySquare() {
         if (data.error) {
           this.showMsg(data.error, false);
         } else {
-          this.showMsg(data.message ?? 'Deal entered!', true);
-          // Update live balance
-          if (typeof window.pesaWorld !== 'undefined') {
-            window.pesaWorld.liveBalance = data.balance;
-          }
-          // Refresh district data
-          setTimeout(() => location.reload(), 1200);
+          // Same celebration treatment as a share trade — an animated card up
+          // top, not a plain toast that a page reload used to cut short.
+          this.celebrateTrade(true, deal.icon, data.message ?? 'Deal entered!', data.education, data.basics);
+          if (data.my_deal) district.my_deals = [...(district.my_deals ?? []), data.my_deal];
+          district.balance = data.balance;
+          if (typeof window.pesaWorld !== 'undefined') window.pesaWorld.liveBalance = data.balance;
         }
       } catch (e) {
         this.showMsg('Could not enter deal. Try again.', false);

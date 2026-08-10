@@ -208,5 +208,6 @@
         }
     }
     </script>
+<x-mobile-bottom-nav active="city" />
 </body>
 </html>

@@ -29,5 +29,6 @@
 
 @include('partials.smart-money-tools')
 
+<x-mobile-bottom-nav active="city" />
 </body>
 </html>

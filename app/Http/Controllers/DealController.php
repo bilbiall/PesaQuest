@@ -44,10 +44,10 @@ class DealController extends Controller
             return response()->json($gate->deny('max_active_deals', $gate->limit($user, 'max_active_deals')), 422);
         }
 
-        DB::transaction(function () use ($user, $progress, $deal, $request) {
+        $playerDeal = DB::transaction(function () use ($user, $progress, $deal, $request) {
             $progress->balance -= $deal->cost;
 
-            PlayerDeal::create([
+            $created = PlayerDeal::create([
                 'user_id'         => $user->id,
                 'deal_id'         => $deal->id,
                 'amount_invested' => $deal->cost,
@@ -58,6 +58,8 @@ class DealController extends Controller
             // Net worth unchanged in truth (cash → deal position) — keep cache accurate
             $progress->recalculateNetWorth();
             $progress->save();
+
+            return $created;
         });
 
         // Fire quest triggers
@@ -69,9 +71,17 @@ class DealController extends Controller
         $ticksLabel = $deal->maturity_ticks <= 7 ? "{$deal->maturity_ticks} game day(s)" : "{$deal->maturity_ticks} game days";
 
         return response()->json([
-            'success'   => true,
-            'message'   => "Deal entered! You'll know in ~{$ticksLabel}.",
-            'balance'   => $progress->balance,
+            'success'    => true,
+            'message'    => "Deal entered! You'll know in ~{$ticksLabel}.",
+            'balance'    => $progress->balance,
+            'my_deal'    => [
+                'id'         => $playerDeal->id,
+                'icon'       => $deal->icon,
+                'title'      => $deal->title,
+                'amount'     => $playerDeal->amount_invested,
+                'resolve_at' => $playerDeal->resolve_at_tick,
+                'status'     => 'pending',
+            ],
         ]);
     }
 }

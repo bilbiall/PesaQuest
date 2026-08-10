@@ -740,5 +740,6 @@ function portfolio() {
     </script>
 
 @include('components.mama-pesa-chat')
+<x-mobile-bottom-nav active="city" />
 </body>
 </html>

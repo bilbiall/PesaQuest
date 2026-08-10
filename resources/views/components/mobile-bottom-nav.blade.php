@@ -6,7 +6,7 @@
 $tabs = [
     ['key'=>'home',      'href'=>route('dashboard'),        'label'=>'Home',    'path'=>'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
     ['key'=>'city',      'href'=>route('world'),             'label'=>'City',    'path'=>'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
-    ['key'=>'arcade',    'href'=>route('arcade.snakes.lobby'), 'label'=>'Arcade',  'svg'=>'<rect x="2.5" y="8" width="19" height="9" rx="4.5"/><line x1="6.5" y1="11" x2="6.5" y2="14"/><line x1="5" y1="12.5" x2="8" y2="12.5"/><circle cx="15.5" cy="11.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="17.8" cy="13.8" r="0.9" fill="currentColor" stroke="none"/>'],
+    ['key'=>'arcade',    'href'=>route('arcade.snakes.lobby'), 'label'=>'Arcade',  'svg'=>'<line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15" y2="12"/><line x1="18" y1="10" x2="18" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>'],
     ['key'=>'life',      'href'=>route('life.board'),        'label'=>'Life',    'path'=>'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'],
 ];
 $pqUser = auth()->user();

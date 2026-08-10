@@ -967,6 +967,35 @@
                         <span style="font-size:14px;font-weight:900;color:#35C3F0;" x-text="'KES ' + (district.balance ?? 0).toLocaleString()"></span>
                     </div>
 
+                    {{-- Trade celebration card + toast — kept up top, above the tabs,
+                         so a buy/sell/invest confirmation is never buried below a long
+                         list or hidden behind whichever tab happens to be open. --}}
+                    <div x-show="shareTradeResult" x-cloak
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 scale-90 translate-y-2"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="share-trade-card" :class="shareTradeResult && shareTradeResult.ok ? 'ok' : 'bad'" style="margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="stc-icon w-6 h-6" x-html="pqIcon(shareTradeResult ? shareTradeResult.icon : 'trend-up', 'w-6 h-6')"></span>
+                            <span style="font-size:13px;font-weight:800;color:#f9fafb;flex:1;" x-text="shareTradeResult ? shareTradeResult.message : ''"></span>
+                        </div>
+                        <div x-show="shareTradeResult && shareTradeResult.basics" class="stc-basics">
+                            <x-icon name="book" class="w-3.5 h-3.5 inline-block" /> <strong>First trade!</strong> <span x-text="shareTradeResult ? shareTradeResult.basics : ''"></span>
+                        </div>
+                        <div x-show="shareTradeResult && shareTradeResult.education" class="stc-edu">
+                            💡 <span x-text="shareTradeResult ? shareTradeResult.education : ''"></span>
+                        </div>
+                        <div class="stc-bar"><div class="stc-bar-fill"></div></div>
+                    </div>
+
+                    <div x-show="bankMsg" x-cloak
+                         :style="bankMsgOk ? 'background:rgba(53,195,240,0.1);border-color:rgba(53,195,240,0.3);color:#67e8f9;' : 'background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#f87171;'"
+                         style="margin-bottom:12px;padding:8px 12px;border-radius:10px;border:1px solid;font-size:12px;font-weight:600;"
+                         x-text="bankMsg"></div>
+
                     {{-- Tab navigation --}}
                     <div style="display:flex;gap:4px;margin:0 0 12px;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;">
                         <button @click="eqTab='deals'"
@@ -1048,7 +1077,7 @@
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
                                 <span style="font-size:13px;font-weight:800;color:#f9fafb;" x-text="'KES ' + deal.cost.toLocaleString()"></span>
-                                <button @click="enterDeal(deal)"
+                                <button @click="enterDeal(deal, district)"
                                         :disabled="dealLoading || (district.balance ?? 0) < deal.cost"
                                         style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:800;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;cursor:pointer;transition:opacity .15s;"
                                         :style="(dealLoading || (district.balance ?? 0) < deal.cost) ? 'opacity:.4;cursor:not-allowed;' : ''">
@@ -1075,10 +1104,14 @@
 
                         <template x-if="district.my_shares && district.my_shares.length > 0">
                             <div style="margin-bottom:12px;">
-                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:8px;">
                                     <span style="font-size:10px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em;">💼 My Holdings</span>
-                                    <span style="font-size:11px;font-weight:800;" :style="portfolioTotals(district.my_shares).gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
-                                          x-text="'KES ' + portfolioTotals(district.my_shares).value.toLocaleString() + ' · ' + (portfolioTotals(district.my_shares).gain_loss >= 0 ? '+' : '') + portfolioTotals(district.my_shares).gain_loss.toLocaleString()"></span>
+                                    <div style="text-align:right;flex-shrink:0;">
+                                        <div style="font-size:11px;font-weight:800;color:#e5e7eb;"
+                                             x-text="'Worth KES ' + portfolioTotals(district.my_shares).value.toLocaleString() + ' today'"></div>
+                                        <div style="font-size:9.5px;font-weight:700;" :style="portfolioTotals(district.my_shares).gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
+                                             x-text="(portfolioTotals(district.my_shares).gain_loss >= 0 ? '+' : '') + 'KES ' + portfolioTotals(district.my_shares).gain_loss.toLocaleString() + ' vs. what you paid'"></div>
+                                    </div>
                                 </div>
                                 <div style="font-size:9.5px;color:#6b7280;margin-top:-4px;margin-bottom:8px;">
                                     What you'd gain or lose if you sold right now — it moves with the price, so red today can turn green later.
@@ -1209,34 +1242,6 @@
 
                     </div>
                     {{-- /TAB: Market --}}
-
-                    {{-- Share trade celebration card --}}
-                    <div x-show="shareTradeResult" x-cloak
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 scale-90 translate-y-2"
-                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="share-trade-card" :class="shareTradeResult && shareTradeResult.ok ? 'ok' : 'bad'">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span class="stc-icon w-6 h-6" x-html="pqIcon(shareTradeResult ? shareTradeResult.icon : 'trend-up', 'w-6 h-6')"></span>
-                            <span style="font-size:13px;font-weight:800;color:#f9fafb;flex:1;" x-text="shareTradeResult ? shareTradeResult.message : ''"></span>
-                        </div>
-                        <div x-show="shareTradeResult && shareTradeResult.basics" class="stc-basics">
-                            <x-icon name="book" class="w-3.5 h-3.5 inline-block" /> <strong>First trade!</strong> <span x-text="shareTradeResult ? shareTradeResult.basics : ''"></span>
-                        </div>
-                        <div x-show="shareTradeResult && shareTradeResult.education" class="stc-edu">
-                            💡 <span x-text="shareTradeResult ? shareTradeResult.education : ''"></span>
-                        </div>
-                        <div class="stc-bar"><div class="stc-bar-fill"></div></div>
-                    </div>
-
-                    {{-- Toast --}}
-                    <div x-show="bankMsg" x-cloak
-                         :style="bankMsgOk ? 'background:rgba(53,195,240,0.1);border-color:rgba(53,195,240,0.3);color:#67e8f9;' : 'background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#f87171;'"
-                         style="margin-top:10px;padding:8px 12px;border-radius:10px;border:1px solid;font-size:12px;font-weight:600;"
-                         x-text="bankMsg"></div>
 
                     <div class="pc-panel-actions" style="margin-top:14px;">
                         <a href="/portfolio" class="pc-action-btn pc-action-primary"><x-icon name="bar-chart" class="w-3.5 h-3.5 inline-block" /> My Portfolio</a>
@@ -2720,17 +2725,17 @@
 .share-candles { display: flex; align-items: center; gap: 4px; height: 34px; flex-shrink: 0; }
 .share-event { font-size: 10.5px; color: #d1d5db; margin-top: 9px; padding: 7px 10px; border-radius: 8px;
     background: rgba(255,255,255,.035); border-left: 2px solid rgba(53,195,240,.4); line-height: 1.4; }
-.share-card-actions { display: flex; gap: 6px; align-items: center; margin-top: 11px; padding-top: 11px;
+.share-card-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 11px; padding-top: 11px;
     border-top: 1px solid rgba(255,255,255,.06); }
-.share-qty-input { flex: 0 0 56px; width: 56px; text-align: center; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
-    border-radius: 9px; padding: 7px 6px; color: #fff; font-size: 12px; min-width: 0; transition: border-color .15s; }
+.share-qty-input { flex: 0 1 76px; width: 76px; text-align: center; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 9px; padding: 7px 5px; color: #fff; font-size: 11.5px; min-width: 0; transition: border-color .15s; }
 .share-qty-input:focus { outline: none; border-color: rgba(53,195,240,.5); }
-.share-buy-btn { flex: 1; padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
+.share-buy-btn { flex: 0 1 auto; min-width: 108px; padding: 8px 20px; border-radius: 9px; font-size: 12px; font-weight: 800;
     background: linear-gradient(135deg,#0891b2,#0e7490); color: #fff; border: none; cursor: pointer;
     white-space: nowrap; box-shadow: 0 2px 10px rgba(8,145,178,.35); transition: box-shadow .15s, transform .15s; }
 .share-buy-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(8,145,178,.5); transform: translateY(-1px); }
 .share-buy-btn:disabled { opacity: .5; cursor: not-allowed; }
-.share-sell-btn { flex: 1; padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
+.share-sell-btn { flex: 0 1 auto; min-width: 108px; padding: 8px 20px; border-radius: 9px; font-size: 12px; font-weight: 800;
     background: rgba(239,68,68,.16); color: #f87171; border: 1px solid rgba(239,68,68,.32); cursor: pointer;
     white-space: nowrap; transition: background .15s; }
 .share-sell-btn:hover:not(:disabled) { background: rgba(239,68,68,.24); }

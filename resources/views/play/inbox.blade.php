@@ -665,5 +665,6 @@ function decisionCard(playerDecisionId, choices) {
 }
 </script>
 
+<x-mobile-bottom-nav active="life" />
 </body>
 </html>
