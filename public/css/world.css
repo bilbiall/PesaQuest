@@ -4181,6 +4181,16 @@
   font-weight: 700;
 }
 
+.pc-wp-milestone--probation {
+  color: #f59e0b;
+}
+
+.pc-wp-perf-badge--probation {
+  color: #f59e0b;
+  background: rgba(245,158,11,0.12);
+  border-color: rgba(245,158,11,0.3);
+}
+
 .pc-wp-invest-tip {
   display: flex;
   align-items: flex-start;

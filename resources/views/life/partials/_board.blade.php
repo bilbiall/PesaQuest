@@ -66,7 +66,7 @@
                 <div class="flex gap-5 sm:gap-8">
                     <div class="text-center">
                         <div class="text-xs text-gray-500 mb-0.5">Balance</div>
-                        <div class="text-xl font-black text-emerald-400">Ksh {{ number_format($progress->balance) }}</div>
+                        <div class="text-xl font-black text-emerald-400" data-balance>Ksh {{ number_format($progress->balance) }}</div>
                     </div>
                     <div class="text-center">
                         <div class="text-xs text-gray-500 mb-0.5">Net Worth</div>
@@ -169,7 +169,7 @@
                                 {{ $netMonthly >= 0 ? 'text-emerald-400/70' : 'text-red-400/70' }}">
                         💳 Game Balance
                     </div>
-                    <div class="text-4xl font-black {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }} mb-0.5 leading-none">
+                    <div class="text-4xl font-black {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }} mb-0.5 leading-none" data-balance>
                         Ksh {{ number_format($progress->balance) }}
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
@@ -331,8 +331,8 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-white">🗓 Bills Board</h3>
                         @if($overdueBills->count() > 0)
-                        <span class="text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full animate-pulse">
-                            {{ $overdueBills->count() }} OVERDUE
+                        <span id="bills-overdue-badge" class="text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full animate-pulse">
+                            <span id="bills-overdue-count">{{ $overdueBills->count() }}</span> OVERDUE
                         </span>
                         @elseif($allBills->isEmpty())
                         <span class="text-[10px] text-gray-600">No bills yet</span>
@@ -354,7 +354,7 @@
                     </div>
                     @else
                     <div class="space-y-2">
-                        @foreach($allBills->take(8) as $pb)
+                        @foreach($allBills as $pb)
                         @php
                             $ticks = max(0, $pb->next_due_tick - $currentTick);
                             if ($pb->status === 'overdue') {
@@ -371,7 +371,9 @@
                                 $urgColor = 'text-emerald-400';
                             }
                         @endphp
-                        <div x-data="{ open: false }" class="{{ $urgClass }} border rounded-xl overflow-hidden">
+                        <div x-data="{ open: false }" id="bill-row-{{ $pb->id }}" data-overdue="{{ $pb->status === 'overdue' ? '1' : '0' }}"
+                             x-show="showAllBills || {{ $loop->index }} < 8" x-cloak
+                             class="{{ $urgClass }} border rounded-xl overflow-hidden">
                             <div class="px-3 py-2.5 flex items-center gap-2.5 cursor-pointer select-none" @click="open = !open">
                                 <span class="text-lg shrink-0">{{ $pb->bill->icon ?? '💸' }}</span>
                                 <div class="flex-1 min-w-0">
@@ -414,6 +416,13 @@
                         </div>
                         @endforeach
                     </div>
+                    @if($allBills->count() > 8)
+                    <button type="button" @click="showAllBills = !showAllBills"
+                            class="w-full mt-2 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 py-1.5 rounded-lg transition-colors" style="background:rgba(99,102,241,0.06);">
+                        <span x-show="!showAllBills">Show all {{ $allBills->count() }} bills ↓</span>
+                        <span x-show="showAllBills" x-cloak>Show less ↑</span>
+                    </button>
+                    @endif
                     @endif
 
                     {{-- Loan installments — auto-deducted like bills every game month --}}
@@ -975,6 +984,7 @@
             toast: false,
             toastMsg: '',
             toastOk: true,
+            showAllBills: false,
 
             showToast(msg, ok = true) {
                 this.toastMsg = msg;
@@ -1022,7 +1032,21 @@
                     if (data.success) {
                         this.showToast(`✅ ${billName} paid! Balance: Ksh ${fmt(data.new_balance)}`, true);
                         pesaSound('bill');
-                        setTimeout(() => location.reload(), 1500);
+
+                        const row = document.getElementById(`bill-row-${billId}`);
+                        const wasOverdue = row?.dataset.overdue === '1';
+                        row?.remove();
+
+                        document.querySelectorAll('[data-balance]').forEach(el => el.textContent = `Ksh ${fmt(data.new_balance)}`);
+
+                        if (wasOverdue) {
+                            const countEl = document.getElementById('bills-overdue-count');
+                            if (countEl) {
+                                const remaining = Math.max(0, parseInt(countEl.textContent, 10) - 1);
+                                if (remaining === 0) document.getElementById('bills-overdue-badge')?.remove();
+                                else countEl.textContent = remaining;
+                            }
+                        }
                     } else {
                         this.showToast(`❌ ${data.error ?? 'Payment failed'}`, false);
                     }

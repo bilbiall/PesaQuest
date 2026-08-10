@@ -1500,7 +1500,7 @@ function pesaCity() {
       const d = this._getDistrictInfo(slug);
       this.arrival = {
         show:    true,
-        icon:    d?.icon    ?? '🏙️',
+        icon:    d?.icon    ?? 'city',
         name:    d?.name    ?? slug,
         tagline: d?.tagline ?? '',
         color:   d?.color   ?? '#15C77E',

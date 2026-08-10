@@ -124,7 +124,7 @@ class ForumController extends Controller
             ? ForumTopic::where('school_subscription_id', $mySchool->id)->count()
             : 0;
 
-        return view('forums.index', array_merge([
+        $viewData = array_merge([
             'topics'           => $topics,
             'categories'       => self::CATEGORIES,
             'counts'           => $counts,
@@ -136,7 +136,16 @@ class ForumController extends Controller
             'sort'             => $sort,
             'votesEnabled'     => $votesEnabled,
             'myTopicVotes'     => $myTopicVotes,
-        ], $this->communityStats()));
+            'showXp'           => \App\Models\Setting::get('forum_show_xp', '1') !== '0',
+        ], $this->communityStats());
+
+        // Pagination / "new discussions" pill fetch just the results fragment
+        // and swap it in place — no full-page reload.
+        if ($request->header('X-Forum-Ajax')) {
+            return view('forums.partials._topic-results', $viewData);
+        }
+
+        return view('forums.index', $viewData);
     }
 
     /**
@@ -283,6 +292,7 @@ class ForumController extends Controller
             'reactionTypes'  => self::REACTIONS,
             'reactionCounts' => $reactionCounts,
             'myReactions'    => $myReactions,
+            'showXp'         => \App\Models\Setting::get('forum_show_xp', '1') !== '0',
         ]);
     }
 
@@ -445,10 +455,11 @@ class ForumController extends Controller
         ]);
 
         $awarded = $this->awardForumXp($user, self::XP_TOPIC, exclude: ['topic_id' => $topic->id]);
+        $showXp  = \App\Models\Setting::get('forum_show_xp', '1') !== '0';
 
         return redirect()
             ->route('forums.show', $topic->slug)
-            ->with('success', $awarded ? 'Posted! +' . self::XP_TOPIC . ' XP' : 'Posted!');
+            ->with('success', ($awarded && $showXp) ? 'Posted! +' . self::XP_TOPIC . ' XP' : 'Posted!');
     }
 
     public function reply(Request $request, ForumTopic $topic)
@@ -488,6 +499,7 @@ class ForumController extends Controller
         $topic->forceFill(['last_activity_at' => now()])->save();
 
         $awarded = $this->awardForumXp($user, self::XP_REPLY, exclude: ['reply_id' => $reply->id]);
+        $showXp  = \App\Models\Setting::get('forum_show_xp', '1') !== '0';
 
         $parent = $reply->parent_id ? $reply->parent()->first() : null;
 
@@ -522,7 +534,7 @@ class ForumController extends Controller
 
         return redirect()
             ->to(route('forums.show', $topic->slug) . ($lastPage > 1 ? '?page=' . $lastPage : '') . '#reply-' . $reply->id)
-            ->with('success', $awarded ? 'Reply posted! +' . self::XP_REPLY . ' XP' : 'Reply posted!');
+            ->with('success', ($awarded && $showXp) ? 'Reply posted! +' . self::XP_REPLY . ' XP' : 'Reply posted!');
     }
 
     public function update(Request $request, ForumTopic $topic)

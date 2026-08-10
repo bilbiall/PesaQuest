@@ -61,6 +61,7 @@ class GameSetController extends Controller
         $wywaCooldownMin = (int) \App\Models\Setting::get('wywa_cooldown_minutes', 45);
         $mapAmbience     = \App\Models\Setting::get('map_ambience', 'lively') ?: 'lively';
         $ambienceBanner  = (string) \App\Models\Setting::get('ambience_banner', '');
+        $forumShowXp     = \App\Models\Setting::get('forum_show_xp', '1') !== '0';
         $lifeChapters    = \App\Models\UserProgress::chapters();
         $careerFields    = \App\Services\CareerService::fields();
         $careerTracks    = \App\Services\CareerService::tracks();
@@ -71,7 +72,7 @@ class GameSetController extends Controller
             'stats', 'crises', 'hustleTips', 'journeyMilestones', 'quizQuestions',
             'maxQuestsPerDay', 'wywaMinTicks', 'wywaCooldownMin', 'lifeChapters',
             'careerFields', 'careerTracks', 'financingTerms', 'onboardingSteps',
-            'mapAmbience', 'ambienceBanner'
+            'mapAmbience', 'ambienceBanner', 'forumShowXp'
         ));
     }
 
@@ -85,6 +86,7 @@ class GameSetController extends Controller
             'wywa_cooldown_minutes' => 'required|integer|min:0|max:1440',
             'map_ambience'          => 'nullable|in:off,calm,lively',
             'ambience_banner'       => 'nullable|string|max:60',
+            'forum_show_xp'         => 'required|boolean',
         ]);
 
         \App\Models\Setting::set('max_quests_per_day',    (string) $data['max_quests_per_day'],    'game');
@@ -92,6 +94,7 @@ class GameSetController extends Controller
         \App\Models\Setting::set('wywa_cooldown_minutes', (string) $data['wywa_cooldown_minutes'], 'game');
         \App\Models\Setting::set('map_ambience',          $data['map_ambience'] ?? 'lively',       'game');
         \App\Models\Setting::set('ambience_banner',       trim((string) ($data['ambience_banner'] ?? '')), 'game');
+        \App\Models\Setting::set('forum_show_xp',         $data['forum_show_xp'] ? '1' : '0',      'game');
         return response()->json(['success' => true]);
     }
 

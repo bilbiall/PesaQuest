@@ -27,6 +27,17 @@ $gsnGroups = [
         ['key' => 'dreams',      'icon' => '🌟', 'label' => 'Dreams',         'route' => 'gameset.dreams.index'],
         ['key' => 'challenges',  'icon' => '🏆', 'label' => 'Challenges',     'route' => 'gameset.challenges.index'],
     ]],
+    'settings' => ['label' => 'Settings', 'icon' => '⚙️', 'items' => [
+        ['key' => 'game-rules',        'icon' => '📏', 'label' => 'Game Rules',            'url' => route('gameset.index') . '#gs-game-rules'],
+        ['key' => 'life-chapters',     'icon' => '🌱', 'label' => 'Life Chapters',         'url' => route('gameset.index') . '#gs-life-chapters'],
+        ['key' => 'xp-levels',         'icon' => '⚙️', 'label' => 'XP Levels',             'url' => route('gameset.index') . '#gs-xp-levels'],
+        ['key' => 'hustle-tips',       'icon' => '💡', 'label' => 'Hustle Tips',           'url' => route('gameset.index') . '#gs-hustle-tips'],
+        ['key' => 'journey',          'icon' => '🗺️', 'label' => 'Journey Milestones',    'url' => route('gameset.index') . '#gs-journey-milestones'],
+        ['key' => 'career',           'icon' => '🧭', 'label' => 'Career Fields & Tracks','url' => route('gameset.index') . '#gs-career'],
+        ['key' => 'quiz',             'icon' => '🎯', 'label' => 'Career Quiz',           'url' => route('gameset.index') . '#gs-quiz'],
+        ['key' => 'financing',        'icon' => '🏦', 'label' => 'Asset Financing',       'url' => route('gameset.index') . '#gs-financing'],
+        ['key' => 'onboarding',       'icon' => '🧭', 'label' => 'Onboarding Wizard',     'url' => route('gameset.index') . '#gs-onboarding'],
+    ]],
 ];
 @endphp
 
@@ -81,7 +92,7 @@ $gsnGroups = [
                     </button>
                     <div class="gsn-drop" x-show="gsnOpen === '{{ $gk }}'" x-transition.opacity.duration.120ms x-cloak>
                         @foreach($grp['items'] as $item)
-                            <a href="{{ route($item['route']) }}" class="gsn-item {{ $active === $item['key'] ? 'gsn-on' : '' }}">
+                            <a href="{{ $item['url'] ?? route($item['route']) }}" class="gsn-item {{ $active === $item['key'] ? 'gsn-on' : '' }}">
                                 <span>{{ $item['icon'] }}</span> {{ $item['label'] }}
                             </a>
                         @endforeach
@@ -113,7 +124,7 @@ $gsnGroups = [
                 @foreach($gsnGroups as $grp)
                     <h4>{{ $grp['icon'] }} {{ $grp['label'] }}</h4>
                     @foreach($grp['items'] as $item)
-                        <a href="{{ route($item['route']) }}" class="gsn-item {{ $active === $item['key'] ? 'gsn-on' : '' }}">
+                        <a href="{{ $item['url'] ?? route($item['route']) }}" class="gsn-item {{ $active === $item['key'] ? 'gsn-on' : '' }}">
                             <span>{{ $item['icon'] }}</span> {{ $item['label'] }}
                         </a>
                     @endforeach

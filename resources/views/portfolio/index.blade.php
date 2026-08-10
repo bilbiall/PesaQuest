@@ -232,7 +232,11 @@
             <div id="pf-share-{{ $h->share_id }}" class="pf-card pf-appear rounded-2xl p-5" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="flex items-center gap-3">
-                        <x-icon :name="$h->share->icon" class="w-7 h-7" />
+                        @if($h->share->image_url)
+                            <img src="{{ $h->share->image_url }}" alt="" class="w-7 h-7 rounded-lg object-cover flex-shrink-0">
+                        @else
+                            <x-icon :name="$h->share->icon" class="w-7 h-7" />
+                        @endif
                         <div>
                             <p class="font-black text-white text-sm leading-tight">{{ $h->share->name }} ({{ $h->share->symbol }})</p>
                             <p class="text-[11px] text-gray-500 mt-0.5">{{ $h->quantity }} shares · avg Ksh {{ number_format($h->avg_cost, 2) }}</p>

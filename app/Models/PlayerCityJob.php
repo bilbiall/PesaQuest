@@ -13,12 +13,14 @@ class PlayerCityJob extends Model
         'pending_salary', 'unpaid_ticks', 'gig_ends_tick', 'cooldown_until_tick',
         'missed_paydays', 'removal_warned_at_tick',
         'salary_multiplier', 'ticks_employed_at_last_review', 'promotions_count', 'title_bumps',
+        'promotion_disqualified', 'miss_incidents', 'promotion_probation_until_tick',
     ];
 
     protected $casts = [
-        'started_at'        => 'datetime',
-        'ended_at'          => 'datetime',
-        'salary_multiplier' => 'float',
+        'started_at'              => 'datetime',
+        'ended_at'                => 'datetime',
+        'salary_multiplier'       => 'float',
+        'promotion_disqualified'  => 'boolean',
     ];
 
     public function user(): BelongsTo

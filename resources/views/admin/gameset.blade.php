@@ -12,6 +12,9 @@
     <style>
         body { background:#080710; font-family:'Figtree',sans-serif; }
         [x-cloak] { display:none !important; }
+        [id^="gs-"] { scroll-margin-top: 1.5rem; }
+        [id^="gs-"]:target { animation: gsJumpFlash 1.8s ease-out; }
+        @keyframes gsJumpFlash { 0% { box-shadow: 0 0 0 3px rgba(129,140,248,0.7); } 100% { box-shadow: 0 0 0 0 rgba(129,140,248,0); } }
         .gs-bg {
             background:
                 radial-gradient(ellipse at top left, rgba(99,102,241,0.10) 0%, transparent 50%),
@@ -214,8 +217,19 @@
             <div class="gsh-sec-head"><h2>⚙️ Game Configuration</h2><span>global settings that shape every player's journey</span></div>
         </div>
 
+        {{-- Quick-jump strip — nine panels live below; skip straight to one instead of scrolling --}}
+        <div class="flex flex-wrap gap-2 mt-3 mb-2">
+            @foreach([
+                ['gs-game-rules', '📏 Game Rules'], ['gs-life-chapters', '🌱 Life Chapters'], ['gs-xp-levels', '⚙️ XP Levels'],
+                ['gs-hustle-tips', '💡 Hustle Tips'], ['gs-journey-milestones', '🗺️ Journey Milestones'], ['gs-career', '🧭 Career Fields & Tracks'],
+                ['gs-quiz', '🎯 Career Quiz'], ['gs-financing', '🏦 Asset Financing'], ['gs-onboarding', '🧭 Onboarding Wizard'],
+            ] as [$anchor, $label])
+            <a href="#{{ $anchor }}" class="text-xs font-bold text-indigo-300 px-3 py-1.5 rounded-full transition-colors hover:text-white hover:bg-indigo-500/20" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);">{{ $label }}</a>
+            @endforeach
+        </div>
+
         {{-- Game Rules --}}
-        <div x-data="gameRulesMgr()" class="glass rounded-2xl p-6 mt-4">
+        <div id="gs-game-rules" x-data="gameRulesMgr()" class="glass rounded-2xl p-6 mt-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-white font-black text-lg">📏 Game Rules</h2>
@@ -268,11 +282,21 @@
                     <input type="text" maxlength="60" x-model="ambBanner" class="ifield" placeholder="e.g. Chama week — team up & save! 🤝">
                     <p class="text-[11px] text-gray-600 mt-1.5">A little plane occasionally tows this banner across the map. Leave empty for no plane (balloon and kite still fly).</p>
                 </div>
+                <div>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">💬 Forums — show XP amounts
+                        <x-help-tip text="When on, forum posts show the '+25 XP' / '+40 XP' chips next to Post/Reply buttons. Turn off to keep Forums feeling like a genuine discussion space rather than a farming ground — XP is still awarded either way, just not advertised." example="Off, if XP-chasing spam becomes a problem" />
+                    </span>
+                    <label class="flex items-center gap-2.5 mt-2 cursor-pointer" style="width:fit-content;">
+                        <input type="checkbox" x-model="forumShowXp" class="w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/20">
+                        <span class="text-sm font-semibold text-gray-300">Show XP chips on posts &amp; replies</span>
+                    </label>
+                    <p class="text-[11px] text-gray-600 mt-1.5">Only hides the on-screen number — XP is still earned in the background either way.</p>
+                </div>
             </div>
         </div>
 
         {{-- Life Chapters --}}
-        <div x-data="lifeChaptersMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-life-chapters" x-data="lifeChaptersMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
                 <div>
                     <h2 class="text-white font-black text-lg">🌱 Life Chapters
@@ -317,7 +341,7 @@
         </div>
 
         {{-- XP Levels --}}
-        <div x-data="xpLevelsMgr()" x-init="load()" class="glass rounded-2xl p-6 mt-4">
+        <div id="gs-xp-levels" x-data="xpLevelsMgr()" x-init="load()" class="glass rounded-2xl p-6 mt-4">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-white font-black text-lg">⚙️ XP Levels
@@ -351,7 +375,7 @@
         </div>
 
         {{-- Hustle Tips --}}
-        <div x-data="hustleTipsMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-hustle-tips" x-data="hustleTipsMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-white font-black text-lg">💡 Hustle Tips
@@ -390,7 +414,7 @@
         </div>
 
         {{-- Journey Milestones section --}}
-        <div x-data="journeyMilestonesMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-journey-milestones" x-data="journeyMilestonesMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-white font-black text-lg">🗺️ Player Journey Milestones
@@ -465,7 +489,7 @@
         </div>
 
         {{-- Career Fields & Tracks --}}
-        <div x-data="careerConfigMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-career" x-data="careerConfigMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="mb-4">
                 <h2 class="text-white font-black text-lg">🧭 Career Fields &amp; Tracks</h2>
                 <p class="text-gray-400 text-sm mt-1">
@@ -555,7 +579,7 @@
         </div>
 
         {{-- Career Quiz Questions section --}}
-        <div x-data="quizQuestionsMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-quiz" x-data="quizQuestionsMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-2">
                 <div>
                     <h2 class="text-white font-black text-lg">🎯 Career Quiz Questions
@@ -644,7 +668,7 @@
         </div>
 
         {{-- Asset Financing (Estates & Car Yard) --}}
-        <div x-data="assetFinancingMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-financing" x-data="assetFinancingMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-white font-black text-lg">🏦 Asset Financing (Estates & Car Yard)</h2>
@@ -691,7 +715,7 @@
         </div>
 
         {{-- Onboarding Wizard --}}
-        <div x-data="onboardingWizardMgr()" class="glass rounded-2xl p-6 mt-8">
+        <div id="gs-onboarding" x-data="onboardingWizardMgr()" class="glass rounded-2xl p-6 mt-8">
             <div class="flex items-center justify-between mb-2">
                 <div>
                     <h2 class="text-white font-black text-lg">🧭 Onboarding Wizard
@@ -752,6 +776,7 @@
             wywaCooldown: {{ (int) ($wywaCooldownMin ?? 45) }},
             ambience:     @json($mapAmbience ?? 'lively'),
             ambBanner:    @json($ambienceBanner ?? ''),
+            forumShowXp:  {{ ($forumShowXp ?? true) ? 'true' : 'false' }},
             saving: false, saved: false, error: '',
             async save() {
                 this.saving = true; this.saved = false; this.error = '';
@@ -765,6 +790,7 @@
                             wywa_cooldown_minutes: this.wywaCooldown,
                             map_ambience:          this.ambience,
                             ambience_banner:       this.ambBanner,
+                            forum_show_xp:         this.forumShowXp,
                         }),
                     });
                     if (res.ok) { this.saved = true; setTimeout(() => this.saved = false, 3000); }

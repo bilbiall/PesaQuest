@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\UploadsImages;
 use App\Models\Share;
 use Illuminate\Http\Request;
 
 class GamesetShareController extends Controller
 {
+    use UploadsImages;
+
     public function index()
     {
         $shares = Share::orderBy('sort_order')->orderBy('name')->get();
@@ -53,6 +56,7 @@ class GamesetShareController extends Controller
 
     public function destroy(Share $share)
     {
+        if ($share->image_url) $this->deleteStoredImage($share->image_url);
         $share->delete();
 
         return redirect()->route('gameset.shares.index')
@@ -70,7 +74,9 @@ class GamesetShareController extends Controller
         $data = $request->validate([
             'name'           => 'required|string|max:120',
             'symbol'         => 'required|string|max:12|unique:shares,symbol,' . ($excludeId ?? 'NULL') . ',id',
-            'icon'           => 'nullable|string|max:8',
+            'icon'           => 'nullable|string|max:30',
+            'image_url'      => 'nullable|string|max:500',
+            'image_file'     => 'nullable|image|max:4096',
             'sector'         => 'nullable|string|max:40',
             'current_price'  => 'required|numeric|min:0.01',
             'min_price'      => 'required|numeric|min:0.01',
@@ -81,10 +87,26 @@ class GamesetShareController extends Controller
             'is_active'      => 'boolean',
         ]);
 
-        $data['icon']      = $data['icon'] ?: '📈';
+        $data['icon']      = $data['icon'] ?: 'trend-up';
         $data['symbol']    = strtoupper($data['symbol']);
         $data['is_active'] = $request->boolean('is_active');
+        $data['image_url'] = $this->resolveImage($request, $excludeId ? Share::find($excludeId) : null);
+        unset($data['image_file']);
 
         return $data;
+    }
+
+    private function resolveImage(Request $request, ?Share $share): ?string
+    {
+        if ($request->hasFile('image_file') && $request->file('image_file')->isValid()) {
+            if ($share?->image_url) $this->deleteStoredImage($share->image_url);
+            return '/uploads/' . $this->resizeAndStore($request->file('image_file'), 'shares/logos', 160, 160, 88);
+        }
+
+        if ($request->filled('image_url')) {
+            return $request->input('image_url');
+        }
+
+        return $share?->image_url;
     }
 }

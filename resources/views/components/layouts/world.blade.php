@@ -22,6 +22,7 @@
     {{ $slot }}
     {{-- Howler.js — Phase 7 sound scaffold. Audio hooks are wired; add files to public/sounds/ to activate. --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="{{ asset('js/icons.js') }}?v={{ filemtime(public_path('js/icons.js')) }}"></script>
     <script src="{{ asset('js/world.js') }}?v={{ filemtime(public_path('js/world.js')) }}"></script>
 </body>
 </html>

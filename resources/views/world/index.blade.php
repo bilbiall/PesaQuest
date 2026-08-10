@@ -341,7 +341,7 @@
                  data-name="{{ $district['name'] }}"
                  @click="visitDistrict('{{ $slug }}', $el)"
                  title="{{ $district['name'] }}">
-                <div class="pc-district-icon">{{ $district['icon'] }}</div>
+                <div class="pc-district-icon"><x-icon :name="$district['icon']" class="w-7 h-7" /></div>
                 <div class="pc-district-label">
                     <div class="pc-district-name">{{ Str::limit($district['name'], 16) }}</div>
                     @if(isset($district['tagline']))
@@ -430,7 +430,7 @@
                  x-cloak
                  :style="`--ac: ${arrival.color}`"
                  @click="arrival.show = false">
-                <span class="pc-arrival-icon" x-text="arrival.icon"></span>
+                <span class="pc-arrival-icon" x-html="pqIcon(arrival.icon, 'w-10 h-10')" style="display:flex;justify-content:center;"></span>
                 <div class="pc-arrival-name" x-text="arrival.name"></div>
                 <div class="pc-arrival-tag"  x-text="arrival.tagline"></div>
                 <div class="pc-arrival-hint">tap to dismiss</div>
@@ -904,7 +904,10 @@
 
         {{-- Panel header --}}
         <div class="pc-panel-header">
-            <div class="pc-panel-title" x-text="district ? district.icon + ' ' + district.name : ''"></div>
+            <div class="pc-panel-title" style="display:flex;align-items:center;gap:8px;">
+                <span x-show="district" x-html="pqIcon(district ? district.icon : '', 'w-5 h-5')" style="display:inline-flex;flex-shrink:0;"></span>
+                <span x-text="district ? district.name : ''"></span>
+            </div>
             <button class="pc-panel-close" @click="closePanel()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
@@ -1084,7 +1087,8 @@
                                     <div class="share-card">
                                         <div class="share-card-top">
                                             <div class="share-icon-badge" style="background:rgba(53,195,240,.12);border-color:rgba(53,195,240,.32);">
-                                                <span x-html="pqIcon(h.icon, 'w-5 h-5')"></span>
+                                                <template x-if="h.image_url"><img :src="h.image_url" alt=""></template>
+                                                <template x-if="!h.image_url"><span x-html="pqIcon(h.icon, 'w-5 h-5')"></span></template>
                                             </div>
                                             <div class="share-card-info">
                                                 <div class="share-name" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
@@ -1162,7 +1166,8 @@
                             <div class="share-card">
                                 <div class="share-card-top">
                                     <div class="share-icon-badge" :style="'background:' + s.risk_color + '18;border-color:' + s.risk_color + '40;'">
-                                        <span x-html="pqIcon(s.icon, 'w-5 h-5')"></span>
+                                        <template x-if="s.image_url"><img :src="s.image_url" alt=""></template>
+                                        <template x-if="!s.image_url"><span x-html="pqIcon(s.icon, 'w-5 h-5')"></span></template>
                                     </div>
                                     <div class="share-card-info">
                                         <div class="share-name" x-text="s.name + ' (' + s.symbol + ')'"></div>
@@ -1321,7 +1326,7 @@
                         </template>
                         <template x-if="!district.savings_schemes || district.savings_schemes.length === 0">
                             <div class="pc-eq-no-schemes">
-                                <span style="font-size:24px;">🏦</span>
+                                <span style="display:inline-flex;" x-html="pqIcon('bank', 'w-6 h-6')"></span>
                                 <div>No savings schemes yet. Start one and watch your money grow.</div>
                             </div>
                         </template>
@@ -1560,7 +1565,7 @@
                     {{-- NO JOB STATE --}}
                     <template x-if="!district.is_employed">
                         <div style="text-align:center;padding:20px 8px 12px;">
-                            <div style="font-size:40px;margin-bottom:10px;">🏢</div>
+                            <div style="display:flex;justify-content:center;margin-bottom:10px;" x-html="pqIcon('building', 'w-10 h-10')"></div>
                             <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:6px;">Not Employed Yet</div>
                             <div style="font-size:12px;color:var(--pc-muted);line-height:1.6;margin-bottom:16px;">
                                 Head to the <strong style="color:#a5b4fc;">Opportunity Hub</strong> to take a course and apply for your first job.
@@ -1651,14 +1656,14 @@
                                 <div class="pc-wp-perf-header">
                                     <span>Performance Score</span>
                                     <span class="pc-wp-perf-badge"
-                                          :class="district.promotion_eligible ? 'pc-wp-perf-badge--high' : ''"
+                                          :class="district.promotion_disqualified ? 'pc-wp-perf-badge--probation' : (district.promotion_eligible ? 'pc-wp-perf-badge--high' : '')"
                                           x-text="district.perf_score + '/100'"></span>
                                 </div>
                                 <div class="pc-wp-perf-track">
                                     <div class="pc-wp-perf-fill" :style="'width:' + (district.perf_score ?? 40) + '%'"></div>
                                 </div>
                                 <div class="pc-wp-milestone"
-                                     :class="district.promotion_eligible ? 'pc-wp-milestone--ready' : ''"
+                                     :class="district.promotion_disqualified ? 'pc-wp-milestone--probation' : (district.promotion_eligible ? 'pc-wp-milestone--ready' : '')"
                                      x-text="district.next_milestone"></div>
                             </div>
 
@@ -2140,7 +2145,7 @@
 
                     {{-- Unlock celebration badge --}}
                     <div class="pc-estates-banner">
-                        <span class="pc-estates-banner-icon">🏆</span>
+                        <span class="pc-estates-banner-icon" x-html="pqIcon('trophy', 'w-6 h-6')"></span>
                         <div>
                             <div class="pc-estates-banner-title">Zone Unlocked!</div>
                             <div class="pc-estates-banner-sub">Your savings qualify you for Kiambu Estates. Property is long-term wealth.</div>
@@ -2694,7 +2699,8 @@
 .share-card:hover { transform: translateY(-2px); border-color: rgba(53,195,240,.32); }
 .share-card-top { display: flex; align-items: flex-start; gap: 10px; }
 .share-icon-badge { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
-    justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid; }
+    justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid; overflow: hidden; }
+.share-icon-badge img { width: 100%; height: 100%; object-fit: cover; }
 .share-card-info { flex: 1; min-width: 0; }
 .share-name { font-size: 13px; font-weight: 800; color: #f9fafb; margin-bottom: 4px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2716,15 +2722,15 @@
     background: rgba(255,255,255,.035); border-left: 2px solid rgba(53,195,240,.4); line-height: 1.4; }
 .share-card-actions { display: flex; gap: 6px; align-items: center; margin-top: 11px; padding-top: 11px;
     border-top: 1px solid rgba(255,255,255,.06); }
-.share-qty-input { flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
-    border-radius: 9px; padding: 7px 10px; color: #fff; font-size: 12px; min-width: 0; transition: border-color .15s; }
+.share-qty-input { flex: 0 0 56px; width: 56px; text-align: center; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 9px; padding: 7px 6px; color: #fff; font-size: 12px; min-width: 0; transition: border-color .15s; }
 .share-qty-input:focus { outline: none; border-color: rgba(53,195,240,.5); }
-.share-buy-btn { padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
+.share-buy-btn { flex: 1; padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
     background: linear-gradient(135deg,#0891b2,#0e7490); color: #fff; border: none; cursor: pointer;
     white-space: nowrap; box-shadow: 0 2px 10px rgba(8,145,178,.35); transition: box-shadow .15s, transform .15s; }
 .share-buy-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(8,145,178,.5); transform: translateY(-1px); }
 .share-buy-btn:disabled { opacity: .5; cursor: not-allowed; }
-.share-sell-btn { padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
+.share-sell-btn { flex: 1; padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 800;
     background: rgba(239,68,68,.16); color: #f87171; border: 1px solid rgba(239,68,68,.32); cursor: pointer;
     white-space: nowrap; transition: background .15s; }
 .share-sell-btn:hover:not(:disabled) { background: rgba(239,68,68,.24); }

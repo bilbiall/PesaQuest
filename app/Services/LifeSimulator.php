@@ -1315,7 +1315,27 @@ class LifeSimulator
                 if ($graceTracking) {
                     $newMisses = ($months - 1) + ($hadUncollected ? 1 : 0);
                     if ($newMisses > 0) {
+                        $wasClean = (int) $pj->missed_paydays === 0;
                         $pj->missed_paydays = (int) $pj->missed_paydays + $newMisses;
+
+                        // Temporary promotion disqualification — triggers on either
+                        // (a) 2+ missed paydays piling up in one unresolved stretch,
+                        // or (b) a second separate miss-incident for this job, even
+                        // if the first one was fully cleared via Report to Work. It
+                        // lifts automatically after a full probation window (one
+                        // game year, same as the tenure requirement) of staying
+                        // clean — settlePromotions() does the clearing. A fresh
+                        // miss while already disqualified pushes the window back
+                        // out instead of leaving it stale.
+                        if (Schema::hasColumn('player_city_jobs', 'promotion_disqualified')) {
+                            if ($wasClean) {
+                                $pj->miss_incidents = (int) $pj->miss_incidents + 1;
+                            }
+                            if ($pj->promotion_disqualified || (int) $pj->missed_paydays >= 2 || (int) $pj->miss_incidents >= 2) {
+                                $pj->promotion_disqualified          = true;
+                                $pj->promotion_probation_until_tick  = (int) $pj->ticks_employed + self::TITLE_INTERVAL_TICKS;
+                            }
+                        }
                     }
 
                     // 3 consecutive misses → the employer issues a final notice
@@ -1400,13 +1420,31 @@ class LifeSimulator
             $type = $pj->employment_type ?: $pj->job->type();
             if ($type === 'freelance') continue;
 
-            $isClean     = (int) $pj->missed_paydays === 0;
+            $isClean = (int) $pj->missed_paydays === 0;
+
+            // Promotion disqualification is a probation, not a life sentence —
+            // once the job has stayed clean all the way through the probation
+            // window (set/extended in settleJobSalaries whenever a disqualifying
+            // miss happens), eligibility is restored automatically.
+            if ($pj->promotion_disqualified && $isClean
+                && $pj->promotion_probation_until_tick !== null
+                && (int) $pj->ticks_employed >= (int) $pj->promotion_probation_until_tick) {
+                $pj->promotion_disqualified         = false;
+                $pj->miss_incidents                 = 0;
+                $pj->promotion_probation_until_tick = null;
+                $pj->save();
+            }
+
             $sinceReview = (int) $pj->ticks_employed - (int) $pj->ticks_employed_at_last_review;
             if (!$isClean || $sinceReview < self::RAISE_INTERVAL_TICKS) continue;
 
             // Title review takes priority over a plain raise the same cycle —
-            // once a year, only if the employer actually has a next tier for them.
-            if ($sinceReview >= self::TITLE_INTERVAL_TICKS) {
+            // once a year, only if the employer actually has a next tier for them,
+            // and only if this job has never had 2 missed paydays in one stretch
+            // (or a second separate miss-incident) — a permanent flag, unaffected
+            // by a currently-clean streak. Raises above are unaffected by this.
+            $titleEligible = $sinceReview >= self::TITLE_INTERVAL_TICKS && !$pj->promotion_disqualified;
+            if ($titleEligible) {
                 $nextJob = $pj->job->promotes_to_job_id
                     ? CityJob::find($pj->job->promotes_to_job_id)
                     : $this->findNextTierJob($pj->job, $user);

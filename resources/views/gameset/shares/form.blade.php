@@ -43,7 +43,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ $mode === 'create' ? route('gameset.shares.store') : route('gameset.shares.update', $share) }}">
+    <form method="POST" enctype="multipart/form-data" action="{{ $mode === 'create' ? route('gameset.shares.store') : route('gameset.shares.update', $share) }}">
         @csrf
         @if($mode === 'edit') @method('PUT') @endif
 
@@ -53,9 +53,28 @@
             <div class="space-y-5">
                 <div>
                     <label class="field-label">Icon (name)
-                        <x-help-tip text="Icon shown next to the share in the Equity Square Shares tab." example="trend-up" />
+                        <x-help-tip text="Fallback icon used when no company logo is set below." example="trend-up" />
                     </label>
                     <input type="text" name="icon" value="{{ old('icon', $share->icon ?? 'trend-up') }}" class="field-input" maxlength="30">
+                </div>
+                <div x-data="{ preview: @json(old('image_url', $share->image_url ?? '')) }">
+                    <label class="field-label">Company Logo
+                        <x-help-tip text="Shown instead of the icon on share cards once set. Upload a square-ish logo or paste a link — leave both blank to keep using the icon above." example="https://logo.example.com/scom.png" />
+                    </label>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="rounded-xl overflow-hidden flex-shrink-0" style="width:52px;height:52px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;">
+                            <img x-show="preview" :src="preview" class="w-full h-full object-cover" alt="Logo preview">
+                            <span x-show="!preview" class="text-[10px] text-gray-500">No logo</span>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <input type="file" name="image_file" accept="image/*" class="field-input" style="padding:7px 10px;font-size:12px;"
+                                   @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : preview">
+                            <input type="text" name="image_url" placeholder="or paste an image URL" class="field-input" style="font-size:12px;"
+                                   value="{{ old('image_url', $share->image_url ?? '') }}"
+                                   @input="preview = $event.target.value">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">Upload takes priority over the URL. Leave both blank to keep the current logo (or the icon, if there isn't one).</p>
                 </div>
                 <div>
                     <label class="field-label">Company Name *

@@ -54,6 +54,7 @@ class PlayerShareHolding extends Model
             'name'          => $this->share->name,
             'symbol'        => $this->share->symbol,
             'icon'          => $this->share->icon,
+            'image_url'     => $this->share->image_url,
             'quantity'      => $this->quantity,
             'avg_cost'      => (float) $this->avg_cost,
             'price'         => (float) $this->share->current_price,

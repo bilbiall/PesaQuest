@@ -257,7 +257,7 @@
                 <span class="text-[11px] text-gray-500 truncate flex-1" x-text="fileName || 'No image attached'"></span>
                 <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02] flex-shrink-0"
                         style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
-                    Reply · +25 XP
+                    Reply{{ ($showXp ?? true) ? ' · +25 XP' : '' }}
                 </button>
             </div>
         </form>

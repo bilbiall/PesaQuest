@@ -23,7 +23,7 @@ class WorldController extends Controller
             'slug'         => 'marketplace',
             'name'         => 'Marketplace',
             'tagline'      => 'Buy, Sell & Invest',
-            'icon'         => '🥬',
+            'icon'         => 'cart',
             'color'        => '#15C77E',
             'description'  => 'The heart of Pesa City. Buy devices, assets, shares, and more from the ever-changing market. Every hustle starts with the right tools.',
             'status'       => 'active',
@@ -37,7 +37,7 @@ class WorldController extends Controller
             'slug'         => 'opportunity-hub',
             'name'         => 'Opportunity Hub',
             'tagline'      => 'Courses, Gigs & Jobs',
-            'icon'         => '🎓',
+            'icon'         => 'graduation',
             'color'        => '#4DA8F7',
             'description'  => 'Your launchpad in Pesa City. Free courses, job listings, and quick gigs. Every career in this city starts here.',
             'status'       => 'active',
@@ -50,7 +50,7 @@ class WorldController extends Controller
             'slug'         => 'bank',
             'name'         => 'Equity Square',
             'tagline'      => 'Investment Deals',
-            'icon'         => '💹',
+            'icon'         => 'trend-up',
             'color'        => '#35C3F0',
             'description'  => 'Risk-based investment deals with real returns. Enter positions, track outcomes, and learn how capital markets work.',
             'status'       => 'active',
@@ -63,7 +63,7 @@ class WorldController extends Controller
             'slug'         => 'savings',
             'name'         => 'Bank & Savings',
             'tagline'      => 'Loans, Savings & Credit',
-            'icon'         => '🏦',
+            'icon'         => 'bank',
             'color'        => '#F59E0B',
             'description'  => 'Your financial headquarters. Open savings schemes, take or repay loans, and track your credit score.',
             'status'       => 'active',
@@ -77,7 +77,7 @@ class WorldController extends Controller
             'slug'        => 'estates',
             'name'        => 'Property Quarter',
             'tagline'     => 'Own Land & Build Wealth',
-            'icon'        => '🏠',
+            'icon'        => 'house',
             'color'       => '#A3E635',
             'description' => 'Residential properties — plots, bedsitters, and apartments. Own your first piece of Pesa City land.',
             'status'      => 'locked',
@@ -87,7 +87,7 @@ class WorldController extends Controller
             'slug'        => 'car-yard',
             'name'        => 'Car Yard',
             'tagline'     => 'Vehicles & Transport',
-            'icon'        => '🚗',
+            'icon'        => 'car',
             'color'       => '#FFBC00',
             'description' => 'Everything on wheels — Bajaj, salon cars, and SUVs. Vehicles are income-generating assets too.',
             'status'      => 'locked',
@@ -97,7 +97,7 @@ class WorldController extends Controller
             'slug'        => 'fun-world',
             'name'        => 'Fun World',
             'tagline'     => 'Relax & Budget for Joy',
-            'icon'        => '🎡',
+            'icon'        => 'ticket',
             'color'       => '#FF6B35',
             'description' => 'Nairobi\'s most electric entertainment district. Ferris wheel, matatu rally tracks, street food arenas, and live music stages. Every ticket teaches you about budgeting for joy — because a good life isn\'t only about saving.',
             'status'      => 'active',
@@ -117,7 +117,7 @@ class WorldController extends Controller
             'slug'        => 'community',
             'name'        => 'Community Centre',
             'tagline'     => 'Connect & Collaborate',
-            'icon'        => '📣',
+            'icon'        => 'megaphone',
             'color'       => '#A78BFA',
             'description' => 'The shoutouts feed, Dreams Board, and school leaderboard. Your story belongs here.',
             'status'      => 'active',
@@ -136,7 +136,7 @@ class WorldController extends Controller
             'slug'        => 'quests',
             'name'        => 'Quest Board',
             'tagline'     => 'Challenges & Rewards',
-            'icon'        => '📜',
+            'icon'        => 'scroll',
             'color'       => '#FFD700',
             'description' => 'Pick up challenges, earn badges, and prove your financial skills. Every quest completed makes you sharper, richer, and more respected in Pesa City.',
             'status'      => 'active',
@@ -148,7 +148,7 @@ class WorldController extends Controller
             'slug'         => 'workplace',
             'name'         => 'Workplace',
             'tagline'      => 'Career & Performance',
-            'icon'         => '🏢',
+            'icon'         => 'building',
             'color'        => '#6366F1',
             'description'  => 'Your career hub in Pesa City. Check today\'s work encounter, review your performance score, and pick up real financial lessons from the office floor.',
             'status'       => 'active',
@@ -161,7 +161,7 @@ class WorldController extends Controller
             'slug'        => 'champions-court',
             'name'        => "Champions' Court",
             'tagline'     => 'Chase Dreams. Win Challenges.',
-            'icon'        => '🏆',
+            'icon'        => 'trophy',
             'color'       => '#F59E0B',
             'description' => 'Claim expensive, aspirational Dreams as a permanent flex on your profile, or duel friends and the whole city in fair challenges — everyone races on progress made DURING the challenge, never on wealth they already had.',
             'status'      => 'active',
@@ -758,19 +758,30 @@ class WorldController extends Controller
             // here is always "progress toward the next one", not a dead flag.
             $primaryJob = $activeJobs->sortByDesc(fn($pj) => $pj->job?->salary_kes_month ?? 0)->first();
             if ($primaryJob && $primaryJob->job) {
-                $sinceReview = (int) $primaryJob->ticks_employed - (int) $primaryJob->ticks_employed_at_last_review;
-                $isClean     = (int) $primaryJob->missed_paydays === 0;
-                $raiseTicks  = 90;
-                $titleTicks  = 360;
-                $nextJob     = $primaryJob->job->promotes_to_job_id
+                $sinceReview   = (int) $primaryJob->ticks_employed - (int) $primaryJob->ticks_employed_at_last_review;
+                $isClean       = (int) $primaryJob->missed_paydays === 0;
+                $disqualified  = (bool) ($primaryJob->promotion_disqualified ?? false);
+                $raiseTicks    = 90;
+                $titleTicks    = 360;
+                $nextJob       = $primaryJob->job->promotes_to_job_id
                     ? \App\Models\CityJob::find($primaryJob->job->promotes_to_job_id)
                     : app(\App\Services\LifeSimulator::class)->findNextTierJob($primaryJob->job, $user);
 
-                $district['perf_score']         = $isClean ? min(100, (int) round($sinceReview / $raiseTicks * 100)) : 25;
-                $district['promotion_eligible'] = $isClean;
-                $district['promotions_count']   = (int) $primaryJob->promotions_count;
+                $district['perf_score']              = $isClean ? min(100, (int) round($sinceReview / $raiseTicks * 100)) : 25;
+                // "Eligible" now means an actual promotion review is imminent —
+                // over a year of tenure, currently clean, and never disqualified —
+                // not just "not delinquent right now", which used to make a
+                // day-1 hire look promotion-ready.
+                $district['promotion_eligible']       = $isClean && !$disqualified && $sinceReview >= $titleTicks;
+                $district['promotion_disqualified']   = $disqualified;
+                $district['promotions_count']         = (int) $primaryJob->promotions_count;
 
-                if (!$isClean) {
+                if ($disqualified) {
+                    $probationLeft = max(0, (int) ($primaryJob->promotion_probation_until_tick ?? 0) - (int) $primaryJob->ticks_employed);
+                    $district['next_milestone'] = $probationLeft > 0
+                        ? "This job's promotion track is on probation for missing too many paydays — stay clean for {$probationLeft} more game day" . ($probationLeft === 1 ? '' : 's') . " to earn it back. Raises still apply either way."
+                        : 'Your promotion probation is served — back on track as soon as your next clean review lands.';
+                } elseif (!$isClean) {
                     $district['next_milestone'] = 'Report to Work to clear your missed paydays — raises pause until your attendance is clean.';
                 } else {
                     $raiseIn = max(0, $raiseTicks - $sinceReview);
@@ -782,21 +793,22 @@ class WorldController extends Controller
                     $atSenior = $primaryJob->effectiveLevel() >= 3;
                     if ($nextJob) {
                         $district['next_milestone'] .= $titleIn > 0
-                            ? " Promotion to {$nextJob->title} in {$titleIn} game days."
+                            ? " Promotion to {$nextJob->title} in {$titleIn} game days — keep a clean attendance record until then."
                             : " Promotion to {$nextJob->title} due at your next review.";
                     } elseif ($atSenior) {
                         $district['next_milestone'] .= " You've hit Senior tenure here — check the Opportunity Hub for a real Senior role to keep climbing.";
                     } else {
                         $district['next_milestone'] .= $titleIn > 0
-                            ? " Title bump in {$titleIn} game days (no bigger role open there yet)."
+                            ? " Title bump in {$titleIn} game days (no bigger role open there yet) — keep a clean attendance record until then."
                             : ' A title bump is due at your next review.';
                     }
                 }
             } else {
-                $district['perf_score']         = 40;
-                $district['promotion_eligible'] = false;
-                $district['promotions_count']   = 0;
-                $district['next_milestone']     = 'Get hired at the Opportunity Hub to start earning raises and promotions.';
+                $district['perf_score']             = 40;
+                $district['promotion_eligible']     = false;
+                $district['promotion_disqualified'] = false;
+                $district['promotions_count']       = 0;
+                $district['next_milestone']         = 'Get hired at the Opportunity Hub to start earning raises and promotions.';
             }
             if ($district['monthly_income'] > 0) {
                 $inv = (int) ($district['monthly_income'] * 0.20);

@@ -562,7 +562,8 @@ class LifeController extends Controller
 
         $allEvents = PlayerLifeEvent::where('user_id', $user->id)
             ->with('lifeEvent')
-            ->orderBy('tick_triggered')
+            ->orderByDesc('tick_triggered')
+            ->orderByDesc('id')
             ->get();
 
         $groupedEvents = $allEvents->groupBy('chapter_at_trigger');

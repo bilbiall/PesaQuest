@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Share extends Model
 {
     protected $fillable = [
-        'name', 'symbol', 'icon', 'sector',
+        'name', 'symbol', 'icon', 'image_url', 'sector',
         'current_price', 'previous_price', 'price_history', 'min_price', 'max_price',
         'volatility', 'drift', 'temp_drift', 'temp_drift_expires_at', 'last_event_reason', 'is_active', 'sort_order',
     ];
@@ -110,6 +110,7 @@ class Share extends Model
             'name'         => $this->name,
             'symbol'       => $this->symbol,
             'icon'         => $this->icon,
+            'image_url'    => $this->image_url,
             'sector'       => $this->sector,
             'price'        => (float) $this->current_price,
             'buy_price'    => $this->buyPrice(),
