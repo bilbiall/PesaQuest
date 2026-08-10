@@ -44,7 +44,7 @@
         </div>
         <p class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{{ $reply->body }}</p>
         @if($reply->image_path)
-        <img src="{{ $reply->image_path }}" alt="" class="mt-2 rounded-xl max-h-64 object-cover" style="border:1px solid rgba(255,255,255,0.08);">
+        <img src="{{ $reply->image_path }}" alt="" class="mt-2 rounded-xl w-full object-contain" style="max-height:18rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
         @endif
         <div class="flex items-center gap-3 mt-2.5">
             @if($votesEnabled)

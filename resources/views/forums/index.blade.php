@@ -14,11 +14,19 @@
         [x-cloak] { display: none !important; }
         .pf-stat { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:10px 12px; }
         .pf-trend { flex-shrink:0; font-size:11.5px; font-weight:900; padding:.4rem .85rem; border-radius:999px; white-space:nowrap; transition:all .15s; }
-        .pf-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:18px; padding:16px; transition:background .15s, border-color .15s, transform .15s; }
+        .pf-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:13px; transition:background .15s, border-color .15s, transform .15s; }
         .pf-card:hover { background:rgba(255,255,255,0.05); transform:translateY(-1px); }
         .pf-card.pinned { border-color:rgba(139,92,246,0.35); }
         #pf-newpill { position:sticky; top:70px; z-index:40; display:flex; justify-content:center; margin-bottom:.75rem; }
         #pf-newpill button { pointer-events:auto; }
+
+        /* WhatsApp-style attach control on the New Discussion form */
+        .pf-attach-zone { cursor:pointer; border-radius:14px; padding:1.1rem; text-align:center; font-size:.75rem; color:#9ca3af; background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.18); transition:border-color .15s, color .15s; }
+        .pf-attach-zone:hover { border-color:rgba(139,92,246,0.4); color:#e5e7eb; }
+        .pf-attach-preview { position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.3); }
+        .pf-attach-preview img { display:block; width:100%; max-height:14rem; object-fit:contain; background:rgba(0,0,0,0.3); }
+        .pf-attach-remove { position:absolute; top:.5rem; right:.5rem; width:1.7rem; height:1.7rem; border-radius:999px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.65); color:#fff; font-weight:900; line-height:1; border:none; cursor:pointer; }
+        .pf-attach-name { padding:.4rem .7rem; font-size:.68rem; color:#9ca3af; background:rgba(0,0,0,0.45); }
     </style>
 </head>
 <body class="text-white min-h-screen" x-data="{ newTopicOpen: {{ $errors->any() ? 'true' : 'false' }} }">
@@ -176,21 +184,11 @@
         @endforeach
     </div>
 
-    {{-- Sort tabs (X-style feed) --}}
-    @if($votesEnabled)
+    {{-- Feed heading — one always-on order now (likes + replies + reactions,
+         decayed by recency), no more Hot/New/Top/Activity tabs to pick between. --}}
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <span class="text-xs font-black text-gray-400 uppercase tracking-wider">Top Discussions</span>
-        <div class="flex gap-1 rounded-2xl p-1 w-fit" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-            @foreach(['hot' => 'Hot', 'new' => 'New', 'top' => 'Top', 'activity' => 'Activity'] as $key => $lbl)
-            <a href="{{ route('forums.index', array_filter(['sort' => $key, 'category' => $activeCategory, 'q' => $search ?: null, 'board' => $schoolBoard ? 'school' : null])) }}"
-               class="text-xs font-black px-3.5 py-1.5 rounded-xl transition-colors {{ $sort === $key ? 'text-white' : 'text-gray-500 hover:text-white' }}"
-               style="{{ $sort === $key ? 'background:rgba(139,92,246,0.25);border:1px solid rgba(139,92,246,0.45);' : '' }}">
-                {{ $lbl }}
-            </a>
-            @endforeach
-        </div>
     </div>
-    @endif
 
     {{-- "New discussions" pill — X/Twitter-style, appears when fresher topics land while browsing --}}
     <div id="pf-newpill">
@@ -214,20 +212,20 @@
      style="z-index:9500;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);overflow-y:auto;overscroll-behavior:contain;"
      @click.self="newTopicOpen = false"
      @keydown.escape.window="newTopicOpen = false">
-    <div class="w-full sm:max-w-lg rounded-3xl p-6 my-auto"
+    <div class="w-full sm:max-w-lg rounded-3xl p-4 sm:p-5 my-auto"
          style="background:#0d0b1a;border:1px solid rgba(139,92,246,0.25);">
-        <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-black inline-flex items-center gap-2"><x-icon name="pencil" class="w-4 h-4" /> New Discussion</h2>
+        <div class="flex items-center justify-between mb-3.5">
+            <h2 class="text-base font-black inline-flex items-center gap-2"><x-icon name="pencil" class="w-4 h-4" /> New Discussion</h2>
             <button @click="newTopicOpen = false" class="text-gray-500 hover:text-white text-xl leading-none">&times;</button>
         </div>
 
         @if($errors->any())
-        <div class="mb-4 rounded-xl px-4 py-3 text-xs font-bold text-red-300" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);">
+        <div class="mb-3 rounded-xl px-4 py-3 text-xs font-bold text-red-300" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);">
             @foreach($errors->all() as $err)<div>• {{ $err }}</div>@endforeach
         </div>
         @endif
 
-        <form method="POST" action="{{ route('forums.store') }}" enctype="multipart/form-data" class="space-y-4">
+        <form method="POST" action="{{ route('forums.store') }}" enctype="multipart/form-data" class="space-y-3">
             @if($schoolBoard)
             <input type="hidden" name="board" value="school">
             <p class="rounded-xl px-3 py-2 text-[11px] font-bold text-emerald-300 inline-flex items-center gap-1" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
@@ -239,13 +237,13 @@
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Title</label>
                 <input type="text" name="title" value="{{ old('title') }}" required minlength="5" maxlength="150"
                        placeholder="What do you want to talk about?"
-                       class="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                       class="w-full rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                        style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
             </div>
             <div>
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Category</label>
                 <select name="category"
-                        class="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                        class="w-full rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                         style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
                     @foreach($categories as $key => $meta)
                     @continue($key === 'market-watch')
@@ -255,35 +253,49 @@
             </div>
             <div>
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Your post</label>
-                <textarea name="body" rows="5" required minlength="10" maxlength="5000"
+                <textarea name="body" rows="4" required minlength="10" maxlength="5000"
                           placeholder="Share your question, story or tip…"
-                          class="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-y"
+                          class="w-full rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-y"
                           style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">{{ old('body') }}</textarea>
             </div>
-            <div>
+            <div x-data="{ preview: null, name: '' }">
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Add an image (optional)</label>
-                <input type="file" name="image" accept="image/*"
-                       class="w-full rounded-xl px-4 py-2.5 text-xs text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                       style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
+                <input type="file" name="image" accept="image/*" x-ref="pfImgInput" class="hidden"
+                       @change="
+                           const f = $event.target.files[0];
+                           if (!f) { preview = null; name = ''; return; }
+                           name = f.name;
+                           const reader = new FileReader();
+                           reader.onload = e => preview = e.target.result;
+                           reader.readAsDataURL(f);
+                       ">
+                <div class="pf-attach-zone" x-show="!preview" @click="$refs.pfImgInput.click()">
+                    📷 Tap to attach a photo — you'll see exactly how it'll look
+                </div>
+                <div class="pf-attach-preview" x-show="preview" x-cloak>
+                    <img :src="preview" alt="">
+                    <button type="button" class="pf-attach-remove" @click.stop="preview=null; name=''; $refs.pfImgInput.value=''">&times;</button>
+                    <div class="pf-attach-name" x-text="name"></div>
+                </div>
             </div>
             @unless($schoolBoard)
             <div>
                 <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Who can see this?</label>
                 <div class="flex gap-3">
-                    <label class="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-gray-200 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
+                    <label class="flex-1 flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-200 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
                         <input type="radio" name="visibility" value="general" {{ old('visibility', 'general') === 'general' ? 'checked' : '' }}>
                         <x-icon name="globe" class="w-3.5 h-3.5 inline-block" /> General
                     </label>
-                    <label class="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-gray-200 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
+                    <label class="flex-1 flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-200 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
                         <input type="radio" name="visibility" value="friends" {{ old('visibility') === 'friends' ? 'checked' : '' }}>
                         <x-icon name="lock" class="w-3.5 h-3.5 inline-block" /> Friends only
                     </label>
                 </div>
             </div>
             @endunless
-            <button type="submit" class="w-full py-3 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.01]"
+            <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.01]"
                     style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
-                Post Discussion{{ ($showXp ?? true) ? ' · +40 XP' : '' }}
+                Post Discussion
             </button>
         </form>
     </div>
@@ -316,15 +328,19 @@ function pfSwapResults(url, pushUrl) {
 
 function pfGoToPage(url) { pfSwapResults(url, true); }
 
+// Clicking the pill is a pure scroll — the new topics were already fetched
+// and prepended into the DOM in the background by poll() below, so there's
+// nothing left to load.
 function pfLoadNewest(btn) {
-    btn.disabled = true;
-    pfSwapResults(window.location.pathname + window.location.search, false);
-    document.getElementById('pf-newpill-btn')?.classList.add('hidden');
-    document.getElementById('pf-newpill-btn')?.classList.remove('flex');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    btn.classList.add('hidden');
+    btn.classList.remove('flex');
 }
 
 (function () {
     var params = new URLSearchParams(window.location.search);
+    // New-topic prepending only makes sense against page 1's view.
+    if (params.get('page') && params.get('page') !== '1') return;
 
     function poll() {
         if (document.hidden) return;
@@ -337,7 +353,19 @@ function pfLoadNewest(btn) {
         fetch(checkUrl, { headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (d) {
-                if (!d || !d.count) return;
+                if (!d || !d.count || !d.html) return;
+
+                // Silently prepend now — clicking the pill (if it even shows)
+                // never has to fetch anything itself.
+                list.insertAdjacentHTML('afterbegin', d.html);
+                if (window.Alpine) window.Alpine.initTree(list);
+                list.dataset.newest = d.newest;
+
+                // Only surface the pill if the user has actually scrolled away
+                // from the top — if they're already up here, the new topics
+                // just quietly appeared where they can already see them.
+                if (window.scrollY < 260) return;
+
                 var btn = document.getElementById('pf-newpill-btn');
                 var txt = document.getElementById('pf-newpill-text');
                 txt.textContent = d.count >= 20 ? '20+ new discussions' : (d.count === 1 ? '1 new discussion' : d.count + ' new discussions');

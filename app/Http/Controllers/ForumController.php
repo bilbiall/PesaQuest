@@ -53,8 +53,6 @@ class ForumController extends Controller
         $schoolBoard  = $request->query('board') === 'school' && $mySchool !== null;
 
         $votesEnabled = \Illuminate\Support\Facades\Schema::hasColumn('forum_topics', 'score');
-        $sort = in_array($request->query('sort'), ['hot', 'new', 'top', 'activity'], true) ? $request->query('sort') : 'hot';
-        if (!$votesEnabled) $sort = 'new';
 
         $authorCols = 'user:id,name,profile_photo'
             . ($votesEnabled ? ',forum_karma' : '')
@@ -64,17 +62,13 @@ class ForumController extends Controller
             ->with([$authorCols, 'user.badges', 'user.progress:id,user_id,level,life_chapter'])
             ->orderByDesc('is_pinned');
 
-        // Hot = votes + chatter, decayed by hours since last activity (X-style feed).
-        // New = latest. Top = highest score of all time. Activity = most recent
-        // reply/upvote, unweighted (see vote()/reply() for what bumps last_activity_at).
-        match ($sort) {
-            'new'      => $query->orderByDesc('created_at'),
-            'top'      => $votesEnabled ? $query->orderByDesc('score')->orderByDesc('replies_count') : $query->orderByDesc('last_activity_at'),
-            'activity' => $query->orderByDesc('last_activity_at'),
-            default    => $votesEnabled
-                ? $query->orderByRaw('(score + replies_count) / POW(GREATEST(TIMESTAMPDIFF(HOUR, COALESCE(last_activity_at, created_at), NOW()), 0) + 2, 1.3) DESC')
-                : $query->orderByDesc('last_activity_at'),
-        };
+        // Single always-on feed order: no more Hot/New/Top/Activity tabs to
+        // pick between. Likes (score), replies and reactions all count as
+        // "activity" and push a topic up; everything decays by hours since
+        // last activity so old, quiet topics settle to the bottom. The +1
+        // floor gives a brand new, zero-engagement topic a real (if quickly
+        // decaying) position near the top instead of ranking dead last.
+        $this->applyActivityOrder($query, $votesEnabled);
 
         if ($schoolBoard) {
             // Private board: only this school's topics, challenges first
@@ -133,7 +127,6 @@ class ForumController extends Controller
             'mySchool'         => $mySchool,
             'schoolBoard'      => $schoolBoard,
             'schoolTopicCount' => $schoolTopicCount,
-            'sort'             => $sort,
             'votesEnabled'     => $votesEnabled,
             'myTopicVotes'     => $myTopicVotes,
             'showXp'           => \App\Models\Setting::get('forum_show_xp', '1') !== '0',
@@ -146,6 +139,22 @@ class ForumController extends Controller
         }
 
         return view('forums.index', $viewData);
+    }
+
+    /**
+     * The one and only feed order: score + replies + reactions (all "someone
+     * engaged with this"), decayed by hours since last activity. A brand new
+     * topic (all zeros) still gets a +1 floor so it lands near the top of a
+     * quiet feed and decays from there, rather than sorting dead last until
+     * it earns its first vote/reply/reaction.
+     */
+    private function applyActivityOrder($query, bool $votesEnabled): void
+    {
+        if ($votesEnabled) {
+            $query->orderByRaw('(score + replies_count + reactions_count + 1) / POW(GREATEST(TIMESTAMPDIFF(HOUR, COALESCE(last_activity_at, created_at), NOW()), 0) + 2, 1.3) DESC');
+        } else {
+            $query->orderByDesc('last_activity_at');
+        }
     }
 
     /**
@@ -199,6 +208,12 @@ class ForumController extends Controller
      * cheap existence check, scoped the same way the index listing is, so
      * the count the pill shows always matches what "Refresh" would reveal.
      */
+    /**
+     * Polled by the forum list's "New discussions" pill — returns the actual
+     * new topics (rendered as ready-to-insert card HTML), not just a count,
+     * so the client can silently prepend them and the pill click is a pure
+     * scroll-to-top with nothing left to fetch.
+     */
     public function checkNew(Request $request)
     {
         $since = $request->query('since');
@@ -206,11 +221,18 @@ class ForumController extends Controller
             return response()->json(['count' => 0]);
         }
 
-        $category = $request->query('category');
-        $mySchool = $this->userSchool($request->user());
+        $category    = $request->query('category');
+        $mySchool    = $this->userSchool($request->user());
         $schoolBoard = $request->query('board') === 'school' && $mySchool !== null;
 
-        $query = ForumTopic::visible()->where('created_at', '>', $since);
+        $votesEnabled = \Illuminate\Support\Facades\Schema::hasColumn('forum_topics', 'score');
+        $authorCols   = 'user:id,name,profile_photo'
+            . ($votesEnabled ? ',forum_karma' : '')
+            . (User::usernamesEnabled() ? ',username' : '');
+
+        $query = ForumTopic::visible()
+            ->with([$authorCols, 'user.badges', 'user.progress:id,user_id,level,life_chapter'])
+            ->where('created_at', '>', $since);
 
         if ($schoolBoard) {
             $query->where('school_subscription_id', $mySchool->id);
@@ -232,7 +254,29 @@ class ForumController extends Controller
             $query->where('category', $category);
         }
 
-        return response()->json(['count' => min($query->count(), 20)]);
+        $newTopics = $query->orderByDesc('created_at')->limit(20)->get();
+
+        if ($newTopics->isEmpty()) {
+            return response()->json(['count' => 0]);
+        }
+
+        $myTopicVotes = $votesEnabled
+            ? \App\Models\ForumVote::mapFor($viewer?->id, 'topic', $newTopics->pluck('id')->all())
+            : [];
+
+        $html = view('forums.partials._topic-cards', [
+            'topics'       => $newTopics,
+            'categories'   => self::CATEGORIES,
+            'votesEnabled' => $votesEnabled,
+            'myTopicVotes' => $myTopicVotes,
+            'showXp'       => \App\Models\Setting::get('forum_show_xp', '1') !== '0',
+        ])->render();
+
+        return response()->json([
+            'count'  => $newTopics->count(),
+            'html'   => $html,
+            'newest' => optional($newTopics->first()->created_at)->toIso8601String(),
+        ]);
     }
 
     public function show(ForumTopic $topic)
@@ -385,6 +429,7 @@ class ForumController extends Controller
         if ($existing) {
             $existing->delete();
             $active = false;
+            $topic->decrement('reactions_count');
         } else {
             \App\Models\ForumReaction::create([
                 'user_id'  => $user->id,
@@ -392,6 +437,10 @@ class ForumController extends Controller
                 'type'     => $data['type'],
             ]);
             $active = true;
+            // A reaction counts as activity for the feed's decay-ranking,
+            // same as an upvote does — see vote() and applyActivityOrder().
+            $topic->increment('reactions_count');
+            $topic->forceFill(['last_activity_at' => now()])->save();
         }
 
         $counts = \App\Models\ForumReaction::where('topic_id', $topic->id)
@@ -437,7 +486,7 @@ class ForumController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = '/uploads/' . $this->resizeAndStore($request->file('image'), 'forums/topics', 800, 500, 80);
+            $imagePath = '/uploads/' . $this->resizeContain($request->file('image'), 'forums/topics', 1000, 1000, 82);
         }
 
         $topic = ForumTopic::create([
@@ -484,7 +533,7 @@ class ForumController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = '/uploads/' . $this->resizeAndStore($request->file('image'), 'forums/replies', 600, 400, 78);
+            $imagePath = '/uploads/' . $this->resizeContain($request->file('image'), 'forums/replies', 800, 800, 80);
         }
 
         $reply = ForumReply::create([

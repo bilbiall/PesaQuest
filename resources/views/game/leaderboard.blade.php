@@ -37,6 +37,21 @@
         .rank-bio { font-size:.66rem; color:#7c8394; margin-top:.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .top-badge-chip { display:inline-flex; align-items:center; gap:.25rem; background:rgba(139,92,246,0.14); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:.62rem; font-weight:700; padding:.1rem .45rem; border-radius:999px; flex-shrink:0; }
 
+        /* Trend, folded into the score column so it doesn't eat its own fixed-width slot */
+        .trend-inline { font-size:.72rem; font-weight:800; }
+        .trend-inline.up { color:#34d399; } .trend-inline.down { color:#f87171; }
+        .trend-inline.flat { color:#fbbf24; } .trend-inline.none { color:#6b7280; }
+
+        /* Narrow phones: rank/avatar/gaps/padding were eating almost all the
+           row width, leaving name+bio only a sliver to work with (truncated
+           to "B…"). Shrink the fixed columns instead of the flexible one. */
+        @media (max-width:480px) {
+            .rank-card { padding:.55rem .65rem; gap:.5rem; }
+            .rank-card .rank-col { width:1.4rem; }
+            .rank-card .avatar-col { width:1.8rem !important; height:1.8rem !important; }
+            .rank-card .score-col { min-width:0; }
+        }
+
         /* Expandable player-stats dropdown */
         .drop-panel { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-top:none; border-radius:0 0 .8rem .8rem; padding:.7rem .9rem .8rem; margin-top:-2px; margin-bottom:.4rem; }
         .drop-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#9ca3af; margin-bottom:.35rem; }
@@ -145,7 +160,7 @@
                         {{ $leader['is_me'] ? 'mine' : '' }}"
                  @click="toggle({{ $leader['user_id'] }})">
                 {{-- Rank --}}
-                <div class="w-8 text-center flex-shrink-0">
+                <div class="rank-col w-8 text-center flex-shrink-0">
                     @if($leader['rank'] === 1) <span class="text-xl">🥇</span>
                     @elseif($leader['rank'] === 2) <span class="text-xl">🥈</span>
                     @elseif($leader['rank'] === 3) <span class="text-xl">🥉</span>
@@ -154,7 +169,7 @@
                 </div>
                 {{-- Avatar --}}
                 <img src="{{ $leader['profile_photo'] ?: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2712%27 fill=%27%232d3348%27/%3E%3Ccircle cx=%2712%27 cy=%279.4%27 r=%273.6%27 fill=%27%236b7280%27/%3E%3Cpath d=%27M4.4 20c0-3.9 3.7-6.4 7.6-6.4s7.6 2.5 7.6 6.4%27 fill=%27%236b7280%27/%3E%3C/svg%3E' }}"
-                     alt="" class="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                     alt="" class="avatar-col w-9 h-9 rounded-full object-cover flex-shrink-0"
                      style="box-shadow:0 0 0 2px {{ $leader['rank'] === 1 ? 'rgba(245,158,11,0.5)' : 'rgba(99,102,241,0.25)' }};">
                 {{-- Name, level, title chip & bio --}}
                 <div class="flex-1 min-w-0">
@@ -170,24 +185,21 @@
                     <div class="rank-bio">{{ $leader['bio'] }}</div>
                     @endif
                 </div>
-                {{-- Score --}}
-                <div class="text-right flex-shrink-0">
-                    <div class="font-black text-sm {{ $leader['rank'] === 1 ? 'text-amber-400' : 'text-indigo-400' }}">
-                        @if($sort === 'networth') Ksh @endif{{ number_format($leader['points']) }}
+                {{-- Score, with the trend folded in so it doesn't need its own fixed-width column --}}
+                <div class="score-col text-right flex-shrink-0">
+                    <div class="font-black text-sm {{ $leader['rank'] === 1 ? 'text-amber-400' : 'text-indigo-400' }} flex items-center justify-end gap-1.5">
+                        <span>@if($sort === 'networth') Ksh @endif{{ number_format($leader['points']) }}</span>
+                        @if($leader['rank_change'] === null)
+                        <span class="trend-inline none">–</span>
+                        @elseif($leader['rank_change'] > 0)
+                        <span class="trend-inline up">↑{{ $leader['rank_change'] }}</span>
+                        @elseif($leader['rank_change'] < 0)
+                        <span class="trend-inline down">↓{{ abs($leader['rank_change']) }}</span>
+                        @else
+                        <span class="trend-inline flat">—</span>
+                        @endif
                     </div>
                     <div class="text-[.65rem] text-gray-600">{{ $sort === 'networth' ? 'Net Worth' : 'XP' }}</div>
-                </div>
-                {{-- Rank change --}}
-                <div class="w-9 text-center flex-shrink-0">
-                    @if($leader['rank_change'] === null)
-                    <span class="text-gray-600 text-xs font-bold">–</span>
-                    @elseif($leader['rank_change'] > 0)
-                    <span class="text-emerald-400 text-xs font-black flex items-center justify-center gap-0.5">↑{{ $leader['rank_change'] }}</span>
-                    @elseif($leader['rank_change'] < 0)
-                    <span class="text-red-400 text-xs font-black flex items-center justify-center gap-0.5">↓{{ abs($leader['rank_change']) }}</span>
-                    @else
-                    <span class="text-amber-400 text-xs font-black">—</span>
-                    @endif
                 </div>
             </div>
             {{-- Expandable stats dropdown --}}

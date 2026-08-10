@@ -178,7 +178,7 @@
     <div class="rounded-2xl p-5 sm:p-6 mb-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);" x-show="!editing">
         <p class="text-sm sm:text-[15px] text-gray-200 leading-relaxed whitespace-pre-line" style="border-left:2px solid rgba(139,92,246,0.35);padding-left:.9rem;">{{ $topic->body }}</p>
         @if($topic->image_path)
-        <img src="{{ $topic->image_path }}" alt="" class="mt-4 rounded-xl max-h-[28rem] w-full object-cover" style="border:1px solid rgba(255,255,255,0.08);">
+        <img src="{{ $topic->image_path }}" alt="" class="mt-4 rounded-xl w-full object-contain" style="max-height:32rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
         @endif
     </div>
 
