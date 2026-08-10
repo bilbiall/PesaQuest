@@ -328,15 +328,18 @@ class ChallengeController extends Controller
 
     /**
      * Attaches a dynamic ->rank_change to each ChallengeParticipant — a nullable int
-     * (positive = climbed, negative = dropped, 0 = held, null = no prior snapshot yet)
-     * diffing the LIVE current rank (via ChallengeService::rankParticipants, same
-     * math the snapshot command uses) against the most recent snapshot taken at
-     * least ~10 minutes ago — a rolling short-window comparison matching the
-     * snapshot command's every-15-minutes cadence, rather than a day-over-day one.
-     * "null" means no snapshot old enough exists yet (e.g. challenge/participant
-     * is brand new). Works across a mixed list spanning several challenges (one
-     * row per challenge, e.g. "My Challenges") as well as every participant of a
-     * single challenge.
+     * (positive = climbed, negative = dropped, 0 = confirmed no movement, null = no
+     * snapshot history yet) diffing the LIVE current rank (via
+     * ChallengeService::rankParticipants) against the most recent snapshot that
+     * actually differs from it — walking back through the full snapshot history
+     * (not just the latest tick) so the arrow keeps showing the last real move for
+     * as long as the rank hasn't changed again, instead of resetting to blank/flat
+     * the moment a new same-rank snapshot is recorded. "0" is reserved for a
+     * confirmed streak of unchanged snapshots (real stagnation); "null" means there's
+     * simply no history yet (brand new challenge/participant) — kept visually
+     * distinct in the Blade templates (`.trend.none` vs `.trend.flat`). Works across
+     * a mixed list spanning several challenges (one row per challenge, e.g. "My
+     * Challenges") as well as every participant of a single challenge.
      */
     private function attachRankChanges(Collection $participants): void
     {
@@ -353,20 +356,33 @@ class ChallengeController extends Controller
             $currentRanks = $service->rankParticipants($challenge, $all);
             $ids          = $all->pluck('id')->all();
 
-            // Most recent snapshot per participant that's at least ~10 minutes
-            // old — a small buffer under the 15-minute cadence so a slightly
-            // early/late cron run doesn't compare "now" against itself.
-            $prevRanks = ChallengeParticipantSnapshot::whereIn('challenge_participant_id', $ids)
-                ->where('snapshot_at', '<=', now()->subMinutes(10))
+            // Full snapshot history (bounded by the 48h prune window), newest
+            // first per participant, so we can walk back past any number of
+            // unchanged ticks to find the rank that was actually overtaken —
+            // the arrow should persist until a real reorder, not reset to
+            // blank/flat just because the last snapshot happened to match.
+            $historyByParticipant = ChallengeParticipantSnapshot::whereIn('challenge_participant_id', $ids)
                 ->orderByDesc('snapshot_at')
                 ->get()
-                ->unique('challenge_participant_id')
-                ->pluck('rank', 'challenge_participant_id');
+                ->groupBy('challenge_participant_id');
 
             foreach ($rows as $p) {
                 $current = $currentRanks[$p->id] ?? null;
-                $prev    = $prevRanks[$p->id] ?? null;
-                $p->rank_change = ($current !== null && $prev !== null) ? $prev - $current : null;
+                $history = $historyByParticipant->get($p->id);
+
+                if ($current === null || !$history || $history->isEmpty()) {
+                    // No live rank, or never snapshotted yet — distinct from
+                    // confirmed stagnation, so it's not shown as a "-".
+                    $p->rank_change = null;
+                    continue;
+                }
+
+                $lastDifferent = $history->first(fn ($snap) => (int) $snap->rank !== (int) $current);
+
+                // Every snapshot on record still matches the live rank: no one
+                // has passed them and they haven't passed anyone — genuine
+                // stagnation, so 0 (rendered as "-") is correct here.
+                $p->rank_change = $lastDifferent ? ((int) $lastDifferent->rank - (int) $current) : 0;
             }
         }
     }
