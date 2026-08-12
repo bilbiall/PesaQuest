@@ -15,14 +15,16 @@
     <div class="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl my-auto" style="background:linear-gradient(160deg,#0f172a,#1e1b4b);border:1px solid rgba(139,92,246,0.3);">
 
         {{-- Header --}}
-        <div class="px-6 pt-6 pb-4" style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(99,102,241,0.1));border-bottom:1px solid rgba(139,92,246,0.2);">
-            <div class="flex items-center gap-3 mb-1">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-2xl" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);">🌍</div>
-                <div class="flex-1">
-                    <h2 class="text-white font-black text-lg leading-tight">
+        <div class="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4" style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(99,102,241,0.1));border-bottom:1px solid rgba(139,92,246,0.2);">
+            <div class="flex items-center gap-2.5 sm:gap-3 mb-1">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);">
+                    <x-icon name="globe" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-white font-black text-sm sm:text-lg leading-tight">
                         @if(($lifeSim['ticks'] ?? 0) === 0) Welcome Back! @else While You Were Away… @endif
                     </h2>
-                    <p class="text-purple-300 text-xs font-semibold">
+                    <p class="text-purple-300 text-[.68rem] sm:text-xs font-semibold leading-snug">
                         @if(($lifeSim['ticks'] ?? 0) === 0)
                             Daily bonus ready — claim your streak reward
                         @else
@@ -33,21 +35,21 @@
                 </div>
                 {{-- Chapter badge --}}
                 @if(!empty($lifeSim['chapter']))
-                <div class="text-right">
-                    <p class="text-lg">{{ $lifeSim['chapter_icon'] ?? '' }}</p>
-                    <p class="text-xs font-black text-purple-300">{{ $lifeSim['chapter'] }}</p>
+                <div class="text-right flex-shrink-0">
+                    <p class="text-sm sm:text-lg leading-none">{{ $lifeSim['chapter_icon'] ?? '' }}</p>
+                    <p class="text-[.62rem] sm:text-xs font-black text-purple-300 mt-0.5">{{ $lifeSim['chapter'] }}</p>
                 </div>
                 @endif
             </div>
             @if($lifeSim['capped'] ?? false)
-            <div class="mt-3 px-3 py-2 rounded-lg text-xs font-semibold text-amber-300" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);">
+            <div class="mt-2.5 sm:mt-3 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-[.68rem] sm:text-xs font-semibold text-amber-300 leading-snug" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);">
                 ⏱️ Pesa City's clock runs fast — we simulated the first {{ $lifeSim['ticks'] ?? 60 }} game days of your absence and paused the rest so nothing overwhelms you.
             </div>
             @endif
         </div>
 
         {{-- Event list --}}
-        <div class="px-6 py-4 space-y-2 max-h-72 overflow-y-auto">
+        <div class="px-3 py-3 sm:px-6 sm:py-4 space-y-1.5 sm:space-y-2 max-h-72 overflow-y-auto">
             @forelse($lifeSim['events'] as $idx => $event)
             @php $evType = $event['type'] ?? ''; @endphp
             <div class="rounded-xl overflow-hidden"
@@ -57,29 +59,29 @@
                             ? 'background:linear-gradient(135deg,rgba(16,185,129,0.10),rgba(245,158,11,0.06));border:1px solid rgba(16,185,129,0.35);'
                             : (isset($event['is_milestone']) && $event['is_milestone'] ? 'background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,146,60,0.08));border:1px solid rgba(245,158,11,0.35);' : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);')) }}">
 
-                <div class="flex items-start gap-3 py-2.5 px-3">
-                    <span class="text-lg leading-none mt-0.5 flex-shrink-0">{{ $event['icon'] ?? '📌' }}</span>
+                <div class="flex items-start gap-2 sm:gap-3 py-2 px-2.5 sm:py-2.5 sm:px-3">
+                    <span class="text-sm sm:text-lg leading-none mt-0.5 flex-shrink-0">{{ $event['icon'] ?? '📌' }}</span>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-2">
-                            <p class="text-sm font-bold {{ $evType === 'wages_lost' ? 'text-red-300' : (isset($event['is_milestone']) && $event['is_milestone'] ? 'text-amber-300' : 'text-gray-200') }} leading-snug">
+                            <p class="text-[.78rem] sm:text-sm font-bold {{ $evType === 'wages_lost' ? 'text-red-300' : (isset($event['is_milestone']) && $event['is_milestone'] ? 'text-amber-300' : 'text-gray-200') }} leading-snug">
                                 {{ $event['text'] }}
                                 @if($evType === 'wages_lost')
-                                <span class="ml-1 text-[10px] font-black text-red-400 bg-red-400/15 px-1.5 py-0.5 rounded-full">WAGES LOST</span>
+                                <span class="ml-1 text-[9px] sm:text-[10px] font-black text-red-400 bg-red-400/15 px-1.5 py-0.5 rounded-full whitespace-nowrap">WAGES LOST</span>
                                 @elseif($evType === 'salary_ready')
-                                <span class="ml-1 text-[10px] font-black text-emerald-400 bg-emerald-400/15 px-1.5 py-0.5 rounded-full">COLLECT AT WORK</span>
+                                <span class="ml-1 text-[9px] sm:text-[10px] font-black text-emerald-400 bg-emerald-400/15 px-1.5 py-0.5 rounded-full whitespace-nowrap">COLLECT AT WORK</span>
                                 @endif
                                 @if(isset($event['is_milestone']) && $event['is_milestone'])
-                                <span class="ml-1 text-[10px] font-black text-amber-400 bg-amber-400/15 px-1.5 py-0.5 rounded-full">MILESTONE</span>
+                                <span class="ml-1 text-[9px] sm:text-[10px] font-black text-amber-400 bg-amber-400/15 px-1.5 py-0.5 rounded-full whitespace-nowrap">MILESTONE</span>
                                 @endif
                             </p>
                             @if(isset($event['delta']) && $event['delta'] != 0)
-                            <span class="text-xs font-black whitespace-nowrap flex-shrink-0 {{ $event['delta'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                            <span class="text-[.7rem] sm:text-xs font-black whitespace-nowrap flex-shrink-0 {{ $event['delta'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                                 {{ $event['delta'] >= 0 ? '+' : '' }}Ksh {{ number_format(abs($event['delta'])) }}
                             </span>
                             @endif
                         </div>
                         @if(!empty($event['sub']))
-                        <p class="text-xs text-gray-400 mt-0.5 leading-snug">{{ $event['sub'] }}</p>
+                        <p class="text-[.7rem] sm:text-xs text-gray-400 mt-0.5 leading-snug">{{ $event['sub'] }}</p>
                         @endif
                     </div>
                     {{-- Edu toggle (only on life_events) --}}
@@ -87,15 +89,15 @@
                     <button @click="activeEdu = (activeEdu === {{ $idx }}) ? null : {{ $idx }}"
                             class="text-indigo-400 hover:text-indigo-300 flex-shrink-0 mt-0.5 transition-colors"
                             title="Financial lesson">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </button>
                     @endif
                 </div>
 
                 @if(!empty($event['edu']))
                 <div x-show="activeEdu === {{ $idx }}" x-cloak x-transition
-                     class="px-3 pb-3">
-                    <p class="text-xs text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-3 py-2 leading-snug">
+                     class="px-2.5 pb-2.5 sm:px-3 sm:pb-3">
+                    <p class="text-[.7rem] sm:text-xs text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-2.5 py-2 sm:px-3 leading-snug">
                         💡 {{ $event['edu'] }}
                     </p>
                 </div>
@@ -107,30 +109,30 @@
         </div>
 
         {{-- Net worth summary --}}
-        <div class="mx-6 mb-4 px-4 py-3 rounded-xl grid grid-cols-2 gap-4" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);">
-            <div>
-                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Balance</p>
-                <p class="text-white font-black text-xl">Ksh {{ number_format($lifeSim['balance'] ?? 0) }}</p>
+        <div class="mx-3 mb-3 px-3 py-2.5 sm:mx-6 sm:mb-4 sm:px-4 sm:py-3 rounded-xl grid grid-cols-2 gap-2 sm:gap-4" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);">
+            <div class="min-w-0">
+                <p class="text-[.62rem] sm:text-xs text-gray-400 font-semibold uppercase tracking-wide">Balance</p>
+                <p class="text-white font-black text-sm sm:text-xl truncate">Ksh {{ number_format($lifeSim['balance'] ?? 0) }}</p>
             </div>
-            <div class="text-right">
-                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Net Worth</p>
-                <p class="text-purple-300 font-black text-xl">Ksh {{ number_format($lifeSim['net_worth'] ?? 0) }}</p>
+            <div class="text-right min-w-0">
+                <p class="text-[.62rem] sm:text-xs text-gray-400 font-semibold uppercase tracking-wide">Net Worth</p>
+                <p class="text-purple-300 font-black text-sm sm:text-xl truncate">Ksh {{ number_format($lifeSim['net_worth'] ?? 0) }}</p>
             </div>
         </div>
 
         {{-- Continue button --}}
-        <div class="px-6 pb-6 space-y-2">
+        <div class="px-3 pb-3 sm:px-6 sm:pb-6 space-y-2">
             @php $hasPayReady = collect($lifeSim['events'] ?? [])->contains(fn($e) => in_array($e['type'] ?? '', ['salary_ready', 'job_warning'], true)); @endphp
             @if($hasPayReady)
             <a href="{{ route('life.career') }}"
-               class="block w-full py-3 rounded-xl font-black text-white text-sm text-center transition-all hover:scale-[1.02]"
+               class="block w-full py-2.5 sm:py-3 rounded-xl font-black text-white text-xs sm:text-sm text-center transition-all hover:scale-[1.02]"
                style="background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 20px rgba(16,185,129,0.35);">
                 💼 Report to Work — collect your pay
             </a>
             @endif
             <button
                 @click="open = false; playWywaSound('close')"
-                class="w-full py-3 rounded-xl font-black text-white text-sm transition-all hover:scale-[1.02]"
+                class="w-full py-2.5 sm:py-3 rounded-xl font-black text-white text-xs sm:text-sm transition-all hover:scale-[1.02]"
                 style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.4);"
             >
                 Continue My Life &rarr;

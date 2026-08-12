@@ -281,13 +281,22 @@ class MarketplaceController extends Controller
             ]);
         });
 
-        // Quest auto-triggers: buying an item
-        $qs = app(QuestTriggerService::class);
-        $qs->fire($user, 'buy_item_category', ['category' => $asset->category]);
-        $qs->fire($user, 'buy_item_slug',     ['slug'     => $asset->slug]);
-        // Check balance/net-worth thresholds after purchase
-        $qs->fire($user, 'reach_balance',   ['amount' => $progress->balance]);
-        $qs->fire($user, 'reach_net_worth', ['amount' => $progress->net_worth_cache]);
+        // Quest auto-triggers: buying an item. The purchase already committed above,
+        // so a failure here must never surface as "Purchase failed" — log and move on.
+        try {
+            $qs = app(QuestTriggerService::class);
+            $qs->fire($user, 'buy_item_category', ['category' => $asset->category]);
+            $qs->fire($user, 'buy_item_slug',     ['slug'     => $asset->slug]);
+            // Check balance/net-worth thresholds after purchase
+            $qs->fire($user, 'reach_balance',   ['amount' => $progress->balance]);
+            $qs->fire($user, 'reach_net_worth', ['amount' => $progress->net_worth_cache]);
+        } catch (\Throwable $e) {
+            \Log::error('QuestTriggerService failed after asset purchase', [
+                'user_id'  => $user->id,
+                'asset_id' => $asset->id,
+                'error'    => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'success'          => true,

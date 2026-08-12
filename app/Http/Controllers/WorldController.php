@@ -925,6 +925,7 @@ class WorldController extends Controller
             }
 
             $item['can_afford'] = $balance >= $item['deposit'];
+            $item['can_afford_cash'] = $balance >= $item['price'];
         }
         unset($item);
 

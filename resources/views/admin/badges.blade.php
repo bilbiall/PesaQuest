@@ -171,6 +171,9 @@ body{background:#08070f;}
                         <optgroup label="── Quests ──" style="color:#6b7280;">
                         <option value="quest_complete">🗺️ Complete X Quests</option>
                         </optgroup>
+                        <optgroup label="── Community ──" style="color:#6b7280;">
+                        <option value="forum_karma">💬 Earn X Forum Karma</option>
+                        </optgroup>
                         <optgroup label="── Manual ──" style="color:#6b7280;">
                         <option value="manual">👑 Manually Awarded</option>
                         </optgroup>
@@ -256,6 +259,7 @@ function badgeManager() {
                 job_hired:       '— times hired, e.g. 1',
                 course_complete: '— courses completed, e.g. 3',
                 quest_complete:  '— quests completed, e.g. 2',
+                forum_karma:     '— karma points, e.g. 10',
                 manual:          '— set 0; admin-only via Award button',
             };
             return hints[this.form.trigger_type] || '';
@@ -298,8 +302,9 @@ function badgeManager() {
         async saveBadge() {
             this.saving = true;
             const fd = new FormData();
-            const fields = ['name','description','icon','color','trigger_type','is_active'];
+            const fields = ['name','description','icon','color','trigger_type'];
             fields.forEach(k => fd.append(k, this.form[k]));
+            fd.append('is_active', this.form.is_active ? '1' : '0');
             fd.append('trigger_value', this.form.trigger_value);
             if (this.form.imageFile) fd.append('image', this.form.imageFile);
 

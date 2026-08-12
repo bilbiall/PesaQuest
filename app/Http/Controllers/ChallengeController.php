@@ -303,15 +303,20 @@ class ChallengeController extends Controller
 
         $user     = $participant->user;
         $progress = $user?->getOrCreateProgress();
+        $badges   = $user
+            ? $user->badges()->orderByDesc('user_badges.earned_at')->get(['badges.icon', 'badges.name'])
+            : collect();
 
         return response()->json([
             'name'          => $user?->name ?? 'Player',
             'profile_photo' => $user?->profile_photo,
+            'bio'           => $user?->bio,
             'level'         => $progress?->level ?? 1,
             'xp'            => (int) ($progress?->points_total ?? 0),
             'net_worth'     => (int) ($progress?->net_worth_cache ?? $progress?->balance ?? 0),
             'played_label'  => $this->gamePlayedLabel((int) ($progress?->tick_count ?? 0)),
-            'badges_count'  => $user ? $user->badges()->count() : 0,
+            'badges_count'  => $badges->count(),
+            'badges'        => $badges->values(),
         ]);
     }
 

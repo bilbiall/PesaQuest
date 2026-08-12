@@ -1905,19 +1905,18 @@
 
             {{-- ── FUN WORLD — Entertainment Budget Lesson ── --}}
             <template x-if="district && district.slug === 'fun-world'">
-                <div x-data="{ fwMsg: '', fwOk: true, fwBuying: null, fwMood: district.mood ?? 70, fwTab: 'activities',
-                               fwParty: { show: false, icon: '🎉', name: '', mood_boost: 0, xp: 0, mood: 70 } }">
+                <div x-data="{ fwMsg: '', fwOk: true, fwBuying: null, fwMood: district.mood ?? 70, fwTab: 'activities' }">
 
-                    {{-- Mood meter --}}
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;border-radius:12px;background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.2);">
-                        <div style="font-size:26px;flex-shrink:0;" x-text="fwMood >= 80 ? '😄' : fwMood >= 55 ? '😊' : fwMood >= 35 ? '😐' : '😔'"></div>
+                    {{-- Mood meter — reacts inline with a glow pulse + emoji pop on every activity, no blocking popup --}}
+                    <div x-ref="moodBox" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;border-radius:12px;background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.2);">
+                        <div x-ref="moodEmoji" style="font-size:26px;flex-shrink:0;" x-text="fwMood >= 80 ? '😄' : fwMood >= 55 ? '😊' : fwMood >= 35 ? '😐' : '😔'"></div>
                         <div style="flex:1;">
                             <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
                                 <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,.6);">Character Mood</span>
                                 <span style="font-size:11px;font-weight:900;color:#FF6B35;" x-text="fwMood + '/100'"></span>
                             </div>
                             <div style="height:6px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden;">
-                                <div style="height:100%;border-radius:9999px;transition:width .5s ease;"
+                                <div style="height:100%;border-radius:9999px;transition:width .6s cubic-bezier(.34,1.56,.64,1),background .6s ease;"
                                      :style="'width:' + fwMood + '%;background:' + (fwMood >= 70 ? '#FF6B35' : fwMood >= 40 ? '#f59e0b' : '#f87171')"></div>
                             </div>
                             <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px;"
@@ -1937,48 +1936,7 @@
                         </div>
                     </template>
 
-                    {{-- Celebration popup — centering uses the child's margin:auto
-                         (not align-items:center on the wrapper) so on short mobile
-                         viewports the card top-aligns and scrolls into view instead
-                         of clipping above the visible area. Auto-closes after ~3s;
-                         still dismissable early via the button or a tap outside. --}}
-                    <div x-show="fwParty.show" x-cloak x-transition.opacity
-                         x-effect="if (fwParty.show) { clearTimeout(window.__fwPartyTimer); window.__fwPartyTimer = setTimeout(() => fwParty.show = false, 3000); }"
-                         style="position:fixed;inset:0;z-index:9500;display:flex;justify-content:center;padding:20px;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);overflow-y:auto;overscroll-behavior:contain;"
-                         @click.self="fwParty.show = false">
-                        <div x-show="fwParty.show" x-transition.scale.origin.center
-                             style="width:100%;max-width:340px;margin:auto;border-radius:24px;padding:28px 24px;text-align:center;background:linear-gradient(160deg,#1a0f0a,#2d1608);border:1px solid rgba(255,107,53,.45);box-shadow:0 20px 60px rgba(255,107,53,.25);">
-                            <div style="font-size:56px;line-height:1;animation:pc-bounce 0.8s ease infinite alternate;" x-text="fwParty.icon"></div>
-                            <div style="font-size:18px;font-weight:900;color:#fff;margin-top:12px;" x-text="fwParty.name"></div>
-                            <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;">What a time! Money well spent on joy.</div>
-                            <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
-                                <div style="flex:1;padding:10px;border-radius:14px;background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.3);">
-                                    <div style="font-size:18px;font-weight:900;color:#FF6B35;" x-text="'+' + fwParty.mood_boost"></div>
-                                    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);">Mood</div>
-                                </div>
-                                <div style="flex:1;padding:10px;border-radius:14px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);">
-                                    <div style="font-size:18px;font-weight:900;color:#a78bfa;" x-text="'+' + fwParty.xp"></div>
-                                    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);">XP</div>
-                                </div>
-                            </div>
-                            <div style="margin-top:14px;">
-                                <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:rgba(255,255,255,.5);margin-bottom:4px;">
-                                    <span>New mood level</span>
-                                    <span x-text="fwParty.mood + '/100'" style="color:#FF6B35;"></span>
-                                </div>
-                                <div style="height:8px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden;">
-                                    <div style="height:100%;border-radius:9999px;transition:width .8s ease;background:linear-gradient(90deg,#f59e0b,#FF6B35);"
-                                         :style="'width:' + fwParty.mood + '%'"></div>
-                                </div>
-                            </div>
-                            <button @click="fwParty.show = false"
-                                    style="margin-top:18px;width:100%;padding:12px;border-radius:14px;font-size:13px;font-weight:900;color:#fff;background:linear-gradient(135deg,#FF6B35,#f59e0b);border:none;cursor:pointer;">
-                                Back to the fun 🎡
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Flash message --}}
+                    {{-- Flash message — brief inline confirmation; the mood bar/emoji glow is the real feedback now --}}
                     <template x-if="fwMsg">
                         <div style="margin-bottom:10px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;"
                              :style="fwOk ? 'background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.25);color:#FF6B35;' : 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;'"
@@ -2064,7 +2022,12 @@
                                                     else {
                                                         fwMood = d.new_mood; liveBalance = d.new_balance; district.balance = d.new_balance;
                                                         district.fun_spent_month = (district.fun_spent_month ?? 0) + xp.price;
-                                                        fwParty = { show: true, icon: d.icon || xp.icon, name: d.name || xp.name, mood_boost: d.mood_boost, xp: d.xp_earned, mood: d.new_mood };
+                                                        fwOk = true;
+                                                        fwMsg = (d.icon || xp.icon) + ' ' + (d.name || xp.name) + ' — +' + d.mood_boost + ' mood, +' + d.xp_earned + ' XP!';
+                                                        clearTimeout(window.__fwMsgTimer);
+                                                        window.__fwMsgTimer = setTimeout(() => { fwMsg = ''; }, 4000);
+                                                        $refs.moodBox.classList.remove('pc-mood-pulse'); void $refs.moodBox.offsetWidth; $refs.moodBox.classList.add('pc-mood-pulse');
+                                                        $refs.moodEmoji.classList.remove('pc-mood-emoji-pop'); void $refs.moodEmoji.offsetWidth; $refs.moodEmoji.classList.add('pc-mood-emoji-pop');
                                                         SoundMgr.play('fun');
                                                     }
                                                 })
@@ -2237,28 +2200,51 @@
                                 </div>
                             </div>
                             <div class="pc-property-lesson" x-text="'💡 ' + prop.lesson"></div>
-                            <template x-if="prop.can_afford">
-                                <button :disabled="estBuying === prop.asset_id"
-                                        @click="estBuying = prop.asset_id; estMsg = '';
-                                            fetch('/marketplace/' + prop.asset_id + '/buy', {
-                                                method: 'POST',
-                                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                                                credentials: 'same-origin',
-                                                body: JSON.stringify({ financing: true })
-                                            })
-                                            .then(r => r.json())
-                                            .then(d => {
-                                                estBuying = null;
-                                                if (d.error) { estMsg = d.error; estOk = false; }
-                                                else { estMsg = '🎉 ' + prop.name + ' financed! Deposit KES ' + (d.financing?.deposit ?? prop.deposit).toLocaleString() + ' paid — KES ' + (d.financing?.monthly ?? prop.monthly).toLocaleString() + '/game month is now on your bills.'; estOk = true; liveBalance = d.new_balance ?? liveBalance; }
-                                            })
-                                            .catch(() => { estBuying = null; estMsg = 'Purchase failed. Try again.'; estOk = false; })"
-                                        style="width:100%;margin-top:10px;padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,rgba(163,230,53,.18),rgba(163,230,53,.08));border:1px solid rgba(163,230,53,.35);color:#a3e635;display:flex;align-items:center;justify-content:center;gap:6px;">
-                                    <span x-show="estBuying !== prop.asset_id" x-text="'🏠 Finance — Pay KES ' + prop.deposit.toLocaleString() + ' Deposit'"></span>
-                                    <span x-show="estBuying === prop.asset_id">Processing...</span>
-                                </button>
-                            </template>
-                            <template x-if="!prop.can_afford">
+                            <div style="display:flex;gap:8px;margin-top:10px;" x-show="prop.can_afford_cash || prop.can_afford">
+                                <template x-if="prop.can_afford_cash">
+                                    <button :disabled="estBuying === prop.asset_id"
+                                            @click="estBuying = prop.asset_id; estMsg = '';
+                                                fetch('/marketplace/' + prop.asset_id + '/buy', {
+                                                    method: 'POST',
+                                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                                                    credentials: 'same-origin',
+                                                    body: JSON.stringify({ financing: false })
+                                                })
+                                                .then(r => r.json())
+                                                .then(d => {
+                                                    estBuying = null;
+                                                    if (d.error) { estMsg = d.error; estOk = false; }
+                                                    else { estMsg = '🎉 ' + prop.name + ' bought outright! New balance KES ' + (d.new_balance ?? 0).toLocaleString() + '.'; estOk = true; liveBalance = d.new_balance ?? liveBalance; }
+                                                })
+                                                .catch(() => { estBuying = null; estMsg = 'Purchase failed. Try again.'; estOk = false; })"
+                                            style="flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(52,211,153,.1));border:1px solid rgba(52,211,153,.4);color:#34d399;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                        <span x-show="estBuying !== prop.asset_id">✓ Buy Cash</span>
+                                        <span x-show="estBuying === prop.asset_id">Processing...</span>
+                                    </button>
+                                </template>
+                                <template x-if="prop.can_afford">
+                                    <button :disabled="estBuying === prop.asset_id"
+                                            @click="estBuying = prop.asset_id; estMsg = '';
+                                                fetch('/marketplace/' + prop.asset_id + '/buy', {
+                                                    method: 'POST',
+                                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                                                    credentials: 'same-origin',
+                                                    body: JSON.stringify({ financing: true })
+                                                })
+                                                .then(r => r.json())
+                                                .then(d => {
+                                                    estBuying = null;
+                                                    if (d.error) { estMsg = d.error; estOk = false; }
+                                                    else { estMsg = '🎉 ' + prop.name + ' financed! Deposit KES ' + (d.financing?.deposit ?? prop.deposit).toLocaleString() + ' paid — KES ' + (d.financing?.monthly ?? prop.monthly).toLocaleString() + '/game month is now on your bills.'; estOk = true; liveBalance = d.new_balance ?? liveBalance; }
+                                                })
+                                                .catch(() => { estBuying = null; estMsg = 'Purchase failed. Try again.'; estOk = false; })"
+                                            style="flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,rgba(163,230,53,.18),rgba(163,230,53,.08));border:1px solid rgba(163,230,53,.35);color:#a3e635;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                        <span x-show="estBuying !== prop.asset_id" x-text="'🏠 Finance — Pay KES ' + prop.deposit.toLocaleString() + ' Deposit'"></span>
+                                        <span x-show="estBuying === prop.asset_id">Processing...</span>
+                                    </button>
+                                </template>
+                            </div>
+                            <template x-if="!prop.can_afford_cash && !prop.can_afford">
                                 <div style="display:flex;gap:6px;margin-top:10px;align-items:center;">
                                     <div class="pc-property-afford-badge pc-property-afford-badge--short" style="flex:1;margin-top:0;"
                                          x-text="'Need KES ' + (prop.deposit - (district.balance ?? 0)).toLocaleString() + ' more for the deposit'"></div>
@@ -2329,28 +2315,51 @@
                                 </div>
                             </div>
                             <div class="pc-property-lesson" x-text="'💡 ' + vehicle.lesson"></div>
-                            <template x-if="vehicle.can_afford">
-                                <button :disabled="cyBuying === vehicle.asset_id"
-                                        @click="cyBuying = vehicle.asset_id; cyMsg = '';
-                                            fetch('/marketplace/' + vehicle.asset_id + '/buy', {
-                                                method: 'POST',
-                                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                                                credentials: 'same-origin',
-                                                body: JSON.stringify({ financing: true })
-                                            })
-                                            .then(r => r.json())
-                                            .then(d => {
-                                                cyBuying = null;
-                                                if (d.error) { cyMsg = d.error; cyOk = false; }
-                                                else { cyMsg = '🎉 ' + vehicle.name + ' financed! Deposit KES ' + (d.financing?.deposit ?? vehicle.deposit).toLocaleString() + ' paid — KES ' + (d.financing?.monthly ?? vehicle.monthly).toLocaleString() + '/game month is now on your bills.'; cyOk = true; liveBalance = d.new_balance ?? liveBalance; }
-                                            })
-                                            .catch(() => { cyBuying = null; cyMsg = 'Purchase failed. Try again.'; cyOk = false; })"
-                                        style="width:100%;margin-top:10px;padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,rgba(255,188,0,.2),rgba(255,188,0,.1));border:1px solid rgba(255,188,0,.4);color:#FFBC00;display:flex;align-items:center;justify-content:center;gap:6px;">
-                                    <span x-show="cyBuying !== vehicle.asset_id" x-text="'🚀 Finance — Pay KES ' + vehicle.deposit.toLocaleString() + ' Deposit'"></span>
-                                    <span x-show="cyBuying === vehicle.asset_id">Processing...</span>
-                                </button>
-                            </template>
-                            <template x-if="!vehicle.can_afford">
+                            <div style="display:flex;gap:8px;margin-top:10px;" x-show="vehicle.can_afford_cash || vehicle.can_afford">
+                                <template x-if="vehicle.can_afford_cash">
+                                    <button :disabled="cyBuying === vehicle.asset_id"
+                                            @click="cyBuying = vehicle.asset_id; cyMsg = '';
+                                                fetch('/marketplace/' + vehicle.asset_id + '/buy', {
+                                                    method: 'POST',
+                                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                                                    credentials: 'same-origin',
+                                                    body: JSON.stringify({ financing: false })
+                                                })
+                                                .then(r => r.json())
+                                                .then(d => {
+                                                    cyBuying = null;
+                                                    if (d.error) { cyMsg = d.error; cyOk = false; }
+                                                    else { cyMsg = '🎉 ' + vehicle.name + ' bought outright! New balance KES ' + (d.new_balance ?? 0).toLocaleString() + '.'; cyOk = true; liveBalance = d.new_balance ?? liveBalance; }
+                                                })
+                                                .catch(() => { cyBuying = null; cyMsg = 'Purchase failed. Try again.'; cyOk = false; })"
+                                            style="flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(52,211,153,.1));border:1px solid rgba(52,211,153,.4);color:#34d399;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                        <span x-show="cyBuying !== vehicle.asset_id">✓ Buy Cash</span>
+                                        <span x-show="cyBuying === vehicle.asset_id">Processing...</span>
+                                    </button>
+                                </template>
+                                <template x-if="vehicle.can_afford">
+                                    <button :disabled="cyBuying === vehicle.asset_id"
+                                            @click="cyBuying = vehicle.asset_id; cyMsg = '';
+                                                fetch('/marketplace/' + vehicle.asset_id + '/buy', {
+                                                    method: 'POST',
+                                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                                                    credentials: 'same-origin',
+                                                    body: JSON.stringify({ financing: true })
+                                                })
+                                                .then(r => r.json())
+                                                .then(d => {
+                                                    cyBuying = null;
+                                                    if (d.error) { cyMsg = d.error; cyOk = false; }
+                                                    else { cyMsg = '🎉 ' + vehicle.name + ' financed! Deposit KES ' + (d.financing?.deposit ?? vehicle.deposit).toLocaleString() + ' paid — KES ' + (d.financing?.monthly ?? vehicle.monthly).toLocaleString() + '/game month is now on your bills.'; cyOk = true; liveBalance = d.new_balance ?? liveBalance; }
+                                                })
+                                                .catch(() => { cyBuying = null; cyMsg = 'Purchase failed. Try again.'; cyOk = false; })"
+                                            style="flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,rgba(255,188,0,.2),rgba(255,188,0,.1));border:1px solid rgba(255,188,0,.4);color:#FFBC00;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                        <span x-show="cyBuying !== vehicle.asset_id" x-text="'🚀 Finance — Pay KES ' + vehicle.deposit.toLocaleString() + ' Deposit'"></span>
+                                        <span x-show="cyBuying === vehicle.asset_id">Processing...</span>
+                                    </button>
+                                </template>
+                            </div>
+                            <template x-if="!vehicle.can_afford_cash && !vehicle.can_afford">
                                 <div style="display:flex;gap:6px;margin-top:10px;align-items:center;">
                                     <div class="pc-property-afford-badge pc-property-afford-badge--short" style="flex:1;margin-top:0;"
                                          x-text="'Save KES ' + (vehicle.deposit - (district.balance ?? 0)).toLocaleString() + ' more'"></div>
@@ -2597,6 +2606,19 @@
     from { transform: translateY(0); }
     to   { transform: translateY(-8px); }
 }
+@keyframes pc-mood-glow {
+  0%   { box-shadow: 0 0 0 rgba(255,107,53,0); border-color: rgba(255,107,53,.2); }
+  30%  { box-shadow: 0 0 24px rgba(255,107,53,.6); border-color: rgba(255,107,53,.6); }
+  100% { box-shadow: 0 0 0 rgba(255,107,53,0); border-color: rgba(255,107,53,.2); }
+}
+@keyframes pc-mood-emoji-pop {
+  0%   { transform: scale(1) rotate(0); }
+  35%  { transform: scale(1.45) rotate(-8deg); }
+  65%  { transform: scale(0.92) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.pc-mood-pulse { animation: pc-mood-glow .9s ease; }
+.pc-mood-emoji-pop { animation: pc-mood-emoji-pop .6s ease; }
 @keyframes qc-particle-fly {
   0%   { transform: translate(0,0) scale(1); opacity: 1; }
   100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }

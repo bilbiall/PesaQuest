@@ -28,16 +28,20 @@ body{background:#07060f;}
 .ch-fill{height:100%;border-radius:9999px;background:linear-gradient(90deg,#6366f1,#a78bfa);}
 .trend{font-size:.68rem;font-weight:800;flex-shrink:0;width:2.2rem;text-align:center;}
 .trend.up{color:#34d399;} .trend.down{color:#f87171;} .trend.flat{color:#fbbf24;} .trend.none{color:#6b7280;}
-.stats-drop{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-top:none;border-radius:0 0 .85rem .85rem;margin:-.5rem 0 .5rem;padding:.7rem .85rem;}
-.stats-drop-inner{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;}
-.stats-drop-avatar{width:40px;height:40px;border-radius:.7rem;overflow:hidden;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff;flex-shrink:0;}
-.stats-drop-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
-.stats-drop-stat{background:rgba(255,255,255,.04);border-radius:.5rem;padding:.4rem .5rem;text-align:center;}
-.stats-drop-stat b{display:block;font-size:.78rem;}
+.stats-drop{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-top:none;border-radius:0 0 .85rem .85rem;margin:-.5rem 0 .5rem;padding:.7rem .85rem;overflow:hidden;}
+.stats-drop-bio{font-size:.68rem;color:#9ca3af;line-height:1.35;margin-bottom:.5rem;overflow-wrap:anywhere;}
+.stats-drop-meta{font-size:.66rem;color:#9ca3af;margin-bottom:.5rem;}
+.stats-drop-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.4rem;}
+.stats-drop-stat{background:rgba(255,255,255,.04);border-radius:.5rem;padding:.4rem .5rem;text-align:center;min-width:0;}
+.stats-drop-stat.clickable{cursor:pointer;}
+.stats-drop-stat b{display:block;font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stats-drop-stat span{display:block;font-size:.56rem;color:#9ca3af;text-transform:uppercase;font-weight:700;margin-top:.1rem;}
+.stats-drop-badges{display:flex;gap:.4rem;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;padding:.5rem .1rem .1rem;}
+.stats-drop-badges::-webkit-scrollbar{display:none;}
+.stats-drop-badge-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:.3rem;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:.66rem;font-weight:700;padding:.3rem .6rem;border-radius:.6rem;white-space:nowrap;}
 </style>
 
-<div class="min-h-screen px-4 py-6 max-w-2xl mx-auto" style="background:#07060f;">
+<div class="min-h-screen px-4 py-6 max-w-2xl mx-auto" style="background:#07060f;overflow-x:hidden;">
     <div class="flex items-center gap-4 mb-4 text-sm">
         <a href="{{ route('challenges.index') }}" class="text-gray-400 hover:text-white inline-flex items-center gap-2">← Back to Champions' Court</a>
         <a href="{{ route('world') }}" class="text-gray-500 hover:text-white inline-flex items-center gap-2">🎮 Back to Game</a>
@@ -65,9 +69,9 @@ body{background:#07060f;}
 
     <div class="profile-card mb-4">
         <div class="flex items-start justify-between gap-3 mb-2">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">{{ $challenge->template?->icon ?? '🏆' }}</span>
-                <div>
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <span class="text-2xl flex-shrink-0">{{ $challenge->template?->icon ?? '🏆' }}</span>
+                <div class="flex-1 min-w-0">
                     <h1 class="text-lg font-black text-white">{{ $challenge->title }}</h1>
                     <p class="text-xs text-gray-500">
                         {{ ucfirst($challenge->status) }} ·
@@ -228,24 +232,33 @@ function toggleStatsDrop(challengeId, participantId) {
     fetch(`/challenges/${challengeId}/participants/${participantId}/stats`, { headers: { 'Accept': 'application/json' } })
         .then(r => { if (!r.ok) throw new Error(); return r.json(); })
         .then(s => {
-            const initial = (s.name || 'P').charAt(0).toUpperCase();
+            const hasBadges = (s.badges_count || 0) > 0;
+            const badgesRow = hasBadges
+                ? `<div id="badgeScroll-${participantId}" class="stats-drop-badges" style="display:none;">`
+                    + (s.badges || []).map(b => `<span class="stats-drop-badge-chip">${b.icon || '🏅'} ${b.name}</span>`).join('')
+                    + `</div>`
+                : '';
             const html = `
-                <div class="stats-drop-inner">
-                    <div class="stats-drop-avatar">${s.profile_photo ? `<img src="${s.profile_photo}" style="width:100%;height:100%;object-fit:cover;">` : initial}</div>
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:900;color:#fff;font-size:.82rem;">${s.name}</div>
-                        <div style="font-size:.64rem;color:#9ca3af;">Level ${s.level} · ${s.played_label}</div>
-                    </div>
-                </div>
+                ${s.bio ? `<div class="stats-drop-bio">${s.bio}</div>` : ''}
+                <div class="stats-drop-meta">Level ${s.level} · ${s.played_label}</div>
                 <div class="stats-drop-grid">
                     <div class="stats-drop-stat"><b style="color:#a78bfa;">${Number(s.xp).toLocaleString()}</b><span>XP</span></div>
                     <div class="stats-drop-stat"><b style="color:#34d399;">KES ${Number(s.net_worth).toLocaleString()}</b><span>Net Worth</span></div>
-                    <div class="stats-drop-stat" style="grid-column:1/-1;"><b style="color:#fbbf24;">🏅 ${s.badges_count}</b><span>Badges</span></div>
-                </div>`;
+                    <div class="stats-drop-stat ${hasBadges ? 'clickable' : ''}" style="grid-column:1/-1;" ${hasBadges ? `onclick="toggleBadgeScroll(${participantId})"` : ''}>
+                        <b style="color:#fbbf24;">🏅 ${s.badges_count}</b><span>${hasBadges ? 'Badges — tap to view' : 'Badges'}</span>
+                    </div>
+                </div>
+                ${badgesRow}`;
             statsDropCache[participantId] = html;
             drop.innerHTML = html;
         })
         .catch(() => { drop.innerHTML = '<p class="text-xs" style="color:#f87171;padding:.3rem 0;">Could not load stats.</p>'; });
+}
+
+function toggleBadgeScroll(participantId) {
+    const el = document.getElementById('badgeScroll-' + participantId);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
 }
 
 function pqShareChallenge(btn) {
