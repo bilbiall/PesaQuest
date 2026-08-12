@@ -550,20 +550,20 @@
             <template x-if="selling">
                 <div>
                     {{-- Modal header --}}
-                    <div class="p-6 border-b border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9" x-html="pqIcon(selling.icon, 'w-9 h-9')"></div>
-                            <div>
-                                <p class="font-black text-white" x-text="selling.name"></p>
-                                <p class="text-xs text-gray-400">Confirm sale — proceeds go to your balance</p>
+                    <div class="p-4 sm:p-6 border-b border-white/5">
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <div class="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0" x-html="pqIcon(selling.icon, 'w-7 h-7 sm:w-9 sm:h-9')"></div>
+                            <div class="min-w-0">
+                                <p class="font-black text-white text-sm sm:text-base truncate" x-text="selling.name"></p>
+                                <p class="text-[.68rem] sm:text-xs text-gray-400">Confirm sale — proceeds go to your balance</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6">
                         {{-- P&L preview --}}
-                        <div class="rounded-2xl p-4 mb-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
-                            <div class="space-y-2 text-sm">
+                        <div class="rounded-2xl p-3 sm:p-4 mb-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+                            <div class="space-y-2 text-xs sm:text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-gray-400">Current value</span>
                                     <span class="font-bold text-white" x-text="'Ksh ' + selling.value.toLocaleString()"></span>
@@ -580,7 +580,7 @@
                         </div>
 
                         {{-- P&L vs purchase --}}
-                        <div class="rounded-xl px-4 py-3 mb-4 text-xs"
+                        <div class="rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 mb-4 text-[.68rem] sm:text-xs"
                              style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);">
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-500">Vs. what you paid (Ksh <span x-text="selling.cost.toLocaleString()"></span>)</span>
@@ -592,19 +592,19 @@
                         </div>
 
                         {{-- Message --}}
-                        <div x-show="sellMsg" class="rounded-xl px-4 py-2 text-xs font-bold text-center mb-3"
+                        <div x-show="sellMsg" class="rounded-xl px-3 py-2 sm:px-4 text-[.68rem] sm:text-xs font-bold text-center mb-3"
                              :class="sellOk ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'"
                              x-text="sellMsg"></div>
 
-                        <div class="flex gap-3">
+                        <div class="flex gap-2.5 sm:gap-3">
                             <button @click="selling = null; sellMsg = '';"
-                                    class="flex-1 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                                    class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition-colors"
                                     style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
                                 Keep it
                             </button>
                             <button @click="confirmSell()"
                                     :disabled="isSelling"
-                                    class="flex-1 py-3 rounded-xl text-sm font-black transition-all hover:scale-[1.02] active:scale-[0.97] disabled:opacity-50"
+                                    class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] active:scale-[0.97] disabled:opacity-50"
                                     style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#fca5a5;">
                                 <span x-show="!isSelling">Confirm Sale</span>
                                 <span x-show="isSelling" x-cloak>Selling…</span>
@@ -679,8 +679,8 @@ function portfolio() {
     <div id="list-trade-modal"
          style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);"
          onclick="if(event.target===this)closeListModal()">
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:380px;width:calc(100%-2rem);background:linear-gradient(145deg,#1a1830,#12112a);border:1px solid rgba(16,185,129,0.3);border-radius:1.5rem;padding:1.75rem;">
-            <h3 style="font-weight:900;font-size:1rem;color:white;margin-bottom:0.25rem;">🤝 List for Trade</h3>
+        <div class="p-5 sm:p-7" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:380px;width:calc(100%-2rem);background:linear-gradient(145deg,#1a1830,#12112a);border:1px solid rgba(16,185,129,0.3);border-radius:1.5rem;">
+            <h3 class="text-sm sm:text-base" style="font-weight:900;color:white;margin-bottom:0.25rem;">🤝 List for Trade</h3>
             <p id="list-asset-name" style="font-size:0.8rem;color:#9ca3af;margin-bottom:1.25rem;"></p>
             <label style="font-size:0.72rem;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:0.5rem;">Asking Price (Ksh)</label>
             <div style="position:relative;margin-bottom:0.5rem;">

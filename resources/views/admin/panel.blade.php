@@ -488,10 +488,10 @@
 
             {{-- Create School Modal --}}
             <div x-show="createModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" @click.self="createModal = false">
-                <div class="modal-box p-6 w-full max-w-md">
-                    <div class="flex items-center justify-between mb-5">
-                        <h3 class="font-black text-lg">New School Subscription</h3>
-                        <button @click="createModal = false" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">✕</button>
+                <div class="modal-box p-4 sm:p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-4 sm:mb-5">
+                        <h3 class="font-black text-sm sm:text-lg">New School Subscription</h3>
+                        <button @click="createModal = false" class="text-gray-400 hover:text-white w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-sm sm:text-base">✕</button>
                     </div>
                     <div class="space-y-4">
                         <div>
@@ -1030,13 +1030,13 @@
 
             {{-- Create School Plan Modal --}}
             <div x-show="createModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" @click.self="createModal = false">
-                <div class="modal-box p-6 w-full max-w-md">
-                    <div class="flex items-center justify-between mb-5">
+                <div class="modal-box p-4 sm:p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-4 sm:mb-5">
                         <div>
-                            <h3 class="font-black text-lg">New School Plan</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Define a tier based on school size</p>
+                            <h3 class="font-black text-sm sm:text-lg">New School Plan</h3>
+                            <p class="text-[.68rem] sm:text-xs text-gray-500 mt-0.5">Define a tier based on school size</p>
                         </div>
-                        <button @click="createModal = false" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">✕</button>
+                        <button @click="createModal = false" class="text-gray-400 hover:text-white w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-sm sm:text-base">✕</button>
                     </div>
 
                     <div class="space-y-4">
@@ -2088,10 +2088,10 @@
     {{-- ── Create User Modal ── --}}
     <div x-show="cuModal.open" x-cloak @click.self="cuModal.open=false"
          class="modal-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div class="modal-box p-6 space-y-4" x-transition style="max-width:480px;">
+        <div class="modal-box p-4 sm:p-6 space-y-3 sm:space-y-4" x-transition style="max-width:480px;">
             <div class="flex items-center justify-between">
-                <h3 class="font-black text-lg">➕ Create New User</h3>
-                <button @click="cuModal.open=false" class="text-gray-500 hover:text-white w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/5 text-xl leading-none">✕</button>
+                <h3 class="font-black text-sm sm:text-lg">➕ Create New User</h3>
+                <button @click="cuModal.open=false" class="text-gray-500 hover:text-white w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/5 text-base sm:text-xl leading-none">✕</button>
             </div>
 
             <div class="space-y-3">
@@ -2174,9 +2174,9 @@
     {{-- ── Subscribe Modal ── --}}
     <div x-show="subModal.open" x-cloak @click.self="subModal.open=false"
          class="modal-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div class="modal-box p-6 space-y-4" x-transition>
-            <h3 class="font-black text-lg">Grant Subscription</h3>
-            <p class="text-sm text-gray-400">Granting premium access to <strong x-text="subModal.userName" class="text-white"></strong></p>
+        <div class="modal-box p-4 sm:p-6 space-y-3 sm:space-y-4" x-transition>
+            <h3 class="font-black text-sm sm:text-lg">Grant Subscription</h3>
+            <p class="text-xs sm:text-sm text-gray-400">Granting premium access to <strong x-text="subModal.userName" class="text-white"></strong></p>
             <div>
                 <label class="text-xs text-gray-400 font-semibold mb-1.5 block">Subscription Plan
                     <x-help-tip text="Which plan to hand this player for free. Access starts now and ends after the plan's duration, and any subscription they already have is cancelled and replaced." example="Monthly — premium until 30 days from today" />
@@ -2204,12 +2204,12 @@
     {{-- ── Password Reset Modal ── --}}
     <div x-show="pwModal.open" x-cloak @click.self="pwModal.open=false"
          class="modal-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div class="modal-box p-6 space-y-4" x-transition>
-            <h3 class="font-black text-lg">🔑 Password Reset</h3>
+        <div class="modal-box p-4 sm:p-6 space-y-3 sm:space-y-4" x-transition>
+            <h3 class="font-black text-sm sm:text-lg">🔑 Password Reset</h3>
             <template x-if="!pwModal.result">
                 <div>
-                    <p class="text-sm text-gray-400">Reset password for <strong x-text="pwModal.userName" class="text-white"></strong>?</p>
-                    <p class="text-xs text-gray-500 mt-2">A temporary password will be generated and emailed to the user (if SMTP is configured).</p>
+                    <p class="text-xs sm:text-sm text-gray-400">Reset password for <strong x-text="pwModal.userName" class="text-white"></strong>?</p>
+                    <p class="text-[.68rem] sm:text-xs text-gray-500 mt-2">A temporary password will be generated and emailed to the user (if SMTP is configured).</p>
                     <div class="flex gap-3 mt-4">
                         <button @click="pwModal.open=false" class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-400">Cancel</button>
                         <button @click="doReset()" :disabled="pwModal.loading"
@@ -2223,10 +2223,10 @@
             <template x-if="pwModal.result">
                 <div>
                     <div class="text-center py-2">
-                        <div class="text-4xl mb-3">✅</div>
+                        <div class="text-3xl sm:text-4xl mb-3">✅</div>
                         <div class="text-sm text-white font-bold mb-3">Password Reset</div>
                         <div class="text-xs text-gray-400 mb-2">Temporary password:</div>
-                        <div class="font-mono text-lg font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 tracking-widest" x-text="pwModal.result"></div>
+                        <div class="font-mono text-base sm:text-lg font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 tracking-widest break-all" x-text="pwModal.result"></div>
                         <div class="text-xs text-gray-500 mt-2" x-text="pwModal.emailSent ? '✉️ Email sent to user' : '⚠️ Email not sent (check SMTP settings)'"></div>
                     </div>
                     <button @click="pwModal.open=false;pwModal.result=null;" class="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-400">Close</button>

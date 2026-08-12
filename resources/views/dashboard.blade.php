@@ -216,24 +216,27 @@
 <div x-show="showNotifPanel" x-cloak @click.self="showNotifPanel=false"
      class="modal-overlay fixed inset-0 z-[200] flex justify-end"
      x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
-    <div class="w-full max-w-sm h-full bg-[#0d0c1e] border-l border-white/10 overflow-y-auto p-6"
+    <div class="w-full max-w-sm h-full bg-[#0d0c1e] border-l border-white/10 overflow-y-auto p-4 sm:p-6"
          x-transition:enter="transition ease-out duration-250" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="font-black text-lg">Notifications</h2>
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 class="font-black text-sm sm:text-lg">Notifications</h2>
             <button @click="showNotifPanel=false" class="text-gray-400 hover:text-white p-1">✕</button>
         </div>
         @forelse($recentNotifications as $notif)
-        <div class="notif-{{ $notif->type }} notif-item rounded-xl px-3 py-4 mb-3 flex items-start gap-3">
-            <span class="text-xl flex-shrink-0">{{ $notif->icon }}</span>
+        <div class="notif-{{ $notif->type }} notif-item rounded-xl px-3 py-3 sm:py-4 mb-3 flex items-start gap-3">
+            <span class="text-base sm:text-xl flex-shrink-0">{{ $notif->icon }}</span>
             <div class="flex-1">
-                <div class="text-sm font-bold">{{ $notif->title }}</div>
-                <div class="text-xs text-gray-400 mt-1">{{ $notif->body }}</div>
-                <div class="text-[10px] text-gray-600 mt-1.5">{{ $notif->created_at->diffForHumans() }}</div>
+                <div class="text-xs sm:text-sm font-bold">{{ $notif->title }}</div>
+                <div class="text-[11px] sm:text-xs text-gray-400 mt-1">{{ $notif->body }}</div>
+                <div class="text-[9px] sm:text-[10px] text-gray-600 mt-1.5">{{ $notif->created_at->diffForHumans() }}</div>
             </div>
             @if(!$notif->is_read)<div class="w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0 mt-1 pulse-dot"></div>@endif
         </div>
         @empty
-        <div class="text-center py-16 text-gray-500"><div class="text-5xl mb-3">🔔</div><p>All caught up!</p></div>
+        <div class="text-center py-16 text-gray-500">
+            <div class="flex justify-center mb-3"><x-icon name="bell" class="w-9 h-9 sm:w-12 sm:h-12 text-gray-600" /></div>
+            <p class="text-xs sm:text-sm">All caught up!</p>
+        </div>
         @endforelse
     </div>
 </div>
@@ -245,14 +248,14 @@
 @if($showOnboardingWizard ?? false)
 <div x-data="onboardingWizard(@json($onboardingSteps))" x-show="visible" x-cloak
      class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9995;overflow-y:auto;overscroll-behavior:contain;">
-    <div class="max-w-lg w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-8 my-auto relative">
+    <div class="max-w-lg w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-5 sm:p-8 my-auto relative">
         <button @click="close()" title="Close wizard"
-                class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                class="absolute top-3 right-3 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
         {{-- Step progress dots --}}
-        <div class="flex items-center gap-1.5 mb-5">
+        <div class="flex items-center gap-1.5 mb-4 sm:mb-5">
             <template x-for="(s, i) in steps" :key="i">
                 <div class="h-1.5 flex-1 rounded-full transition-colors" :style="i <= step ? 'background:#6366f1;' : 'background:rgba(255,255,255,.1);'"></div>
             </template>
@@ -260,23 +263,23 @@
 
         <template x-for="(s, i) in steps" :key="'step-'+i">
             <div x-show="step === i">
-                <div class="text-6xl mb-4 text-center" x-text="s.icon"></div>
-                <p class="text-[11px] font-black uppercase tracking-widest text-indigo-400 text-center mb-1.5" x-text="s.category"></p>
-                <h2 class="text-2xl font-black mb-3 text-center" x-text="s.title"></h2>
-                <p class="text-gray-400 text-sm leading-relaxed text-center" x-text="s.body"></p>
+                <div class="text-4xl sm:text-6xl mb-3 sm:mb-4 text-center" x-text="s.icon"></div>
+                <p class="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-indigo-400 text-center mb-1.5" x-text="s.category"></p>
+                <h2 class="text-lg sm:text-2xl font-black mb-2 sm:mb-3 text-center" x-text="s.title"></h2>
+                <p class="text-gray-400 text-xs sm:text-sm leading-relaxed text-center" x-text="s.body"></p>
             </div>
         </template>
 
-        <div class="flex items-center justify-between gap-3 mt-8">
-            <button @click="close()" class="px-5 py-3 rounded-2xl text-sm font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
+        <div class="flex items-center justify-between gap-3 mt-6 sm:mt-8">
+            <button @click="close()" class="px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
                 Close wizard
             </button>
             <button @click="next()"
-                    class="flex-1 max-w-[12rem] bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-3 rounded-2xl text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
+                    class="flex-1 max-w-[12rem] bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
                 <span x-text="step < steps.length - 1 ? 'Next' : 'Start Playing!'"></span>
             </button>
         </div>
-        <p class="text-[11px] text-gray-600 text-center mt-3">Step <span x-text="step+1"></span> of <span x-text="steps.length"></span></p>
+        <p class="text-[10px] sm:text-[11px] text-gray-600 text-center mt-3">Step <span x-text="step+1"></span> of <span x-text="steps.length"></span></p>
     </div>
 </div>
 @endif
@@ -286,17 +289,17 @@
 @php $levelIcons=['1'=>'🌱','2'=>'🌿','3'=>'🍀','4'=>'⭐','5'=>'🌟','6'=>'🔥','7'=>'💎','8'=>'👑','9'=>'🏆','10'=>'✨']; @endphp
 <div id="levelup-overlay" class="modal-overlay fixed inset-0 flex items-center justify-center" style="z-index:9991;"
      onclick="document.getElementById('levelup-overlay').style.display='none'">
-    <div class="text-center max-w-xs px-8 py-10" onclick="event.stopPropagation()">
-        <div class="text-8xl mb-3" style="animation:levelBounce .6s cubic-bezier(0.34,1.56,0.64,1) both;">
+    <div class="text-center max-w-xs px-5 py-6 sm:px-8 sm:py-10" onclick="event.stopPropagation()">
+        <div class="text-5xl sm:text-8xl mb-3" style="animation:levelBounce .6s cubic-bezier(0.34,1.56,0.64,1) both;">
             {{ $levelIcons[(string)min($progress->level,10)] ?? '🌟' }}
         </div>
-        <div class="text-sm font-black text-purple-400 uppercase tracking-widest mb-2">Level Up!</div>
-        <div class="text-5xl font-black mb-3" style="background:linear-gradient(135deg,#6366f1,#a78bfa,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        <div class="text-xs sm:text-sm font-black text-purple-400 uppercase tracking-widest mb-2">Level Up!</div>
+        <div class="text-3xl sm:text-5xl font-black mb-3" style="background:linear-gradient(135deg,#6366f1,#a78bfa,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
             Level {{ $progress->level }}
         </div>
-        <p class="text-gray-400 text-sm mb-6 leading-relaxed">Your financial wisdom is growing. Keep making smart choices!</p>
+        <p class="text-gray-400 text-xs sm:text-sm mb-5 sm:mb-6 leading-relaxed">Your financial wisdom is growing. Keep making smart choices!</p>
         <button onclick="document.getElementById('levelup-overlay').style.display='none'"
-                class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black px-8 py-3 rounded-2xl text-sm hover:scale-105 transition-transform">
+                class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black px-6 py-2.5 sm:px-8 sm:py-3 rounded-2xl text-xs sm:text-sm hover:scale-105 transition-transform">
             Let's keep going!
         </button>
     </div>
@@ -306,15 +309,15 @@
 {{-- Onboarding overlay --}}
 @if($needsOnboarding)
 <div class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9990;overflow-y:auto;overscroll-behavior:contain;">
-    <div class="max-w-md w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-10 text-center my-auto">
-        <div class="mb-4 animate-bounce flex justify-center"><x-icon name="rocket" class="w-16 h-16 text-indigo-400" /></div>
-        <h2 class="text-2xl font-black mb-2">Start Your Career Journey</h2>
-        <p class="text-gray-400 text-sm leading-relaxed mb-6">Take a quick 5-question quiz and we'll match you to the perfect career in PesaQuest's world.</p>
+    <div class="max-w-md w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-6 sm:p-10 text-center my-auto">
+        <div class="mb-3 sm:mb-4 animate-bounce flex justify-center"><x-icon name="rocket" class="w-11 h-11 sm:w-16 sm:h-16 text-indigo-400" /></div>
+        <h2 class="text-lg sm:text-2xl font-black mb-2">Start Your Career Journey</h2>
+        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed mb-5 sm:mb-6">Take a quick 5-question quiz and we'll match you to the perfect career in PesaQuest's world.</p>
         <a href="{{ route('life.quiz') }}"
-           class="block bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-2xl text-base shadow-xl shadow-indigo-500/40 hover:scale-105 transition-transform flex items-center justify-center gap-2">
-            <x-icon name="pencil" class="w-4 h-4" /> Take the Career Quiz
+           class="block bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-3 sm:py-4 rounded-2xl text-sm sm:text-base shadow-xl shadow-indigo-500/40 hover:scale-105 transition-transform flex items-center justify-center gap-2">
+            <x-icon name="pencil" class="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Take the Career Quiz
         </a>
-        <p class="text-[11px] text-gray-600 mt-3">Takes 2 minutes — Fully personalised</p>
+        <p class="text-[10px] sm:text-[11px] text-gray-600 mt-3">Takes 2 minutes — Fully personalised</p>
     </div>
 </div>
 @endif
@@ -336,11 +339,11 @@
      style="z-index:9990;overflow-y:auto;overscroll-behavior:contain;"
      onclick="document.getElementById('report-overlay').style.display='none'"
      x-data="{ showIncome: false, showExpense: false }">
-    <div class="max-w-sm w-full my-auto bg-[#12111f] border border-white/10 rounded-3xl p-8 text-center" onclick="event.stopPropagation()">
-        <div class="text-7xl font-black leading-none mb-1" style="color:{{ $gradeColor }};">{{ $hasGrade ? $rpt['grade'] : '–' }}</div>
-        <div class="text-base font-black text-white mb-1">Monthly Report Card</div>
-        <div class="text-xs text-gray-500 mb-5">{{ $rpt['months'] }} game month{{ $rpt['months']>1?'s':'' }} completed</div>
-        <div class="bg-white/4 border border-white/7 rounded-2xl p-4 mb-4 text-left space-y-2 text-xs">
+    <div class="max-w-sm w-full my-auto bg-[#12111f] border border-white/10 rounded-3xl p-5 sm:p-8 text-center" onclick="event.stopPropagation()">
+        <div class="text-4xl sm:text-7xl font-black leading-none mb-1" style="color:{{ $gradeColor }};">{{ $hasGrade ? $rpt['grade'] : '–' }}</div>
+        <div class="text-sm sm:text-base font-black text-white mb-1">Monthly Report Card</div>
+        <div class="text-[11px] sm:text-xs text-gray-500 mb-4 sm:mb-5">{{ $rpt['months'] }} game month{{ $rpt['months']>1?'s':'' }} completed</div>
+        <div class="bg-white/4 border border-white/7 rounded-2xl p-3 sm:p-4 mb-4 text-left space-y-2 text-[11px] sm:text-xs">
             <div class="flex justify-between items-center">
                 <button type="button" @click="showIncome = !showIncome" class="flex items-center gap-1 text-gray-400 hover:text-white transition-colors" @if(empty($rpt['income_items'])) disabled @endif>
                     <span>Total Income</span>
@@ -391,9 +394,9 @@
             <div class="flex justify-between"><span class="text-gray-400">Savings Rate</span><span class="font-black" style="color:{{ $gradeColor }};">{{ $rpt['savings_rate'] }}%</span></div>
         </div>
         <div class="h-1.5 bg-white/5 rounded-full overflow-hidden mb-4"><div class="h-full rounded-full" style="width:{{ min(100,$rpt['savings_rate']) }}%;background:{{ $gradeColor }};transition:width 1.2s;"></div></div>
-        <p class="text-xs text-gray-300 leading-relaxed mb-5">{{ $gradeMsg }}</p>
+        <p class="text-[11px] sm:text-xs text-gray-300 leading-relaxed mb-4 sm:mb-5">{{ $gradeMsg }}</p>
         <button onclick="document.getElementById('report-overlay').style.display='none'"
-                class="w-full text-white font-black py-3 rounded-2xl text-sm" style="background:{{ $gradeColor }};">
+                class="w-full text-white font-black py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm" style="background:{{ $gradeColor }};">
             Got it — keep going!
         </button>
     </div>

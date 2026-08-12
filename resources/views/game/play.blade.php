@@ -215,23 +215,23 @@
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
          class="fixed inset-0 z-[400] flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
-        <div class="market-popup rounded-3xl p-7 max-w-sm w-full text-center
+        <div class="market-popup rounded-3xl p-4 sm:p-7 max-w-sm w-full text-center
                     {{ $marketEvent->effect_type === 'bonus' ? 'market-bonus' : 'market-penalty' }}">
-            <div class="text-6xl mb-4">{{ $marketEvent->icon }}</div>
-            <h3 class="font-black text-xl mb-2 {{ $marketEvent->effect_type === 'bonus' ? 'text-emerald-400' : 'text-red-400' }}">
+            <div class="text-4xl sm:text-6xl mb-3 sm:mb-4">{{ $marketEvent->icon }}</div>
+            <h3 class="font-black text-base sm:text-xl mb-2 {{ $marketEvent->effect_type === 'bonus' ? 'text-emerald-400' : 'text-red-400' }}">
                 {{ $marketEvent->title }}
             </h3>
-            <p class="text-gray-300 text-sm leading-relaxed mb-4">{{ $marketEvent->description }}</p>
+            <p class="text-gray-300 text-xs sm:text-sm leading-relaxed mb-4">{{ $marketEvent->description }}</p>
             @if($marketEvent->effect_amount > 0)
-            <div class="inline-flex items-center gap-2 px-5 py-2 rounded-xl mb-5
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 sm:px-5 sm:py-2 rounded-xl mb-4 sm:mb-5
                         {{ $marketEvent->effect_type === 'bonus' ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-red-500/15 border border-red-500/30 text-red-400' }}">
-                <span class="font-black text-lg">{{ $marketEvent->effect_type === 'bonus' ? '+' : '-' }}Ksh {{ number_format($marketEvent->effect_amount) }}</span>
-                <span class="text-sm opacity-70">to your balance</span>
+                <span class="font-black text-sm sm:text-lg truncate">{{ $marketEvent->effect_type === 'bonus' ? '+' : '-' }}Ksh {{ number_format($marketEvent->effect_amount) }}</span>
+                <span class="text-xs sm:text-sm opacity-70">to your balance</span>
             </div>
             @endif
-            <p class="text-xs text-gray-600 mb-5">This is a real-world event affecting your game balance</p>
+            <p class="text-[11px] sm:text-xs text-gray-600 mb-4 sm:mb-5">This is a real-world event affecting your game balance</p>
             <button @click="show = false"
-                    class="w-full py-3 rounded-xl font-bold text-white {{ $marketEvent->effect_type === 'bonus' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-700 hover:bg-red-600' }} transition-colors">
+                    class="w-full py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-white {{ $marketEvent->effect_type === 'bonus' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-700 hover:bg-red-600' }} transition-colors">
                 Got it! Continue →
             </button>
         </div>
@@ -595,57 +595,61 @@
          style="overflow-y:auto;overscroll-behavior:contain;">
         <div class="payslip-modal rounded-3xl w-full max-w-sm slide-up my-auto">
             {{-- Header --}}
-            <div class="px-6 pt-6 pb-4 border-b border-white/8 text-center">
-                <div class="text-4xl mb-2">💰</div>
-                <h3 class="text-white font-black text-xl">Monthly Pay Day!</h3>
+            <div class="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-white/8 text-center">
+                <div class="flex justify-center mb-2">
+                    <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+                        <x-icon name="wallet" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                    </div>
+                </div>
+                <h3 class="text-white font-black text-sm sm:text-xl">Monthly Pay Day!</h3>
                 @php $cm = \App\Services\CareerService::fieldsByKey()[$progress->career_field] ?? ['icon'=>'💼','label'=>'Career','color'=>'#f59e0b']; @endphp
-                <p class="text-sm mt-1" style="color:{{ $cm['color'] }};">{{ $cm['icon'] }} {{ $progress->career_title }}</p>
+                <p class="text-xs sm:text-sm mt-1" style="color:{{ $cm['color'] }};">{{ $cm['icon'] }} {{ $progress->career_title }}</p>
             </div>
 
             {{-- Pay slip breakdown --}}
-            <div class="px-6 py-4 space-y-0">
-                <div class="payslip-row flex justify-between py-2.5">
-                    <span class="text-gray-400 text-sm">Gross Salary</span>
-                    <span class="text-white font-bold text-sm">Ksh {{ number_format($payslip['gross']) }}</span>
+            <div class="px-4 py-3 sm:px-6 sm:py-4 space-y-0">
+                <div class="payslip-row flex justify-between py-2 sm:py-2.5">
+                    <span class="text-gray-400 text-xs sm:text-sm">Gross Salary</span>
+                    <span class="text-white font-bold text-xs sm:text-sm">Ksh {{ number_format($payslip['gross']) }}</span>
                 </div>
-                <div class="payslip-row flex justify-between py-2.5">
+                <div class="payslip-row flex justify-between py-2 sm:py-2.5">
                     <div>
-                        <span class="text-gray-400 text-sm">PAYE Tax</span>
-                        <span class="text-gray-600 text-xs ml-1">(Kenya Revenue Authority)</span>
+                        <span class="text-gray-400 text-xs sm:text-sm">PAYE Tax</span>
+                        <span class="text-gray-600 text-[10px] sm:text-xs ml-1">(Kenya Revenue Authority)</span>
                     </div>
-                    <span class="text-red-400 text-sm font-semibold">- Ksh {{ number_format($payslip['paye']) }}</span>
+                    <span class="text-red-400 text-xs sm:text-sm font-semibold">- Ksh {{ number_format($payslip['paye']) }}</span>
                 </div>
-                <div class="payslip-row flex justify-between py-2.5">
+                <div class="payslip-row flex justify-between py-2 sm:py-2.5">
                     <div>
-                        <span class="text-gray-400 text-sm">NHIF</span>
-                        <span class="text-gray-600 text-xs ml-1">(Health Insurance)</span>
+                        <span class="text-gray-400 text-xs sm:text-sm">NHIF</span>
+                        <span class="text-gray-600 text-[10px] sm:text-xs ml-1">(Health Insurance)</span>
                     </div>
-                    <span class="text-red-400 text-sm font-semibold">- Ksh {{ number_format($payslip['nhif']) }}</span>
+                    <span class="text-red-400 text-xs sm:text-sm font-semibold">- Ksh {{ number_format($payslip['nhif']) }}</span>
                 </div>
-                <div class="payslip-row flex justify-between py-2.5">
+                <div class="payslip-row flex justify-between py-2 sm:py-2.5">
                     <div>
-                        <span class="text-gray-400 text-sm">NSSF</span>
-                        <span class="text-gray-600 text-xs ml-1">(Pension Fund)</span>
+                        <span class="text-gray-400 text-xs sm:text-sm">NSSF</span>
+                        <span class="text-gray-600 text-[10px] sm:text-xs ml-1">(Pension Fund)</span>
                     </div>
-                    <span class="text-red-400 text-sm font-semibold">- Ksh {{ number_format($payslip['nssf']) }}</span>
+                    <span class="text-red-400 text-xs sm:text-sm font-semibold">- Ksh {{ number_format($payslip['nssf']) }}</span>
                 </div>
                 @if($payslip['loans'] > 0)
-                <div class="payslip-row flex justify-between py-2.5">
-                    <span class="text-gray-400 text-sm">Loan Installments</span>
-                    <span class="text-orange-400 text-sm font-semibold">- Ksh {{ number_format($payslip['loans']) }}</span>
+                <div class="payslip-row flex justify-between py-2 sm:py-2.5">
+                    <span class="text-gray-400 text-xs sm:text-sm">Loan Installments</span>
+                    <span class="text-orange-400 text-xs sm:text-sm font-semibold">- Ksh {{ number_format($payslip['loans']) }}</span>
                 </div>
                 @endif
-                <div class="flex justify-between py-3 mt-1 rounded-xl px-3"
+                <div class="flex justify-between py-2.5 sm:py-3 mt-1 rounded-xl px-3"
                      style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
-                    <span class="text-emerald-400 font-black text-base">NET PAY</span>
-                    <span class="text-emerald-400 font-black text-base">Ksh {{ number_format($payslip['net']) }}</span>
+                    <span class="text-emerald-400 font-black text-sm sm:text-base">NET PAY</span>
+                    <span class="text-emerald-400 font-black text-sm sm:text-base truncate">Ksh {{ number_format($payslip['net']) }}</span>
                 </div>
             </div>
 
-            <div class="px-6 pb-4 text-center">
-                <p class="text-gray-600 text-xs mb-4">This has been added to your game balance. Deductions mirror real Kenyan statutory requirements.</p>
+            <div class="px-4 pb-3 sm:px-6 sm:pb-4 text-center">
+                <p class="text-gray-600 text-[11px] sm:text-xs mb-3 sm:mb-4">This has been added to your game balance. Deductions mirror real Kenyan statutory requirements.</p>
                 <button @click="open = false; currentBalance += {{ $payslip['net'] }}"
-                        class="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all">
+                        class="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold text-xs sm:text-base py-2.5 sm:py-3 rounded-xl hover:opacity-90 transition-all">
                     Received! Let's Go 🚀
                 </button>
             </div>
@@ -671,36 +675,36 @@
                  style="background:radial-gradient(ellipse at 50% 0%,rgba(139,92,246,0.25) 0%,transparent 70%);"></div>
 
             {{-- Stars burst --}}
-            <div class="absolute top-4 left-4 text-lg opacity-40">✦</div>
-            <div class="absolute top-6 right-8 text-sm opacity-30">✦</div>
-            <div class="absolute top-10 left-12 text-xs opacity-20">✦</div>
+            <div class="absolute top-4 left-4 text-base sm:text-lg opacity-40">✦</div>
+            <div class="absolute top-6 right-8 text-xs sm:text-sm opacity-30">✦</div>
+            <div class="absolute top-10 left-12 text-[10px] sm:text-xs opacity-20">✦</div>
 
-            <div class="relative px-6 py-8 text-center">
+            <div class="relative px-4 py-5 sm:px-6 sm:py-8 text-center">
                 {{-- Icon --}}
-                <div class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl"
+                <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center text-2xl sm:text-4xl"
                      style="background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(99,102,241,0.2));border:2px solid rgba(139,92,246,0.5);box-shadow:0 0 30px rgba(139,92,246,0.4);">
                     <span x-text="careerUnlocked?.icon ?? '💼'"></span>
                 </div>
 
-                <div class="text-xs font-bold tracking-widest uppercase mb-2"
+                <div class="text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-2"
                      style="color:#a78bfa;">Career Interest Unlocked</div>
 
-                <h2 class="text-white font-black text-2xl mb-1" x-text="careerUnlocked?.title ?? ''"></h2>
-                <p class="text-gray-400 text-sm mb-5" x-text="careerUnlocked?.field ? careerUnlocked.field.charAt(0).toUpperCase() + careerUnlocked.field.slice(1) + ' Sector' : ''"></p>
+                <h2 class="text-white font-black text-lg sm:text-2xl mb-1" x-text="careerUnlocked?.title ?? ''"></h2>
+                <p class="text-gray-400 text-xs sm:text-sm mb-4 sm:mb-5" x-text="careerUnlocked?.field ? careerUnlocked.field.charAt(0).toUpperCase() + careerUnlocked.field.slice(1) + ' Sector' : ''"></p>
 
                 {{-- Next-step badge (no phantom salary — real pay only comes from an actual Pesa City job) --}}
-                <div class="rounded-2xl px-4 py-3 mb-6 inline-block"
+                <div class="rounded-2xl px-4 py-2.5 sm:py-3 mb-5 sm:mb-6 inline-block"
                      style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
-                    <div class="text-gray-400 text-xs mb-0.5">Next Step</div>
-                    <div class="text-emerald-400 font-black text-base">Find a job in Pesa City 🏙️</div>
+                    <div class="text-gray-400 text-[10px] sm:text-xs mb-0.5">Next Step</div>
+                    <div class="text-emerald-400 font-black text-xs sm:text-base">Find a job in Pesa City 🏙️</div>
                 </div>
 
-                <p class="text-gray-500 text-xs mb-6 leading-relaxed">
+                <p class="text-gray-500 text-[11px] sm:text-xs mb-5 sm:mb-6 leading-relaxed">
                     You've discovered where your interests lie. Head into Pesa City's Opportunity Hub to actually get hired and start earning a real, payable salary.
                 </p>
 
                 <button @click="showCareerModal = false; continueGame()"
-                        class="w-full text-white font-bold py-3.5 rounded-2xl text-base transition-all hover:opacity-90 active:scale-95"
+                        class="w-full text-white font-bold py-3 sm:py-3.5 rounded-2xl text-xs sm:text-base transition-all hover:opacity-90 active:scale-95"
                         style="background:linear-gradient(135deg,#7c3aed,#6366f1);box-shadow:0 8px 24px rgba(99,102,241,0.35);">
                     Start My Career Journey 🚀
                 </button>
@@ -784,7 +788,10 @@
 
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
             <template x-if="notifications.length === 0">
-                <div class="text-center py-16"><div class="text-4xl mb-3">🔔</div><p class="text-gray-500 text-sm">No new notifications</p></div>
+                <div class="text-center py-16">
+                    <div class="flex justify-center mb-3"><x-icon name="bell" class="w-8 h-8 sm:w-10 sm:h-10 text-gray-600" /></div>
+                    <p class="text-gray-500 text-xs sm:text-sm">No new notifications</p>
+                </div>
             </template>
             <template x-for="notif in notifications" :key="notif.id">
                 <div class="notif-item p-4" :class="notif.type === 'investment' ? 'investment-notif' : ''">
@@ -814,8 +821,8 @@
 
         <div class="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div>
-                <h3 class="font-black text-white flex items-center gap-2">🏅 Daily Challenges</h3>
-                <p class="text-xs text-gray-500 mt-0.5">Reset at midnight · Complete for bonus XP</p>
+                <h3 class="font-black text-white flex items-center gap-2 text-sm sm:text-base"><x-icon name="medal" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> Daily Challenges</h3>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Reset at midnight · Complete for bonus XP</p>
             </div>
             <button @click="showChallenges = false" class="text-gray-400 hover:text-white p-1.5 rounded-xl hover:bg-white/5">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -826,9 +833,13 @@
             @forelse($challenges as $challenge)
             <div class="challenge-item p-4 {{ $challenge->user_completed ? 'completed' : '' }}">
                 <div class="flex items-start gap-3 mb-3">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0
                                 {{ $challenge->user_completed ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-amber-500/15 border border-amber-500/25' }}">
-                        {{ $challenge->user_completed ? '✅' : '🎯' }}
+                        @if($challenge->user_completed)
+                        <x-icon name="check-circle" class="w-4 h-4 text-emerald-400" />
+                        @else
+                        <x-icon name="target" class="w-4 h-4 text-amber-400" />
+                        @endif
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="font-bold text-white text-sm">{{ $challenge->title }}</div>
@@ -862,16 +873,19 @@
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
          class="fixed inset-0 flex items-center justify-center px-4 py-4 bg-black/70 backdrop-blur-sm" style="z-index:9500;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;" @click.self="showDiary = false" x-cloak>
         <div class="diary-modal rounded-3xl max-w-lg w-full my-auto">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-white/8">
-                <div>
-                    <h3 class="font-black text-white">📖 Your Financial Diary</h3>
-                    <p class="text-xs text-gray-500">Your journey so far, narrated</p>
+            <div class="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-white/8">
+                <div class="flex items-center gap-2">
+                    <x-icon name="book" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300 flex-shrink-0" />
+                    <div>
+                        <h3 class="font-black text-white text-sm sm:text-base">Your Financial Diary</h3>
+                        <p class="text-[11px] sm:text-xs text-gray-500">Your journey so far, narrated</p>
+                    </div>
                 </div>
                 <button @click="showDiary = false" class="text-gray-400 hover:text-white p-1.5 rounded-xl hover:bg-white/5">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
                 <template x-if="diaryLoading">
                     <div class="flex items-center justify-center py-12">
                         <svg class="w-8 h-8 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -879,27 +893,27 @@
                 </template>
                 <template x-if="!diaryLoading && diary">
                     <div>
-                        <div class="text-center mb-6">
-                            <div class="text-3xl mb-2">📊</div>
-                            <div class="text-lg font-black text-white">Balance: <span class="text-emerald-400" x-text="'Ksh ' + (diary.balance || 0).toLocaleString()"></span></div>
-                            <div class="text-sm text-indigo-400 mt-1" x-text="diary.verdict"></div>
+                        <div class="text-center mb-5 sm:mb-6">
+                            <div class="flex justify-center mb-2"><x-icon name="bar-chart" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-300" /></div>
+                            <div class="text-sm sm:text-lg font-black text-white truncate">Balance: <span class="text-emerald-400" x-text="'Ksh ' + (diary.balance || 0).toLocaleString()"></span></div>
+                            <div class="text-xs sm:text-sm text-indigo-400 mt-1" x-text="diary.verdict"></div>
                         </div>
                         <div class="space-y-0 relative">
                             <template x-for="(step, i) in diary.narrative" :key="i">
                                 <div class="diary-step pl-5 pb-6 relative">
                                     <div class="absolute left-0 top-1 w-2 h-2 rounded-full bg-indigo-500 border-2 border-[#0c0b16]" style="transform: translateX(-3px)"></div>
-                                    <div class="text-xs text-gray-600 mb-1" x-text="'Step ' + step.step + ' · ' + new Date(step.at).toLocaleDateString('en-KE', {day:'numeric',month:'short'})"></div>
-                                    <div class="text-sm font-semibold text-white" x-text="step.node_title"></div>
-                                    <div class="text-xs text-indigo-300 mt-1" x-text="'→ You chose: ' + step.choice_label"></div>
+                                    <div class="text-[11px] sm:text-xs text-gray-600 mb-1" x-text="'Step ' + step.step + ' · ' + new Date(step.at).toLocaleDateString('en-KE', {day:'numeric',month:'short'})"></div>
+                                    <div class="text-xs sm:text-sm font-semibold text-white" x-text="step.node_title"></div>
+                                    <div class="text-[11px] sm:text-xs text-indigo-300 mt-1" x-text="'→ You chose: ' + step.choice_label"></div>
                                     <div class="flex gap-3 mt-2">
-                                        <span class="text-xs px-2 py-0.5 rounded-full" :class="step.points > 0 ? 'bg-purple-500/15 text-purple-300' : 'bg-gray-500/10 text-gray-500'" x-text="'+' + step.points + ' XP'"></span>
-                                        <span class="text-xs px-2 py-0.5 rounded-full" :class="step.balance_effect > 0 ? 'bg-emerald-500/15 text-emerald-400' : (step.balance_effect < 0 ? 'bg-red-500/15 text-red-400' : 'bg-gray-500/10 text-gray-500')" x-text="(step.balance_effect >= 0 ? '+' : '') + 'Ksh ' + step.balance_effect.toLocaleString()"></span>
+                                        <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-full" :class="step.points > 0 ? 'bg-purple-500/15 text-purple-300' : 'bg-gray-500/10 text-gray-500'" x-text="'+' + step.points + ' XP'"></span>
+                                        <span class="text-[11px] sm:text-xs px-2 py-0.5 rounded-full" :class="step.balance_effect > 0 ? 'bg-emerald-500/15 text-emerald-400' : (step.balance_effect < 0 ? 'bg-red-500/15 text-red-400' : 'bg-gray-500/10 text-gray-500')" x-text="(step.balance_effect >= 0 ? '+' : '') + 'Ksh ' + step.balance_effect.toLocaleString()"></span>
                                     </div>
                                 </div>
                             </template>
                         </div>
                         <template x-if="diary.narrative && diary.narrative.length === 0">
-                            <div class="text-center py-8 text-gray-500 text-sm">No decisions yet — start playing!</div>
+                            <div class="text-center py-8 text-gray-500 text-xs sm:text-sm">No decisions yet — start playing!</div>
                         </template>
                     </div>
                 </template>

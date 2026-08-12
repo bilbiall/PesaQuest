@@ -198,9 +198,9 @@
 
                 <template x-teleport="body">
                     <div x-show="open" x-cloak class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9980;overflow-y:auto;" @click="open=false">
-                        <div class="max-w-lg w-full my-auto bg-[#12111f] border border-emerald-500/25 rounded-3xl p-6" @click.stop>
+                        <div class="max-w-lg w-full my-auto bg-[#12111f] border border-emerald-500/25 rounded-3xl p-4 sm:p-6" @click.stop>
                             <div class="flex items-center justify-between mb-1">
-                                <h3 class="font-black text-white text-lg">🔔 Real Bill Reminders</h3>
+                                <h3 class="font-black text-white text-sm sm:text-lg">🔔 Real Bill Reminders</h3>
                                 <button @click="open=false" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                             </div>
                             <p class="text-xs text-gray-500 mb-4">Real dates, real push notifications. Not connected to your Pesa City balance.</p>
@@ -214,7 +214,7 @@
                                     <div class="rounded-2xl p-3.5" :style="b.is_overdue ? 'background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);' : (b.days_until_due<=b.reminder_lead_days ? 'background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);' : 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);')">
                                         <div class="flex items-center justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
-                                                <span x-text="b.icon" class="text-lg flex-shrink-0"></span>
+                                                <span x-text="b.icon" class="text-base sm:text-lg flex-shrink-0"></span>
                                                 <div class="min-w-0">
                                                     <p class="text-sm font-bold text-white truncate" x-text="b.name"></p>
                                                     <p class="text-[11px] text-gray-500" x-text="'Ksh '+fmt(b.amount)+' · '+(b.is_overdue ? 'Overdue' : (b.days_until_due===0?'Due today':'Due in '+b.days_until_due+'d'))+(b.is_recurring ? ' · '+b.frequency_label : ' · One-off')"></p>
@@ -272,9 +272,9 @@
 
                 <template x-teleport="body">
                     <div x-show="open" x-cloak class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9980;overflow-y:auto;" @click="close()">
-                        <div class="max-w-lg w-full my-auto bg-[#12111f] border border-cyan-500/25 rounded-3xl p-6" @click.stop>
+                        <div class="max-w-lg w-full my-auto bg-[#12111f] border border-cyan-500/25 rounded-3xl p-4 sm:p-6" @click.stop>
                             <div class="flex items-center justify-between mb-1">
-                                <h3 class="font-black text-white text-lg">🎯 Real Savings Goals</h3>
+                                <h3 class="font-black text-white text-sm sm:text-lg">🎯 Real Savings Goals</h3>
                                 <button @click="close()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                             </div>
                             <p class="text-xs text-gray-500 mb-4">Real money, real dates. Not connected to your Pesa City balance.</p>
@@ -287,7 +287,7 @@
                                 <template x-for="g in goals" :key="g.id">
                                     <div class="rounded-2xl p-3.5 cursor-pointer transition-all hover:scale-[1.01]" :style="g.status==='completed' ? 'background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);' : 'background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);'" @click="activeId=g.id">
                                         <div class="flex items-center justify-between mb-1.5">
-                                            <div class="flex items-center gap-2"><span x-text="g.icon" class="text-lg"></span><p class="text-sm font-bold text-white" x-text="g.name"></p><span x-show="g.status==='completed'" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">✓ Done</span></div>
+                                            <div class="flex items-center gap-2"><span x-text="g.icon" class="text-base sm:text-lg"></span><p class="text-sm font-bold text-white" x-text="g.name"></p><span x-show="g.status==='completed'" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">✓ Done</span></div>
                                             <p class="text-xs font-black" style="color:#67e8f9;" x-text="g.progress_pct+'%'"></p>
                                         </div>
                                         <div class="h-1.5 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.08);"><div class="h-full rounded-full" :style="'width:'+g.progress_pct+'%;background:'+(g.status==='completed'?'#10b981':'#06b6d4')"></div></div>
@@ -316,7 +316,7 @@
                                     <div class="flex items-center gap-5 mb-5">
                                         <div class="relative flex-shrink-0" style="width:80px;height:80px;">
                                             <svg width="80" height="80" viewBox="0 0 90 90"><circle cx="45" cy="45" r="38" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="7"/><circle cx="45" cy="45" r="38" fill="none" stroke="#06b6d4" stroke-width="7" stroke-linecap="round" :stroke-dasharray="2*Math.PI*38" :stroke-dashoffset="2*Math.PI*38*(1-(activeGoal().progress_pct/100))" transform="rotate(-90 45 45)" style="transition:stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1)"/></svg>
-                                            <div class="absolute inset-0 flex flex-col items-center justify-center"><div class="text-lg font-black text-white" x-text="activeGoal().progress_pct+'%'"></div></div>
+                                            <div class="absolute inset-0 flex flex-col items-center justify-center"><div class="text-base sm:text-lg font-black text-white" x-text="activeGoal().progress_pct+'%'"></div></div>
                                         </div>
                                         <div class="flex-1">
                                             <p class="font-black text-white text-base" x-text="activeGoal().name"></p>
@@ -367,9 +367,9 @@
 
                 <template x-teleport="body">
                     <div x-show="open" x-cloak class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9980;overflow-y:auto;" @click="open=false">
-                        <div class="max-w-lg w-full my-auto bg-[#12111f] border border-orange-500/25 rounded-3xl p-6" @click.stop>
+                        <div class="max-w-lg w-full my-auto bg-[#12111f] border border-orange-500/25 rounded-3xl p-4 sm:p-6" @click.stop>
                             <div class="flex items-center justify-between mb-1">
-                                <h3 class="font-black text-white text-lg">📊 Real Expenses</h3>
+                                <h3 class="font-black text-white text-sm sm:text-lg">📊 Real Expenses</h3>
                                 <button @click="open=false" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                             </div>
                             <p class="text-xs text-gray-500 mb-4">Real spending, real dates. Feeds your Monthly Report.</p>
@@ -455,9 +455,9 @@
 
                 <template x-teleport="body">
                     <div x-show="open" x-cloak class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9980;overflow-y:auto;" @click="open=false">
-                        <div class="max-w-md w-full my-auto bg-[#12111f] border border-purple-500/25 rounded-3xl p-6" @click.stop>
+                        <div class="max-w-md w-full my-auto bg-[#12111f] border border-purple-500/25 rounded-3xl p-4 sm:p-6" @click.stop>
                             <div class="flex items-center justify-between mb-1">
-                                <h3 class="font-black text-white text-lg">📸 Monthly Report</h3>
+                                <h3 class="font-black text-white text-sm sm:text-lg">📸 Monthly Report</h3>
                                 <button @click="open=false" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                             </div>
                             <p class="text-xs text-gray-500 mb-4">Real numbers, any month. Not connected to your Pesa City report card.</p>
@@ -476,10 +476,10 @@
                             <template x-if="report">
                                 <div class="rounded-2xl p-5 text-center" style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);">
                                     <template x-if="report.grade">
-                                        <div class="text-6xl font-black leading-none mb-1" :style="'color:'+gradeColor(report.grade)" x-text="report.grade"></div>
+                                        <div class="text-4xl sm:text-6xl font-black leading-none mb-1" :style="'color:'+gradeColor(report.grade)" x-text="report.grade"></div>
                                     </template>
                                     <template x-if="!report.grade">
-                                        <div class="text-2xl mb-1">🤷</div>
+                                        <div class="text-xl sm:text-2xl mb-1">🤷</div>
                                     </template>
                                     <p class="text-sm font-black text-white mb-4" x-text="report.month_label"></p>
                                     <div class="space-y-2 text-left text-xs bg-black/20 rounded-xl p-4 mb-3">

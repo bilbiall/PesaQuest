@@ -154,12 +154,12 @@
      @click.self="showForm=false">
     <div x-show="showForm" class="w-full max-w-lg rounded-3xl overflow-hidden"
          style="background:linear-gradient(160deg,#0f172a,#2d1608);border:1px solid rgba(255,107,53,.35);max-height:92vh;display:flex;flex-direction:column;">
-        <div class="px-6 py-4 flex items-center justify-between flex-shrink-0" style="border-bottom:1px solid rgba(255,255,255,.06);">
-            <h2 class="font-black text-white" x-text="editing ? '✏️ Edit Activity' : '🎡 New Activity'"></h2>
+        <div class="px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between flex-shrink-0" style="border-bottom:1px solid rgba(255,255,255,.06);">
+            <h2 class="font-black text-white text-sm sm:text-base" x-text="editing ? '✏️ Edit Activity' : '🎡 New Activity'"></h2>
             <button @click="showForm=false" class="text-gray-500 hover:text-white">✕</button>
         </div>
         <form :action="editing ? '{{ url('gameset/fun-world') }}/' + editing : '{{ route('gameset.fun-world.store') }}'" method="POST"
-              class="overflow-y-auto flex-1 px-6 py-5 space-y-4" style="min-height:0;">
+              class="overflow-y-auto flex-1 px-4 py-4 sm:px-6 sm:py-5 space-y-4" style="min-height:0;">
             @csrf
             <template x-if="editing"><input type="hidden" name="_method" value="PUT"></template>
             <div class="grid grid-cols-3 gap-3">

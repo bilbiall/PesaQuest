@@ -731,7 +731,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
          style="background:linear-gradient(160deg,#0f172a,#1e1b4b);border:1px solid rgba(139,92,246,.35);margin:auto;">
         <template x-if="inspecting">
             <div>
-                <div class="relative h-40 overflow-hidden rounded-t-3xl" :class="'cat-' + inspecting.category">
+                <div class="relative h-32 sm:h-40 overflow-hidden rounded-t-3xl" :class="'cat-' + inspecting.category">
                     <template x-if="inspecting.image">
                         <img :src="inspecting.image" class="absolute inset-0 w-full h-full object-cover" style="opacity:.85;">
                     </template>
@@ -739,80 +739,80 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     {{-- No image? Show the icon in its place — never over an actual item photo. --}}
                     <template x-if="!inspecting.image">
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <span class="icon-bob-sm w-16 h-16" x-html="pqIcon(inspecting.icon, 'w-16 h-16')"></span>
+                            <span class="icon-bob-sm w-12 h-12 sm:w-16 sm:h-16" x-html="pqIcon(inspecting.icon, 'w-12 h-12 sm:w-16 sm:h-16')"></span>
                         </div>
                     </template>
-                    <button @click="inspecting=null;buyMsg='';" class="absolute top-4 right-4 w-8 h-8 rounded-xl flex items-center justify-center"
+                    <button @click="inspecting=null;buyMsg='';" class="absolute top-3 right-3 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center"
                             style="background:rgba(0,0,0,.4);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                     <div class="absolute bottom-0 left-0 right-0 h-16" style="background:linear-gradient(to top,#0f172a,transparent);"></div>
                 </div>
 
-                <div class="px-6 pt-2 pb-4">
-                    <div class="mb-5">
-                        <h2 class="text-xl font-black text-white" x-text="inspecting.name"></h2>
-                        <p class="text-sm text-gray-400" x-text="inspecting.brand || ''"></p>
-                        <p class="text-sm text-gray-300 mt-3 leading-relaxed" x-text="inspecting.desc"></p>
-                        <p class="text-sm text-indigo-300/80 italic mt-2" x-text="'&quot;' + inspecting.flavor + '&quot;'"></p>
+                <div class="px-4 pt-2 pb-3 sm:px-6 sm:pt-2 sm:pb-4">
+                    <div class="mb-4 sm:mb-5">
+                        <h2 class="text-base sm:text-xl font-black text-white" x-text="inspecting.name"></h2>
+                        <p class="text-xs sm:text-sm text-gray-400" x-text="inspecting.brand || ''"></p>
+                        <p class="text-xs sm:text-sm text-gray-300 mt-2 sm:mt-3 leading-relaxed" x-text="inspecting.desc"></p>
+                        <p class="text-xs sm:text-sm text-indigo-300/80 italic mt-2" x-text="'&quot;' + inspecting.flavor + '&quot;'"></p>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-3 mb-5">
-                        <div class="rounded-2xl p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Buy Price</p>
-                            <p class="text-sm font-black text-white mt-1" x-text="'Ksh ' + inspecting.price.toLocaleString()"></p>
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-5">
+                        <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Buy Price</p>
+                            <p class="text-xs sm:text-sm font-black text-white mt-1 truncate" x-text="'Ksh ' + inspecting.price.toLocaleString()"></p>
                         </div>
-                        <div class="rounded-2xl p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Net/Month</p>
-                            <p class="text-sm font-black mt-1" :class="inspecting.net >= 0 ? 'text-emerald-400' : 'text-red-400'"
+                        <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Net/Month</p>
+                            <p class="text-xs sm:text-sm font-black mt-1 truncate" :class="inspecting.net >= 0 ? 'text-emerald-400' : 'text-red-400'"
                                x-text="(inspecting.net >= 0 ? '+' : '') + 'Ksh ' + Math.abs(inspecting.net).toLocaleString()"></p>
                         </div>
-                        <div class="rounded-2xl p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Value/Month</p>
-                            <p class="text-sm font-black mt-1" :class="inspecting.rate >= 0 ? 'text-emerald-400' : 'text-red-400'"
+                        <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Value/Month</p>
+                            <p class="text-xs sm:text-sm font-black mt-1 truncate" :class="inspecting.rate >= 0 ? 'text-emerald-400' : 'text-red-400'"
                                x-text="(inspecting.rate >= 0 ? '+' : '') + inspecting.rate + '%'"></p>
                         </div>
                     </div>
 
-                    <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
-                        <div class="px-4 py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
-                            <p class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> How this works financially</p>
+                    <div class="mb-4 sm:mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
+                        <div class="px-3 py-1.5 sm:px-4 sm:py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
+                            <p class="text-[11px] sm:text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> How this works financially</p>
                         </div>
-                        <div class="p-4 space-y-2">
+                        <div class="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                             <template x-if="inspecting.income > 0">
-                                <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center justify-between text-xs sm:text-sm">
                                     <span class="text-gray-400">Monthly revenue</span>
-                                    <span class="font-bold text-emerald-400" x-text="'+Ksh ' + inspecting.income.toLocaleString() + '/mo'"></span>
+                                    <span class="font-bold text-emerald-400 truncate" x-text="'+Ksh ' + inspecting.income.toLocaleString() + '/mo'"></span>
                                 </div>
                             </template>
                             <template x-if="inspecting.cost > 0">
-                                <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center justify-between text-xs sm:text-sm">
                                     <span class="text-gray-400">Monthly costs</span>
-                                    <span class="font-bold text-red-400" x-text="'-Ksh ' + inspecting.cost.toLocaleString() + '/mo'"></span>
+                                    <span class="font-bold text-red-400 truncate" x-text="'-Ksh ' + inspecting.cost.toLocaleString() + '/mo'"></span>
                                 </div>
                             </template>
                             <template x-if="inspecting.income > 0 || inspecting.cost > 0">
-                                <div class="flex items-center justify-between text-sm border-t border-white/10 pt-2 mt-2">
+                                <div class="flex items-center justify-between text-xs sm:text-sm border-t border-white/10 pt-2 mt-2">
                                     <span class="font-black text-white">Net cash flow</span>
-                                    <span class="font-black text-lg" :class="inspecting.net >= 0 ? 'text-emerald-400' : 'text-red-400'"
+                                    <span class="font-black text-sm sm:text-lg truncate" :class="inspecting.net >= 0 ? 'text-emerald-400' : 'text-red-400'"
                                           x-text="(inspecting.net >= 0 ? '+' : '') + 'Ksh ' + Math.abs(inspecting.net).toLocaleString() + '/mo'"></span>
                                 </div>
                             </template>
                             <template x-if="inspecting.payback">
-                                <div class="mt-3 rounded-xl px-3 py-2 text-xs font-bold text-emerald-400"
+                                <div class="mt-2 sm:mt-3 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-xs font-bold text-emerald-400"
                                      style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);">
                                     ⚡ Pays itself off in ~<span x-text="inspecting.payback"></span> game months
                                     (<span x-text="gdApprox(inspecting.payback * 30)"></span>)
                                 </div>
                             </template>
                             <template x-if="!inspecting.payback && inspecting.projected && inspecting.rate > 0">
-                                <div class="mt-3 rounded-xl px-3 py-2 text-xs font-bold text-indigo-300"
+                                <div class="mt-2 sm:mt-3 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-xs font-bold text-indigo-300"
                                      style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);">
                                     📈 Worth ~Ksh <span x-text="(inspecting.projected||0).toLocaleString()"></span> in 12 game months (<span x-text="gdApprox(360)"></span>)
                                 </div>
                             </template>
                             <template x-if="inspecting.net < 0 && !inspecting.payback">
-                                <div class="mt-3 rounded-xl px-3 py-2 text-xs font-bold text-orange-400"
+                                <div class="mt-2 sm:mt-3 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-xs font-bold text-orange-400"
                                      style="background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);">
                                     ⚠️ This asset costs more than it earns.
                                 </div>
@@ -821,14 +821,14 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     </div>
 
                     <template x-if="inspecting.afford_pct > 0">
-                        <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
-                            <div class="px-4 py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
-                                <p class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="bar-chart" class="w-3.5 h-3.5" /> Affordability check</p>
+                        <div class="mb-4 sm:mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
+                            <div class="px-3 py-1.5 sm:px-4 sm:py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
+                                <p class="text-[11px] sm:text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="bar-chart" class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Affordability check</p>
                             </div>
-                            <div class="p-4">
+                            <div class="p-3 sm:p-4">
                                 <div class="flex justify-between items-center mb-2">
-                                    <span class="text-xs text-gray-400">Monthly income strain</span>
-                                    <span class="text-xs font-black" :class="inspecting.afford_color" x-text="inspecting.afford_label"></span>
+                                    <span class="text-[11px] sm:text-xs text-gray-400">Monthly income strain</span>
+                                    <span class="text-[11px] sm:text-xs font-black" :class="inspecting.afford_color" x-text="inspecting.afford_label"></span>
                                 </div>
                                 <div class="afford-bar">
                                     <div class="afford-fill" :style="'width:' + Math.min(100,inspecting.afford_pct) + '%;background:' + inspecting.afford_bar"></div>
@@ -838,69 +838,69 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     </template>
 
                     <template x-if="inspecting.bill">
-                        <div class="mb-4 rounded-xl px-4 py-3 flex items-start gap-2"
+                        <div class="mb-3 sm:mb-4 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-start gap-2"
                              style="background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);">
-                            <span class="text-orange-400 text-sm">⚡</span>
-                            <p class="text-xs text-orange-300 leading-snug">Buying this will add a recurring bill to your expenses.</p>
+                            <span class="text-orange-400 text-xs sm:text-sm">⚡</span>
+                            <p class="text-[11px] sm:text-xs text-orange-300 leading-snug">Buying this will add a recurring bill to your expenses.</p>
                         </div>
                     </template>
 
-                    <div class="mb-4 rounded-xl px-4 py-3 flex items-start gap-2"
+                    <div class="mb-3 sm:mb-4 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-start gap-2"
                          style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);">
-                        <span class="text-indigo-400 text-sm shrink-0">💡</span>
-                        <p class="text-xs text-indigo-300 leading-snug" x-text="inspecting.edu"></p>
+                        <span class="text-indigo-400 text-xs sm:text-sm shrink-0">💡</span>
+                        <p class="text-[11px] sm:text-xs text-indigo-300 leading-snug" x-text="inspecting.edu"></p>
                     </div>
 
                     {{-- Financing option (vehicles & property) --}}
                     <template x-if="inspecting.financing && !inspecting.maxed">
-                        <div class="mb-4 rounded-2xl overflow-hidden" style="border:1px solid rgba(245,158,11,.25);">
-                            <div class="px-4 py-2" style="background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.15);">
-                                <p class="text-xs font-black text-amber-300 inline-flex items-center gap-1"><x-icon name="bank" class="w-3.5 h-3.5" /> Or finance it — deposit now, pay monthly</p>
+                        <div class="mb-3 sm:mb-4 rounded-2xl overflow-hidden" style="border:1px solid rgba(245,158,11,.25);">
+                            <div class="px-3 py-1.5 sm:px-4 sm:py-2" style="background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.15);">
+                                <p class="text-[11px] sm:text-xs font-black text-amber-300 inline-flex items-center gap-1"><x-icon name="bank" class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Or finance it — deposit now, pay monthly</p>
                             </div>
-                            <div class="p-4 space-y-1.5 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-400">Deposit (pay now)</span><span class="font-bold text-white" x-text="'Ksh ' + inspecting.financing.deposit.toLocaleString()"></span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">Monthly installment (auto-billed)</span><span class="font-bold text-white" x-text="'Ksh ' + inspecting.financing.monthly.toLocaleString()"></span></div>
-                                <div class="flex justify-between"><span class="text-gray-400" x-text="'Term: ' + inspecting.financing.months + ' game months (' + gdApprox(inspecting.financing.months * 30) + ')'"></span><span class="font-bold text-amber-300" x-text="'Total: Ksh ' + inspecting.financing.total_cost.toLocaleString()"></span></div>
-                                <p class="text-[11px] text-amber-200/70 pt-1" x-text="'Financing costs Ksh ' + inspecting.financing.interest_cost.toLocaleString() + ' more than paying cash — that\'s the price of credit.'"></p>
+                            <div class="p-3 sm:p-4 space-y-1 sm:space-y-1.5 text-xs sm:text-sm">
+                                <div class="flex justify-between gap-2"><span class="text-gray-400">Deposit (pay now)</span><span class="font-bold text-white truncate" x-text="'Ksh ' + inspecting.financing.deposit.toLocaleString()"></span></div>
+                                <div class="flex justify-between gap-2"><span class="text-gray-400">Monthly installment (auto-billed)</span><span class="font-bold text-white truncate" x-text="'Ksh ' + inspecting.financing.monthly.toLocaleString()"></span></div>
+                                <div class="flex justify-between gap-2"><span class="text-gray-400" x-text="'Term: ' + inspecting.financing.months + ' game months (' + gdApprox(inspecting.financing.months * 30) + ')'"></span><span class="font-bold text-amber-300 truncate" x-text="'Total: Ksh ' + inspecting.financing.total_cost.toLocaleString()"></span></div>
+                                <p class="text-[10px] sm:text-[11px] text-amber-200/70 pt-1" x-text="'Financing costs Ksh ' + inspecting.financing.interest_cost.toLocaleString() + ' more than paying cash — that\'s the price of credit.'"></p>
                             </div>
                         </div>
                     </template>
 
                     <div x-show="buyMsg" x-cloak x-transition
-                         class="mb-4 rounded-xl px-4 py-3 text-xs font-bold text-center"
+                         class="mb-3 sm:mb-4 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-[11px] sm:text-xs font-bold text-center"
                          :class="buyOk ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'"
                          x-text="buyMsg"></div>
                 </div>
 
-                <div class="px-6 py-4 flex gap-3 flex-wrap rounded-b-3xl"
+                <div class="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 sm:gap-3 flex-wrap rounded-b-3xl"
                      style="border-top:1px solid rgba(255,255,255,.08);">
-                    <button @click="inspecting=null;buyMsg='';" class="flex-1 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                    <button @click="inspecting=null;buyMsg='';" class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition-colors"
                             style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);min-width:90px;">Cancel</button>
                     <template x-if="inspecting && !inspecting.maxed && inspecting.canAfford">
                         <button @click="confirmBuy(false)" :disabled="buying"
-                                class="flex-1 py-3.5 rounded-xl text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
+                                class="flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
                                 style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.45);min-width:140px;">
                             <span x-show="!buying">✓ Buy Cash</span>
                             <span x-show="buying" class="flex items-center justify-center gap-2">
-                                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-linecap="round"/></svg>
+                                <svg class="animate-spin w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-linecap="round"/></svg>
                                 Buying…
                             </span>
                         </button>
                     </template>
                     <template x-if="inspecting && !inspecting.maxed && inspecting.financing && inspecting.canFinanceDeposit">
                         <button @click="confirmBuy(true)" :disabled="buying"
-                                class="flex-1 py-3.5 rounded-xl text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
+                                class="flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
                                 style="background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;box-shadow:0 4px 20px rgba(245,158,11,.4);min-width:140px;">
                             <span x-show="!buying" x-text="'🏦 Finance — Ksh ' + inspecting.financing.deposit.toLocaleString() + ' Deposit'"></span>
                             <span x-show="buying">Processing…</span>
                         </button>
                     </template>
                     <template x-if="inspecting && inspecting.maxed">
-                        <div class="flex-1 py-3 rounded-xl text-sm font-black text-center"
+                        <div class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black text-center"
                              style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#c4b5fd;">✓ Already owned</div>
                     </template>
                     <template x-if="inspecting && !inspecting.maxed && !inspecting.canAfford && !(inspecting.financing && inspecting.canFinanceDeposit)">
-                        <div class="flex-1 py-3 rounded-xl text-sm font-bold text-center text-gray-500"
+                        <div class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-center text-gray-500"
                              style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">Insufficient balance</div>
                     </template>
                 </div>

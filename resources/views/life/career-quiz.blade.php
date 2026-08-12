@@ -119,34 +119,34 @@
     {{-- ── STEP 0: INTRO ── --}}
     <div x-show="step === 0" x-cloak class="fade-up flex-1 flex items-center justify-center px-6 py-12">
         <div class="max-w-lg w-full text-center">
-            <div class="text-7xl mb-6 bounce-in">🎯</div>
-            <h1 class="text-4xl sm:text-5xl font-black mb-4 leading-tight">
+            <div class="text-5xl sm:text-7xl mb-4 sm:mb-6 bounce-in">🎯</div>
+            <h1 class="text-3xl sm:text-5xl font-black mb-3 sm:mb-4 leading-tight">
                 Find Your
                 <span class="shimmer-text">Dream Career</span>
             </h1>
-            <p class="text-gray-300 text-lg mb-8 leading-relaxed">
+            <p class="text-gray-300 text-sm sm:text-lg mb-6 sm:mb-8 leading-relaxed">
                 Answer 5 quick questions and we'll match you to a career path that fits your personality.
                 Your virtual life starts here!
             </p>
-            <div class="grid grid-cols-3 gap-3 mb-8 text-sm text-gray-400">
-                <div class="bg-white/5 rounded-2xl p-3 border border-white/8">
-                    <div class="text-2xl mb-1">⏱️</div>
+            <div class="grid grid-cols-3 gap-3 mb-6 sm:mb-8 text-sm text-gray-400">
+                <div class="bg-white/5 rounded-2xl p-2.5 sm:p-3 border border-white/8">
+                    <div class="mb-1 flex items-center justify-center"><x-icon name="clock" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" /></div>
                     <div class="font-semibold text-white">2 min</div>
                     <div>to complete</div>
                 </div>
-                <div class="bg-white/5 rounded-2xl p-3 border border-white/8">
-                    <div class="text-2xl mb-1">🎯</div>
+                <div class="bg-white/5 rounded-2xl p-2.5 sm:p-3 border border-white/8">
+                    <div class="mb-1 flex items-center justify-center"><x-icon name="target" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" /></div>
                     <div class="font-semibold text-white">5 questions</div>
                     <div>personalised</div>
                 </div>
-                <div class="bg-white/5 rounded-2xl p-3 border border-white/8">
-                    <div class="text-2xl mb-1">💼</div>
+                <div class="bg-white/5 rounded-2xl p-2.5 sm:p-3 border border-white/8">
+                    <div class="mb-1 flex items-center justify-center"><x-icon name="briefcase" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" /></div>
                     <div class="font-semibold text-white">10+ careers</div>
                     <div>to discover</div>
                 </div>
             </div>
             <button @click="step = 1; playSound('click')"
-                    class="w-full py-4 rounded-2xl font-black text-white text-lg shadow-2xl transition-all hover:scale-105"
+                    class="w-full py-3.5 sm:py-4 rounded-2xl font-black text-white text-sm sm:text-lg shadow-2xl transition-all hover:scale-105"
                     style="background:linear-gradient(135deg,#6366f1,#a78bfa);box-shadow:0 8px 32px rgba(99,102,241,.5);">
                 Let's Go! 🚀
             </button>
@@ -162,7 +162,7 @@
                     <div class="inline-flex items-center gap-2 bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
                         Question <span x-text="qi + 1"></span> of <span x-text="questions.length"></span>
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-white leading-tight" x-text="q.question"></h2>
+                    <h2 class="text-lg sm:text-3xl font-black text-white leading-tight" x-text="q.question"></h2>
                 </div>
 
                 {{-- Options Grid --}}
@@ -172,7 +172,7 @@
                             @click="pickAnswer(qi, oi)"
                             :class="answers[qi] === oi ? 'option-card selected' : 'option-card'"
                             class="text-left p-4 flex items-center gap-3">
-                            <span class="text-3xl flex-shrink-0" x-text="opt.emoji"></span>
+                            <span class="text-2xl sm:text-3xl flex-shrink-0" x-text="opt.emoji"></span>
                             <div>
                                 <div class="font-bold text-white text-sm leading-snug" x-text="opt.label"></div>
                                 <div class="text-xs text-gray-400 mt-0.5 leading-snug" x-text="opt.sub"></div>
@@ -211,13 +211,13 @@
     {{-- ── STEP N+1: RESULT ── --}}
     <div x-show="step === questions.length + 1" x-cloak class="pop-in flex-1 flex items-center justify-center px-4 py-8">
         <div class="max-w-lg w-full text-center">
-            <div class="text-6xl mb-4" x-text="matchedField?.icon"></div>
+            <div class="text-4xl sm:text-6xl mb-3 sm:mb-4" x-text="matchedField?.icon"></div>
             <div class="inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full border mb-4"
                  :style="`color:${matchedField?.color};border-color:${matchedField?.color}40;background:${matchedField?.color}15`">
                 Your Career Match
             </div>
-            <h2 class="text-3xl sm:text-4xl font-black text-white mb-2" x-text="matchedField?.label"></h2>
-            <p class="text-gray-300 mb-6 leading-relaxed" x-text="matchedField?.desc"></p>
+            <h2 class="text-2xl sm:text-4xl font-black text-white mb-2" x-text="matchedField?.label"></h2>
+            <p class="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6 leading-relaxed" x-text="matchedField?.desc"></p>
 
             {{-- Score breakdown --}}
             <div class="bg-white/4 border border-white/8 rounded-2xl p-4 mb-6">
@@ -237,7 +237,7 @@
             </div>
 
             <button @click="step = questions.length + 2; playSound('levelup')"
-                    class="w-full py-4 rounded-2xl font-black text-white text-lg shadow-2xl transition-all hover:scale-105"
+                    class="w-full py-3.5 sm:py-4 rounded-2xl font-black text-white text-sm sm:text-lg shadow-2xl transition-all hover:scale-105"
                     :style="`background:linear-gradient(135deg,${matchedField?.color ?? '#6366f1'},${matchedField?.color ?? '#a78bfa'}88);box-shadow:0 8px 32px ${matchedField?.color ?? '#6366f1'}50`">
                 Continue →
             </button>
@@ -248,7 +248,7 @@
     <div x-show="step === questions.length + 2" x-cloak class="fade-up flex-1 flex items-center justify-center px-4 py-8">
         <div class="max-w-2xl w-full">
             <div class="text-center mb-8">
-                <h2 class="text-2xl sm:text-3xl font-black text-white">
+                <h2 class="text-lg sm:text-3xl font-black text-white">
                     Lock In Your Career Path
                 </h2>
                 <p class="text-gray-400 text-sm mt-2 leading-relaxed">
@@ -266,10 +266,10 @@
                     :disabled="submitting"
                     class="field-card w-full text-left p-5 flex items-center gap-4 border mb-3"
                     :style="`background:${matchedField?.color}12;border-color:${matchedField?.color}60`">
-                <div class="text-4xl flex-shrink-0" x-text="matchedField?.icon"></div>
+                <div class="text-3xl sm:text-4xl flex-shrink-0" x-text="matchedField?.icon"></div>
                 <div class="flex-1 min-w-0">
                     <div class="text-[10px] font-black uppercase tracking-wider" :style="`color:${matchedField?.color}`">Your Quiz Match</div>
-                    <div class="font-black text-white text-lg leading-tight" x-text="matchedField?.label"></div>
+                    <div class="font-black text-white text-sm sm:text-lg leading-tight" x-text="matchedField?.label"></div>
                     <div class="text-gray-400 text-xs mt-1 leading-relaxed">Start on this path — courses and jobs on your path will be highlighted for you.</div>
                 </div>
                 <svg x-show="!submitting || pickingKey !== matchedField?.key" class="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -294,7 +294,7 @@
                             :disabled="submitting"
                             x-show="fkey !== matchedField?.key"
                             class="text-left p-3 rounded-xl border border-white/8 bg-white/3 hover:border-indigo-500/40 hover:bg-indigo-500/8 transition-all flex items-center gap-3">
-                        <span class="text-xl" x-text="meta.icon"></span>
+                        <span class="text-lg sm:text-xl" x-text="meta.icon"></span>
                         <div class="flex-1 min-w-0">
                             <div class="text-sm font-bold text-white truncate" x-text="meta.label"></div>
                         </div>

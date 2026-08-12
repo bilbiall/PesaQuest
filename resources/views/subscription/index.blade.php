@@ -178,13 +178,13 @@
         <div class="w-full max-w-md" style="margin:auto;">
 
             {{-- Step 1: select --}}
-            <div x-show="step === 'select'" class="bg-slate-900 border border-white/15 rounded-2xl p-6 relative"
+            <div x-show="step === 'select'" class="bg-slate-900 border border-white/15 rounded-2xl p-4 sm:p-6 relative"
                  style="background:linear-gradient(160deg,#0f172a,#111c33);max-height:92vh;overflow-y:auto;">
                 <button @click="closePayModal()"
                         class="absolute top-4 right-4 w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white"
                         style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">✕</button>
 
-                <h3 class="text-white font-bold text-xl mb-1">Pay via M-Pesa</h3>
+                <h3 class="text-white font-bold text-lg sm:text-xl mb-1">Pay via M-Pesa</h3>
                 <p class="text-slate-400 text-sm mb-4">
                     <span class="text-emerald-400 font-bold" x-text="selectedPlanName"></span>
                     <span x-show="selectedMonths"> · <span x-text="selectedMonths"></span> month<span x-show="selectedMonths > 1">s</span></span>
@@ -212,7 +212,7 @@
                             x-model="phone"
                             @keydown.enter="initiatePay()"
                             placeholder="0712 345 678"
-                            class="bg-transparent text-white placeholder-slate-500 flex-1 outline-none text-lg font-mono"
+                            class="bg-transparent text-white placeholder-slate-500 flex-1 outline-none text-base sm:text-lg font-mono"
                             maxlength="13"
                         >
                     </div>
@@ -263,7 +263,7 @@
                     </div>
                     <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
                         <span class="text-white font-bold text-sm">Total</span>
-                        <span class="text-emerald-400 font-black text-xl">Ksh <span x-text="totalPrice.toLocaleString()"></span></span>
+                        <span class="text-emerald-400 font-black text-base sm:text-xl truncate">Ksh <span x-text="totalPrice.toLocaleString()"></span></span>
                     </div>
                 </div>
 
@@ -277,7 +277,7 @@
                     @click="initiatePay()"
                     :disabled="!selectedPlanId || !phone || paying || (selectedPlanType === 'school' && !schoolName.trim())"
                     :class="(!selectedPlanId || !phone || paying || (selectedPlanType === 'school' && !schoolName.trim())) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-green-500/30 hover:shadow-lg hover:-translate-y-0.5'"
-                    class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-lg"
+                    class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3.5 sm:py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-lg"
                 >
                     <template x-if="paying">
                         <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
@@ -297,10 +297,10 @@
             </div>
 
             {{-- Step 2: waiting --}}
-            <div x-show="step === 'waiting'" class="bg-white/8 border border-white/15 rounded-2xl p-8 text-center">
-                <div class="text-6xl mb-4 animate-bounce">📱</div>
-                <h3 class="text-white font-bold text-xl mb-2">Check your phone!</h3>
-                <p class="text-slate-300 mb-2">
+            <div x-show="step === 'waiting'" class="bg-white/8 border border-white/15 rounded-2xl p-5 sm:p-8 text-center">
+                <div class="mb-3 sm:mb-4 flex justify-center"><x-icon name="phone" class="w-12 h-12 sm:w-16 sm:h-16 text-white animate-bounce" /></div>
+                <h3 class="text-white font-bold text-lg sm:text-xl mb-2">Check your phone!</h3>
+                <p class="text-slate-300 text-sm sm:text-base mb-2">
                     A payment request of <strong class="text-green-400">Ksh <span x-text="totalPrice.toLocaleString()"></span></strong>
                     has been sent to <strong class="text-white" x-text="phone"></strong>.
                 </p>
@@ -318,10 +318,10 @@
             </div>
 
             {{-- Step 3: individual success --}}
-            <div x-show="step === 'success'" class="bg-green-900/30 border border-green-400/40 rounded-2xl p-8 text-center">
-                <div class="text-7xl mb-4">🎉</div>
-                <h3 class="text-green-300 font-black text-2xl mb-2">Payment Confirmed!</h3>
-                <p class="text-slate-300 mb-2">
+            <div x-show="step === 'success'" class="bg-green-900/30 border border-green-400/40 rounded-2xl p-5 sm:p-8 text-center">
+                <div class="text-5xl sm:text-7xl mb-3 sm:mb-4">🎉</div>
+                <h3 class="text-green-300 font-black text-lg sm:text-2xl mb-2">Payment Confirmed!</h3>
+                <p class="text-slate-300 text-sm sm:text-base mb-2">
                     Your <strong class="text-white" x-text="selectedPlanName"></strong> subscription is now <strong class="text-green-400">active</strong>.
                 </p>
                 <p class="text-slate-400 text-sm mb-1" x-show="receiptCode">
@@ -331,16 +331,16 @@
                     You now have full access to all PesaQuest features. Happy learning! 💪
                 </p>
                 <a href="{{ route('game.play') }}"
-                   class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold px-8 py-3 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all">
+                   class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all text-sm sm:text-base">
                     Start Playing →
                 </a>
             </div>
 
             {{-- Step 3b: school success --}}
-            <div x-show="step === 'school-success'" class="bg-emerald-900/30 border border-emerald-400/40 rounded-2xl p-8 text-center">
-                <div class="text-7xl mb-4">🏫</div>
-                <h3 class="text-emerald-300 font-black text-2xl mb-2">School Subscription Active!</h3>
-                <p class="text-slate-300 mb-2">
+            <div x-show="step === 'school-success'" class="bg-emerald-900/30 border border-emerald-400/40 rounded-2xl p-5 sm:p-8 text-center">
+                <div class="mb-3 sm:mb-4 flex justify-center"><x-icon name="graduation" class="w-14 h-14 sm:w-20 sm:h-20 text-emerald-300" /></div>
+                <h3 class="text-emerald-300 font-black text-lg sm:text-2xl mb-2">School Subscription Active!</h3>
+                <p class="text-slate-300 text-sm sm:text-base mb-2">
                     <strong class="text-white" x-text="schoolName"></strong> — <strong class="text-emerald-400" x-text="selectedPlanName"></strong> is now active.
                 </p>
                 <p class="text-slate-400 text-sm mb-1" x-show="receiptCode">
@@ -360,24 +360,24 @@
                 </template>
                 <div class="flex gap-3 justify-center mt-4">
                     <template x-if="portalUrl">
-                        <a :href="portalUrl" class="inline-block bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold px-6 py-3 rounded-xl hover:shadow-lg transition-all text-sm">
+                        <a :href="portalUrl" class="inline-block bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:shadow-lg transition-all text-sm">
                             Open School Portal →
                         </a>
                     </template>
-                    <a href="{{ route('dashboard') }}" class="inline-block bg-slate-700 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
+                    <a href="{{ route('dashboard') }}" class="inline-block bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl transition-colors text-sm">
                         Back to Dashboard
                     </a>
                 </div>
             </div>
 
             {{-- Step 4: failed --}}
-            <div x-show="step === 'failed'" class="bg-red-900/30 border border-red-400/40 rounded-2xl p-8 text-center">
-                <div class="text-6xl mb-4">❌</div>
-                <h3 class="text-red-300 font-bold text-xl mb-2">Payment Failed</h3>
+            <div x-show="step === 'failed'" class="bg-red-900/30 border border-red-400/40 rounded-2xl p-5 sm:p-8 text-center">
+                <div class="mb-3 sm:mb-4 flex justify-center"><x-icon name="x-circle" class="w-12 h-12 sm:w-16 sm:h-16 text-red-400" /></div>
+                <h3 class="text-red-300 font-bold text-lg sm:text-xl mb-2">Payment Failed</h3>
                 <p class="text-slate-400 text-sm mb-2" x-show="failReason" x-text="failReason"></p>
                 <p class="text-slate-400 text-sm mb-6">Please check your M-Pesa balance and try again.</p>
                 <button @click="retry()"
-                    class="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                    class="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl transition-colors text-sm">
                     Try Again
                 </button>
             </div>

@@ -336,10 +336,10 @@
 @if($loansEnabled)
 <div x-cloak x-show="loanOpen" @click.self="loanOpen = false"
      class="fixed inset-0 z-[9995] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);">
-    <div class="rounded-2xl p-6 w-full max-w-md" style="background:#100e1e;border:1px solid rgba(99,102,241,0.35);">
+    <div class="rounded-2xl p-4 sm:p-6 w-full max-w-md" style="background:#100e1e;border:1px solid rgba(99,102,241,0.35);">
         <div class="flex items-center justify-between mb-1">
             <h3 class="text-base font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-4 h-4" /> Borrow from <span x-text="loanFriendName" class="text-indigo-300"></span></h3>
-            <button @click="loanOpen = false" class="text-gray-400 hover:text-white text-xl">✕</button>
+            <button @click="loanOpen = false" class="text-gray-400 hover:text-white text-lg sm:text-xl">✕</button>
         </div>
         <p class="text-[11px] text-gray-500 mb-4">Pick an amount and repayment period. Your friend then offers an interest rate ({{ implode('–', [min(\App\Models\FriendLoan::RATE_PRESETS), max(\App\Models\FriendLoan::RATE_PRESETS)]) }}%) which you can accept or counter once.</p>
         <form method="POST" action="{{ route('friends.loans.request') }}">
@@ -377,10 +377,10 @@
 @if($giftsEnabled && $sendMoneyAccess)
 <div x-cloak x-show="giftOpen" @click.self="giftOpen = false"
      class="fixed inset-0 z-[9995] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);">
-    <div class="rounded-2xl p-6 w-full max-w-md" style="background:#100e1e;border:1px solid rgba(245,158,11,0.35);">
+    <div class="rounded-2xl p-4 sm:p-6 w-full max-w-md" style="background:#100e1e;border:1px solid rgba(245,158,11,0.35);">
         <div class="flex items-center justify-between mb-1">
             <h3 class="text-base font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-4 h-4" /> Send money to <span x-text="giftFriendName" class="text-amber-300"></span></h3>
-            <button @click="giftOpen = false" class="text-gray-400 hover:text-white text-xl">✕</button>
+            <button @click="giftOpen = false" class="text-gray-400 hover:text-white text-lg sm:text-xl">✕</button>
         </div>
         <p class="text-[11px] text-gray-500 mb-4">An instant gift, straight from your balance — no interest, no repayment. Up to {{ \App\Models\FriendGift::DAILY_LIMIT }} gifts a day, max 20% of your cash each time.</p>
         <form method="POST" action="{{ route('friends.gift') }}">

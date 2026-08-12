@@ -22,13 +22,13 @@
 @if($showOnboardingWizard ?? false)
 <div x-data="onboardingWizard(@json($onboardingSteps))" x-show="visible" x-cloak
      class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9995;overflow-y:auto;overscroll-behavior:contain;background:rgba(0,0,0,0.78);backdrop-filter:blur(8px);">
-    <div class="max-w-lg w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-8 my-auto relative">
+    <div class="max-w-lg w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-5 sm:p-8 my-auto relative">
         <button @click="close()" title="Close wizard"
-                class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                class="absolute top-3 right-3 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
-        <div class="flex items-center gap-1.5 mb-5">
+        <div class="flex items-center gap-1.5 mb-4 sm:mb-5">
             <template x-for="(s, i) in steps" :key="i">
                 <div class="h-1.5 flex-1 rounded-full transition-colors" :style="i <= step ? 'background:#6366f1;' : 'background:rgba(255,255,255,.1);'"></div>
             </template>
@@ -36,23 +36,23 @@
 
         <template x-for="(s, i) in steps" :key="'step-'+i">
             <div x-show="step === i">
-                <div class="text-6xl mb-4 text-center" x-text="s.icon"></div>
-                <p class="text-[11px] font-black uppercase tracking-widest text-indigo-400 text-center mb-1.5" x-text="s.category"></p>
-                <h2 class="text-2xl font-black mb-3 text-center" x-text="s.title"></h2>
-                <p class="text-gray-400 text-sm leading-relaxed text-center" x-text="s.body"></p>
+                <div class="text-4xl sm:text-6xl mb-3 sm:mb-4 text-center" x-text="s.icon"></div>
+                <p class="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-indigo-400 text-center mb-1.5" x-text="s.category"></p>
+                <h2 class="text-lg sm:text-2xl font-black mb-2 sm:mb-3 text-center" x-text="s.title"></h2>
+                <p class="text-gray-400 text-xs sm:text-sm leading-relaxed text-center" x-text="s.body"></p>
             </div>
         </template>
 
-        <div class="flex items-center justify-between gap-3 mt-8">
-            <button @click="close()" class="px-5 py-3 rounded-2xl text-sm font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
+        <div class="flex items-center justify-between gap-3 mt-6 sm:mt-8">
+            <button @click="close()" class="px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
                 Close wizard
             </button>
             <button @click="next()"
-                    class="flex-1 max-w-[12rem] bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-3 rounded-2xl text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
+                    class="flex-1 max-w-[12rem] bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
                 <span x-text="step < steps.length - 1 ? 'Next' : 'Start Playing!'"></span>
             </button>
         </div>
-        <p class="text-[11px] text-gray-600 text-center mt-3">Step <span x-text="step+1"></span> of <span x-text="steps.length"></span></p>
+        <p class="text-[10px] sm:text-[11px] text-gray-600 text-center mt-3">Step <span x-text="step+1"></span> of <span x-text="steps.length"></span></p>
     </div>
 </div>
 <script>
@@ -92,15 +92,15 @@
      unlock (shouldShow() requires career_field to be set first). --}}
 @if($needsCareerQuiz ?? false)
 <div class="modal-overlay fixed inset-0 flex items-center justify-center p-4" style="z-index:9990;overflow-y:auto;overscroll-behavior:contain;">
-    <div class="max-w-md w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-10 text-center my-auto">
-        <div class="text-6xl mb-4 animate-bounce">🎯</div>
-        <h2 class="text-2xl font-black mb-2 text-white">Start Your Career Journey</h2>
-        <p class="text-gray-400 text-sm leading-relaxed mb-6">Take a quick 5-question quiz and we'll match you to the perfect career in PesaQuest's world.</p>
+    <div class="max-w-md w-full bg-[#12111f] border border-indigo-500/35 rounded-3xl p-6 sm:p-10 text-center my-auto">
+        <div class="mb-3 sm:mb-4 animate-bounce flex justify-center"><x-icon name="target" class="w-11 h-11 sm:w-16 sm:h-16 text-indigo-400" /></div>
+        <h2 class="text-lg sm:text-2xl font-black mb-2 text-white">Start Your Career Journey</h2>
+        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed mb-5 sm:mb-6">Take a quick 5-question quiz and we'll match you to the perfect career in PesaQuest's world.</p>
         <a href="{{ route('life.quiz') }}"
-           class="block bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-2xl text-base shadow-xl shadow-indigo-500/40 hover:scale-105 transition-transform">
+           class="block bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-3 sm:py-4 rounded-2xl text-sm sm:text-base shadow-xl shadow-indigo-500/40 hover:scale-105 transition-transform">
             🚀 Take the Career Quiz
         </a>
-        <p class="text-[11px] text-gray-600 mt-3">Takes 2 minutes · Fully personalised</p>
+        <p class="text-[10px] sm:text-[11px] text-gray-600 mt-3">Takes 2 minutes · Fully personalised</p>
     </div>
 </div>
 @endif
@@ -2723,6 +2723,20 @@
     animation: qc-particle-fly 1.2s ease-out both;
 }
 
+/* Mobile-first shrink for the quest-complete / challenge-result popup —
+   same technique as the Tailwind sm: pattern elsewhere: base (here, the
+   @media below) is the smaller mobile size, ≥640px restores the original. */
+@media (max-width: 639px) {
+    .qc-card { padding: 20px 16px 16px; }
+    .qc-icon { font-size: 44px; margin-bottom: 8px; }
+    .qc-eyebrow { font-size: 10px; }
+    .qc-title { font-size: 15px; margin-bottom: 8px; }
+    .qc-lesson { font-size: 12px; margin-bottom: 14px; }
+    .qc-rewards { gap: 8px; margin-bottom: 14px; }
+    .qc-xp-badge, .qc-kes-badge { padding: 5px 10px; font-size: 11px; }
+    .qc-btn { padding: 11px; font-size: 13px; }
+}
+
 /* Share trade celebration card */
 @keyframes stc-pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes stc-shrink { from { width: 100%; } to { width: 0%; } }
@@ -2825,7 +2839,7 @@
             <div class="qc-star" style="background:#f59e0b;--tx:-130px;--ty:-45px;animation-delay:.07s;width:9px;height:9px;border-radius:2px;"></div>
         </div>
 
-        <span class="qc-icon w-10 h-10" x-html="pqIcon(questComplete.icon, 'w-10 h-10')"></span>
+        <span class="qc-icon w-8 h-8 sm:w-10 sm:h-10" x-html="pqIcon(questComplete.icon, 'w-8 h-8 sm:w-10 sm:h-10')"></span>
         <div class="qc-eyebrow">QUEST COMPLETE!</div>
         <div class="qc-title" x-text="questComplete.title"></div>
         <div class="qc-lesson" x-show="questComplete.lesson" x-text="questComplete.lesson"></div>

@@ -216,7 +216,7 @@
          style="background:#0d0b1a;border:1px solid rgba(139,92,246,0.25);">
         <div class="flex items-center justify-between mb-3.5">
             <h2 class="text-base font-black inline-flex items-center gap-2"><x-icon name="pencil" class="w-4 h-4" /> New Discussion</h2>
-            <button @click="newTopicOpen = false" class="text-gray-500 hover:text-white text-xl leading-none">&times;</button>
+            <button @click="newTopicOpen = false" class="text-gray-500 hover:text-white text-lg sm:text-xl leading-none">&times;</button>
         </div>
 
         @if($errors->any())

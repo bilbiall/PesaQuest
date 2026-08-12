@@ -116,10 +116,10 @@ body{background:#08070f;}
 <div x-show="showModal"
      x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
      class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm" @click.self="showModal=false" x-cloak>
-    <div class="modal-bg rounded-3xl p-7 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="font-black text-xl text-white" x-text="editId ? 'Edit Badge' : 'Create Badge'"></h3>
-            <button @click="showModal=false" class="text-gray-400 hover:text-white p-1 rounded-xl hover:bg-white/5">✕</button>
+    <div class="modal-bg rounded-3xl p-5 sm:p-7 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 class="font-black text-sm sm:text-xl text-white" x-text="editId ? 'Edit Badge' : 'Create Badge'"></h3>
+            <button @click="showModal=false" class="text-gray-400 hover:text-white p-1 rounded-xl hover:bg-white/5 text-sm sm:text-base">✕</button>
         </div>
 
         <form @submit.prevent="saveBadge()" class="space-y-4" enctype="multipart/form-data">
@@ -208,12 +208,12 @@ body{background:#08070f;}
 <div x-show="showAward"
      x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
      class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm" @click.self="showAward=false" x-cloak>
-    <div class="modal-bg rounded-3xl p-7 w-full max-w-sm">
-        <div class="flex items-center justify-between mb-5">
-            <h3 class="font-black text-lg text-white">Award Badge</h3>
-            <button @click="showAward=false" class="text-gray-400 hover:text-white">✕</button>
+    <div class="modal-bg rounded-3xl p-5 sm:p-7 w-full max-w-sm">
+        <div class="flex items-center justify-between mb-4 sm:mb-5">
+            <h3 class="font-black text-sm sm:text-lg text-white">Award Badge</h3>
+            <button @click="showAward=false" class="text-gray-400 hover:text-white text-sm sm:text-base">✕</button>
         </div>
-        <p class="text-sm text-gray-400 mb-4">Award "<strong class="text-white" x-text="awardBadgeName"></strong>" to a player.</p>
+        <p class="text-xs sm:text-sm text-gray-400 mb-4">Award "<strong class="text-white" x-text="awardBadgeName"></strong>" to a player.</p>
         <div class="space-y-3">
             <div>
                 <label class="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wide">Player User ID<x-help-tip text="The numeric account ID of the player who should manually receive this badge, bypassing its automatic trigger condition." example="482" /></label>

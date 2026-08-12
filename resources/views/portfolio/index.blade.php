@@ -420,43 +420,43 @@
                  style="background:linear-gradient(160deg,rgba(12,18,38,0.99),rgba(20,16,52,0.97));border:1px solid rgba(248,113,113,0.25);">
                 <template x-if="selling">
                     <div>
-                        <div class="p-6 border-b border-white/5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9" x-html="pqIcon(selling.icon, 'w-9 h-9')"></div>
-                                <div>
-                                    <p class="font-black text-white" x-text="selling.name"></p>
-                                    <p class="text-xs text-gray-400">Confirm sale — proceeds go to your balance</p>
+                        <div class="p-4 sm:p-6 border-b border-white/5">
+                            <div class="flex items-center gap-2.5 sm:gap-3">
+                                <div class="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0" x-html="pqIcon(selling.icon, 'w-7 h-7 sm:w-9 sm:h-9')"></div>
+                                <div class="min-w-0">
+                                    <p class="font-black text-white text-sm sm:text-base truncate" x-text="selling.name"></p>
+                                    <p class="text-[.7rem] sm:text-xs text-gray-400 leading-snug">Confirm sale — proceeds go to your balance</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="p-6">
-                            <div class="rounded-2xl p-4 mb-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
-                                <div class="space-y-2 text-sm">
-                                    <div class="flex justify-between">
+                        <div class="p-4 sm:p-6">
+                            <div class="rounded-2xl p-3 sm:p-4 mb-3 sm:mb-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+                                <div class="space-y-2 text-xs sm:text-sm">
+                                    <div class="flex justify-between gap-2">
                                         <span class="text-gray-400">Current value</span>
-                                        <span class="font-bold text-white" x-text="'Ksh ' + selling.value.toLocaleString()"></span>
+                                        <span class="font-bold text-white truncate" x-text="'Ksh ' + selling.value.toLocaleString()"></span>
                                     </div>
-                                    <div class="flex justify-between">
+                                    <div class="flex justify-between gap-2">
                                         <span class="text-gray-400">Platform fee (5%)</span>
-                                        <span class="font-bold text-red-400" x-text="'− Ksh ' + Math.round(selling.value * 0.05).toLocaleString()"></span>
+                                        <span class="font-bold text-red-400 truncate" x-text="'− Ksh ' + Math.round(selling.value * 0.05).toLocaleString()"></span>
                                     </div>
-                                    <div class="border-t border-white/10 pt-2 mt-2 flex justify-between font-black">
+                                    <div class="border-t border-white/10 pt-2 mt-2 flex justify-between gap-2 font-black">
                                         <span class="text-white">You receive</span>
-                                        <span class="text-emerald-400" x-text="'Ksh ' + Math.round(selling.value * 0.95).toLocaleString()"></span>
+                                        <span class="text-emerald-400 truncate" x-text="'Ksh ' + Math.round(selling.value * 0.95).toLocaleString()"></span>
                                     </div>
                                 </div>
                             </div>
-                            <div x-show="sellMsg" class="rounded-xl px-4 py-2 text-xs font-bold text-center mb-3"
+                            <div x-show="sellMsg" class="rounded-xl px-3 py-2 sm:px-4 text-[.7rem] sm:text-xs font-bold text-center mb-3"
                                  :class="sellOk ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'"
                                  x-text="sellMsg"></div>
-                            <div class="flex gap-3">
+                            <div class="flex gap-2 sm:gap-3">
                                 <button @click="selling = null; sellMsg = '';"
-                                        class="flex-1 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                                        class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition-colors"
                                         style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
                                     Keep it
                                 </button>
                                 <button @click="confirmSell()" :disabled="isSelling"
-                                        class="flex-1 py-3 rounded-xl text-sm font-black transition-all hover:scale-[1.02] active:scale-[0.97] disabled:opacity-50"
+                                        class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] active:scale-[0.97] disabled:opacity-50"
                                         style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#fca5a5;">
                                     <span x-show="!isSelling">Confirm Sale</span>
                                     <span x-show="isSelling" x-cloak>Selling…</span>

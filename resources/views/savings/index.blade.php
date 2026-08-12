@@ -354,51 +354,51 @@
          class="fixed inset-0 flex items-center justify-center p-4"
          style="z-index:9990;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);overflow-y:auto;overscroll-behavior:contain;">
 
-        <div class="w-full max-w-sm rounded-3xl p-6 my-auto"
+        <div class="w-full max-w-sm rounded-3xl p-4 sm:p-6 my-auto"
              style="background:#0d1117;border:1px solid rgba(21,199,126,0.25);"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-y-8"
              x-transition:enter-end="opacity-100 translate-y-0">
 
-            <div class="flex items-center gap-3 mb-5">
-                <span class="text-3xl" x-text="depositModal.scheme?.emoji || '💰'"></span>
-                <div>
-                    <h3 class="font-black text-white" x-text="depositModal.scheme?.name"></h3>
-                    <p class="text-xs text-gray-500">Add a deposit to this goal</p>
+            <div class="flex items-center gap-2.5 sm:gap-3 mb-4 sm:mb-5">
+                <span class="text-xl sm:text-3xl" x-text="depositModal.scheme?.emoji || '💰'"></span>
+                <div class="min-w-0">
+                    <h3 class="font-black text-white text-sm sm:text-base truncate" x-text="depositModal.scheme?.name"></h3>
+                    <p class="text-[.7rem] sm:text-xs text-gray-500">Add a deposit to this goal</p>
                 </div>
             </div>
 
             {{-- Amount --}}
-            <div class="mb-4">
-                <label class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1.5 block">Amount (KSh)</label>
+            <div class="mb-3 sm:mb-4">
+                <label class="text-[.68rem] sm:text-xs text-gray-400 uppercase tracking-wider font-bold mb-1.5 block">Amount (KSh)</label>
                 <input type="number" x-model.number="depositModal.amount" placeholder="500" min="1"
                        @keyup.enter="submitDeposit()"
-                       class="w-full px-4 py-3 rounded-xl text-white text-sm font-medium placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition"
+                       class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl text-white text-sm font-medium placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition"
                        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
                 {{-- Quick amounts --}}
-                <div class="flex gap-2 mt-2">
+                <div class="flex gap-1.5 sm:gap-2 mt-2">
                     <template x-for="qa in [100, 500, 1000, 2000]">
                         <button type="button" @click="depositModal.amount = qa"
                                 :class="depositModal.amount === qa ? 'border-emerald-500/60 text-emerald-400' : 'border-white/10 text-gray-400'"
-                                class="flex-1 py-1.5 rounded-lg text-[11px] font-bold border transition hover:border-emerald-500/40 hover:text-emerald-400"
+                                class="flex-1 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold border transition hover:border-emerald-500/40 hover:text-emerald-400"
                                 x-text="qa.toLocaleString()"></button>
                     </template>
                 </div>
             </div>
 
             {{-- Note --}}
-            <div class="mb-5">
-                <label class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1.5 block">Note (optional)</label>
+            <div class="mb-4 sm:mb-5">
+                <label class="text-[.68rem] sm:text-xs text-gray-400 uppercase tracking-wider font-bold mb-1.5 block">Note (optional)</label>
                 <input type="text" x-model="depositModal.note" placeholder="e.g. Weekly savings" maxlength="120"
                        @keyup.enter="submitDeposit()"
-                       class="w-full px-4 py-3 rounded-xl text-white text-sm font-medium placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition"
+                       class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl text-white text-sm font-medium placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition"
                        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex gap-2.5 sm:gap-3">
                 <button @click="submitDeposit()"
                         :disabled="depositing || !depositModal.amount"
-                        class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                        class="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl font-black text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         style="background:linear-gradient(135deg,#15C77E,#0fa864);color:#07060f;">
                     <span x-show="!depositing" class="inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> Deposit</span>
                     <span x-show="depositing" x-cloak class="flex items-center gap-2">
@@ -407,7 +407,7 @@
                     </span>
                 </button>
                 <button @click="depositModal.open = false"
-                        class="px-5 py-3 rounded-xl text-sm text-gray-400 hover:text-white transition font-medium"
+                        class="px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm text-gray-400 hover:text-white transition font-medium"
                         style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
                     Cancel
                 </button>
@@ -424,50 +424,50 @@
          class="fixed inset-0 flex items-center justify-center p-4"
          style="z-index:9990;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);overflow-y:auto;overscroll-behavior:contain;">
 
-        <div class="w-full max-w-sm rounded-3xl p-6 my-auto"
+        <div class="w-full max-w-sm rounded-3xl p-4 sm:p-6 my-auto"
              style="background:#0d1117;border:1px solid rgba(56,189,248,0.3);"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-y-8"
              x-transition:enter-end="opacity-100 translate-y-0">
 
-            <div class="flex items-center gap-3 mb-4">
-                <span class="text-3xl" x-text="withdrawModal.scheme?.emoji || '💰'"></span>
-                <div>
-                    <h3 class="font-black text-white" x-text="withdrawModal.scheme?.name"></h3>
-                    <p class="text-xs text-gray-500">
+            <div class="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+                <span class="text-xl sm:text-3xl" x-text="withdrawModal.scheme?.emoji || '💰'"></span>
+                <div class="min-w-0">
+                    <h3 class="font-black text-white text-sm sm:text-base truncate" x-text="withdrawModal.scheme?.name"></h3>
+                    <p class="text-[.7rem] sm:text-xs text-gray-500">
                         Available: <span class="text-sky-300 font-bold" x-text="'KSh ' + Number(withdrawModal.scheme?.current_amount ?? 0).toLocaleString()"></span>
                     </p>
                 </div>
             </div>
 
             {{-- Amount --}}
-            <div class="mb-3">
-                <label class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1.5 block">Amount to withdraw (KSh)</label>
+            <div class="mb-2.5 sm:mb-3">
+                <label class="text-[.68rem] sm:text-xs text-gray-400 uppercase tracking-wider font-bold mb-1.5 block">Amount to withdraw (KSh)</label>
                 <input type="number" x-model.number="withdrawModal.amount" placeholder="500" min="1"
                        :max="withdrawModal.scheme?.current_amount"
                        @keyup.enter="submitWithdraw()"
-                       class="w-full px-4 py-3 rounded-xl text-white text-sm font-medium placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition"
+                       class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl text-white text-sm font-medium placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition"
                        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
                 {{-- Quick fractions --}}
-                <div class="flex gap-2 mt-2">
+                <div class="flex gap-1.5 sm:gap-2 mt-2">
                     <template x-for="frac in [[25,'25%'],[50,'50%'],[100,'All']]">
                         <button type="button"
                                 @click="withdrawModal.amount = Math.floor(Number(withdrawModal.scheme?.current_amount ?? 0) * frac[0] / 100)"
-                                class="flex-1 py-1.5 rounded-lg text-[11px] font-bold border border-white/10 text-gray-400 transition hover:border-sky-500/40 hover:text-sky-300"
+                                class="flex-1 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold border border-white/10 text-gray-400 transition hover:border-sky-500/40 hover:text-sky-300"
                                 x-text="frac[1]"></button>
                     </template>
                 </div>
             </div>
 
-            <p class="text-[11px] text-amber-300/80 leading-snug rounded-xl px-3 py-2 mb-4"
+            <p class="text-[10px] sm:text-[11px] text-amber-300/80 leading-snug rounded-xl px-2.5 py-2 sm:px-3 mb-3 sm:mb-4"
                style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);">
                 <x-icon name="bulb" class="w-3 h-3 inline-block" /> The money goes back to your wallet — but it stops earning interest, and your goal moves further away. Withdraw only what you need.
             </p>
 
-            <div class="flex gap-3">
+            <div class="flex gap-2.5 sm:gap-3">
                 <button @click="submitWithdraw()"
                         :disabled="withdrawing || !withdrawModal.amount"
-                        class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                        class="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl font-black text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         style="background:linear-gradient(135deg,#38bdf8,#0284c7);color:#07060f;">
                     <span x-show="!withdrawing" class="inline-flex items-center gap-1"><x-icon name="bank" class="w-3.5 h-3.5" /> Withdraw to Wallet</span>
                     <span x-show="withdrawing" x-cloak class="flex items-center gap-2">
@@ -476,7 +476,7 @@
                     </span>
                 </button>
                 <button @click="withdrawModal.open = false"
-                        class="px-5 py-3 rounded-xl text-sm text-gray-400 hover:text-white transition font-medium"
+                        class="px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm text-gray-400 hover:text-white transition font-medium"
                         style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
                     Cancel
                 </button>
