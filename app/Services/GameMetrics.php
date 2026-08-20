@@ -33,6 +33,8 @@ class GameMetrics
         'overdue_cleared'     => 'clear',
         'arcade_wins'         => 'count',
         'arcade_winnings'     => 'amount',
+        'shares_bought'       => 'count',
+        'shares_profit'       => 'amount',
     ];
 
     /**
@@ -44,6 +46,7 @@ class GameMetrics
         'net_worth'       => 500,
         'savings_balance' => 200,
         'xp_points'       => 50,
+        'shares_profit'   => 200,
     ];
 
     /** Current absolute value of a metric for this player. */
@@ -76,6 +79,11 @@ class GameMetrics
             // across solo, standard multiplayer, and Rivals Trail wager play alike.
             'arcade_wins'         => \App\Models\ArcadeSession::where('user_id', $user->id)->where('status', 'won')->count(),
             'arcade_winnings'     => (int) \App\Models\ArcadeSession::where('user_id', $user->id)->whereIn('status', ['won', 'cashed_out'])->sum('pot_amount'),
+            // Lifetime cumulative totals (like courses_completed/assets_owned above) — the
+            // baseline+delta mechanism in ChallengeService derives the "during the challenge"
+            // portion by subtracting the baseline snapshot, so these ignore $since entirely.
+            'shares_bought'       => \App\Models\ShareTrade::where('user_id', $user->id)->where('action', 'buy')->count(),
+            'shares_profit'       => (int) \App\Models\ShareTrade::where('user_id', $user->id)->where('action', 'sell')->sum('profit_loss'),
             default               => 0,
         };
     }

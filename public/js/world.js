@@ -1197,6 +1197,12 @@ function pesaCity() {
     },
     _arrivalTimer: null,
 
+    // ── Market Watch detail popup ───────────────────────────────────
+    newsDetail: {
+      show: false,
+      item: null,
+    },
+
     // ── Notification bell state (Phase 15) ────────────────────────
     notifOpen:    false,
     notifLoading: false,
@@ -2063,6 +2069,19 @@ function pesaCity() {
     },
 
     // ══════════════════════════════════════════════════════════════
+    //  MARKET WATCH DETAIL POPUP
+    // ══════════════════════════════════════════════════════════════
+
+    openNewsDetail(item) {
+      this.newsDetail.item = item;
+      this.newsDetail.show = true;
+    },
+
+    closeNewsDetail() {
+      this.newsDetail.show = false;
+    },
+
+    // ══════════════════════════════════════════════════════════════
     //  WORLD EVENT SYSTEM  (Phase 8 — EventEngine integration)
     // ══════════════════════════════════════════════════════════════
 
@@ -2170,6 +2189,17 @@ function equitySquare() {
     bankMsg:      '',
     bankMsgOk:    true,
     shareTradeResult: null,
+
+    init() {
+      // Set by the Market Watch "Go to Market" button before walking here —
+      // a plain data property can't be reached from outside this nested
+      // x-data, so sessionStorage is the hand-off.
+      const intent = sessionStorage.getItem('pc_eq_tab_intent');
+      if (intent) {
+        this.eqTab = intent;
+        sessionStorage.removeItem('pc_eq_tab_intent');
+      }
+    },
 
     showMsg(msg, ok = true) {
       this.bankMsg   = msg;

@@ -330,12 +330,14 @@
             @php
                 $pos = $districtPositions[$slug] ?? ['left'=>45,'top'=>45,'width'=>10,'height'=>10];
                 $isMissionDistrict = in_array($slug, $missionDistricts ?? []);
+                $isActionable = in_array($slug, $actionableSlugs ?? []);
             @endphp
             <div class="pc-district
                         {{ $district['status'] === 'active' ? 'pc-district-active' : '' }}
                         {{ $district['status'] === 'locked' ? 'pc-district-locked' : '' }}
                         {{ $district['status'] === 'coming-soon' ? 'pc-district-soon' : '' }}
-                        {{ $isMissionDistrict ? 'pc-district-mission' : '' }}"
+                        {{ $isMissionDistrict ? 'pc-district-mission' : '' }}
+                        {{ $isActionable ? 'pc-district-actionable' : '' }}"
                  style="left: {{ $pos['left'] }}%; top: {{ $pos['top'] }}%; width: {{ $pos['width'] }}%; height: {{ $pos['height'] }}%; --district-color: {{ $district['color'] }};"
                  data-slug="{{ $slug }}"
                  data-name="{{ $district['name'] }}"
@@ -2046,38 +2048,35 @@
                 </div>
             </template>
 
-            {{-- ── COMMUNITY CENTRE — Dreams Board + Stats ── --}}
+            {{-- ── COMMUNITY CENTRE — Market Watch ── --}}
             <template x-if="district && district.slug === 'community'">
                 <div>
                     <a href="{{ route('forums.index') }}" class="pc-action-btn pc-action-primary" style="display:block;text-align:center;margin-bottom:8px;"><x-icon name="speech" class="w-3.5 h-3.5 inline-block" /> Visit Forums →</a>
                     <div style="display:flex;gap:8px;margin-bottom:10px;">
-                        <a href="{{ route('friends.index') }}" class="pc-action-btn" style="flex:1;text-align:center;"><x-icon name="people" class="w-3.5 h-3.5 inline-block" /> Friends &amp; Loans</a>
-                        <a href="{{ route('chama.index') }}" class="pc-action-btn" style="flex:1;text-align:center;"><x-icon name="group" class="w-3.5 h-3.5 inline-block" /> Chamas</a>
+                        <a href="{{ route('friends.index') }}" class="pc-action-btn pc-action-secondary" style="flex:1;text-align:center;"><x-icon name="people" class="w-3.5 h-3.5 inline-block" /> Friends &amp; Loans</a>
+                        <a href="{{ route('chama.index') }}" class="pc-action-btn pc-action-secondary" style="flex:1;text-align:center;"><x-icon name="group" class="w-3.5 h-3.5 inline-block" /> Chamas</a>
                     </div>
 
                     <p class="pc-panel-desc" x-text="district.description"></p>
 
-                    {{-- City stats --}}
-                    <div class="pc-comm-stats">
-                        <div class="pc-comm-stat">
-                            <div class="pc-comm-stat-num" x-text="(district.total_players ?? 0).toLocaleString()"></div>
-                            <div class="pc-comm-stat-label">Players in Pesa City</div>
-                        </div>
-                        <div class="pc-comm-stat">
-                            <div class="pc-comm-stat-num" x-text="(district.badges_earned ?? 0).toLocaleString()"></div>
-                            <div class="pc-comm-stat-label">Badges Earned</div>
-                        </div>
-                    </div>
-
-                    {{-- Dreams Board --}}
+                    {{-- Market Watch — bulletins that telegraph share moves before they land --}}
                     <div class="pc-dreams-board">
-                        <div class="pc-dreams-title"><x-icon name="pin" class="w-3.5 h-3.5 inline-block" /> Dreams Board</div>
-                        <div class="pc-dreams-sub">What Pesa City players are working towards</div>
+                        <div class="pc-dreams-title">📰 Market Watch</div>
+                        <div class="pc-dreams-sub">Rumours from the trading floor — not every story pans out</div>
                         <div class="pc-dreams-list">
-                            <template x-for="item in (district.dreams || [])" :key="item.dream">
-                                <div class="pc-dream-card">
-                                    <span class="pc-dream-icon" x-text="item.icon"></span>
-                                    <span class="pc-dream-text" x-text="item.dream"></span>
+                            <template x-if="!district.market_news || district.market_news.length === 0">
+                                <div class="pc-dream-card" style="opacity:.6;">
+                                    <span class="pc-dream-text">Nothing brewing right now — check back soon.</span>
+                                </div>
+                            </template>
+                            <template x-for="item in (district.market_news || [])" :key="item.headline">
+                                <div class="pc-dream-card" style="flex-direction:column;align-items:flex-start;gap:4px;cursor:pointer;" @click="openNewsDetail(item)">
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <span class="pc-dream-icon" x-text="item.status === 'resolved' ? (item.direction === 'up' ? '📈' : '📉') : '📰'"></span>
+                                        <span class="pc-dream-text" style="font-weight:800;" x-text="item.headline"></span>
+                                    </div>
+                                    <span style="font-size:11px;color:rgba(255,255,255,.5);" x-text="item.status === 'resolved' ? item.lesson : item.flavor"></span>
+                                    <span style="font-size:10px;font-weight:700;color:#67e8f9;">Read more →</span>
                                 </div>
                             </template>
                         </div>
@@ -3036,6 +3035,54 @@
     </div>
 
     {{-- Quest Complete Overlay (Phase 15) — replaced by qc-overlay above (Task A) --}}
+
+    {{-- ══════════════════════════════════════
+         MARKET WATCH DETAIL POPUP
+         Full bulletin text + which shares it names, so a player can
+         actually act on it in the Market before it resolves.
+    ══════════════════════════════════════ --}}
+    <div class="pc-news-overlay"
+         x-show="newsDetail.show"
+         x-cloak
+         @click.self="closeNewsDetail()">
+        <div class="pc-news-popup">
+            <button class="pc-news-close" @click="closeNewsDetail()">✕</button>
+
+            <div class="pc-news-eyebrow" x-text="newsDetail.item && newsDetail.item.status === 'resolved' ? 'Resolved' : 'Market Watch'"></div>
+            <div class="pc-news-icon" x-text="newsDetail.item && newsDetail.item.status === 'resolved' ? (newsDetail.item.direction === 'up' ? '📈' : '📉') : '📰'"></div>
+            <div class="pc-news-headline" x-text="newsDetail.item ? newsDetail.item.headline : ''"></div>
+            <div class="pc-news-body" x-text="newsDetail.item ? newsDetail.item.flavor : ''"></div>
+
+            <template x-if="newsDetail.item && newsDetail.item.status === 'resolved'">
+                <div class="pc-news-outcome">
+                    <span x-text="'Update: ' + (newsDetail.item.direction === 'up' ? 'this one was real — expect a gradual climb, not an overnight jump. 📈' : 'this one was real — expect a gradual slide, not an overnight crash. 📉')"></span>
+                    <div style="margin-top:6px;" x-text="newsDetail.item.lesson"></div>
+                </div>
+            </template>
+
+            <template x-if="newsDetail.item && newsDetail.item.affected_shares && newsDetail.item.affected_shares.length > 0">
+                <div class="pc-news-subject">
+                    <div class="pc-news-subject-label">Which shares this is about</div>
+                    <div class="pc-news-subject-chips">
+                        <template x-for="s in newsDetail.item.affected_shares" :key="s.symbol">
+                            <span class="pc-news-chip">
+                                <span x-text="s.icon"></span>
+                                <span x-text="s.name + ' (' + s.symbol + ')'"></span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <p class="pc-news-hint">
+                Not every story pans out — read it, form a guess, and decide whether to buy or sell in the Market before it resolves.
+            </p>
+
+            <button class="pc-news-cta" @click="closeNewsDetail(); sessionStorage.setItem('pc_eq_tab_intent', 'market'); walkToDistrict('bank');">
+                Go to Market →
+            </button>
+        </div>
+    </div>
 
 </div>{{-- /pc-root --}}
 

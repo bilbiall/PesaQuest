@@ -260,6 +260,19 @@ class User extends Authenticatable implements MustVerifyEmail
             ->exists();
     }
 
+    /** The active SchoolMember row for this user, with its school loaded — or
+     *  null if they aren't part of an active school subscription. */
+    public function activeSchoolMembership(): ?\App\Models\SchoolMember
+    {
+        return \App\Models\SchoolMember::where('user_id', $this->id)
+            ->where('status', 'active')
+            ->whereHas('schoolSubscription', function ($q) {
+                $q->where('status', 'active')->where('ends_at', '>', now());
+            })
+            ->with('schoolSubscription')
+            ->first();
+    }
+
     public function schoolTeacherRoles()
     {
         return $this->hasMany(\App\Models\SchoolTeacher::class);

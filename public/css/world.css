@@ -1128,6 +1128,18 @@
   50%       { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 10px rgba(21,199,126,0); }
 }
 
+/* Actionable districts — an uncompleted quest, unread Market Watch bulletin,
+   or promotion review waiting. Amber so it never reads as the same signal
+   as the green mission-destination pulse above, even when both apply. */
+.pc-district-actionable .pc-district-icon {
+  animation: actionablePulse 2.2s ease-in-out infinite;
+}
+
+@keyframes actionablePulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 0 rgba(251,191,36,0.6); }
+  50%       { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 10px rgba(251,191,36,0); }
+}
+
 /* ════════════════════════════════════════════
    PHASE 4-5 — OPPORTUNITY HUB PANEL TABS
    ════════════════════════════════════════════ */
@@ -1553,6 +1565,143 @@
   0%, 100% { opacity: 0.1; transform: scale(1); }
   50%       { opacity: 0.9; transform: scale(1.6); }
 }
+
+/* ════════════════════════════════════════════
+   MARKET WATCH DETAIL POPUP
+   ════════════════════════════════════════════ */
+.pc-news-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: overlayIn 0.3s ease;
+}
+
+.pc-news-popup {
+  position: relative;
+  padding: 32px 28px 28px;
+  max-width: 420px;
+  width: 90%;
+  background: linear-gradient(160deg, #0E1C2C, #081620);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: popupBounce 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.pc-news-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pc-news-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.pc-news-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #67e8f9;
+  margin-bottom: 10px;
+}
+
+.pc-news-icon { font-size: 36px; line-height: 1; margin-bottom: 10px; }
+
+.pc-news-headline {
+  font-size: 17px;
+  font-weight: 900;
+  color: #f9fafb;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.pc-news-body {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.55;
+}
+
+.pc-news-outcome {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(53,195,240,0.08);
+  border: 1px solid rgba(53,195,240,0.2);
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.pc-news-subject {
+  margin-top: 14px;
+}
+
+.pc-news-subject-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.pc-news-subject-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pc-news-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(251,191,36,0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251,191,36,0.25);
+}
+
+.pc-news-hint {
+  margin-top: 16px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.5;
+}
+
+.pc-news-cta {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px;
+  border-radius: 12px;
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  color: #06150D;
+  background: var(--pc-green);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pc-news-cta:hover { background: #1AE88C; transform: translateY(-1px); }
 
 /* ════════════════════════════════════════════
    PHASE 7 — SIDEBAR DYNAMIC MISSION CARD

@@ -96,13 +96,16 @@ class GamesetBillController extends Controller
         // to it even though the form offered it.
         $validChapters = array_column(\App\Models\UserProgress::chapters(), 'key');
 
-        return $request->validate([
-            'name'               => 'required|string|max:100',
-            'slug'               => $slugRule,
-            'description'        => 'nullable|string',
-            'flavor_text'        => 'nullable|string',
-            'consequence_text'   => 'nullable|string',
-            'amount'             => 'required|integer|min:0|max:9999999',
+        $data = $request->validate([
+            'name'                          => 'required|string|max:100',
+            'slug'                          => $slugRule,
+            'description'                   => 'nullable|string',
+            'flavor_text'                   => 'nullable|string',
+            'consequence_text'              => 'nullable|string',
+            'amount'                        => 'required|integer|min:0|max:9999999',
+            'net_worth_tiers'                => 'nullable|array',
+            'net_worth_tiers.*.min_net_worth'=> 'required_with:net_worth_tiers|integer|min:0',
+            'net_worth_tiers.*.amount'       => 'required_with:net_worth_tiers|integer|min:0|max:9999999',
             'frequency_ticks'    => 'required|integer|in:7,14,30,90,182,365',
             'category'           => 'required|string|in:housing,transport,utilities,food,healthcare,education,social,entertainment,tax',
             'icon'               => 'nullable|string|max:10',
@@ -115,5 +118,16 @@ class GamesetBillController extends Controller
             'credit_impact_miss' => 'nullable|integer|min:-100|max:100',
             'is_active'          => 'boolean',
         ]);
+
+        // Reshape into the {"tiers": [...]} structure Bill::resolveAmount()
+        // reads — dropping any row a user added then left blank.
+        $tiers = collect($data['net_worth_tiers'] ?? [])
+            ->filter(fn ($t) => isset($t['min_net_worth'], $t['amount']))
+            ->sortBy('min_net_worth')
+            ->values()
+            ->all();
+        $data['net_worth_tiers'] = $tiers ? ['tiers' => $tiers] : null;
+
+        return $data;
     }
 }

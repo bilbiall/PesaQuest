@@ -124,7 +124,7 @@ class GamesetChallengeController extends Controller
             'key'         => 'required|string|max:60|alpha_dash',
             'name'        => 'required|string|max:120',
             'description' => 'nullable|string|max:300',
-            'metric'      => 'required|in:net_worth,savings_balance,wallet_balance,xp_points,courses_completed,assets_owned,jobs_started,gigs_completed,chama_contributions,friends_count,forum_posts,bills_paid,arcade_wins,arcade_winnings',
+            'metric'      => 'required|in:net_worth,savings_balance,wallet_balance,xp_points,courses_completed,assets_owned,jobs_started,gigs_completed,chama_contributions,friends_count,forum_posts,bills_paid,arcade_wins,arcade_winnings,shares_bought,shares_profit',
             'style'       => 'required|in:percent,amount,count',
             'icon'        => 'nullable|string|max:10',
             'image_url'   => 'nullable|string|max:500',

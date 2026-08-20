@@ -7,6 +7,7 @@ use App\Models\PlayerDeal;
 use App\Models\PlayerLoan;
 use App\Models\PlayerShareHolding;
 use App\Models\SavingsScheme;
+use App\Models\ShareTrade;
 use App\Models\StockPriceHistory;
 
 class PortfolioController extends Controller
@@ -57,6 +58,14 @@ class PortfolioController extends Controller
         $totalSharesValue    = (int) $myShares->sum(fn ($h) => $h->currentValue());
         $totalSharesInvested = (int) $myShares->sum(fn ($h) => $h->quantity * $h->avg_cost);
         $sharesUnrealisedPL  = $totalSharesValue - $totalSharesInvested;
+
+        /* ── Realised share trades (sells only — profit/loss booked) ── */
+        $shareTradeHistory = ShareTrade::where('user_id', $user->id)
+            ->where('action', 'sell')
+            ->with('share')
+            ->orderByDesc('created_at')
+            ->take(20)
+            ->get();
 
         /* ── Completed deals history ── */
         $completedDeals = PlayerDeal::where('user_id', $user->id)
@@ -159,6 +168,7 @@ class PortfolioController extends Controller
             'totalSharesValue'    => $totalSharesValue,
             'totalSharesInvested' => $totalSharesInvested,
             'sharesUnrealisedPL'  => $sharesUnrealisedPL,
+            'shareTradeHistory'   => $shareTradeHistory,
             'savingsSchemes'   => $savingsSchemes,
             'loans'            => $loans,
             'totalDebt'        => $totalDebt,

@@ -163,6 +163,38 @@
                     </div>
                 </div>
 
+                {{-- Net Worth Tiers --}}
+                <div class="section-card">
+                    <div class="section-title">📈 Net Worth Tiers (optional)
+                        <x-help-tip text="Charges a higher amount once a player's net worth crosses a threshold — same bill, same age group, but a wealthier player pays more. Leave empty to always charge the flat Amount above. Tiers are locked in when the bill is first assigned to a player, so an existing bill won't jump mid-cycle — the new tier applies next time it's (re)assigned." example="Min net worth 200,000 → Ksh 12,000" />
+                    </div>
+                    <template x-for="(tier, i) in tiers" :key="i">
+                        <div class="flex items-end gap-2 mb-3">
+                            <div class="flex-1">
+                                <label class="form-label" x-show="i === 0">Min Net Worth (Ksh)</label>
+                                <input type="number" min="0" class="form-input"
+                                       :name="'net_worth_tiers[' + i + '][min_net_worth]'"
+                                       x-model.number="tier.min_net_worth">
+                            </div>
+                            <div class="flex-1">
+                                <label class="form-label" x-show="i === 0">Amount (Ksh)</label>
+                                <input type="number" min="0" class="form-input"
+                                       :name="'net_worth_tiers[' + i + '][amount]'"
+                                       x-model.number="tier.amount">
+                            </div>
+                            <button type="button" @click="tiers.splice(i, 1)"
+                                    class="text-xs text-red-400 border border-red-500/20 hover:border-red-500/40 px-3 py-2.5 rounded-lg transition-colors">
+                                ✕
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" @click="tiers.push({ min_net_worth: 0, amount: 0 })"
+                            class="text-xs font-bold text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 px-3 py-2 rounded-lg transition-colors">
+                        + Add Tier
+                    </button>
+                    <p class="text-[10px] text-gray-600 mt-2">Evaluated highest-qualifying-tier-wins at assignment time. A player below every tier's threshold still pays the flat Amount above.</p>
+                </div>
+
                 {{-- Trigger & Chapter --}}
                 <div class="section-card">
                     <div class="section-title">⚙️ Trigger & Assignment</div>
@@ -299,6 +331,7 @@
 function billForm() {
     return {
         icon: '{{ old('icon', $bill?->icon ?? '💸') }}',
+        tiers: {{ Illuminate\Support\Js::from(old('net_worth_tiers', $bill?->net_worth_tiers['tiers'] ?? [])) }},
     };
 }
 </script>

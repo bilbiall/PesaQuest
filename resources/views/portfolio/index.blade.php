@@ -607,6 +607,42 @@
         @endif
     </div>
 
+    {{-- ── Shares trade history — realised sells with profit/loss ── --}}
+    <div class="mb-10">
+        <div class="flex items-center gap-3 mb-4">
+            <x-icon name="bar-chart" class="w-5 h-5" />
+            <h2 class="text-sm font-black text-gray-400 uppercase tracking-widest">Shares History</h2>
+            <div class="flex-1 h-px" style="background:rgba(255,255,255,0.06);"></div>
+        </div>
+
+        @if($shareTradeHistory->isEmpty())
+        <p class="text-sm text-gray-600 text-center py-4">No sold shares yet — profits (and losses) from your sales will show here.</p>
+        @else
+        <div class="grid sm:grid-cols-2 gap-3">
+            @foreach($shareTradeHistory as $trade)
+            <div class="rounded-2xl p-4"
+                 style="background:rgba(255,255,255,0.02);border:1px solid {{ $trade->profit_loss >= 0 ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)' }};">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <x-icon :name="$trade->share->icon ?? 'bar-chart'" class="w-6 h-6" />
+                        <div class="min-w-0">
+                            <p class="font-bold text-gray-200 text-sm leading-tight truncate">{{ $trade->share->name ?? $trade->share->symbol ?? 'Share' }}</p>
+                            <p class="text-[10px] text-gray-600">{{ $trade->quantity }} sold @ Ksh {{ number_format($trade->price, 2) }} · {{ $trade->created_at->diffForHumans() }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-sm font-black {{ $trade->profit_loss >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                            {{ $trade->profit_loss >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($trade->profit_loss)) }}
+                        </p>
+                        <p class="text-[10px] text-gray-500">Ksh {{ number_format($trade->total) }} total</p>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+    </div>
+
 </div>
 
 <script>

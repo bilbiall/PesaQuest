@@ -47,6 +47,17 @@ class LifeSimulator
         // and effects are also processed opportunistically on login (idempotent).
         app(CrisisService::class)->processIfPending();
 
+        // Market Watch bulletins — unlike everything else above, this had NO
+        // login-driven fallback until now: it only ran via the two scheduled
+        // artisan commands, so a misconfigured or missing cPanel cron meant
+        // zero bulletins ever, silently, forever. Mirrors the same
+        // opportunistic pattern: resolving due bulletins is cheap and
+        // idempotent so it's safe on every login; the publish dice-roll is
+        // gated to at most once per calendar day, server-wide (a Setting
+        // flag, not per-user), so many logins in one day don't multiply the
+        // odds beyond the intended ~12%/day.
+        $this->checkMarketWatch();
+
         // Birthday gift + automatic age-group transition (private DOB; idempotent per year/day)
         try {
             app(BirthdayService::class)->check($user);
@@ -1338,8 +1349,8 @@ class LifeSimulator
                         }
                     }
 
-                    // 3 consecutive misses → the employer issues a final notice
-                    if ((int) $pj->missed_paydays >= 3 && !$pj->removal_warned_at_tick) {
+                    // 2 consecutive misses → the employer issues a final notice
+                    if ((int) $pj->missed_paydays >= 2 && !$pj->removal_warned_at_tick) {
                         $pj->removal_warned_at_tick = $currentTick;
                         $events[] = [
                             'icon'        => '🚨',
@@ -1352,10 +1363,10 @@ class LifeSimulator
                     }
 
                     // A further game month of silence after the notice → dismissed.
-                    // The 4th-miss requirement guarantees the notice always lands
+                    // The 3rd-miss requirement guarantees the notice always lands
                     // at least one full payday before the dismissal can.
                     if ($pj->removal_warned_at_tick
-                        && (int) $pj->missed_paydays >= 4
+                        && (int) $pj->missed_paydays >= 3
                         && $currentTick >= (int) $pj->removal_warned_at_tick + 30) {
                         $pj->status   = 'dismissed';
                         $pj->ended_at = now();
@@ -1642,6 +1653,34 @@ class LifeSimulator
         }
     }
 
+    // ── Market Watch — login-driven fallback for the cron-only bulletin engine ──
+
+    private function checkMarketWatch(): void
+    {
+        if (!Schema::hasTable('share_news_items')) return;
+
+        $service = app(ShareNewsService::class);
+
+        // Resolving due bulletins is just a timestamp check — safe and cheap
+        // to repeat on every login, same as the hourly `game:resolve-share-news`.
+        try {
+            $service->resolveDue();
+        } catch (\Throwable $e) {}
+
+        // The publish dice-roll must not repeat per login — one roll per
+        // calendar day, server-wide, matching what `game:publish-share-news`
+        // would do if the cron fired exactly once at its scheduled time.
+        $today = now()->toDateString();
+        if (\App\Models\Setting::get('market_watch_last_roll_date') === $today) {
+            return;
+        }
+        \App\Models\Setting::set('market_watch_last_roll_date', $today);
+
+        try {
+            $service->maybePublish();
+        } catch (\Throwable $e) {}
+    }
+
     // ── Bill assignment — chapter-gated ────────────────────────────────────────
 
     /**
@@ -1664,6 +1703,12 @@ class LifeSimulator
 
         $existingBillIds = PlayerBill::where('user_id', $user->id)->pluck('bill_id');
 
+        // Freshest possible net worth for tier resolution below — cheap
+        // relative to the rest of this method, and not guaranteed current at
+        // the login call site (only the tick-loop call site recalculates it
+        // just before this runs).
+        $netWorth = $progress->recalculateNetWorth();
+
         $templates = Bill::where('is_active', true)
             ->where('auto_assign', true)
             ->where(function ($q) use ($ageGroup) {
@@ -1674,10 +1719,12 @@ class LifeSimulator
             ->filter(fn ($b) => UserProgress::chapterOrdinal($b->min_chapter ?: 'student') <= $chapterOrdinal);
 
         foreach ($templates as $bill) {
+            $amount = $bill->resolveAmount($netWorth);
+
             PlayerBill::create([
                 'user_id'         => $user->id,
                 'bill_id'         => $bill->id,
-                'amount'          => $bill->amount,
+                'amount'          => $amount,
                 'frequency_ticks' => $bill->frequency_ticks,
                 'next_due_tick'   => $currentTick + $bill->frequency_ticks,
                 'status'          => 'active',
@@ -1690,17 +1737,17 @@ class LifeSimulator
                     'user_id' => $user->id,
                     'type'    => 'bill_assigned',
                     'title'   => "{$bill->icon} New Bill: {$bill->name}",
-                    'body'    => 'Ksh ' . number_format($bill->amount) . ' every ' . $bill->frequency_ticks . ' game days. '
+                    'body'    => 'Ksh ' . number_format($amount) . ' every ' . $bill->frequency_ticks . ' game days. '
                                . ($bill->flavor_text ?: $bill->description ?: "Life as a {$progress->chapterName()} comes with new responsibilities."),
                     'icon'    => $bill->icon,
-                    'data'    => ['bill_id' => $bill->id, 'amount' => $bill->amount],
+                    'data'    => ['bill_id' => $bill->id, 'amount' => $amount],
                 ]);
 
                 $events[] = [
                     'icon'  => $bill->icon ?? '🧾',
                     'type'  => 'bill_assigned',
                     'text'  => "New bill: {$bill->name}",
-                    'sub'   => 'Ksh ' . number_format($bill->amount) . ' every ' . $bill->frequency_ticks . ' game days — a new cost of your ' . $progress->chapterName() . ' chapter.',
+                    'sub'   => 'Ksh ' . number_format($amount) . ' every ' . $bill->frequency_ticks . ' game days — a new cost of your ' . $progress->chapterName() . ' chapter.',
                     'delta' => 0,
                 ];
             }

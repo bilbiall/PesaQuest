@@ -119,18 +119,9 @@ class WorldController extends Controller
             'tagline'     => 'Connect & Collaborate',
             'icon'        => 'megaphone',
             'color'       => '#A78BFA',
-            'description' => 'The shoutouts feed, Dreams Board, and school leaderboard. Your story belongs here.',
+            'description' => 'The shoutouts feed, Market Watch, and school leaderboard. Your story belongs here.',
             'status'      => 'active',
-            'dreams'      => [
-                ['icon' => '💻', 'dream' => 'Laptop for my business'],
-                ['icon' => '🏠', 'dream' => 'My own bedsitter in Nairobi'],
-                ['icon' => '💰', 'dream' => 'KES 500,000 in savings'],
-                ['icon' => '🚗', 'dream' => 'My own car — paid in full'],
-                ['icon' => '🌍', 'dream' => 'Sending money home every month, stress-free'],
-            ],
-            'actions' => [
-                ['label' => 'School Portal', 'url' => '/school', 'style' => 'primary'],
-            ],
+            'actions' => [],
         ],
         'quests' => [
             'slug'        => 'quests',
@@ -354,6 +345,38 @@ class WorldController extends Controller
         } catch (\Throwable $e) {}
 
 
+        // Which district markers should glow — cheap, already-available signals
+        // only; anything needing a new expensive query is deliberately skipped
+        // rather than slowing down every map load.
+        $actionableSlugs = [];
+
+        if (collect($activeQuests)->contains(fn($q) => ($q['status'] ?? '') !== 'completed')) {
+            $actionableSlugs[] = 'quests';
+        }
+
+        if (Schema::hasTable('share_news_items') && \App\Models\ShareNewsItem::where('status', 'scheduled')->exists()) {
+            $actionableSlugs[] = 'community';
+        }
+
+        try {
+            $primaryJob = \App\Models\PlayerCityJob::where('user_id', $user->id)
+                ->where('status', 'employed')
+                ->with('job:id,salary_kes_month')
+                ->get()
+                ->sortByDesc(fn($pj) => $pj->job?->salary_kes_month ?? 0)
+                ->first();
+
+            if ($primaryJob) {
+                $sinceReview  = (int) $primaryJob->ticks_employed - (int) $primaryJob->ticks_employed_at_last_review;
+                $isClean      = (int) $primaryJob->missed_paydays === 0;
+                $disqualified = (bool) ($primaryJob->promotion_disqualified ?? false);
+
+                if ($isClean && !$disqualified && $sinceReview >= 360) {
+                    $actionableSlugs[] = 'workplace';
+                }
+            }
+        } catch (\Throwable $e) {}
+
         // Seed daily smart reminders into notification bell (once per day)
         try { $this->_seedSmartReminders($user, $progress); } catch (\Throwable $e) {}
 
@@ -386,6 +409,7 @@ class WorldController extends Controller
             'districtPositions'       => DistrictPosition::allBySlug(),
             'activeMission'           => $activeMission,
             'missionDistricts'        => $missionDistricts,
+            'actionableSlugs'         => $actionableSlugs,
             'sessionEvents'           => $sessionEvents,
             'lifeSim'                 => $lifeSim,
             'pendingQuestCompletions' => $pendingQuestCompletions,
@@ -720,10 +744,53 @@ class WorldController extends Controller
         }
 
         if ($slug === 'community') {
-            $district['total_players']  = \App\Models\User::count();
-            $district['badges_earned']  = Schema::hasTable('user_badges')
-                ? \DB::table('user_badges')->count()
-                : 0;
+            $schoolMembership = $user->activeSchoolMembership();
+            if ($schoolMembership && $schoolMembership->schoolSubscription) {
+                $district['actions'][] = [
+                    'label' => 'School Portal',
+                    'url'   => route('school.portal', $schoolMembership->schoolSubscription->portal_token),
+                    'style' => 'primary',
+                ];
+            }
+
+            // Market Watch bulletins on the map — never hand the raw model to
+            // the view: is_true/magnitude_pct must stay hidden until a
+            // bulletin resolves (see App\Services\ShareNewsService).
+            $district['market_news'] = Schema::hasTable('share_news_items')
+                ? \App\Models\ShareNewsItem::where(function ($q) {
+                        $q->where('status', 'scheduled')
+                          ->orWhere('resolved_at', '>=', now()->subDays(3));
+                    })
+                    ->latest('published_at')
+                    ->limit(5)
+                    ->get()
+                    ->map(function ($n) {
+                        // Which company/sector this is about — already named
+                        // in the rendered headline/flavor prose, this just
+                        // makes it scannable in a detail popup. Direction and
+                        // magnitude stay hidden until resolved (see
+                        // App\Services\ShareNewsService) — only the subject
+                        // is surfaced early, same as the "telegraph" design.
+                        $affected = $n->affectedShares()->map(fn ($s) => [
+                            'name'   => $s->name,
+                            'symbol' => $s->symbol,
+                            'icon'   => $s->icon,
+                        ])->values();
+
+                        return [
+                            'headline'       => $n->headline,
+                            'flavor'         => $n->flavor,
+                            'lesson'         => $n->lesson,
+                            'status'         => $n->status,
+                            'scope'          => $n->scope,
+                            'sector'         => $n->sector,
+                            'direction'      => $n->status === 'resolved' ? $n->direction : null,
+                            'effect_at'      => $n->effect_at?->toIso8601String(),
+                            'affected_shares'=> $affected,
+                        ];
+                    })
+                    ->values()
+                : collect();
         }
 
         if ($slug === 'workplace') {
