@@ -321,6 +321,36 @@ class QuestTriggerService
         return array_merge($completed, $stepFired, $cascaded);
     }
 
+    /**
+     * Poll growth-metric-based quests (net worth, shares profit, Pesa Trail
+     * wins) and fire whichever ones have crossed their target. Unlike the
+     * other triggers above, these aren't tied to a single discrete action —
+     * net worth drifts with every asset/share/loan change, so there's no one
+     * call site to hook. Instead this runs on every dashboard load, exactly
+     * like ContractService::refresh()/ChallengeService::refresh() already do
+     * for the same underlying GameMetrics values.
+     */
+    public function checkMetricQuests($user): array
+    {
+        if (!Schema::hasTable('quests') || !Schema::hasTable('user_quests')) {
+            return [];
+        }
+
+        $progress = $user->getOrCreateProgress();
+        $netWorth = $progress->recalculateNetWorth();
+
+        $completed = [];
+        $completed = array_merge($completed, $this->fire($user, 'reach_net_worth', ['amount' => $netWorth]));
+        $completed = array_merge($completed, $this->fire($user, 'shares_profit', [
+            'amount' => \App\Services\GameMetrics::current('shares_profit', $user, $progress),
+        ]));
+        $completed = array_merge($completed, $this->fire($user, 'arcade_wins', [
+            'amount' => \App\Services\GameMetrics::current('arcade_wins', $user, $progress),
+        ]));
+
+        return $completed;
+    }
+
     // ── Match a quest against the fired trigger ──────────────────────────────
 
     private function _questMatchesTrigger(Quest $quest, string $triggerType, array $ctx): bool
@@ -365,7 +395,12 @@ class QuestTriggerService
             'reach_balance',
             'reach_savings',
             'reach_net_worth',
-            'deposit_savings'   => isset($ctx['amount'])   && (float) $ctx['amount'] >= (float) $questValue,
+            'deposit_savings',
+            // Growth-metric thresholds — same GameMetrics source ContractService
+            // and ChallengeService already use for baseline+delta objectives,
+            // checked here as plain lifetime/current totals via checkMetricQuests().
+            'shares_profit',
+            'arcade_wins'       => isset($ctx['amount'])   && (float) $ctx['amount'] >= (float) $questValue,
 
             // Exact match or empty = any
             'take_course'       => isset($ctx['slug']) && strtolower($ctx['slug']) === strtolower($questValue),

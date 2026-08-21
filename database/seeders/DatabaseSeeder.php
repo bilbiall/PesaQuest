@@ -67,6 +67,10 @@ class DatabaseSeeder extends Seeder
             ContractRuleSeeder::class,
             InvestmentDealSeeder::class,
             FinancialCrisisSeeder::class,
+            ChallengeQuest8to12Seeder::class,
+            ChallengeQuest13to17Seeder::class,
+            ChallengeQuest18to25Seeder::class,
+            ChallengeQuest26PlusSeeder::class,
         ]);
     }
 }

@@ -308,6 +308,13 @@ class DashboardController extends Controller
             app(\App\Services\ChallengeService::class)->refresh($user);
         } catch (\Throwable $e) { /* pre-migration — safe to skip */ }
 
+        // Growth-metric quests (net worth / shares profit / Pesa Trail wins) —
+        // same polling point as the Contract/Challenge refreshes above, since
+        // these targets drift continuously rather than firing from one action.
+        try {
+            app(\App\Services\QuestTriggerService::class)->checkMetricQuests($user);
+        } catch (\Throwable $e) { /* pre-migration — safe to skip */ }
+
         // Active quests (started, not yet completed/approved) — used for Today's Goals
         $questGoals = UserQuest::where('user_id', $user->id)
             ->whereNull('completed_at')
