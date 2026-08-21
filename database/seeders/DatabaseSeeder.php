@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             CityJobSeeder::class,
             EventMetaSeeder::class,
             CareerEventSeeder::class,
+            CareerEventExpansionSeeder::class,
             PesaCityOrientationSeeder::class,
             Level1QuestSeeder::class,
             Level123ContentSeeder::class,
@@ -65,6 +66,7 @@ class DatabaseSeeder extends Seeder
             QuestExpansion26PlusBand3Seeder::class,
             ContractRuleSeeder::class,
             InvestmentDealSeeder::class,
+            FinancialCrisisSeeder::class,
         ]);
     }
 }

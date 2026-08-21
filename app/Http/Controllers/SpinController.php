@@ -41,7 +41,7 @@ class SpinController extends Controller
             'canSpin'   => $canSpin,
             'lastSpin'  => $lastSpin,
             'history'   => $history,
-            'segments'  => \App\Models\SpinSegment::wheelSegments(),
+            'segments'  => \App\Models\SpinSegment::wheelSegments($progress->level ?? 1),
         ]);
     }
 
@@ -69,12 +69,13 @@ class SpinController extends Controller
             }
         }
 
+        $progress = $user->getOrCreateProgress();
+
         // Weighted random selection (same ordered list the wheel view rendered,
         // so segment_index animates to the right wedge)
-        $segments = \App\Models\SpinSegment::wheelSegments();
+        $segments = \App\Models\SpinSegment::wheelSegments($progress->level ?? 1);
         $index    = $this->weightedPick($segments);
         $prize    = $segments[$index];
-        $progress = $user->getOrCreateProgress();
         $balanceBefore = $progress->balance ?? 0;
         $balanceAfter  = $balanceBefore;
 

@@ -58,8 +58,13 @@ class GamesetFunWorldController extends Controller
             'price'           => 'required|integer|min:1|max:1000000',
             'mood_boost_base' => 'required|integer|min:1|max:25',
             'xp_reward'       => 'required|integer|min:0|max:1000',
+            'min_level'       => 'nullable|integer|min:1|max:99',
             'sort_order'      => 'nullable|integer|min:0|max:999',
             'is_active'       => 'nullable|boolean',
-        ]) + ['is_active' => $request->boolean('is_active', true), 'sort_order' => (int) $request->input('sort_order', 0)];
+        ]) + [
+            'is_active' => $request->boolean('is_active', true),
+            'min_level' => (int) $request->input('min_level', 1),
+            'sort_order' => (int) $request->input('sort_order', 0),
+        ];
     }
 }

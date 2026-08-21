@@ -20,10 +20,20 @@ class FunWorldActivitySeeder extends Seeder
             ['name' => 'Road Trip Weekend',   'icon' => '🚙', 'description' => 'Fuel up and explore — Naivasha, Nanyuki or the Rift Valley.',  'price' => 5000, 'mood_boost_base' => 25, 'xp_reward' => 35, 'sort_order' => 8],
             ['name' => 'Street Food Crawl',   'icon' => '🌽', 'description' => 'Mutura, smokies, roast maize — a tour of the best street eats.', 'price' => 200, 'mood_boost_base' => 5, 'xp_reward' => 10, 'sort_order' => 9],
             ['name' => 'Karura Forest Walk',  'icon' => '🌳', 'description' => 'Nature walk and picnic in the forest. Cheap therapy.',          'price' => 300,  'mood_boost_base' => 6,  'xp_reward' => 12, 'sort_order' => 10],
+
+            // The list above never grew past level 1 — a level-10 player with a
+            // fat balance saw the same Ksh 5,000 road trip as their ceiling.
+            // These unlock progressively so Fun World scales with progress.
+            ['name' => 'Weekend Glamping Safari', 'icon' => '⛺', 'description' => 'A guided overnight safari glamp near Amboseli — game drive included.', 'price' => 9000,  'mood_boost_base' => 22, 'xp_reward' => 30, 'sort_order' => 11, 'min_level' => 4],
+            ['name' => 'VIP Concert Table',        'icon' => '🎤', 'description' => 'Front-row table service at a major Nairobi concert.',                  'price' => 12000, 'mood_boost_base' => 25, 'xp_reward' => 32, 'sort_order' => 12, 'min_level' => 5],
+            ['name' => 'Diani Beach Weekend',      'icon' => '🌴', 'description' => 'Fly to the coast — two nights at a beachfront resort in Diani.',        'price' => 25000, 'mood_boost_base' => 25, 'xp_reward' => 45, 'sort_order' => 13, 'min_level' => 6],
+            ['name' => 'Private Chef Dinner',      'icon' => '👨‍🍳', 'description' => 'A private chef cooks a five-course meal at home for you and friends.',   'price' => 18000, 'mood_boost_base' => 25, 'xp_reward' => 38, 'sort_order' => 14, 'min_level' => 7],
+            ['name' => 'Maasai Mara Fly-In Safari','icon' => '🦁', 'description' => 'A two-night fly-in luxury safari camp in the Maasai Mara.',            'price' => 60000, 'mood_boost_base' => 25, 'xp_reward' => 55, 'sort_order' => 15, 'min_level' => 8],
+            ['name' => 'International Getaway',    'icon' => '✈️', 'description' => 'A short international trip — Zanzibar, Dubai or Cape Town.',           'price' => 150000,'mood_boost_base' => 25, 'xp_reward' => 70, 'sort_order' => 16, 'min_level' => 10],
         ];
 
         foreach ($activities as $a) {
-            FunWorldActivity::updateOrCreate(['name' => $a['name']], $a + ['is_active' => true]);
+            FunWorldActivity::updateOrCreate(['name' => $a['name']], $a + ['min_level' => $a['min_level'] ?? 1, 'is_active' => true]);
         }
     }
 }

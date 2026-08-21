@@ -665,7 +665,11 @@ class WorldController extends Controller
 
             // Admin-managed activities replace the hardcoded experience list
             if (Schema::hasTable('fun_world_activities')) {
-                $dbActivities = \App\Models\FunWorldActivity::active()
+                $activitiesQuery = \App\Models\FunWorldActivity::active();
+                if (Schema::hasColumn('fun_world_activities', 'min_level')) {
+                    $activitiesQuery->availableToLevel($user->progress?->level ?? 1);
+                }
+                $dbActivities = $activitiesQuery
                     ->orderBy('sort_order')
                     ->get()
                     ->map(fn($a) => [
@@ -1455,6 +1459,10 @@ class WorldController extends Controller
 
             if (!$activity && \App\Models\FunWorldActivity::active()->exists()) {
                 return response()->json(['error' => 'Unknown activity — refresh and try again.'], 422);
+            }
+
+            if ($activity && $activity->min_level > ($progress->level ?? 1)) {
+                return response()->json(['error' => "Reach level {$activity->min_level} to unlock this experience."], 422);
             }
         }
 

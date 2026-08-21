@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 class SpinSegment extends Model
 {
     protected $fillable = [
-        'label', 'emoji', 'color', 'type', 'value', 'weight', 'tier', 'sort_order', 'is_active',
+        'label', 'emoji', 'color', 'type', 'value', 'weight', 'tier', 'min_level', 'sort_order', 'is_active',
     ];
 
     protected $casts = [
@@ -56,16 +56,27 @@ class SpinSegment extends Model
      * the canvas JS and the prize logic consume). Falls back to DEFAULTS until
      * the table exists and holds enough active rows to draw a sane wheel.
      */
-    public static function wheelSegments(): array
+    public static function wheelSegments(int $level = 1): array
     {
         try {
             if (!Schema::hasTable('spin_segments')) {
                 return self::DEFAULTS;
             }
-            $rows = self::where('is_active', true)
-                ->orderBy('sort_order')->orderBy('id')
+            $query = self::where('is_active', true);
+            if (Schema::hasColumn('spin_segments', 'min_level')) {
+                $query->where('min_level', '<=', $level);
+            }
+            $rows = $query->orderBy('sort_order')->orderBy('id')
                 ->get(['label', 'emoji', 'color', 'type', 'value', 'weight', 'tier']);
 
+            // A high min_level filter could shrink the wheel below a sane size
+            // for a low-level player — fall back to every active segment rather
+            // than serving a broken 2-3 wedge wheel.
+            if ($rows->count() < self::MIN_SEGMENTS) {
+                $rows = self::where('is_active', true)
+                    ->orderBy('sort_order')->orderBy('id')
+                    ->get(['label', 'emoji', 'color', 'type', 'value', 'weight', 'tier']);
+            }
             if ($rows->count() < self::MIN_SEGMENTS) {
                 return self::DEFAULTS;
             }

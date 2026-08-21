@@ -23,15 +23,15 @@
       x-data="{
           showForm: false,
           editing: null,
-          form: { name:'', icon:'🎉', description:'', price:500, mood_boost_base:8, xp_reward:15, sort_order:0, is_active:true },
+          form: { name:'', icon:'🎉', description:'', price:500, mood_boost_base:8, xp_reward:15, min_level:1, sort_order:0, is_active:true },
           openCreate() {
               this.editing = null;
-              this.form = { name:'', icon:'🎉', description:'', price:500, mood_boost_base:8, xp_reward:15, sort_order:0, is_active:true };
+              this.form = { name:'', icon:'🎉', description:'', price:500, mood_boost_base:8, xp_reward:15, min_level:1, sort_order:0, is_active:true };
               this.showForm = true;
           },
           openEdit(a) {
               this.editing = a.id;
-              this.form = { name:a.name, icon:a.icon, description:a.description ?? '', price:a.price, mood_boost_base:a.mood_boost_base, xp_reward:a.xp_reward, sort_order:a.sort_order, is_active:!!a.is_active };
+              this.form = { name:a.name, icon:a.icon, description:a.description ?? '', price:a.price, mood_boost_base:a.mood_boost_base, xp_reward:a.xp_reward, min_level:a.min_level ?? 1, sort_order:a.sort_order, is_active:!!a.is_active };
               this.showForm = true;
           },
       }">
@@ -124,6 +124,9 @@
             <div class="flex items-center gap-2 text-[11px] font-bold">
                 <span class="px-2 py-1 rounded-lg text-orange-300" style="background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.2);">+{{ $a->moodBoost() }} mood</span>
                 <span class="px-2 py-1 rounded-lg text-violet-300" style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);">+{{ $a->xp_reward }} XP</span>
+                @if(($a->min_level ?? 1) > 1)
+                <span class="px-2 py-1 rounded-lg text-sky-300" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);">Lv.{{ $a->min_level }}+</span>
+                @endif
                 <span class="px-2 py-1 rounded-lg text-gray-400" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">#{{ $a->sort_order }}</span>
             </div>
             <div class="flex gap-2 mt-auto pt-2">
@@ -206,6 +209,12 @@
                         <x-help-tip text="Controls the display order of activity cards on the Fun World page — lower numbers show first." example="0" />
                     </label>
                     <input name="sort_order" type="number" min="0" x-model.number="form.sort_order" class="fw-input">
+                </div>
+                <div>
+                    <label class="fw-label">Min. Level
+                        <x-help-tip text="The player's level must be at least this to see and buy this activity — use higher values for aspirational, pricier experiences so low-level players aren't shown something they can't reach yet." example="5" />
+                    </label>
+                    <input name="min_level" type="number" min="1" max="99" x-model.number="form.min_level" class="fw-input">
                 </div>
             </div>
             <label class="flex items-center gap-2 text-sm text-gray-300 font-bold">

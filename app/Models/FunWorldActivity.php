@@ -8,7 +8,7 @@ class FunWorldActivity extends Model
 {
     protected $fillable = [
         'name', 'icon', 'description', 'price',
-        'mood_boost_base', 'xp_reward', 'is_active', 'sort_order',
+        'mood_boost_base', 'xp_reward', 'min_level', 'is_active', 'sort_order',
     ];
 
     protected $casts = [
@@ -18,6 +18,11 @@ class FunWorldActivity extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeAvailableToLevel($query, int $level)
+    {
+        return $query->where('min_level', '<=', $level);
     }
 
     /** Actual mood boost using the game formula, seeded from price. */
