@@ -51,6 +51,18 @@ class DatabaseSeeder extends Seeder
             Level4to10Content13to17Seeder::class,
             Level4to10Content18to25Seeder::class,
             Level4to10Content26PlusSeeder::class,
+            QuestExpansion8to12Band1Seeder::class,
+            QuestExpansion8to12Band2Seeder::class,
+            QuestExpansion8to12Band3Seeder::class,
+            QuestExpansion13to17Band1Seeder::class,
+            QuestExpansion13to17Band2Seeder::class,
+            QuestExpansion13to17Band3Seeder::class,
+            QuestExpansion18to25Band1Seeder::class,
+            QuestExpansion18to25Band2Seeder::class,
+            QuestExpansion18to25Band3Seeder::class,
+            QuestExpansion26PlusBand1Seeder::class,
+            QuestExpansion26PlusBand2Seeder::class,
+            QuestExpansion26PlusBand3Seeder::class,
         ]);
     }
 }
