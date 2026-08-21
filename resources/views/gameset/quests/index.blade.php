@@ -142,7 +142,10 @@
     </form>
 
     {{-- Quest list (drag the ⠿ handle to reorder, then Save Order) --}}
-    <p class="text-[11px] text-gray-600 mb-3">⠿ Drag a quest by its handle to change its sort order. Players see quests sorted by level first, then this order within each level.</p>
+    <div class="flex items-center justify-between gap-3 mb-3">
+        <p class="text-[11px] text-gray-600">⠿ Drag a quest by its handle to change its sort order — this is scoped per level + age group (the exact bucket a player sees). Filter to one level and one age tab above before reordering.</p>
+        <p class="text-[11px] text-gray-500 whitespace-nowrap">Showing {{ $quests->firstItem() ?? 0 }}–{{ $quests->lastItem() ?? 0 }} of {{ $quests->total() }}</p>
+    </div>
     <div id="quest-list">
     @forelse($quests as $quest)
     <div class="card-in quest-card rounded-2xl border mb-3 overflow-hidden"
@@ -252,6 +255,35 @@
     </div>
     @endforelse
     </div>
+
+    {{-- Pagination --}}
+    @if($quests->hasPages())
+    <div class="flex items-center justify-between gap-3 mt-6 flex-wrap">
+        <div>
+            @if($quests->onFirstPage())
+            <span class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 border border-white/5">← Previous</span>
+            @else
+            <a href="{{ $quests->previousPageUrl() }}" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 border border-white/10 hover:bg-white/5 transition-colors">← Previous</a>
+            @endif
+        </div>
+        <div class="flex items-center gap-1 flex-wrap justify-center">
+            @foreach($quests->getUrlRange(1, $quests->lastPage()) as $page => $url)
+                @if($page === $quests->currentPage())
+                <span class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-black text-white" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">{{ $page }}</span>
+                @else
+                <a href="{{ $url }}" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold text-gray-400 hover:bg-white/5 transition-colors">{{ $page }}</a>
+                @endif
+            @endforeach
+        </div>
+        <div>
+            @if($quests->hasMorePages())
+            <a href="{{ $quests->nextPageUrl() }}" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 border border-white/10 hover:bg-white/5 transition-colors">Next →</a>
+            @else
+            <span class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 border border-white/5">Next →</span>
+            @endif
+        </div>
+    </div>
+    @endif
 
     {{-- Save-order bar (appears after a drag) --}}
     <div id="save-order-bar" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60;background:#12101f;"

@@ -43,7 +43,7 @@ class GamesetQuestController extends Controller
         }
 
         $query->orderBy($hasLevelCol ? 'level_required' : 'sort_order')->orderBy('sort_order');
-        $quests = $query->get();
+        $quests = $query->paginate(40)->withQueryString();
 
         $hasTriggers = Schema::hasColumn('quests', 'triggers');
         $stats = [
@@ -121,7 +121,13 @@ class GamesetQuestController extends Controller
         return response()->json(['deleted' => $quests->count()]);
     }
 
-    /** Persist a drag-and-drop ordering from the quests index. */
+    /**
+     * Persist a drag-and-drop ordering from the quests index. Sort order is
+     * scoped per level_required + age_group — that's the exact bucket a
+     * player sees at once (WorldController::quests() filters to their level
+     * and age_group before applying this ordering), so dragged quests are
+     * renumbered 0..n-1 within their own bucket rather than globally.
+     */
     public function reorder(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -129,8 +135,19 @@ class GamesetQuestController extends Controller
             'ids.*' => 'integer|exists:quests,id',
         ]);
 
-        foreach ($data['ids'] as $i => $id) {
-            Quest::where('id', $id)->update(['sort_order' => $i]);
+        $quests = Quest::whereIn('id', $data['ids'])->get(['id', 'level_required', 'age_group'])->keyBy('id');
+
+        $buckets = [];
+        foreach ($data['ids'] as $id) {
+            $q = $quests[$id];
+            $key = ($q->level_required ?? 1) . '|' . ($q->age_group ?? 'all');
+            $buckets[$key][] = $id;
+        }
+
+        foreach ($buckets as $ids) {
+            foreach ($ids as $i => $id) {
+                Quest::where('id', $id)->update(['sort_order' => $i]);
+            }
         }
 
         return response()->json(['success' => true]);
