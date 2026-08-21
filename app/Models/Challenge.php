@@ -22,6 +22,24 @@ class Challenge extends Model
         return !empty($this->metric_2);
     }
 
+    /** All-Time challenges (duration_days = 0 at creation) carry a null ends_at
+     *  and never hit a deadline — every display spot should read this instead
+     *  of calling ->ends_at->diffForHumans() directly, which would fatal on null. */
+    public function isAllTime(): bool
+    {
+        return $this->ends_at === null;
+    }
+
+    /** "Ends in 3 days" / "Finished 2 days ago" / "All-Time — never ends". */
+    public function endsLabel(): string
+    {
+        if ($this->isAllTime()) return 'All-Time — never ends';
+
+        return $this->status === 'completed' || $this->status === 'cancelled'
+            ? 'Finished ' . $this->ends_at->diffForHumans()
+            : 'Ends ' . $this->ends_at->diffForHumans();
+    }
+
     /** Share links use the readable slug (/challenges/net-worth-sprint-x7q2), never the bare numeric ID. */
     public function getRouteKey()
     {

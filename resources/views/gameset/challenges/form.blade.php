@@ -92,9 +92,10 @@
         <div class="grid grid-cols-3 gap-4">
             <div>
                 <label>Default Duration (days)
-                    <x-help-tip text="How many days a challenge started from this template runs by default — long enough to matter, short enough to stay urgent." example="7" />
+                    <x-help-tip text="How many days a challenge started from this template runs by default — long enough to matter, short enough to stay urgent. Set to 0 for All-Time: the challenge never hits a deadline and just runs as a permanent leaderboard." example="7" />
                 </label>
-                <input type="number" name="default_duration_days" value="{{ old('default_duration_days', $template->default_duration_days ?? 7) }}" min="1" max="60" required>
+                <input type="number" name="default_duration_days" value="{{ old('default_duration_days', $template->default_duration_days ?? 7) }}" min="0" max="60" required>
+                <p class="text-[.6rem] text-gray-500 mt-1">0 = All-Time (never ends)</p>
             </div>
             <div>
                 <label>Min Level

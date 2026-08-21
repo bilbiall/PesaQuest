@@ -119,7 +119,7 @@
                     <td class="px-4 py-3 font-bold">{{ $c->title }}</td>
                     <td class="px-4 py-3 text-gray-400 text-xs">{{ $c->is_official ? '🏙️ Official' : ($c->creator?->name ? '👤 '.$c->creator->name : '👤 Player') }}</td>
                     <td class="px-4 py-3 text-gray-300">{{ $c->participants_count }}</td>
-                    <td class="px-4 py-3 text-gray-400">{{ $c->ends_at->format('M j, Y') }}</td>
+                    <td class="px-4 py-3 text-gray-400">{{ $c->ends_at?->format('M j, Y') ?? 'All-Time' }}</td>
                     <td class="px-4 py-3">
                         <span class="px-3 py-1 rounded-full text-xs font-black" style="background:{{ $c->status === 'active' ? 'rgba(16,185,129,.15)' : 'rgba(255,255,255,.05)' }};color:{{ $c->status === 'active' ? '#6ee7b7' : '#9ca3af' }};">{{ ucfirst($c->status) }}</span>
                     </td>
@@ -165,7 +165,7 @@
                         </div>
                     </td>
                     <td class="px-4 py-3 text-gray-300">{{ $t->metric }} ({{ $t->style }})</td>
-                    <td class="px-4 py-3 text-gray-300">{{ $t->default_duration_days }}d</td>
+                    <td class="px-4 py-3 text-gray-300">{{ $t->default_duration_days == 0 ? 'All-Time' : $t->default_duration_days.'d' }}</td>
                     <td class="px-4 py-3 text-gray-300">{{ $t->level_min }}–{{ $t->level_max }}</td>
                     <td class="px-4 py-3">
                         <button onclick="toggleTemplate({{ $t->id }}, this)"

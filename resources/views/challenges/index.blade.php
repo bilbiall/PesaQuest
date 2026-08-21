@@ -79,7 +79,7 @@ body{background:#07060f;}
                     </div>
                     <div class="text-[.65rem] text-gray-500 mt-0.5">
                         @if($isLive)
-                            Ends {{ $c->ends_at->diffForHumans() }}
+                            {{ $c->endsLabel() }}
                         @else
                             @foreach($others as $other)
                                 {{ $other->user?->name ?? 'Player' }}: {{ $other->status === 'accepted' ? '✓ accepted' : ($other->status === 'declined' ? '✗ declined' : '… waiting') }}@if(!$loop->last), @endif
@@ -115,7 +115,7 @@ body{background:#07060f;}
                 <span class="text-xl">{{ $c->template?->icon ?? '🏆' }}</span>
                 <a href="{{ route('challenges.show', $c) }}" class="flex-1 min-w-[140px]" style="text-decoration:none;">
                     <div class="font-bold text-white text-xs">{{ $c->is_official ? '🏙️ ' : '' }}{{ $c->title }}</div>
-                    <div class="text-[.65rem] text-gray-500">{{ $c->participants_count }} joined · levels {{ $c->level_min }}–{{ $c->level_max }} · ends {{ $c->ends_at->diffForHumans() }}{{ $c->stake_amount ? ' · KES '.number_format($c->stake_amount).' entry' : '' }}</div>
+                    <div class="text-[.65rem] text-gray-500">{{ $c->participants_count }} joined · levels {{ $c->level_min }}–{{ $c->level_max }} · {{ \Illuminate\Support\Str::lower($c->endsLabel()) }}{{ $c->stake_amount ? ' · KES '.number_format($c->stake_amount).' entry' : '' }}</div>
                     @if($c->describeRequirements())
                     <div class="text-[.6rem] text-amber-400 font-semibold mt-0.5">{{ $c->describeRequirements() }}</div>
                     @endif
@@ -145,7 +145,7 @@ body{background:#07060f;}
                 <span class="text-xl">{{ $c->template?->icon ?? '⚔️' }}</span>
                 <a href="{{ route('challenges.show', $c) }}" class="flex-1 min-w-[140px]" style="text-decoration:none;">
                     <div class="font-bold text-white text-xs">{{ $c->title }}</div>
-                    <div class="text-[.65rem] text-gray-500">{{ $c->participants_count }} players across {{ $enteredChamaIds->count() }} chama(s) · ends {{ $c->ends_at->diffForHumans() }}</div>
+                    <div class="text-[.65rem] text-gray-500">{{ $c->participants_count }} players across {{ $enteredChamaIds->count() }} chama(s) · {{ \Illuminate\Support\Str::lower($c->endsLabel()) }}</div>
                 </a>
                 @if($available->isEmpty())
                     @if($myChairmanships->isEmpty())

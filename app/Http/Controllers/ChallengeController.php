@@ -55,7 +55,7 @@ class ChallengeController extends Controller
             ->whereNotIn('id', $joinedIds)
             ->withCount('participants')
             ->orderByDesc('is_official')
-            ->orderBy('ends_at')
+            ->orderByRaw('ends_at IS NULL, ends_at')
             ->get();
 
         // Inter-chama battles: shown separately, entered by a chairman on behalf of
@@ -64,7 +64,7 @@ class ChallengeController extends Controller
             ->where('status', 'active')
             ->withCount('participants')
             ->with(['participants:id,challenge_id,chama_id'])
-            ->orderBy('ends_at')
+            ->orderByRaw('ends_at IS NULL, ends_at')
             ->get();
         $myChairmanships = ChamaMember::where('user_id', $user->id)
             ->where('role', 'chairman')
@@ -103,7 +103,7 @@ class ChallengeController extends Controller
             'teammate_ids'      => 'nullable|array',
             'teammate_ids.*'    => 'integer|exists:users,id',
             'stake_amount'      => 'nullable|integer|min:0',
-            'duration_days'     => 'nullable|integer|min:1|max:60',
+            'duration_days'     => 'nullable|integer|min:0|max:60',
             'goal'              => 'nullable|numeric|min:0.01|max:1000000',
             'template_id_2'     => 'nullable|different:template_id|exists:challenge_templates,id',
             'goal_2'            => 'nullable|numeric|min:0.01|max:1000000',

@@ -167,8 +167,8 @@ input:not([type=checkbox]):not([type=radio]),select{width:100%;padding:.5rem .7r
             </div>
             <div>
                 <label>Duration — real days</label>
-                <input type="number" name="duration_days" min="1" max="60" placeholder="template default">
-                <p class="text-[.58rem] text-gray-500 mt-1">Real calendar days — not your in-game clock. A 7-day challenge ends 7 real days from now, however fast you play.</p>
+                <input type="number" name="duration_days" min="0" max="60" placeholder="template default">
+                <p class="text-[.58rem] text-gray-500 mt-1">Real calendar days — not your in-game clock. A 7-day challenge ends 7 real days from now, however fast you play. Enter <b>0</b> for All-Time — it never ends and just runs as a permanent leaderboard.</p>
             </div>
         </div>
 

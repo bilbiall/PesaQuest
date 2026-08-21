@@ -8,7 +8,7 @@
         $goalLabel   = number_format($challenge->goal, $challenge->style === 'count' ? 0 : (fmod($challenge->goal, 1) ? 1 : 0)) . $challenge->styleSuffix();
         $pageTitle   = "{$challenge->title} — Join the Challenge on PesaQuest";
         $pageDesc    = "You've been challenged: {$challenge->title}. Target — {$goalLabel} {$metricLabel} growth"
-                     . ($challenge->status === 'active' ? '. Ends ' . $challenge->ends_at->diffForHumans() . '.' : '.')
+                     . ($challenge->status === 'active' ? '. ' . $challenge->endsLabel() . '.' : '.')
                      . ' Join free on PesaQuest, Kenya\'s financial literacy game, and race for it.';
         $ogImage     = asset('img/game/pwa-og.jpg');
     @endphp
@@ -67,7 +67,7 @@
         <p class="sub">
             @if($challenge->template?->description) {{ $challenge->template->description }} @endif
             You're racing on <b>{{ $metricLabel }}</b> — target <b>{{ $goalLabel }}</b> growth
-            @if($challenge->status === 'active') · ends {{ $challenge->ends_at->diffForHumans() }} (real time) @endif.
+            @if($challenge->status === 'active') · {{ \Illuminate\Support\Str::lower($challenge->endsLabel()) }}@if(!$challenge->isAllTime()) (real time)@endif @endif.
         </p>
 
         <div class="stats">

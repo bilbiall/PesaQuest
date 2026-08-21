@@ -923,14 +923,14 @@ class WorldController extends Controller
                 ->withCount('participants')
                 ->with('template')
                 ->orderByDesc('is_official')
-                ->orderBy('ends_at')
+                ->orderByRaw('ends_at IS NULL, ends_at')
                 ->limit(6)
                 ->get()
                 ->map(fn ($c) => [
                     'id'       => $c->id,
                     'icon'     => $c->template?->icon ?? '🏆',
                     'title'    => ($c->is_official ? '🏙️ ' : '') . $c->title,
-                    'subtitle' => "{$c->participants_count} joined · ends {$c->ends_at->diffForHumans()}"
+                    'subtitle' => "{$c->participants_count} joined · " . \Illuminate\Support\Str::lower($c->endsLabel())
                         . ($c->stake_amount ? ' · KES ' . number_format($c->stake_amount) . ' entry' : ''),
                 ]);
 
@@ -952,7 +952,7 @@ class WorldController extends Controller
                     'title'    => $p->challenge->title,
                     'live'     => $p->challenge->status === 'active',
                     'subtitle' => $p->challenge->status === 'active'
-                        ? 'Live · ends ' . $p->challenge->ends_at->diffForHumans()
+                        ? 'Live · ' . \Illuminate\Support\Str::lower($p->challenge->endsLabel())
                         : 'Waiting for the other side to accept',
                 ]);
         }

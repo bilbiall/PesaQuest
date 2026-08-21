@@ -128,7 +128,7 @@ class GamesetChallengeController extends Controller
             'style'       => 'required|in:percent,amount,count',
             'icon'        => 'nullable|string|max:10',
             'image_url'   => 'nullable|string|max:500',
-            'default_duration_days' => 'required|integer|min:1|max:60',
+            'default_duration_days' => 'required|integer|min:0|max:60',
             'level_min'   => 'required|integer|min:1|max:99',
             'level_max'   => 'required|integer|min:1|max:99',
             'allow_player_created' => 'boolean',

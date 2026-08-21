@@ -75,7 +75,7 @@ body{background:#07060f;}
                     <h1 class="text-lg font-black text-white">{{ $challenge->title }}</h1>
                     <p class="text-xs text-gray-500">
                         {{ ucfirst($challenge->status) }} ·
-                        {{ $challenge->status === 'active' ? 'Ends '.$challenge->ends_at->diffForHumans().' (real time)' : ($challenge->status === 'pending' ? 'Waiting for accept' : 'Finished '.$challenge->ends_at->diffForHumans()) }}
+                        {{ $challenge->status === 'pending' ? 'Waiting for accept' : ($challenge->isAllTime() ? $challenge->endsLabel() : $challenge->endsLabel().' (real time)') }}
                         {{ $challenge->stake_amount ? ' · KES '.number_format($challenge->stake_amount).' entry fee' : '' }}
                     </p>
                     @if($challenge->stake_amount && $challenge->status !== 'completed')

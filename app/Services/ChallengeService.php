@@ -46,6 +46,21 @@ class ChallengeService
             ->get();
     }
 
+    /** Duration input, falling back to the template default only when nothing was
+     *  explicitly chosen — 0 is a deliberate "All-Time" choice, not "unset", so this
+     *  must not use `?:` (which would treat 0 as falsy and silently override it). */
+    private function resolveDurationDays(?int $durationDays, ChallengeTemplate $template): int
+    {
+        return $durationDays !== null ? $durationDays : $template->default_duration_days;
+    }
+
+    /** 0 days = All-Time — the challenge never hits a deadline (null ends_at is
+     *  already excluded from sweepDeadlines()'s `ends_at <= now()` SQL comparison). */
+    private function computeEndsAt(int $days, \Illuminate\Support\Carbon $now): ?\Illuminate\Support\Carbon
+    {
+        return $days === 0 ? null : $now->copy()->addDays(max(1, $days));
+    }
+
     /** A soft (never-blocking) fairness heads-up for lopsided player-created duels. */
     public function bracketWarning(array $creatorIds, array $opponentIds): ?string
     {
@@ -76,7 +91,7 @@ class ChallengeService
             return ['ok' => false, 'error' => 'You need KES ' . number_format($stakeAmount) . ' to cover your own entry fee.'];
         }
 
-        $days  = max(1, $durationDays ?: $template->default_duration_days);
+        $days  = $this->resolveDurationDays($durationDays, $template);
         $now   = now();
         $title = $customTitle ?: $template->name;
 
@@ -99,7 +114,7 @@ class ChallengeService
             'level_min'   => $template->level_min,
             'level_max'   => $template->level_max,
             'starts_at'   => $now,
-            'ends_at'     => $now->copy()->addDays($days),
+            'ends_at'     => $this->computeEndsAt($days, $now),
             'status'      => 'pending',
         ]);
 
@@ -164,7 +179,7 @@ class ChallengeService
             return ['ok' => false, 'error' => 'You need KES ' . number_format($stakeAmount) . ' to cover your own entry fee.'];
         }
 
-        $days  = max(1, $durationDays ?: $template->default_duration_days);
+        $days  = $this->resolveDurationDays($durationDays, $template);
         $now   = now();
         $title = $customTitle ?: $template->name;
 
@@ -188,7 +203,7 @@ class ChallengeService
             'level_min'     => $template->level_min,
             'level_max'     => $template->level_max,
             'starts_at'     => $now,
-            'ends_at'       => $now->copy()->addDays($days),
+            'ends_at'       => $this->computeEndsAt($days, $now),
             'status'        => 'pending',
         ]);
 
@@ -349,9 +364,15 @@ class ChallengeService
 
     private function activateDuel(Challenge $challenge): void
     {
-        $days = max(1, $challenge->starts_at->diffInDays($challenge->ends_at));
-        $now  = now();
-        $challenge->update(['status' => 'active', 'starts_at' => $now, 'ends_at' => $now->copy()->addDays($days)]);
+        $now = now();
+
+        if ($challenge->ends_at === null) {
+            // All-Time duel — no deadline to restart the countdown against.
+            $challenge->update(['status' => 'active', 'starts_at' => $now]);
+        } else {
+            $days = max(1, $challenge->starts_at->diffInDays($challenge->ends_at));
+            $challenge->update(['status' => 'active', 'starts_at' => $now, 'ends_at' => $now->copy()->addDays($days)]);
+        }
 
         foreach ($challenge->participants()->where('status', 'accepted')->get() as $p) {
             $user     = $p->user;
@@ -370,7 +391,7 @@ class ChallengeService
         // $opts is a plain untyped array (no scalar coercion at a call boundary
         // like createDuel()'s typed ?int params get) — form input arrives as a
         // numeric string, which Carbon's addDays() now rejects outright.
-        $days     = max(1, (int) ($opts['duration_days'] ?? $template->default_duration_days));
+        $days     = $this->resolveDurationDays(isset($opts['duration_days']) ? (int) $opts['duration_days'] : null, $template);
         $now      = now();
         $title    = $opts['title'] ?? $template->name;
         $template2 = $opts['template_2'] ?? null;
@@ -398,7 +419,7 @@ class ChallengeService
             'level_min'               => $opts['level_min'] ?? $template->level_min,
             'level_max'               => $opts['level_max'] ?? $template->level_max,
             'starts_at'               => $now,
-            'ends_at'                 => $now->copy()->addDays($days),
+            'ends_at'                 => $this->computeEndsAt($days, $now),
             'status'                  => 'active',
         ]);
     }
@@ -408,7 +429,7 @@ class ChallengeService
         if (!$challenge->isBroadcast() || $challenge->status !== 'active') {
             return ['ok' => false, 'error' => 'This challenge isn\'t open for joining.'];
         }
-        if (now()->greaterThanOrEqualTo($challenge->ends_at)) {
+        if ($challenge->ends_at !== null && now()->greaterThanOrEqualTo($challenge->ends_at)) {
             return ['ok' => false, 'error' => 'This challenge has already ended.'];
         }
         if (ChallengeParticipant::where('challenge_id', $challenge->id)->where('user_id', $user->id)->exists()) {
