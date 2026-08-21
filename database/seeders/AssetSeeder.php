@@ -17,6 +17,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Bajaj Boxer 150cc',
                 'slug'             => 'bajaj-boxer-150',
+                'badge'            => 'popular',
                 'brand'            => 'Bajaj',
                 'category'         => 'vehicle',
                 'tier'             => 1,
@@ -65,6 +66,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Honda Fit 2015',
                 'slug'             => 'honda-fit-2015',
+                'badge'            => 'popular',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'Honda',
                 'category'         => 'vehicle',
                 'tier'             => 2,
@@ -113,6 +116,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Toyota Fielder 2018',
                 'slug'             => 'toyota-fielder-2018',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'Toyota',
                 'category'         => 'vehicle',
                 'tier'             => 3,
@@ -137,6 +141,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Matatu 14-Seater Stake',
                 'slug'             => 'matatu-14-seater',
+                'badge'            => 'trending',
+                'featured_section' => 'dividend_builders',
                 'brand'            => 'Isuzu',
                 'category'         => 'vehicle',
                 'tier'             => 3,
@@ -161,6 +167,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Toyota Prado 2020',
                 'slug'             => 'toyota-prado-2020',
+                'featured_section' => 'serious_money',
                 'brand'            => 'Toyota',
                 'category'         => 'vehicle',
                 'tier'             => 4,
@@ -185,6 +192,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'BMW 3 Series 2021',
                 'slug'             => 'bmw-3-series-2021',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'BMW',
                 'category'         => 'vehicle',
                 'tier'             => 4,
@@ -237,6 +245,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => '1/8 Acre Plot — Mavoko',
                 'slug'             => 'plot-mavoko',
+                'featured_section' => 'high_growth',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 1,
@@ -261,6 +270,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => '1/4 Acre Plot — Ruiru',
                 'slug'             => 'plot-ruiru',
+                'featured_section' => 'high_growth',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 2,
@@ -285,6 +295,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Studio Apartment — Ruaka',
                 'slug'             => 'studio-ruaka',
+                'badge'            => 'trending',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 2,
@@ -309,6 +321,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Bedsitter — Umoja',
                 'slug'             => 'bedsitter-umoja',
+                'badge'            => 'stable',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 1,
@@ -333,6 +347,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => '2BR Apartment — Kilimani',
                 'slug'             => '2br-kilimani',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 3,
@@ -381,6 +396,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Commercial Stall — Gikomba',
                 'slug'             => 'stall-gikomba',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 2,
@@ -409,6 +425,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Mama Mboga Kiosk',
                 'slug'             => 'mama-mboga-kiosk',
+                'badge'            => 'popular',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 1,
@@ -433,6 +450,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Cyber Café — 5 Computers',
                 'slug'             => 'cyber-cafe-5pc',
+                'featured_section' => 'high_growth',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 1,
@@ -457,6 +475,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'M-PESA Agent Float',
                 'slug'             => 'mpesa-agent-float',
+                'badge'            => 'popular',
+                'featured_section' => 'dividend_builders',
                 'brand'            => 'Safaricom',
                 'category'         => 'business',
                 'tier'             => 2,
@@ -481,6 +501,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Salon & Barber Shop',
                 'slug'             => 'salon-barber',
+                'featured_section' => 'high_growth',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 2,
@@ -505,6 +526,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Fuel Station — 2 Pumps',
                 'slug'             => 'fuel-station-2pump',
+                'badge'            => 'risky',
+                'featured_section' => 'serious_money',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 4,
@@ -529,6 +552,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Tech Startup Stake (5%)',
                 'slug'             => 'tech-startup-stake',
+                'badge'            => 'risky',
+                'featured_section' => 'high_growth',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 4,
@@ -558,6 +583,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Money Market Fund',
                 'slug'             => 'money-market-fund',
+                'badge'            => 'popular',
+                'featured_section' => 'dividend_builders',
                 'brand'            => 'CIC / Sanlam',
                 'category'         => 'fixed_income',
                 'tier'             => 1,
@@ -586,6 +613,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Treasury Bills (91-Day)',
                 'slug'             => 'treasury-bills-91',
+                'badge'            => 'new',
                 'brand'            => 'CBK',
                 'category'         => 'fixed_income',
                 'tier'             => 1,
@@ -615,6 +643,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Treasury Bonds (5-Year)',
                 'slug'             => 'treasury-bonds-5yr',
+                'badge'            => 'new',
+                'featured_section' => 'dividend_builders',
                 'brand'            => 'CBK',
                 'category'         => 'fixed_income',
                 'tier'             => 2,
@@ -644,6 +674,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Safaricom Shares (1000)',
                 'slug'             => 'safaricom-shares-1000',
+                'badge'            => 'popular',
+                'featured_section' => 'dividend_builders',
                 'brand'            => 'Safaricom',
                 'category'         => 'investment',
                 'tier'             => 2,
@@ -668,6 +700,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'SACCO Share Capital',
                 'slug'             => 'sacco-share-capital',
+                'badge'            => 'stable',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'investment',
                 'tier'             => 1,
@@ -692,6 +726,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'NSE REIT Unit (100)',
                 'slug'             => 'nse-reit-100',
+                'badge'            => 'stable',
+                'featured_section' => 'dividend_builders',
                 'brand'            => 'ILAM Fahari',
                 'category'         => 'investment',
                 'tier'             => 3,
@@ -699,7 +735,7 @@ class AssetSeeder extends Seeder
                 'base_price'       => 100000,
                 'monthly_income'   => 700,
                 'monthly_cost'     => 0,
-                'income_description' => 'Quarterly distribution (rent income from commercial properties)',
+                'income_description' => 'Monthly distribution (rent income from commercial properties)',
                 'cost_description'   => '',
                 'appreciation_rate'  => 0.30,
                 'volatility'         => 0.08,
@@ -716,6 +752,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Private Equity Fund Unit',
                 'slug'             => 'private-equity-unit',
+                'badge'            => 'risky',
+                'featured_section' => 'serious_money',
                 'brand'            => 'Helios / Actis',
                 'category'         => 'investment',
                 'tier'             => 5,
@@ -744,6 +782,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Smartphone — Tecno Spark',
                 'slug'             => 'tecno-spark',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'Tecno',
                 'category'         => 'gadget',
                 'tier'             => 1,
@@ -768,6 +807,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Laptop — HP 250 G9',
                 'slug'             => 'laptop-hp-250',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'HP',
                 'category'         => 'gadget',
                 'tier'             => 2,
@@ -796,6 +836,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Piaggio Tuk-Tuk',
                 'slug'             => 'piaggio-tuktuk',
+                'badge'            => 'new',
                 'brand'            => 'Piaggio',
                 'category'         => 'vehicle',
                 'tier'             => 1,
@@ -820,6 +861,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Toyota Vitz 2016',
                 'slug'             => 'toyota-vitz-2016',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'Toyota',
                 'category'         => 'vehicle',
                 'tier'             => 1,
@@ -844,6 +886,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Isuzu D-Max Pickup',
                 'slug'             => 'isuzu-dmax-pickup',
+                'featured_section' => 'serious_money',
                 'brand'            => 'Isuzu',
                 'category'         => 'vehicle',
                 'tier'             => 3,
@@ -872,6 +915,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Warehouse Unit — Industrial Area',
                 'slug'             => 'warehouse-industrial-area',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 4,
@@ -896,6 +940,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Airbnb Unit — Westlands',
                 'slug'             => 'airbnb-westlands',
+                'badge'            => 'risky',
+                'featured_section' => 'serious_money',
                 'brand'            => null,
                 'category'         => 'property',
                 'tier'             => 3,
@@ -924,6 +970,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Poultry Farm — 500 Layers',
                 'slug'             => 'poultry-farm-500',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 2,
@@ -948,6 +995,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Mitumba Boutique',
                 'slug'             => 'mitumba-boutique',
+                'badge'            => 'trending',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 1,
@@ -972,6 +1020,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Car Wash & Detailing',
                 'slug'             => 'car-wash-detailing',
+                'featured_section' => 'high_growth',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 2,
@@ -996,6 +1045,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Hardware & Building Supplies Shop',
                 'slug'             => 'hardware-shop',
+                'featured_section' => 'serious_money',
                 'brand'            => null,
                 'category'         => 'business',
                 'tier'             => 3,
@@ -1024,6 +1074,7 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Unit Trust Equity Fund',
                 'slug'             => 'unit-trust-equity-fund',
+                'featured_section' => 'high_growth',
                 'brand'            => 'Old Mutual / Britam',
                 'category'         => 'investment',
                 'tier'             => 2,
@@ -1048,6 +1099,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Corporate Bond (5-Year)',
                 'slug'             => 'corporate-bond-5yr',
+                'badge'            => 'trending',
+                'featured_section' => 'dividend_builders',
                 'brand'            => null,
                 'category'         => 'investment',
                 'tier'             => 3,
@@ -1100,6 +1153,8 @@ class AssetSeeder extends Seeder
             [
                 'name'             => 'Drone — DJI Mini',
                 'slug'             => 'drone-dji-mini',
+                'badge'            => 'new',
+                'featured_section' => 'lifestyle_upgrades',
                 'brand'            => 'DJI',
                 'category'         => 'gadget',
                 'tier'             => 2,

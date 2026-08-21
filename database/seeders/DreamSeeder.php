@@ -12,7 +12,9 @@ class DreamSeeder extends Seeder
         $img = fn (string $file) => asset('img/trophies/' . $file);
 
         $dreams = [
-            ['slug' => 'trophy-room',      'name' => 'Trophy Room',          'tagline' => 'A shelf for every win',            'icon' => '🏆', 'image_url' => $img('trophy-cup.svg'),    'price' => 1_000_000,  'category' => 'lifestyle', 'min_level' => 3],
+            ['slug' => 'first-trophy',      'name' => 'First Trophy',         'tagline' => 'Every legend starts with one',     'icon' => '🥉', 'image_url' => $img('medal-bronze.svg'),  'price' => 150_000,    'category' => 'lifestyle', 'min_level' => 1],
+            ['slug' => 'silver-standard',   'name' => 'Silver Standard',      'tagline' => 'Prove you can do it twice',        'icon' => '🥈', 'image_url' => $img('medal-silver.svg'),  'price' => 400_000,    'category' => 'lifestyle', 'min_level' => 2],
+            ['slug' => 'trophy-room',     'name' => 'Trophy Room',          'tagline' => 'A shelf for every win',            'icon' => '🏆', 'image_url' => $img('trophy-cup.svg'),    'price' => 1_000_000,  'category' => 'lifestyle', 'min_level' => 3],
             ['slug' => 'diamond-crown',    'name' => 'Diamond Crown',        'tagline' => 'Pesa City royalty',                'icon' => '👑', 'image_url' => $img('crown.svg'),         'price' => 2_500_000,  'category' => 'lifestyle', 'min_level' => 4],
             ['slug' => 'world-tour',       'name' => 'Round-the-World Tour', 'tagline' => 'Every continent, no budget left behind', 'icon' => '🌍', 'image_url' => $img('dream-travel.svg'), 'price' => 3_000_000,  'category' => 'travel',    'min_level' => 5],
             ['slug' => 'penthouse-suite',  'name' => 'Penthouse Suite',      'tagline' => 'The whole skyline as your view',   'icon' => '🏙️', 'image_url' => $img('dream-house.svg'),   'price' => 6_000_000,  'category' => 'property',  'min_level' => 6],

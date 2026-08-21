@@ -63,6 +63,8 @@ class DatabaseSeeder extends Seeder
             QuestExpansion26PlusBand1Seeder::class,
             QuestExpansion26PlusBand2Seeder::class,
             QuestExpansion26PlusBand3Seeder::class,
+            ContractRuleSeeder::class,
+            InvestmentDealSeeder::class,
         ]);
     }
 }

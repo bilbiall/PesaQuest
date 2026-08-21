@@ -11,6 +11,7 @@ class InvestmentDeal extends Model
         'title', 'description', 'category', 'icon',
         'cost', 'min_return_pct', 'max_return_pct', 'loss_pct',
         'success_probability', 'maturity_ticks', 'risk_level',
+        'min_level', 'age_group',
         'lesson', 'is_active', 'sort_order', 'created_by',
     ];
 

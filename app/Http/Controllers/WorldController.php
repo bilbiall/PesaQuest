@@ -505,12 +505,24 @@ class WorldController extends Controller
                 $district['total_savings'] = (float) $schemes->sum('current_amount');
             }
 
-            // Investment Deals
+            // Investment Deals — gated by the player's own level/age_group so
+            // the menu actually grows as they progress, instead of showing
+            // the identical fixed list at level 1 and level 10.
             if (Schema::hasTable('investment_deals')) {
-                $deals = \DB::table('investment_deals')
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')->orderBy('risk_level')
-                    ->get();
+                $dealLevel     = $progress?->level ?? 1;
+                $dealAgeGroup  = $user->age_group ?? '18-25';
+
+                $dealsQuery = \DB::table('investment_deals')->where('is_active', true);
+                if (Schema::hasColumn('investment_deals', 'min_level')) {
+                    $dealsQuery->where('min_level', '<=', $dealLevel);
+                }
+                if (Schema::hasColumn('investment_deals', 'age_group')) {
+                    $dealsQuery->where(function ($q) use ($dealAgeGroup) {
+                        $q->whereNull('age_group')->orWhereIn('age_group', [$dealAgeGroup, 'all']);
+                    });
+                }
+
+                $deals = $dealsQuery->orderBy('sort_order')->orderBy('risk_level')->get();
                 $district['deals'] = $deals->map(fn($d) => [
                     'id'                  => $d->id,
                     'title'               => $d->title,
