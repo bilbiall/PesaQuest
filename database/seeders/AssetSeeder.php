@@ -4,16 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Asset;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class AssetSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        Asset::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
-
         $assets = [
 
             // ═══════════════════════════════════════════════════════
@@ -1129,7 +1124,7 @@ class AssetSeeder extends Seeder
         ];
 
         foreach ($assets as $data) {
-            Asset::create($data);
+            Asset::updateOrCreate(['slug' => $data['slug']], $data);
         }
     }
 }
