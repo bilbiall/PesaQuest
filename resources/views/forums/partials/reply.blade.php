@@ -1,10 +1,16 @@
 @php
-    // Cap visual indentation so deep threads don't overflow on mobile — past
-    // the cap we keep flagging who's being replied to instead of indenting further.
-    $visualDepth = min($depth, 5);
-    $marginLeft  = $visualDepth > 0 ? ($visualDepth * 1.1) . 'rem' : '0';
+    // Cap visual indentation so deep threads don't overflow on mobile. Each
+    // reply nests INSIDE its parent's div, so margin/padding here is a
+    // per-level contribution that stacks with every ancestor's — it must be
+    // zero past the cap, not just clamped, or the total offset still grows
+    // without bound (a depth-40 thread pushed content off-screen before this).
+    // Past the cap we stop indenting entirely and just flag who's being
+    // replied to via the "↳ replying to" label below.
+    $maxNestedDepth = 4;
+    $isIndented = $depth > 0 && $depth <= $maxNestedDepth;
+    $marginLeft = $isIndented ? '0.85rem' : '0';
 @endphp
-<div id="reply-{{ $reply->id }}" class="mt-3" style="margin-left:{{ $marginLeft }};{{ $depth > 0 ? 'border-left:2px solid rgba(139,92,246,0.18);padding-left:.9rem;' : '' }}"
+<div id="reply-{{ $reply->id }}" class="mt-3" style="margin-left:{{ $marginLeft }};{{ $isIndented ? 'border-left:2px solid rgba(139,92,246,0.18);padding-left:.75rem;' : '' }}"
      x-data="{ replying: false }">
     <div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
         <div class="flex items-center justify-between gap-2 mb-2">
