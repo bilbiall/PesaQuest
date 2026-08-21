@@ -39,6 +39,16 @@ class SpinSegment extends Model
         ['label' => '-20 Credit',     'emoji' => '📉', 'color' => '#7f1d1d', 'type' => 'credit',    'value' => -20,    'weight' => 10, 'tier' => 'bad'],
         ['label' => 'Ksh 7,500',      'emoji' => '💎', 'color' => '#5b21b6', 'type' => 'balance',   'value' => 7500,   'weight' => 8,  'tier' => 'good'],
         ['label' => 'Lucky Badge',    'emoji' => '🏆', 'color' => '#92400e', 'type' => 'badge',     'value' => 1,      'weight' => 2,  'tier' => 'great'],
+        ['label' => 'Ksh 500',        'emoji' => '🪙', 'color' => '#10b981', 'type' => 'balance',   'value' => 500,    'weight' => 24, 'tier' => 'good'],
+        ['label' => 'Ksh 1,000',      'emoji' => '💸', 'color' => '#22c55e', 'type' => 'balance',   'value' => 1000,   'weight' => 18, 'tier' => 'good'],
+        ['label' => 'Ksh 6,000',      'emoji' => '💰', 'color' => '#db2777', 'type' => 'balance',   'value' => 6000,   'weight' => 9,  'tier' => 'good'],
+        ['label' => 'Ksh 15,000',     'emoji' => '🎉', 'color' => '#eab308', 'type' => 'balance',   'value' => 15000,  'weight' => 2,  'tier' => 'great'],
+        ['label' => 'Ksh 800 Fine',   'emoji' => '😕', 'color' => '#ef4444', 'type' => 'balance',   'value' => -800,   'weight' => 16, 'tier' => 'bad'],
+        ['label' => 'Ksh 2,800 Fine', 'emoji' => '😖', 'color' => '#b91c1c', 'type' => 'balance',   'value' => -2800,  'weight' => 9,  'tier' => 'bad'],
+        ['label' => '+50 Credit',     'emoji' => '🌟', 'color' => '#0d9488', 'type' => 'credit',    'value' => 50,     'weight' => 5,  'tier' => 'great'],
+        ['label' => '-40 Credit',     'emoji' => '📉', 'color' => '#9a3412', 'type' => 'credit',    'value' => -40,    'weight' => 6,  'tier' => 'bad'],
+        ['label' => '500 XP',         'emoji' => '✨', 'color' => '#38bdf8', 'type' => 'xp',        'value' => 500,    'weight' => 16, 'tier' => 'good'],
+        ['label' => '3,000 XP',       'emoji' => '🌠', 'color' => '#1d4ed8', 'type' => 'xp',        'value' => 3000,   'weight' => 4,  'tier' => 'great'],
     ];
 
     /**
