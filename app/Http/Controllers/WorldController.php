@@ -1116,8 +1116,7 @@ class WorldController extends Controller
         $inProgressIds = UserQuest::where('user_id', $user->id)->whereNull('completed_at')->whereNotNull('submitted_at')->pluck('quest_id')->toArray();
         $fieldMeta     = \App\Services\CareerService::fieldsByKey();
 
-        return response()->json(
-            $quests->map(function (Quest $q) use ($level, $completedIds, $inProgressIds, $fieldMeta) {
+        $mapped = $quests->map(function (Quest $q) use ($level, $completedIds, $inProgressIds, $fieldMeta) {
                 $minLevel = max(1, (int) ($q->level_required ?? $q->sort_order ?? 1));
                 $isLocked = $level < $minLevel;
                 // Quests below the player's current level were never excluded from
@@ -1169,8 +1168,24 @@ class WorldController extends Controller
                     'trigger_label' => $q->trigger_label,
                     'career_badge'  => $careerBadge,
                 ];
-            })
-        );
+            });
+
+        // Priority display order: quests the player can still act on right now
+        // (in progress, then not-yet-started) float to the top; completed ones
+        // sink below them; quests locked behind a future level sink to the very
+        // bottom since there's nothing to do with them yet. Level/sort_order is
+        // preserved as the tiebreaker within each band (PHP's sort is stable).
+        $statusPriority = ['in_progress' => 0, 'available' => 1, 'completed' => 2];
+        $sorted = $mapped->sort(function (array $a, array $b) use ($statusPriority) {
+            if ($a['is_locked'] !== $b['is_locked']) {
+                return $a['is_locked'] <=> $b['is_locked'];
+            }
+            $pa = $statusPriority[$a['user_status']] ?? 3;
+            $pb = $statusPriority[$b['user_status']] ?? 3;
+            return $pa <=> $pb;
+        })->values();
+
+        return response()->json($sorted);
     }
 
     /**
