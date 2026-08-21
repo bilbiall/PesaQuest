@@ -4,16 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\LifeEvent;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class LifeEventSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        LifeEvent::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
-
         $events = [
 
             // ═══════════════════════════════════════════════════════════
@@ -536,7 +531,7 @@ class LifeEventSeeder extends Seeder
         ];
 
         foreach ($events as $data) {
-            LifeEvent::create($data);
+            LifeEvent::updateOrCreate(['slug' => $data['slug']], $data);
         }
     }
 }
