@@ -50,4 +50,14 @@ class ForumReply extends Model
 
         return $attach($byParent->get(null, collect()));
     }
+
+    /** Every reply below this one in the tree — used to label a "show N more replies" toggle on long chains. */
+    public function totalDescendantCount(): int
+    {
+        $count = 0;
+        foreach ($this->children ?? [] as $child) {
+            $count += 1 + $child->totalDescendantCount();
+        }
+        return $count;
+    }
 }

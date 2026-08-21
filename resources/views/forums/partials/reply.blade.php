@@ -8,17 +8,28 @@
     // replied to via the "↳ replying to" label below.
     $maxNestedDepth = 4;
     $isIndented = $depth > 0 && $depth <= $maxNestedDepth;
-    $marginLeft = $isIndented ? '0.85rem' : '0';
+    $marginLeft = $isIndented ? '0.7rem' : '0';
+
+    // Long back-and-forth chains get bundled behind a "Show N more replies"
+    // toggle instead of auto-expanding forever — collapse once, at the first
+    // node past the cutoff depth, rather than re-checking at every level
+    // (which would nest a toggle inside a toggle).
+    $collapseCutoffDepth   = 2;
+    $childrenList          = $reply->children ?? collect();
+    $shouldCollapseChildren = $depth === $collapseCutoffDepth && $childrenList->isNotEmpty();
+    if ($shouldCollapseChildren) {
+        $descendantCount = $childrenList->sum(fn ($c) => 1 + $c->totalDescendantCount());
+    }
 @endphp
-<div id="reply-{{ $reply->id }}" class="mt-3" style="margin-left:{{ $marginLeft }};{{ $isIndented ? 'border-left:2px solid rgba(139,92,246,0.18);padding-left:.75rem;' : '' }}"
+<div id="reply-{{ $reply->id }}" class="mt-2" style="margin-left:{{ $marginLeft }};{{ $isIndented ? 'border-left:2px solid rgba(139,92,246,0.18);padding-left:.6rem;' : '' }}"
      x-data="{ replying: false }">
-    <div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
-        <div class="flex items-center justify-between gap-2 mb-2">
-            <div class="flex items-center gap-2">
+    <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+        <div class="flex items-center justify-between gap-2 mb-1.5">
+            <div class="flex items-center gap-1.5">
                 @if($reply->user?->profile_photo)
-                <img src="{{ $reply->user->profile_photo }}" alt="" class="w-7 h-7 rounded-full object-cover">
+                <img src="{{ $reply->user->profile_photo }}" alt="" class="w-6 h-6 rounded-full object-cover">
                 @else
-                <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-violet-300" style="background:rgba(139,92,246,0.2);">{{ strtoupper(substr($reply->user?->name ?? '?', 0, 1)) }}</span>
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black text-violet-300" style="background:rgba(139,92,246,0.2);">{{ strtoupper(substr($reply->user?->name ?? '?', 0, 1)) }}</span>
                 @endif
                 <div>
                     <p class="text-xs font-black text-gray-200 leading-tight">
@@ -37,7 +48,7 @@
                         <span class="text-[10px] text-gray-500 font-semibold">↳ replying to <a href="{{ route('players.show', $reply->parent->user) }}" class="text-violet-300/80 hover:text-violet-300">{{ $reply->parent->user->name }}</a></span>
                         @endif
                     </p>
-                    <p class="text-[10px] text-gray-600">{{ $reply->created_at?->diffForHumans() }}</p>
+                    <p class="text-[9.5px] text-gray-600">{{ $reply->created_at?->diffForHumans() }}</p>
                 </div>
             </div>
             @if($isMod || ($me && $me->id === $reply->user_id))
@@ -48,11 +59,11 @@
             </form>
             @endif
         </div>
-        <p class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{{ $reply->body }}</p>
+        <p class="text-[13px] text-gray-300 leading-snug whitespace-pre-line">{{ $reply->body }}</p>
         @if($reply->image_path)
         <img src="{{ $reply->image_path }}" alt="" class="mt-2 rounded-xl w-full object-contain" style="max-height:18rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
         @endif
-        <div class="flex items-center gap-3 mt-2.5">
+        <div class="flex items-center gap-3 mt-2">
             @if($votesEnabled)
             <span class="fv-wrap" data-type="reply" data-id="{{ $reply->id }}" data-no-loader>
                 <button type="button" class="fv-btn fv-up {{ ($myReplyVotes[$reply->id] ?? 0) === 1 ? 'fv-on' : '' }}" title="Upvote" onclick="fvVote(this,'up')">▲</button>
@@ -86,7 +97,26 @@
         @endif
     </div>
 
-    @foreach($reply->children ?? [] as $child)
-        @include('forums.partials.reply', ['reply' => $child, 'depth' => $depth + 1])
-    @endforeach
+    @if($shouldCollapseChildren)
+    <div x-data="{ threadOpen: false }" style="margin-left:0.6rem;">
+        <button type="button" @click="threadOpen = !threadOpen"
+                class="mt-1.5 text-[11px] font-black text-violet-300/80 hover:text-violet-300 transition-colors inline-flex items-center gap-1">
+            <template x-if="!threadOpen">
+                <span>💬 Show {{ $descendantCount }} more {{ Str::plural('reply', $descendantCount) }} ▾</span>
+            </template>
+            <template x-if="threadOpen">
+                <span>▲ Hide replies</span>
+            </template>
+        </button>
+        <div x-show="threadOpen" x-cloak>
+            @foreach($childrenList as $child)
+                @include('forums.partials.reply', ['reply' => $child, 'depth' => $depth + 1])
+            @endforeach
+        </div>
+    </div>
+    @else
+        @foreach($childrenList as $child)
+            @include('forums.partials.reply', ['reply' => $child, 'depth' => $depth + 1])
+        @endforeach
+    @endif
 </div>
