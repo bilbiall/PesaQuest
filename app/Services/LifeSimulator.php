@@ -740,6 +740,42 @@ class LifeSimulator
                 }
             }
 
+            // ── Maturity redemption (Treasury Bills / Treasury Bonds) ─────
+            // Fixed-income instruments with a maturity_ticks value close out
+            // in one lump sum instead of appreciating like a car or house —
+            // discount instruments (T-Bills) also pay a maturity_bonus_pct
+            // on top of current_value, the "face value vs. discount price"
+            // spread. Runs before the generic appreciation block so a
+            // matured holding never also drifts in value this pass.
+            if ($asset->hasMaturity() && $pa->isMatured($now)) {
+                $payout = (int) round($pa->current_value * (1 + $asset->maturity_bonus_pct / 100));
+                $pa->status       = 'matured';
+                $pa->sold_price   = $payout;
+                $pa->sold_at_tick = $now;
+                $progress->balance += $payout;
+                $totalIncome       += $payout;
+
+                GameNotification::create([
+                    'user_id' => $user->id,
+                    'type'    => 'asset_matured',
+                    'title'   => "{$asset->icon} {$asset->name} Matured!",
+                    'body'    => "Your {$asset->name} matured and paid out Ksh " . number_format($payout) . ". It's been credited to your balance.",
+                    'icon'    => $asset->icon,
+                    'data'    => ['asset_id' => $asset->id, 'payout' => $payout],
+                ]);
+
+                $events[] = [
+                    'icon'  => $asset->icon, 'type' => 'asset_matured',
+                    'text'  => "{$asset->name} matured — payout credited",
+                    'sub'   => 'Ksh ' . number_format($payout),
+                    'delta' => $payout,
+                    'edu'   => 'Fixed-income instruments like Treasury Bills return your money plus a fixed return on a set date — no guessing, no volatility, that\'s the trade-off for a lower ceiling than stocks.',
+                ];
+
+                $pa->save();
+                continue;
+            }
+
             // ── Appreciate / depreciate (monthly) ────────────────────────
             if ($monthsElapsed > 0 && ($asset->appreciation_rate ?? 0) != 0) {
                 $factor   = 1 + ($asset->appreciation_rate / 100);

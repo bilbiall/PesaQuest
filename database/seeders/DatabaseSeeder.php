@@ -47,6 +47,10 @@ class DatabaseSeeder extends Seeder
             DreamSeeder::class,
             ChallengeTemplateSeeder::class,
             ShareNewsTemplateSeeder::class,
+            Level4to10Content8to12Seeder::class,
+            Level4to10Content13to17Seeder::class,
+            Level4to10Content18to25Seeder::class,
+            Level4to10Content26PlusSeeder::class,
         ]);
     }
 }

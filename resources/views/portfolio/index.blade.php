@@ -301,12 +301,13 @@
         @else
         @php
             $catMeta = [
-                'property'   => ['icon' => '🏠', 'label' => 'Property'],
-                'vehicle'    => ['icon' => '🚗', 'label' => 'Vehicles'],
-                'business'   => ['icon' => '💼', 'label' => 'Business'],
-                'investment' => ['icon' => '📈', 'label' => 'Investments'],
-                'gadget'     => ['icon' => '📱', 'label' => 'Gadgets'],
-                'other'      => ['icon' => '📦', 'label' => 'Other'],
+                'property'     => ['icon' => '🏠', 'label' => 'Property'],
+                'vehicle'      => ['icon' => '🚗', 'label' => 'Vehicles'],
+                'business'     => ['icon' => '💼', 'label' => 'Business'],
+                'investment'   => ['icon' => '📈', 'label' => 'Investments'],
+                'fixed_income' => ['icon' => '🏛️', 'label' => 'Fixed Income'],
+                'gadget'       => ['icon' => '📱', 'label' => 'Gadgets'],
+                'other'        => ['icon' => '📦', 'label' => 'Other'],
             ];
         @endphp
         @foreach($assetsByCategory as $cat => $catAssets)
@@ -319,8 +320,11 @@
             <div class="grid sm:grid-cols-2 gap-4">
                 @foreach($catAssets as $pa)
                 @php
-                    $apprPct   = $pa->purchase_price > 0 ? round(($pa->current_value - $pa->purchase_price) / $pa->purchase_price * 100, 1) : 0;
-                    $condition = $pa->condition ?? 100;
+                    $apprPct    = $pa->purchase_price > 0 ? round(($pa->current_value - $pa->purchase_price) / $pa->purchase_price * 100, 1) : 0;
+                    $condition  = $pa->condition ?? 100;
+                    $maturesIn  = $pa->ticksUntilMaturity($tick);
+                    $isLocked   = $pa->isLockedForSale($tick);
+                    $exitPenalty= $pa->asset->early_exit_penalty_pct ?? 0;
                 @endphp
                 <div class="pf-card pf-appear rounded-2xl overflow-hidden" id="pf-asset-{{ $pa->id }}"
                      style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));">
@@ -346,6 +350,14 @@
                                 {{ $apprPct >= 0 ? '▲' : '▼' }} {{ abs($apprPct) }}%
                             </span>
                         </div>
+
+                        @if($maturesIn !== null)
+                        <div class="mb-3">
+                            <span class="pf-tag {{ $isLocked ? 'text-amber-400 border border-amber-500/30 bg-amber-500/10' : 'text-cyan-400 border border-cyan-500/30 bg-cyan-500/10' }}">
+                                {{ $isLocked ? '🔒 Locked' : '⏳' }} matures in {{ $maturesIn }} game day{{ $maturesIn == 1 ? '' : 's' }}
+                            </span>
+                        </div>
+                        @endif
 
                         <div class="grid grid-cols-2 gap-2 mb-3">
                             <div class="rounded-xl p-2.5" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
@@ -390,12 +402,24 @@
                                style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);color:#67e8f9;">
                                 Buy More
                             </a>
+                            @if($isLocked)
+                            <span class="flex-1 py-2 rounded-xl text-[11px] font-black text-center cursor-not-allowed"
+                                  style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:#6b7280;"
+                                  title="Locked until it matures in {{ $maturesIn }} game day(s)">
+                                🔒 Locked
+                            </span>
+                            @else
                             <button
                                 @click="openSell({{ json_encode(['id' => $pa->id, 'name' => $pa->asset->name, 'icon' => $pa->asset->icon, 'value' => $pa->current_value, 'cost' => $pa->purchase_price]) }})"
                                 class="flex-1 py-2 rounded-xl text-[11px] font-black transition-all hover:scale-[1.02]"
                                 style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);color:#fca5a5;">
-                                Sell · 5% fee
+                                @if($exitPenalty > 0 && $maturesIn !== null)
+                                    Sell early · -{{ $exitPenalty }}% penalty
+                                @else
+                                    Sell · 5% fee
+                                @endif
                             </button>
+                            @endif
                         </div>
                     </div>
                 </div>

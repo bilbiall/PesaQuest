@@ -72,6 +72,26 @@ class ChallengeTemplateSeeder extends Seeder
                 'image_url'   => $img('crown.svg'),
                 'default_duration_days' => 7,
             ],
+            [
+                'key'         => 'shares-buying-spree',
+                'name'        => 'Shares Buying Spree',
+                'description' => 'Most individual share purchases during the challenge window wins — quantity of trades, not size, counts.',
+                'metric'      => 'shares_bought',
+                'style'       => 'count',
+                'icon'        => '📊',
+                'image_url'   => $img('medal-bronze.svg'),
+                'default_duration_days' => 7,
+            ],
+            [
+                'key'         => 'trading-profit-showdown',
+                'name'        => 'Trading Profit Showdown',
+                'description' => 'Whoever banks the biggest realized profit from selling shares wins. Losses count against you — trade smart, not just often.',
+                'metric'      => 'shares_profit',
+                'style'       => 'amount',
+                'icon'        => '💹',
+                'image_url'   => $img('medal-platinum.svg'),
+                'default_duration_days' => 10,
+            ],
         ];
 
         foreach ($templates as $t) {

@@ -18,6 +18,7 @@
         .cat-property   { background:linear-gradient(135deg,#064e3b 0%,#065f46 35%,#0f172a 100%); }
         .cat-business   { background:linear-gradient(135deg,#3730a3 0%,#4c1d95 35%,#1e1b4b 100%); }
         .cat-investment { background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 35%,#0f172a 100%); }
+        .cat-fixed_income { background:linear-gradient(135deg,#134e4a 0%,#0f766e 35%,#0f172a 100%); }
         .cat-gadget     { background:linear-gradient(135deg,#831843 0%,#9d174d 35%,#1a1025 100%); }
 
         @keyframes iconbob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
@@ -231,6 +232,7 @@
                                 <option value="property"   {{ old('category',$asset?->category)==='property'   ? 'selected':'' }}>🏠 Property</option>
                                 <option value="business"   {{ old('category',$asset?->category)==='business'   ? 'selected':'' }}>💼 Business</option>
                                 <option value="investment" {{ old('category',$asset?->category)==='investment' ? 'selected':'' }}>📈 Investment</option>
+                                <option value="fixed_income" {{ old('category',$asset?->category)==='fixed_income' ? 'selected':'' }}>🏛️ Fixed Income</option>
                                 <option value="gadget"     {{ old('category',$asset?->category)==='gadget'     ? 'selected':'' }}>📱 Gadget</option>
                             </select>
                         </div>
@@ -406,6 +408,37 @@
                                 <span class="font-black text-sm w-20 text-right" :style="'color:' + riskColor" x-text="riskLabel"></span>
                             </div>
                             <input type="hidden" name="risk_level" :value="form.risk_level">
+                        </div>
+                        <div>
+                            <label class="form-label">Matures In (game days)
+                                <x-help-tip text="Leave blank for a normal asset that never matures. Set a value to make this a fixed-income instrument (like a T-Bill or T-Bond): it auto-redeems for a lump sum this many game days after purchase, and Appreciation Rate above should usually be 0 since maturity handles the payout instead." example="91" />
+                            </label>
+                            <input type="number" name="maturity_ticks" class="form-input" min="1" max="3650"
+                                   value="{{ old('maturity_ticks', $asset?->maturity_ticks ?? '') }}" placeholder="Leave blank = never matures">
+                        </div>
+                        <div>
+                            <label class="form-label">Locked Until Maturity
+                                <x-help-tip text="If checked, the player cannot sell this at all before it matures — use for short-term discount instruments like a T-Bill. Leave unchecked to allow early exit (optionally with the penalty below) — use for longer-term instruments like a T-Bond." />
+                            </label>
+                            <label class="flex items-center gap-2 mt-2 cursor-pointer">
+                                <input type="checkbox" name="locked" value="1" class="w-4 h-4"
+                                       {{ old('locked', $asset?->locked ?? false) ? 'checked' : '' }}>
+                                <span class="text-sm text-gray-300">Block selling before maturity</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="form-label">Early Exit Penalty (%)
+                                <x-help-tip text="Only applies if 'Locked' above is unchecked and the asset has a maturity date. The % haircut taken off the sale price if the player sells before maturity — represents forfeiting future coupons/value for cashing out early." example="20" />
+                            </label>
+                            <input type="number" name="early_exit_penalty_pct" class="form-input" step="0.1" min="0" max="100"
+                                   value="{{ old('early_exit_penalty_pct', $asset?->early_exit_penalty_pct ?? 0) }}" required>
+                        </div>
+                        <div>
+                            <label class="form-label">Maturity Bonus (%)
+                                <x-help-tip text="For discount instruments (like a T-Bill): the % paid on top of current value as a lump sum when it matures — this is how the 'buy at a discount, redeem at face value' return gets modeled. Leave 0 for instruments that pay their return via Monthly Income instead (like a coupon bond)." example="4.31" />
+                            </label>
+                            <input type="number" name="maturity_bonus_pct" class="form-input" step="0.001" min="0" max="100"
+                                   value="{{ old('maturity_bonus_pct', $asset?->maturity_bonus_pct ?? 0) }}" required>
                         </div>
                         <div>
                             <label class="form-label">Auto-Create Bill (slug)

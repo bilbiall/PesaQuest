@@ -16,6 +16,7 @@
         .cat-property   { background:linear-gradient(135deg,#064e3b,#0f172a); }
         .cat-business   { background:linear-gradient(135deg,#3730a3,#1e1b4b); }
         .cat-investment { background:linear-gradient(135deg,#1e3a8a,#0f172a); }
+        .cat-fixed_income { background:linear-gradient(135deg,#134e4a,#0f172a); }
         .cat-gadget     { background:linear-gradient(135deg,#831843,#1a1025); }
         @keyframes popIn { from{opacity:0;transform:translateY(12px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
         .card-in { animation:popIn .35s cubic-bezier(.34,1.56,.64,1) both; }
@@ -70,6 +71,7 @@
                     ['label'=>'Property',    'val'=>$stats['property'],    'color'=>'text-emerald-400',    'bg'=>'rgba(16,185,129,.08)',        'border'=>'rgba(16,185,129,.2)'],
                     ['label'=>'Business',    'val'=>$stats['business'],    'color'=>'text-violet-400',     'bg'=>'rgba(139,92,246,.08)',        'border'=>'rgba(139,92,246,.2)'],
                     ['label'=>'Investments', 'val'=>$stats['investment'],  'color'=>'text-blue-400',       'bg'=>'rgba(96,165,250,.08)',        'border'=>'rgba(96,165,250,.2)'],
+                    ['label'=>'Fixed Income','val'=>$stats['fixed_income'],'color'=>'text-teal-400',       'bg'=>'rgba(45,212,191,.08)',        'border'=>'rgba(45,212,191,.2)'],
                     ['label'=>'Gadgets',     'val'=>$stats['gadget'],      'color'=>'text-pink-400',       'bg'=>'rgba(244,114,182,.08)',       'border'=>'rgba(244,114,182,.2)'],
                 ];
             @endphp
@@ -98,6 +100,7 @@
                 <option value="property"   {{ $category==='property'   ? 'selected':'' }}>🏠 Property</option>
                 <option value="business"   {{ $category==='business'   ? 'selected':'' }}>💼 Business</option>
                 <option value="investment" {{ $category==='investment' ? 'selected':'' }}>📈 Investments</option>
+                <option value="fixed_income" {{ $category==='fixed_income' ? 'selected':'' }}>🏛️ Fixed Income</option>
                 <option value="gadget"     {{ $category==='gadget'     ? 'selected':'' }}>📱 Gadgets</option>
             </select>
             <button type="submit" class="px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
@@ -117,7 +120,7 @@
 
         @foreach($assets as $asset)
         @php
-            $accentMap = ['vehicle'=>'#f59e0b','property'=>'#10b981','business'=>'#8b5cf6','investment'=>'#60a5fa','gadget'=>'#f472b6'];
+            $accentMap = ['vehicle'=>'#f59e0b','property'=>'#10b981','business'=>'#8b5cf6','investment'=>'#60a5fa','fixed_income'=>'#2dd4bf','gadget'=>'#f472b6'];
             $accent = $accentMap[$asset->category] ?? '#9ca3af';
         @endphp
         <div class="card-in rounded-2xl overflow-hidden flex flex-col" id="asset-card-{{ $asset->id }}"

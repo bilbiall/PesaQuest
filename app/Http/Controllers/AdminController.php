@@ -1147,7 +1147,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'name'             => 'required|string|max:120',
             'slug'             => 'required|string|max:80|unique:assets,slug',
-            'category'         => 'required|in:vehicle,property,business,investment,gadget',
+            'category'         => 'required|in:vehicle,property,business,investment,gadget,fixed_income',
             'tier'             => 'required|integer|min:1|max:5',
             'age_group'        => 'nullable|string|max:20',
             'base_price'       => 'required|integer|min:0',
@@ -1182,7 +1182,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'name'             => 'required|string|max:120',
             'slug'             => 'required|string|max:80|unique:assets,slug,' . $asset->id,
-            'category'         => 'required|in:vehicle,property,business,investment,gadget',
+            'category'         => 'required|in:vehicle,property,business,investment,gadget,fixed_income',
             'tier'             => 'required|integer|min:1|max:5',
             'age_group'        => 'nullable|string|max:20',
             'base_price'       => 'required|integer|min:0',

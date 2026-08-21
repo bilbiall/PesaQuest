@@ -20,6 +20,7 @@
         .cat-property   { background:rgba(16,185,129,.12); color:#34d399; }
         .cat-business   { background:rgba(139,92,246,.12); color:#a78bfa; }
         .cat-investment { background:rgba(96,165,250,.12); color:#93c5fd; }
+        .cat-fixed_income { background:rgba(45,212,191,.12); color:#5eead4; }
         .cat-gadget     { background:rgba(244,114,182,.12); color:#f9a8d4; }
         .btn-edit   { font-size:12px; font-weight:700; padding:.35rem .85rem; border-radius:.6rem; background:rgba(99,102,241,.15); border:1px solid rgba(99,102,241,.3); color:#a5b4fc; text-decoration:none; }
         .btn-edit:hover { background:rgba(99,102,241,.25); }
@@ -62,7 +63,7 @@
 
     {{-- Summary stats --}}
     @php
-        $cats = ['vehicle','property','business','investment','gadget'];
+        $cats = ['vehicle','property','business','investment','fixed_income','gadget'];
         $total  = $assets->count();
         $active = $assets->where('is_active', true)->count();
     @endphp
@@ -76,7 +77,7 @@
             <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">Active</p>
         </div>
         @foreach($cats as $cat)
-        @php $accentMap = ['vehicle'=>['text-amber-400','rgba(245,158,11,.06)','rgba(245,158,11,.18)'],'property'=>['text-emerald-400','rgba(16,185,129,.06)','rgba(16,185,129,.18)'],'business'=>['text-violet-400','rgba(139,92,246,.06)','rgba(139,92,246,.18)'],'investment'=>['text-blue-400','rgba(96,165,250,.06)','rgba(96,165,250,.18)'],'gadget'=>['text-pink-400','rgba(244,114,182,.06)','rgba(244,114,182,.18)']]; $a = $accentMap[$cat]; @endphp
+        @php $accentMap = ['vehicle'=>['text-amber-400','rgba(245,158,11,.06)','rgba(245,158,11,.18)'],'property'=>['text-emerald-400','rgba(16,185,129,.06)','rgba(16,185,129,.18)'],'business'=>['text-violet-400','rgba(139,92,246,.06)','rgba(139,92,246,.18)'],'investment'=>['text-blue-400','rgba(96,165,250,.06)','rgba(96,165,250,.18)'],'fixed_income'=>['text-teal-400','rgba(45,212,191,.06)','rgba(45,212,191,.18)'],'gadget'=>['text-pink-400','rgba(244,114,182,.06)','rgba(244,114,182,.18)']]; $a = $accentMap[$cat]; @endphp
         <div class="rounded-2xl p-4 text-center" style="background:{{ $a[1] }};border:1px solid {{ $a[2] }};">
             <p class="text-xl font-black {{ $a[0] }}">{{ $assets->where('category',$cat)->count() }}</p>
             <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">{{ ucfirst($cat) }}</p>
@@ -96,7 +97,7 @@
         @foreach($cats as $cat)
         @php $group = $assets->where('category', $cat); @endphp
         @if($group->isNotEmpty())
-        <div class="section-heading">{{ ['vehicle'=>'🚗 Vehicles','property'=>'🏠 Property','business'=>'💼 Business','investment'=>'📈 Investments','gadget'=>'📱 Gadgets'][$cat] }} ({{ $group->count() }})</div>
+        <div class="section-heading">{{ ['vehicle'=>'🚗 Vehicles','property'=>'🏠 Property','business'=>'💼 Business','investment'=>'📈 Investments','fixed_income'=>'🏛️ Fixed Income','gadget'=>'📱 Gadgets'][$cat] }} ({{ $group->count() }})</div>
         <table class="tbl w-full">
             <thead>
                 <tr>

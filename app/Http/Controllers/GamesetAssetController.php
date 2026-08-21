@@ -32,6 +32,7 @@ class GamesetAssetController extends Controller
             'property' => Asset::where('category', 'property')->count(),
             'business' => Asset::where('category', 'business')->count(),
             'investment'=> Asset::where('category', 'investment')->count(),
+            'fixed_income' => Asset::where('category', 'fixed_income')->count(),
             'gadget'   => Asset::where('category', 'gadget')->count(),
         ];
 
@@ -97,7 +98,7 @@ class GamesetAssetController extends Controller
         $data = $request->validate([
             'name'                => 'required|string|max:120',
             'brand'               => 'nullable|string|max:80',
-            'category'            => 'required|in:vehicle,property,business,investment,gadget',
+            'category'            => 'required|in:vehicle,property,business,investment,gadget,fixed_income',
             'tier'                => 'required|integer|min:1|max:5',
             'age_group'           => 'required|in:8-12,13-17,18-25,26+,all',
             'icon'                => 'nullable|string|max:8',
@@ -119,12 +120,18 @@ class GamesetAssetController extends Controller
             'is_luxury'           => 'boolean',
             'badge'               => 'nullable|string|in:popular,trending,new,stable,risky',
             'featured_section'    => 'nullable|string|in:starter_moves,serious_money,high_growth,dividend_builders,lifestyle_upgrades',
+            'maturity_ticks'         => 'nullable|integer|min:1|max:3650',
+            'locked'                 => 'boolean',
+            'early_exit_penalty_pct' => 'required|numeric|min:0|max:100',
+            'maturity_bonus_pct'     => 'required|numeric|min:0|max:100',
         ]);
         $data['is_active'] = $request->boolean('is_active');
         $data['is_luxury'] = $request->boolean('is_luxury');
+        $data['locked']    = $request->boolean('locked');
         $data['icon']             = $request->input('icon') ?: null;
         $data['badge']            = $request->input('badge') ?: null;
         $data['featured_section'] = $request->input('featured_section') ?: null;
+        $data['maturity_ticks']   = $request->input('maturity_ticks') ?: null;
         return $data;
     }
 

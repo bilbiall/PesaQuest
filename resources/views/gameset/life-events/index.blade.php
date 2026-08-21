@@ -102,7 +102,7 @@
         <select name="asset_category" class="text-sm bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 outline-none focus:border-indigo-500/60">
             <option value="">All types</option>
             <option value="general"    {{ request('asset_category') === 'general'    ? 'selected' : '' }}>General (no asset)</option>
-            @foreach(['vehicle','property','business','investment','gadget'] as $cat)
+            @foreach(['vehicle','property','business','investment','fixed_income','gadget'] as $cat)
             <option value="{{ $cat }}" {{ request('asset_category') === $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
             @endforeach
         </select>
@@ -141,6 +141,7 @@
                 'property'   => '#3b82f6',
                 'business'   => '#8b5cf6',
                 'investment' => '#10b981',
+                'fixed_income' => '#2dd4bf',
                 'gadget'     => '#f472b6',
                 default      => '#6b7280',
             };

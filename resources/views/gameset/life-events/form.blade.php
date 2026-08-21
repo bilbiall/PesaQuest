@@ -111,7 +111,7 @@
                             <label class="form-label">Asset Category (leave blank = fires for all)<x-help-tip text="Restricts this event to players who currently own an asset in this category — leave blank so the event can fire for every player regardless of what they own." example="vehicle" /></label>
                             <select name="asset_category" class="form-input">
                                 <option value="">General (no asset required)</option>
-                                @foreach(['vehicle','property','business','investment','gadget'] as $cat)
+                                @foreach(['vehicle','property','business','investment','fixed_income','gadget'] as $cat)
                                 <option value="{{ $cat }}" {{ old('asset_category', $event?->asset_category) === $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
                                 @endforeach
                             </select>
@@ -166,7 +166,7 @@
                             <div>
                                 <label class="form-label">Asset Category to affect<x-help-tip text="Saved inside effect_data.market_categories as the category key — only players holding assets in this category feel the price swing." example="investment" /></label>
                                 <select name="ed_market_category" class="form-input">
-                                    @foreach(['vehicle','property','business','investment','gadget'] as $cat)
+                                    @foreach(['vehicle','property','business','investment','fixed_income','gadget'] as $cat)
                                     <option value="{{ $cat }}" {{ old('ed_market_category', $event?->effect_data['market_categories'][0]['category'] ?? 'investment') === $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
                                     @endforeach
                                 </select>

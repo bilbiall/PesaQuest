@@ -103,7 +103,7 @@ class GamesetLifeEventController extends Controller
             'title'            => 'required|string|max:120',
             'slug'             => $slugRule,
             'chapter'          => 'required|string|in:8-12,13-17,18-25,26+,all',
-            'asset_category'   => 'nullable|string|in:vehicle,property,business,investment,gadget',
+            'asset_category'   => 'nullable|string|in:vehicle,property,business,investment,fixed_income,gadget',
             'description'      => 'nullable|string',
             'flavor_text'      => 'nullable|string',
             'educational_note' => 'nullable|string',

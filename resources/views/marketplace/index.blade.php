@@ -182,6 +182,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 .cat-property  {background:linear-gradient(145deg,#064e3b,#065f46,#0f172a);}
 .cat-business  {background:linear-gradient(145deg,#3730a3,#4c1d95,#1e1b4b);}
 .cat-investment{background:linear-gradient(145deg,#1e3a8a,#1e40af,#0f172a);}
+.cat-fixed_income{background:linear-gradient(145deg,#134e4a,#0f766e,#0f172a);}
 .cat-gadget    {background:linear-gradient(145deg,#831843,#9d174d,#1a1025);}
 .icon-bob{animation:iconbob 3.5s ease-in-out infinite;}
 .afford-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;}
@@ -429,6 +430,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
             'property'   => ['label'=>'Property',  'icon'=>'house','count'=>$categoryCounts['property']   ?? 0],
             'business'   => ['label'=>'Business',  'icon'=>'briefcase','count'=>$categoryCounts['business']   ?? 0],
             'investment' => ['label'=>'Investments','icon'=>'trend-up','count'=>$categoryCounts['investment'] ?? 0],
+            'fixed_income'=>['label'=>'Fixed Income','icon'=>'bank','count'=>$categoryCounts['fixed_income'] ?? 0],
             'gadget'     => ['label'=>'Gadgets',   'icon'=>'phone','count'=>$categoryCounts['gadget']     ?? 0],
         ] as $key => $cat)
         <button class="mob-cat-chip" :class="activeCategory === '{{ $key }}' ? 'active' : ''"
@@ -472,6 +474,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                 'property'   => ['label'=>'Property',    'icon'=>'house', 'count'=>$categoryCounts['property']   ?? 0],
                 'business'   => ['label'=>'Business',    'icon'=>'briefcase', 'count'=>$categoryCounts['business']   ?? 0],
                 'investment' => ['label'=>'Investments', 'icon'=>'trend-up', 'count'=>$categoryCounts['investment'] ?? 0],
+                'fixed_income'=>['label'=>'Fixed Income','icon'=>'bank', 'count'=>$categoryCounts['fixed_income'] ?? 0],
                 'gadget'     => ['label'=>'Gadgets',     'icon'=>'phone', 'count'=>$categoryCounts['gadget']     ?? 0],
             ];
         @endphp
@@ -914,19 +917,19 @@ function marketplace() {
         },
 
         catEmoji(cat) {
-            const m = {vehicle:'car',property:'house',business:'building',investment:'trend-up',gadget:'phone'};
+            const m = {vehicle:'car',property:'house',business:'building',investment:'trend-up',fixed_income:'bank',gadget:'phone'};
             return m[cat] || 'store';
         },
         catLabel(cat) {
-            const m = {vehicle:'Use & Earn',property:'Passive Income',business:'Business',investment:'Investment',gadget:'Gadget'};
+            const m = {vehicle:'Use & Earn',property:'Passive Income',business:'Business',investment:'Investment',fixed_income:'Fixed Income',gadget:'Gadget'};
             return m[cat] || cat;
         },
         catChipBg(cat) {
-            const m = {vehicle:'rgba(59,130,246,.15)',property:'rgba(16,185,129,.15)',business:'rgba(249,115,22,.15)',investment:'rgba(6,182,212,.15)',gadget:'rgba(139,92,246,.15)'};
+            const m = {vehicle:'rgba(59,130,246,.15)',property:'rgba(16,185,129,.15)',business:'rgba(249,115,22,.15)',investment:'rgba(6,182,212,.15)',fixed_income:'rgba(45,212,191,.15)',gadget:'rgba(139,92,246,.15)'};
             return m[cat] || 'rgba(107,114,128,.15)';
         },
         catChipColor(cat) {
-            const m = {vehicle:'#93c5fd',property:'#6ee7b7',business:'#fdba74',investment:'#67e8f9',gadget:'#c4b5fd'};
+            const m = {vehicle:'#93c5fd',property:'#6ee7b7',business:'#fdba74',investment:'#67e8f9',fixed_income:'#5eead4',gadget:'#c4b5fd'};
             return m[cat] || '#9ca3af';
         },
         catGradient(cat) {
@@ -935,6 +938,7 @@ function marketplace() {
                 property:'linear-gradient(145deg,#064e3b,#065f46,#0f172a)',
                 business:'linear-gradient(145deg,#3730a3,#4c1d95,#1e1b4b)',
                 investment:'linear-gradient(145deg,#0e7490,#0891b2,#0f172a)',
+                fixed_income:'linear-gradient(145deg,#134e4a,#0f766e,#0f172a)',
                 gadget:'linear-gradient(145deg,#831843,#9d174d,#1a1025)',
             };
             return m[cat] || 'linear-gradient(145deg,#1f2937,#374151,#111827)';

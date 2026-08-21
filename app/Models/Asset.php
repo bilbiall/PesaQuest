@@ -15,6 +15,7 @@ class Asset extends Model
         'icon', 'image_url', 'description', 'flavor_text', 'educational_note',
         'creates_bill_slug', 'max_per_player', 'is_active', 'is_luxury',
         'badge', 'featured_section',
+        'maturity_ticks', 'locked', 'early_exit_penalty_pct', 'maturity_bonus_pct',
     ];
 
     /** Returns the best available image URL for this asset */
@@ -28,7 +29,16 @@ class Asset extends Model
         'is_luxury'          => 'boolean',
         'appreciation_rate'  => 'float',
         'volatility'         => 'float',
+        'locked'             => 'boolean',
+        'early_exit_penalty_pct' => 'float',
+        'maturity_bonus_pct' => 'float',
     ];
+
+    /** Fixed-income instrument with a maturity date (T-Bill, T-Bond) vs. always-liquid (MMF, everything else). */
+    public function hasMaturity(): bool
+    {
+        return (int) ($this->maturity_ticks ?? 0) > 0;
+    }
 
     public function playerAssets(): HasMany
     {
@@ -62,12 +72,13 @@ class Asset extends Model
     public function categoryLabel(): string
     {
         return match($this->category) {
-            'vehicle'    => 'Vehicle',
-            'property'   => 'Property',
-            'business'   => 'Business',
-            'investment' => 'Investment',
-            'gadget'     => 'Gadget',
-            default      => ucfirst($this->category),
+            'vehicle'      => 'Vehicle',
+            'property'     => 'Property',
+            'business'     => 'Business',
+            'investment'   => 'Investment',
+            'gadget'       => 'Gadget',
+            'fixed_income' => 'Fixed Income',
+            default        => ucfirst($this->category),
         };
     }
 
@@ -106,48 +117,52 @@ class Asset extends Model
     public function categoryEmoji(): string
     {
         return match($this->category) {
-            'vehicle'    => '🚗',
-            'property'   => '🏠',
-            'business'   => '🏢',
-            'investment' => '📈',
-            'gadget'     => '📱',
-            default      => '📦',
+            'vehicle'      => '🚗',
+            'property'     => '🏠',
+            'business'     => '🏢',
+            'investment'   => '📈',
+            'gadget'       => '📱',
+            'fixed_income' => '🏛️',
+            default        => '📦',
         };
     }
 
     public function categoryChipColor(): string
     {
         return match($this->category) {
-            'vehicle'    => 'rgba(59,130,246,0.18)',
-            'property'   => 'rgba(16,185,129,0.18)',
-            'business'   => 'rgba(249,115,22,0.18)',
-            'investment' => 'rgba(6,182,212,0.18)',
-            'gadget'     => 'rgba(139,92,246,0.18)',
-            default      => 'rgba(107,114,128,0.18)',
+            'vehicle'      => 'rgba(59,130,246,0.18)',
+            'property'     => 'rgba(16,185,129,0.18)',
+            'business'     => 'rgba(249,115,22,0.18)',
+            'investment'   => 'rgba(6,182,212,0.18)',
+            'gadget'       => 'rgba(139,92,246,0.18)',
+            'fixed_income' => 'rgba(45,212,191,0.18)',
+            default        => 'rgba(107,114,128,0.18)',
         };
     }
 
     public function categoryTextColor(): string
     {
         return match($this->category) {
-            'vehicle'    => '#93c5fd',
-            'property'   => '#6ee7b7',
-            'business'   => '#fdba74',
-            'investment' => '#67e8f9',
-            'gadget'     => '#c4b5fd',
-            default      => '#9ca3af',
+            'vehicle'      => '#93c5fd',
+            'property'     => '#6ee7b7',
+            'business'     => '#fdba74',
+            'investment'   => '#67e8f9',
+            'gadget'       => '#c4b5fd',
+            'fixed_income' => '#5eead4',
+            default        => '#9ca3af',
         };
     }
 
     public function categoryGradient(): string
     {
         return match($this->category) {
-            'vehicle'    => 'linear-gradient(145deg,#1e3a8a,#1e40af,#0f172a)',
-            'property'   => 'linear-gradient(145deg,#064e3b,#065f46,#0f172a)',
-            'business'   => 'linear-gradient(145deg,#3730a3,#4c1d95,#1e1b4b)',
-            'investment' => 'linear-gradient(145deg,#0e7490,#0891b2,#0f172a)',
-            'gadget'     => 'linear-gradient(145deg,#831843,#9d174d,#1a1025)',
-            default      => 'linear-gradient(145deg,#1f2937,#374151,#111827)',
+            'vehicle'      => 'linear-gradient(145deg,#1e3a8a,#1e40af,#0f172a)',
+            'property'     => 'linear-gradient(145deg,#064e3b,#065f46,#0f172a)',
+            'business'     => 'linear-gradient(145deg,#3730a3,#4c1d95,#1e1b4b)',
+            'investment'   => 'linear-gradient(145deg,#0e7490,#0891b2,#0f172a)',
+            'gadget'       => 'linear-gradient(145deg,#831843,#9d174d,#1a1025)',
+            'fixed_income' => 'linear-gradient(145deg,#134e4a,#0f766e,#0f172a)',
+            default        => 'linear-gradient(145deg,#1f2937,#374151,#111827)',
         };
     }
 

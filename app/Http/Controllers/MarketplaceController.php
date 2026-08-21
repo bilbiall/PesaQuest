@@ -365,10 +365,22 @@ class MarketplaceController extends Controller
         }
 
         $progress   = $user->getOrCreateProgress();
-        $salePrice  = (int) round($playerAsset->current_value * 0.95); // 5% platform fee
+        $now        = (int) ($progress->tick_count ?? 0);
         $asset      = $playerAsset->asset;
 
-        \DB::transaction(function () use ($user, $progress, $playerAsset, $asset, $salePrice) {
+        if ($playerAsset->isLockedForSale($now)) {
+            $daysLeft = $playerAsset->ticksUntilMaturity($now);
+            return response()->json(['error' => "{$asset->name} is locked until it matures in {$daysLeft} game day(s) — it can't be sold early."], 422);
+        }
+
+        $salePrice = (int) round($playerAsset->current_value * 0.95); // 5% platform fee
+        $penaltyNote = '';
+        if (!$playerAsset->isMatured($now) && ($asset->early_exit_penalty_pct ?? 0) > 0) {
+            $penaltyNote = " ({$asset->early_exit_penalty_pct}% early-exit penalty applied — matures in " . $playerAsset->ticksUntilMaturity($now) . " game day(s))";
+            $salePrice = (int) round($salePrice * (1 - $asset->early_exit_penalty_pct / 100));
+        }
+
+        \DB::transaction(function () use ($user, $progress, $playerAsset, $asset, $salePrice, $penaltyNote) {
             $playerAsset->update([
                 'status'      => 'sold',
                 'sold_price'  => $salePrice,
@@ -401,7 +413,7 @@ class MarketplaceController extends Controller
                 'user_id' => $user->id,
                 'type'    => 'asset_sold',
                 'title'   => "{$asset->icon} {$asset->name} Sold",
-                'body'    => "Sold for Ksh " . number_format($salePrice) . " (after 5% platform fee). Balance: Ksh " . number_format($progress->balance),
+                'body'    => "Sold for Ksh " . number_format($salePrice) . " (after 5% platform fee){$penaltyNote}. Balance: Ksh " . number_format($progress->balance),
                 'icon'    => $asset->icon,
                 'data'    => ['asset_id' => $asset->id, 'sale_price' => $salePrice],
             ]);
@@ -409,7 +421,7 @@ class MarketplaceController extends Controller
 
         return response()->json([
             'success'     => true,
-            'message'     => "Sold! Ksh " . number_format($salePrice) . " credited to your balance.",
+            'message'     => "Sold! Ksh " . number_format($salePrice) . " credited to your balance.{$penaltyNote}",
             'new_balance' => $progress->balance,
             'net_worth'   => $progress->net_worth_cache,
         ]);

@@ -79,7 +79,7 @@
                 <div>
                     <label class="form-label">Category *</label>
                     <select name="category" class="form-input" required>
-                        @foreach(['vehicle'=>'🚗 Vehicle','property'=>'🏠 Property','business'=>'💼 Business','investment'=>'📈 Investment','gadget'=>'📱 Gadget'] as $val => $label)
+                        @foreach(['vehicle'=>'🚗 Vehicle','property'=>'🏠 Property','business'=>'💼 Business','investment'=>'📈 Investment','fixed_income'=>'🏛️ Fixed Income','gadget'=>'📱 Gadget'] as $val => $label)
                         <option value="{{ $val }}" {{ old('category', $asset->category ?? '') === $val ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>

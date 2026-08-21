@@ -98,4 +98,29 @@ class PlayerAsset extends Model
     {
         return $query->where('status', 'active');
     }
+
+    /** The game-day tick this holding matures on, or null if it never matures. */
+    public function maturesAtTick(): ?int
+    {
+        if (!$this->asset || !$this->asset->hasMaturity()) return null;
+        return (int) $this->purchased_at_tick + (int) $this->asset->maturity_ticks;
+    }
+
+    public function isMatured(int $nowTick): bool
+    {
+        $maturesAt = $this->maturesAtTick();
+        return $maturesAt !== null && $nowTick >= $maturesAt;
+    }
+
+    public function ticksUntilMaturity(int $nowTick): ?int
+    {
+        $maturesAt = $this->maturesAtTick();
+        return $maturesAt === null ? null : max(0, $maturesAt - $nowTick);
+    }
+
+    /** Whether the player is blocked from selling this before it matures. */
+    public function isLockedForSale(int $nowTick): bool
+    {
+        return ($this->asset->locked ?? false) && !$this->isMatured($nowTick);
+    }
 }

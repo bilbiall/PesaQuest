@@ -174,6 +174,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
 .cat-property  {background:linear-gradient(145deg,#064e3b,#065f46,#0f172a);}
 .cat-business  {background:linear-gradient(145deg,#3730a3,#4c1d95,#1e1b4b);}
 .cat-investment{background:linear-gradient(145deg,#1e3a8a,#1e40af,#0f172a);}
+.cat-fixed_income{background:linear-gradient(145deg,#134e4a,#0f766e,#0f172a);}
 .cat-gadget    {background:linear-gradient(145deg,#831843,#9d174d,#1a1025);}
 .icon-bob-sm{animation:iconbob 3.5s ease-in-out infinite;}
 .afford-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;}
@@ -323,6 +324,8 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
            class="mob-chip {{ $currentCat === 'business' ? 'active' : '' }}"><x-icon name="briefcase" class="w-3 h-3 inline-block" /> Business</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'investment'])) }}"
            class="mob-chip {{ $currentCat === 'investment' ? 'active' : '' }}"><x-icon name="trend-up" class="w-3 h-3 inline-block" /> Investments</a>
+        <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'fixed_income'])) }}"
+           class="mob-chip {{ $currentCat === 'fixed_income' ? 'active' : '' }}"><x-icon name="bank" class="w-3 h-3 inline-block" /> Fixed Income</a>
         <a href="{{ route('marketplace.all', array_merge(request()->except('cat','page'), ['cat'=>'gadget'])) }}"
            class="mob-chip {{ $currentCat === 'gadget' ? 'active' : '' }}"><x-icon name="phone" class="w-3 h-3 inline-block" /> Gadgets</a>
     </div>
@@ -494,6 +497,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     'property'   => ['icon'=>'house','label'=>'Property',      'count'=>$categoryCounts['property']   ?? 0],
                     'business'   => ['icon'=>'briefcase','label'=>'Business',      'count'=>$categoryCounts['business']   ?? 0],
                     'investment' => ['icon'=>'trend-up','label'=>'Investments',   'count'=>$categoryCounts['investment'] ?? 0],
+                    'fixed_income'=>['icon'=>'bank','label'=>'Fixed Income',   'count'=>$categoryCounts['fixed_income'] ?? 0],
                     'gadget'     => ['icon'=>'phone','label'=>'Gadgets',       'count'=>$categoryCounts['gadget']     ?? 0],
                 ];
             @endphp
