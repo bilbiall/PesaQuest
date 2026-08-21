@@ -18,13 +18,18 @@ use Illuminate\Support\Facades\Schema;
  *   - min_chapter          : 1–6 (maps to life_chapter stages)
  *   - is_dismissable       : true/false
  *
+ * Nodes also carry a real `age_group` column ('8-12'/'13-17'/'18-25'/'26+',
+ * or null/'all' for unrestricted) — separate from min_chapter, which tracks
+ * net-worth progression, not literal age.
+ *
  * Filter chain:
  *   1. career      — match player's career_field (or no requirement)
  *   2. asset       — match player's owned asset categories (or no requirement)
  *   3. stage       — match player's chapter level
- *   4. dedup       — exclude seen within last 14 game days (player_event_log table)
- *   5. lifestyle   — weight by balance-to-income ratio
- *   6. pick N
+ *   4. age         — match player's real age_group (or no requirement)
+ *   5. dedup       — exclude seen within last 14 game days (player_event_log table)
+ *   6. lifestyle   — weight by balance-to-income ratio
+ *   7. pick N
  *
  * To add a new filter: write a private method and add its name to the pipe() call in get().
  */
@@ -73,6 +78,7 @@ class EventEngine
             'filterByCareer',
             'filterByAsset',
             'filterByStage',
+            'filterByAge',
             'deduplicateRecent',
             'weightByLifestyle',
         ]);
@@ -134,6 +140,24 @@ class EventEngine
         return $items->filter(function ($node) use ($chapter) {
             $min = (int) ($node->metadata['min_chapter'] ?? 1);
             return $chapter >= $min;
+        });
+    }
+
+    /**
+     * Keep nodes matching the player's literal age_group (or unrestricted).
+     * Distinct from filterByStage: min_chapter tracks net-worth progression,
+     * this tracks actual age — a node can have both, either, or neither gate.
+     * Placed right after filterByStage since both are demographic gates;
+     * order relative to each other doesn't affect the result.
+     */
+    private function filterByAge(Collection $items): Collection
+    {
+        $ageGroup = $this->progress->user->age_group ?? null;
+        if (!$ageGroup) return $items;
+
+        return $items->filter(function ($node) use ($ageGroup) {
+            $required = $node->age_group ?? null;
+            return !$required || $required === 'all' || $required === $ageGroup;
         });
     }
 
@@ -260,11 +284,15 @@ class EventEngine
 
     private function getOwnedAssetCategories(): array
     {
-        if (!Schema::hasTable('assets')) return [];
+        // Ownership lives in player_assets (user_id -> asset_id), NOT a
+        // player_id column on the assets catalog table itself.
+        if (!Schema::hasTable('player_assets') || !Schema::hasTable('assets')) return [];
 
-        return \DB::table('assets')
-            ->where('player_id', $this->progress->user_id)
-            ->pluck('category')
+        return \DB::table('player_assets')
+            ->join('assets', 'assets.id', '=', 'player_assets.asset_id')
+            ->where('player_assets.user_id', $this->progress->user_id)
+            ->where('player_assets.status', 'active')
+            ->pluck('assets.category')
             ->unique()
             ->values()
             ->all();
