@@ -282,8 +282,12 @@ class QuestTriggerService
         if (!empty($completed)) {
             // Completions may have opened the Quest Gate — recompute fresh
             QuestGate::forget($user->id);
+            $levelBefore    = $progress->level;
             $progress->level = $progress->calculateLevel();
             $progress->save();
+            if ($progress->level > $levelBefore) {
+                $this->fire($user, 'reach_level', ['level' => $progress->level]);
+            }
             foreach ($completed as $item) {
                 session()->push('pending_quest_completions', $item);
             }

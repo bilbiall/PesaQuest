@@ -228,6 +228,9 @@ class GameController extends Controller
         // Badges
         $this->checkAndAwardBadges($user, $progress);
 
+        // Quest trigger: resolving a life-decision scenario node
+        app(\App\Services\QuestTriggerService::class)->fire($user, 'play_scenario', ['slug' => $currentNode?->title ?? '']);
+
         // Career unlock: if next node has career_field_unlocked in metadata
         if ($choice->nextNode) {
             $meta = $choice->nextNode->metadata ?? [];
@@ -858,6 +861,7 @@ class GameController extends Controller
 
             if ($earned) {
                 $user->badges()->attach($badge->id, ['earned_at' => now()]);
+                app(\App\Services\QuestTriggerService::class)->fire($user, 'earn_badge', ['slug' => $badge->slug ?? '']);
 
                 \App\Models\GameNotification::create([
                     'user_id' => $user->id,

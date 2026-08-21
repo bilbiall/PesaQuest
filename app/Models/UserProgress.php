@@ -39,10 +39,16 @@ class UserProgress extends Model
 
     public function addPoints(int $points): void
     {
+        $levelBefore = $this->level;
+
         $this->points_total += $points;
         $this->level = $this->calculateLevel();
         $this->last_played_at = now();
         $this->save();
+
+        if ($this->level > $levelBefore && $this->user) {
+            app(\App\Services\QuestTriggerService::class)->fire($this->user, 'reach_level', ['level' => $this->level]);
+        }
     }
 
     public function incrementTick(): void

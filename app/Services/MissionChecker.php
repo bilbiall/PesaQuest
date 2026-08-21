@@ -48,6 +48,7 @@ class MissionChecker
             $badge = Badge::where('slug', $mission->badge_slug)->first();
             if ($badge && !$user->badges()->where('badge_id', $badge->id)->exists()) {
                 $user->badges()->attach($badge->id);
+                app(\App\Services\QuestTriggerService::class)->fire($user, 'earn_badge', ['slug' => $badge->slug ?? '']);
             }
         }
 
