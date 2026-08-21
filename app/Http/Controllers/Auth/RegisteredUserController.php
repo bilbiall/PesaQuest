@@ -43,7 +43,16 @@ class RegisteredUserController extends Controller
         // Auto-derive a unique @username from the name (editable later in Profile)
         $user->ensureUsername();
 
-        event(new Registered($user));
+        // The verification email send is synchronous (VerifyEmailAutoLogin is
+        // not queued) — a mail failure here (relay down, spam rejection, etc.)
+        // must never crash registration: the account is already committed
+        // above, so a 500 at this point would strand a real account with the
+        // player never logged in and never redirected anywhere.
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         Auth::login($user);
 
