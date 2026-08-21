@@ -10,7 +10,6 @@ use App\Models\PlayerMission;
 use App\Models\Quest;
 use App\Models\Setting;
 use App\Models\UserQuest;
-use App\Services\EventEngine;
 use App\Services\LifeSimulator;
 use App\Services\QuestTriggerService;
 use Illuminate\Http\Request;
@@ -258,16 +257,14 @@ class WorldController extends Controller
             $missionDistricts = $this->getMissionDistrictSlugs($user);
         }
 
-        // EventEngine — load contextual world events for this session
-        // Graceful: never breaks the page, returns [] if nodes table is empty
+        // World Event popups (EventEngine) are disabled: dismissing one with
+        // "Not now" never got remembered server-side, so a small candidate
+        // pool meant the same scenario could resurface on every page load.
+        // Leaving this always empty is the surgical off-switch — the nodes
+        // it drew from (type='scenario', is_start=true) are the SAME rows
+        // the main "Play Scenarios" game mode uses, so that content and flow
+        // stays completely untouched; only this Pesa City popup trigger is off.
         $sessionEvents = [];
-        if ($progress) {
-            try {
-                $sessionEvents = (new EventEngine($progress))->get();
-            } catch (\Throwable $e) {
-                // Silently continue — events are enhancement, not core
-            }
-        }
 
         // Pull any quest completions triggered from other pages (savings, marketplace, etc.)
         $pendingQuestCompletions = session()->pull('pending_quest_completions', []);
