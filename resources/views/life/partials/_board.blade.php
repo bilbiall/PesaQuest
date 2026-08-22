@@ -16,11 +16,11 @@
                 <div class="flex items-start gap-4">
                     {{-- Avatar --}}
                     @if(auth()->user()->profile_photo)
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 ring-2 ring-indigo-500/40 ring-offset-2 ring-offset-black">
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 ring-2 ring-indigo-500/40 ring-offset-2 ring-offset-black">
                         <img src="{{ auth()->user()->profile_photo }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     </div>
                     @else
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black text-white shrink-0 ring-2 ring-indigo-500/40 ring-offset-2 ring-offset-black"
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center text-xl sm:text-2xl font-black text-white shrink-0 ring-2 ring-indigo-500/40 ring-offset-2 ring-offset-black"
                          style="background:linear-gradient(135deg,#6366f1,#a78bfa);">
                         {{ strtoupper(substr(auth()->user()->name,0,1)) }}{{ strtoupper(substr(explode(' ',auth()->user()->name)[1]??'',0,1)) }}
                     </div>
@@ -34,7 +34,7 @@
                             <span class="text-indigo-300">{{ $progress->chapterIcon() }} {{ $progress->chapterName() }}</span>
                         </div>
 
-                        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
                             {{ auth()->user()->name }}
                         </h1>
 
@@ -106,14 +106,14 @@
                     $stageIdx = array_search($chapterKey, array_column($chapterStages, 'key'));
                     $stageIdx = $stageIdx === false ? 0 : $stageIdx;
                 @endphp
-                <div class="glass rounded-2xl p-5 border border-indigo-500/15">
+                <div class="glass rounded-xl p-4 border border-indigo-500/15">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-bold text-white">📖 Life Chapter</h3>
                         <a href="{{ route('life.timeline') }}" class="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors">Timeline →</a>
                     </div>
 
                     <div class="flex items-center gap-3 mb-1">
-                        <span class="text-3xl leading-none">{{ $progress->chapterIcon() }}</span>
+                        <span class="text-2xl leading-none">{{ $progress->chapterIcon() }}</span>
                         <div>
                             <div class="text-base font-black text-white leading-tight">{{ $progress->chapterName() }}</div>
                             <div class="text-[11px] text-gray-500">{{ $progress->chapterTagline() }}</div>
@@ -164,12 +164,12 @@
                 </div>
 
                 {{-- M-Pesa Wallet --}}
-                <div class="wallet-card {{ $netMonthly < 0 ? 'deficit' : '' }} rounded-2xl p-5">
+                <div class="wallet-card {{ $netMonthly < 0 ? 'deficit' : '' }} rounded-xl p-4">
                     <div class="text-[10px] font-bold uppercase tracking-widest mb-1
                                 {{ $netMonthly >= 0 ? 'text-emerald-400/70' : 'text-red-400/70' }}">
                         💳 Game Balance
                     </div>
-                    <div class="text-4xl font-black {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }} mb-0.5 leading-none" data-balance>
+                    <div class="text-2xl font-black {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }} mb-0.5 leading-none" data-balance>
                         Ksh {{ number_format($progress->balance) }}
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
@@ -193,7 +193,7 @@
                 </div>
 
                 {{-- Monthly Statement --}}
-                <div class="glass rounded-2xl p-5">
+                <div class="glass rounded-xl p-4">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-white">📊 Monthly Statement</h3>
                         <span class="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">Game Month</span>
@@ -327,7 +327,7 @@
                 @endif
 
                 {{-- Bills Board --}}
-                <div class="glass rounded-2xl p-5">
+                <div class="glass rounded-xl p-4">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-white">🗓 Bills Board</h3>
                         @if($overdueBills->count() > 0)
@@ -483,7 +483,7 @@
                 </div>
 
                 {{-- Credit Score --}}
-                <div class="glass rounded-2xl p-5">
+                <div class="glass rounded-xl p-4">
                     <h3 class="text-sm font-bold text-white mb-4">💳 Credit Score</h3>
                     @php
                         $cs     = $progress->credit_score ?? 500;
@@ -493,7 +493,7 @@
                     @endphp
                     <div class="flex items-end justify-between mb-3">
                         <div>
-                            <div class="text-3xl font-black leading-none" style="color:{{ $csClr }}">{{ $cs }}</div>
+                            <div class="text-xl font-black leading-none" style="color:{{ $csClr }}">{{ $cs }}</div>
                             <div class="text-xs font-bold mt-1" style="color:{{ $csClr }}">{{ $csLbl }}</div>
                         </div>
                         <div class="text-right text-[10px] text-gray-600 leading-relaxed">
@@ -523,7 +523,7 @@
                 </div>
 
                 {{-- Credit Score History --}}
-                <div class="glass rounded-2xl p-5">
+                <div class="glass rounded-xl p-4">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-white">📈 Credit History</h3>
                         <span class="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">Last {{ $creditHistory->count() > 0 ? $creditHistory->count() : 8 }} changes</span>
@@ -569,14 +569,14 @@
                     $moodClr   = $mood >= 80 ? '#10b981' : ($mood >= 55 ? '#34d399' : ($mood >= 35 ? '#f59e0b' : '#ef4444'));
                     $moodBoost = $progress->mood_last_boosted_at ? 'Boosted ' . $progress->mood_last_boosted_at->diffForHumans() : 'Not boosted yet';
                 @endphp
-                <div class="glass rounded-2xl p-5">
+                <div class="glass rounded-xl p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-bold text-white">{{ $moodEmoji }} Mood</h3>
                         <span class="text-[10px] text-gray-600">{{ $moodBoost }}</span>
                     </div>
 
                     <div class="flex items-center gap-3 mb-2">
-                        <span class="text-3xl leading-none">{{ $moodEmoji }}</span>
+                        <span class="text-2xl leading-none">{{ $moodEmoji }}</span>
                         <div class="flex-1">
                             <div class="flex items-center justify-between text-[10px] mb-1">
                                 <span class="text-gray-500 uppercase tracking-widest font-bold">Happiness</span>
@@ -617,7 +617,7 @@
 
                 {{-- Next Milestone --}}
                 @if($nextAsset)
-                <div class="glass rounded-2xl p-5 border border-indigo-500/20 relative overflow-hidden">
+                <div class="glass rounded-xl p-4 border border-indigo-500/20 relative overflow-hidden">
                     {{-- Glow accent --}}
                     <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none"></div>
 
@@ -638,7 +638,7 @@
                         </div>
                         <div class="text-right shrink-0">
                             @if($daysToNextAsset)
-                            <div class="text-3xl font-black text-indigo-400 leading-none">{{ number_format($daysToNextAsset) }}</div>
+                            <div class="text-xl font-black text-indigo-400 leading-none">{{ number_format($daysToNextAsset) }}</div>
                             <div class="text-[10px] text-gray-500 mt-0.5">game days away</div>
                             @elseif($netMonthly <= 0)
                             <div class="text-xs text-red-400 font-bold">Fix deficit first</div>
@@ -819,7 +819,7 @@
                 </div>
 
                 {{-- Life Events --}}
-                <div class="glass rounded-2xl p-5">
+                <div class="glass rounded-xl p-4">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-white">⚡ Life Events</h3>
                         <a href="{{ route('life.timeline') }}" class="text-[10px] text-violet-400 hover:text-violet-300 transition-colors">Full story →</a>

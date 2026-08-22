@@ -26,26 +26,26 @@
                     <div class="text-xs font-bold uppercase tracking-widest" style="color:{{ $fieldMeta['color'] }}">
                         {{ $fieldMeta['label'] }}
                     </div>
-                    <h1 class="text-2xl sm:text-3xl font-black text-white leading-tight">
+                    <h1 class="text-xl sm:text-2xl font-black text-white leading-tight">
                         {{ $progress->career_title ?? 'Unnamed Role' }}
                     </h1>
                 </div>
             </div>
             @else
-            <h1 class="text-2xl sm:text-3xl font-black text-white mb-2">Career Overview</h1>
+            <h1 class="text-xl sm:text-2xl font-black text-white mb-2">Career Overview</h1>
             @endif
 
             <div class="flex items-center gap-6 flex-wrap">
                 <div>
                     <div class="text-xs text-gray-500">Monthly Salary (Gross)</div>
-                    <div class="text-3xl font-black text-amber-400">
+                    <div class="text-xl font-black text-amber-400">
                         Ksh {{ number_format($salary ?? 0) }}
                     </div>
                 </div>
                 @if(!empty($payslip))
                 <div>
                     <div class="text-xs text-gray-500">Take-Home (Net)</div>
-                    <div class="text-3xl font-black text-emerald-400">Ksh {{ number_format($payslip['net']) }}</div>
+                    <div class="text-xl font-black text-emerald-400">Ksh {{ number_format($payslip['net']) }}</div>
                 </div>
                 @endif
                 <div>
@@ -68,7 +68,7 @@
             $warnedJobs  = $activePesaJobs->filter(fn ($j) => !empty($j->removal_warned_at_tick));
             $missedJobs  = $activePesaJobs->filter(fn ($j) => (int) ($j->missed_paydays ?? 0) > 0 && empty($j->removal_warned_at_tick));
         @endphp
-        <div class="rounded-2xl p-5" id="pq-checkin-card"
+        <div class="rounded-xl p-4" id="pq-checkin-card"
              style="background:linear-gradient(135deg, rgba(16,185,129,{{ ($pendingPay ?? 0) > 0 ? '0.12' : '0.05' }}), rgba(5,150,105,0.03));border:1px solid rgba(16,185,129,{{ ($pendingPay ?? 0) > 0 ? '0.4' : '0.15' }});">
             @if($warnedJobs->isNotEmpty())
             <div class="mb-4 rounded-xl px-4 py-3 flex items-start gap-3"
@@ -87,7 +87,7 @@
             </div>
             @endif
             <div class="flex flex-wrap items-center gap-4">
-                <span class="text-4xl">{{ ($pendingPay ?? 0) > 0 ? '🧾' : '🕔' }}</span>
+                <span class="text-2xl">{{ ($pendingPay ?? 0) > 0 ? '🧾' : '🕔' }}</span>
                 <div class="flex-1 min-w-[12rem]">
                     @if(($pendingPay ?? 0) > 0)
                     <h3 class="text-sm font-black text-white">Payday is waiting: <span class="text-emerald-400">Ksh {{ number_format($pendingPay) }}</span></h3>
@@ -185,8 +185,8 @@
                     </div>
                 </div>
                 @else
-                <div class="glass rounded-2xl p-6 text-center">
-                    <div class="text-4xl mb-3">💼</div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl mb-2">💼</div>
                     @if(($progress->career_field ?? null))
                     <p class="text-sm text-gray-400 mb-3">You're not earning a salary yet. Take a course at the Opportunity Hub, qualify, and get hired — that's how careers start in Pesa City.</p>
                     <a href="{{ route('opportunities.index') }}"
@@ -220,7 +220,7 @@
                 </div>
                 @if($activePesaJobs->isEmpty())
                 <div class="px-5 py-6 text-center">
-                    <p class="text-3xl mb-2">🔍</p>
+                    <p class="text-2xl mb-2">🔍</p>
                     <p class="text-xs text-gray-400 mb-3">No jobs yet in Pesa City. Visit the Opportunity Hub to apply.</p>
                     <a href="{{ route('opportunities.index') }}"
                        class="inline-block text-xs font-bold px-4 py-2 rounded-xl text-white"
@@ -301,7 +301,7 @@
 
                 {{-- Career Ladder --}}
                 <details class="glass rounded-2xl overflow-hidden acc-mobile">
-                    <summary class="p-5 flex items-center justify-between gap-2">
+                    <summary class="p-4 flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
                             <h3 class="text-sm font-bold text-white">🪜 Career Ladder</h3>
                             @if($nextRung)
@@ -360,7 +360,7 @@
 
                 {{-- Career Fields Reference --}}
                 <details class="glass rounded-2xl overflow-hidden acc-mobile">
-                    <summary class="p-5 flex items-center justify-between gap-2">
+                    <summary class="p-4 flex items-center justify-between gap-2">
                         <h3 class="text-sm font-bold text-white">🗂 Career Fields</h3>
                         <svg class="acc-chevron w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </summary>
@@ -393,7 +393,7 @@
 
                 {{-- Payslip tips --}}
                 <details class="glass rounded-2xl overflow-hidden acc-mobile">
-                    <summary class="p-5 flex items-center justify-between gap-2">
+                    <summary class="p-4 flex items-center justify-between gap-2">
                         <h3 class="text-sm font-bold text-white">💡 Maximise Your Take-Home</h3>
                         <svg class="acc-chevron w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </summary>
@@ -424,7 +424,7 @@
                 {{-- Salary History --}}
                 @if($salaryHistory->isNotEmpty())
                 <details class="glass rounded-2xl overflow-hidden acc-mobile">
-                    <summary class="p-5 flex items-center justify-between gap-2">
+                    <summary class="p-4 flex items-center justify-between gap-2">
                         <h3 class="text-sm font-bold text-white">📅 Recent Paydays</h3>
                         <svg class="acc-chevron w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </summary>
@@ -447,7 +447,7 @@
 
                 {{-- Completed Courses --}}
                 <details class="glass rounded-2xl overflow-hidden acc-mobile">
-                    <summary class="p-5 flex items-center justify-between gap-2">
+                    <summary class="p-4 flex items-center justify-between gap-2">
                         <h3 class="text-sm font-bold text-white">📚 Completed Courses</h3>
                         <svg class="acc-chevron w-4 h-4 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </summary>
@@ -459,7 +459,7 @@
                         </a>
                         @if($completedCourses->isEmpty())
                         <div class="py-6 text-center">
-                            <p class="text-3xl mb-2">🎓</p>
+                            <p class="text-2xl mb-2">🎓</p>
                             <p class="text-xs text-gray-400 mb-3">No courses completed yet. Learning boosts job eligibility and XP.</p>
                             <a href="{{ route('opportunities.index') }}"
                                class="inline-block text-xs font-bold px-4 py-2 rounded-xl text-white"

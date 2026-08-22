@@ -3,7 +3,7 @@
     {{-- ── Hero ── --}}
     <div class="border-b border-white/5 py-8 sm:py-10">
         <div class="max-w-5xl mx-auto px-4 sm:px-6">
-            <h1 class="text-2xl sm:text-3xl font-black mb-2">🧾 Your Finances</h1>
+            <h1 class="text-xl sm:text-2xl font-black mb-2">🧾 Your Finances</h1>
             <p class="text-gray-400 text-sm">Everything about your money, in one place — statement, investments, savings.</p>
 
             <div class="grid grid-cols-3 gap-3 mt-6">
@@ -28,7 +28,7 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
         {{-- ── Monthly Statement ── --}}
-        <div class="glass rounded-2xl p-5">
+        <div class="glass rounded-xl p-4">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-bold text-white">📊 Monthly Statement</h2>
                 <span class="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">Game Month</span>
@@ -137,7 +137,7 @@
                     <h2 class="text-sm font-bold text-indigo-300">💼 Portfolio</h2>
                     <p class="text-[10px] text-gray-500 mt-0.5">Assets, deals &amp; loans</p>
                 </div>
-                <div class="p-5">
+                <div class="p-4">
                     @if($playerAssets->isEmpty() && $activeDealsCount === 0)
                     <p class="text-xs text-gray-500 mb-4">You don't own any assets or deals yet. The marketplace is where money starts working for you.</p>
                     @else
@@ -182,7 +182,7 @@
                     <h2 class="text-sm font-bold text-emerald-300">🏦 Savings</h2>
                     <p class="text-[10px] text-gray-500 mt-0.5">Goals &amp; interest</p>
                 </div>
-                <div class="p-5">
+                <div class="p-4">
                     @if($savingsSchemes->isEmpty())
                     <p class="text-xs text-gray-500 mb-4">No savings goals yet. Starting one — even a small one — is the first habit that compounds.</p>
                     @else

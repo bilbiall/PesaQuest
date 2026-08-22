@@ -4,7 +4,7 @@
 <div class="border-b border-white/5 py-10"
      style="background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.05) 100%);">
     <div class="max-w-4xl mx-auto px-4 sm:px-6">
-        <h1 class="text-3xl sm:text-4xl font-black mb-2">📖 Your Life Story</h1>
+        <h1 class="text-xl sm:text-2xl font-black mb-2">📖 Your Life Story</h1>
         <p class="text-gray-400">Every event, every chapter. Your virtual financial journey so far.</p>
 
         {{-- Stats row --}}
