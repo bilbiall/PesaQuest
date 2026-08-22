@@ -39,40 +39,40 @@
 </nav>
 
 {{-- ── Hero ── --}}
-<div class="border-b border-white/5 py-10"
+<div class="border-b border-white/5 py-5"
      style="background: linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(16,185,129,0.05) 100%);">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-wrap items-end justify-between gap-4">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-            <h1 class="text-3xl sm:text-4xl font-black mb-2 inline-flex items-center gap-2"><x-icon name="people" class="w-8 h-8" /> Friends</h1>
-            <p class="text-gray-400">Team up: lend and borrow with agreed rates, and build chamas together.</p>
+            <h1 class="text-xl sm:text-2xl font-black mb-1 inline-flex items-center gap-1.5"><x-icon name="people" class="w-5 h-5" /> Friends</h1>
+            <p class="text-gray-400 text-xs sm:text-sm">Team up: lend and borrow with agreed rates, and build chamas together.</p>
         </div>
         @if($code)
-        <div class="rounded-2xl px-4 py-3 text-center" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.35);">
-            <div class="text-[10px] font-black uppercase tracking-wider text-indigo-300">My friend code</div>
-            <div class="flex items-center gap-2 mt-1">
-                <span id="fr-code" class="text-lg font-black text-white tracking-widest">{{ $code }}</span>
+        <div class="rounded-lg px-3 py-2 text-center" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.35);">
+            <div class="text-[9px] font-black uppercase tracking-wider text-indigo-300">My friend code</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+                <span id="fr-code" class="text-sm font-black text-white tracking-widest">{{ $code }}</span>
                 <button onclick="navigator.clipboard.writeText('{{ $code }}').then(() => { this.textContent = '✓'; setTimeout(() => this.textContent = '📋', 1200); })"
-                        class="text-sm hover:scale-110 transition-transform" title="Copy code">📋</button>
+                        class="text-xs hover:scale-110 transition-transform" title="Copy code">📋</button>
             </div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Share it — friends add you instantly</div>
+            <div class="text-[9px] text-gray-500 mt-0.5">Share it — friends add you instantly</div>
         </div>
         @endif
     </div>
 </div>
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-5">
 
     {{-- Add friend --}}
-    <div class="fr-card rounded-2xl p-5 mb-6">
-        <h2 class="text-sm font-black text-white mb-3">+ Add a friend</h2>
+    <div class="fr-card rounded-xl p-4 mb-4">
+        <h2 class="text-xs font-black text-white mb-2.5">+ Add a friend</h2>
         <form method="POST" action="{{ route('friends.request') }}" class="flex flex-col sm:flex-row gap-2">
             @csrf
             <input type="text" name="q" required maxlength="120" placeholder="@username, friend code (PQ-XXXXXX) or exact name…"
-                   class="flex-1 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                   class="flex-1 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                    style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-            <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02]"
+            <button type="submit" class="px-4 py-2 rounded-lg text-xs font-black text-white transition-transform hover:scale-[1.02]"
                     style="background:linear-gradient(135deg,#6366f1,#a78bfa);box-shadow:0 4px 20px rgba(99,102,241,0.3);">
-                <x-icon name="send" class="w-3.5 h-3.5 inline-block" /> Send Request
+                <x-icon name="send" class="w-3 h-3 inline-block" /> Send Request
             </button>
         </form>
 
@@ -97,9 +97,9 @@
 
     {{-- Requests --}}
     @if($incoming->isNotEmpty() || $outgoing->isNotEmpty())
-    <div class="grid sm:grid-cols-2 gap-4 mb-6">
-        <div class="fr-card rounded-2xl p-5">
-            <h2 class="text-sm font-black text-white mb-3 inline-flex items-center gap-1"><x-icon name="inbox" class="w-3.5 h-3.5" /> Requests for you <span class="text-indigo-300">({{ $incoming->count() }})</span></h2>
+    <div class="grid sm:grid-cols-2 gap-3 mb-4">
+        <div class="fr-card rounded-xl p-4">
+            <h2 class="text-xs font-black text-white mb-2.5 inline-flex items-center gap-1"><x-icon name="inbox" class="w-3.5 h-3.5" /> Requests for you <span class="text-indigo-300">({{ $incoming->count() }})</span></h2>
             @forelse($incoming as $f)
             <div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
                 <a href="{{ route('players.show', $f->requester) }}" class="flex items-center gap-2 flex-1 min-w-0 hover:opacity-80">
@@ -124,8 +124,8 @@
             <p class="text-xs text-gray-500">No pending requests.</p>
             @endforelse
         </div>
-        <div class="fr-card rounded-2xl p-5">
-            <h2 class="text-sm font-black text-white mb-3 inline-flex items-center gap-1"><x-icon name="send" class="w-3.5 h-3.5" /> Sent by you <span class="text-indigo-300">({{ $outgoing->count() }})</span></h2>
+        <div class="fr-card rounded-xl p-4">
+            <h2 class="text-xs font-black text-white mb-2.5 inline-flex items-center gap-1"><x-icon name="send" class="w-3.5 h-3.5" /> Sent by you <span class="text-indigo-300">({{ $outgoing->count() }})</span></h2>
             @forelse($outgoing as $f)
             <div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
                 <span class="text-xs font-bold text-white flex-1 truncate">{{ $f->addressee->name }}</span>
@@ -142,8 +142,8 @@
     @endif
 
     {{-- Friends list --}}
-    <div class="fr-card rounded-2xl p-5 mb-6">
-        <h2 class="text-sm font-black text-white mb-3 inline-flex items-center gap-1"><x-icon name="people" class="w-3.5 h-3.5" /> My friends <span class="text-indigo-300">({{ $friends->count() }})</span></h2>
+    <div class="fr-card rounded-xl p-4 mb-4">
+        <h2 class="text-xs font-black text-white mb-2.5 inline-flex items-center gap-1"><x-icon name="people" class="w-3.5 h-3.5" /> My friends <span class="text-indigo-300">({{ $friends->count() }})</span></h2>
         @if($friends->isEmpty())
         <div class="text-center py-6">
             <p class="text-3xl mb-2">🫂</p>
@@ -202,9 +202,9 @@
 
     {{-- Friend loans --}}
     @if($loansEnabled)
-    <div class="fr-card rounded-2xl p-5">
+    <div class="fr-card rounded-xl p-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
-            <h2 class="text-sm font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> Friend loans</h2>
+            <h2 class="text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3.5 h-3.5" /> Friend loans</h2>
             <span class="text-[10px] text-gray-500">Rates {{ implode('–', [min(\App\Models\FriendLoan::RATE_PRESETS), max(\App\Models\FriendLoan::RATE_PRESETS)]) }}% · repay in {{ implode('/', \App\Models\FriendLoan::TERM_PRESETS) }} game days · lenders risk max 20% of their cash</span>
         </div>
         <p class="text-[11px] text-gray-500 mb-4">You negotiate with choices, not chat: they ask → you offer a rate → they accept or counter once. Miss the due date and the game collects what it can — the rest becomes a default that wrecks your credit.</p>
