@@ -19,11 +19,11 @@
         .course-card {
             background: rgba(255,255,255,.03);
             border: 1px solid rgba(255,255,255,.07);
-            border-radius: 20px;
-            padding: 1.5rem;
+            border-radius: 14px;
+            padding: 1.1rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: .75rem;
             transition: transform .2s, border-color .2s, box-shadow .2s;
             cursor: default;
         }
@@ -35,11 +35,11 @@
         .job-card {
             background: rgba(255,255,255,.03);
             border: 1px solid rgba(255,255,255,.07);
-            border-radius: 20px;
-            padding: 1.25rem 1.5rem;
+            border-radius: 14px;
+            padding: .9rem 1.1rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: .75rem;
             transition: transform .2s, border-color .2s;
         }
         .job-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.13); }
@@ -77,7 +77,7 @@
 
         /* Detail modal */
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(12px); z-index:200; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
-        .modal-box { background:#0f0e1a; border:1px solid rgba(255,255,255,.12); border-radius:24px; max-width:560px; width:100%; max-height:90vh; overflow-y:auto; padding:2rem; position:relative; }
+        .modal-box { background:#0f0e1a; border:1px solid rgba(255,255,255,.12); border-radius:18px; max-width:560px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; position:relative; }
 
         /* Scrollbar */
         .modal-box::-webkit-scrollbar { width:4px; }
@@ -136,27 +136,27 @@
 {{-- Hero --}}
 <div class="relative overflow-hidden" style="background:linear-gradient(135deg,#0a0d1e 0%,#0d1228 60%,#0a0d1e 100%);">
     <div class="absolute inset-0" style="background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(77,168,247,.15),transparent);"></div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 relative">
         <div class="text-center max-w-2xl mx-auto">
-            <div class="text-6xl mb-4 select-none" style="filter:drop-shadow(0 0 30px rgba(77,168,247,.4))">🎓</div>
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-3" style="background:linear-gradient(135deg,#fff,#4DA8F7 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Opportunity Hub</h1>
-            <p class="text-white/60 text-base leading-relaxed">Free courses, job listings, and quick gigs. Every career in Pesa City starts right here.</p>
+            <div class="text-4xl mb-2.5 select-none" style="filter:drop-shadow(0 0 30px rgba(77,168,247,.4))">🎓</div>
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight mb-2" style="background:linear-gradient(135deg,#fff,#4DA8F7 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Opportunity Hub</h1>
+            <p class="text-white/60 text-xs leading-relaxed">Free courses, job listings, and quick gigs. Every career in Pesa City starts right here.</p>
 
             {{-- Quick stats --}}
-            <div class="flex items-center justify-center gap-6 mt-6 text-sm">
+            <div class="flex items-center justify-center gap-5 mt-4 text-sm">
                 <div class="flex flex-col items-center">
-                    <span class="text-2xl font-black text-white">{{ $courses->count() }}</span>
-                    <span class="text-white/40 text-xs font-semibold mt-0.5">Courses</span>
+                    <span class="text-base font-black text-white">{{ $courses->count() }}</span>
+                    <span class="text-white/40 text-[11px] font-semibold mt-0.5">Courses</span>
                 </div>
-                <div class="w-px h-8 bg-white/10"></div>
+                <div class="w-px h-7 bg-white/10"></div>
                 <div class="flex flex-col items-center">
-                    <span class="text-2xl font-black text-white">{{ $jobs->count() }}</span>
-                    <span class="text-white/40 text-xs font-semibold mt-0.5">Jobs</span>
+                    <span class="text-base font-black text-white">{{ $jobs->count() }}</span>
+                    <span class="text-white/40 text-[11px] font-semibold mt-0.5">Jobs</span>
                 </div>
-                <div class="w-px h-8 bg-white/10"></div>
+                <div class="w-px h-7 bg-white/10"></div>
                 <div class="flex flex-col items-center">
-                    <span class="text-2xl font-black text-emerald-400">{{ $completedIds->count() }}</span>
-                    <span class="text-white/40 text-xs font-semibold mt-0.5">Completed</span>
+                    <span class="text-base font-black text-emerald-400">{{ $completedIds->count() }}</span>
+                    <span class="text-white/40 text-[11px] font-semibold mt-0.5">Completed</span>
                 </div>
             </div>
         </div>
@@ -270,7 +270,7 @@
                      @click="openCourse({{ $course->id }})">
                     {{-- Top row --}}
                     <div class="flex items-start justify-between gap-2">
-                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                              style="background:{{ $course->color ?? $track['color'] }}20;border:1px solid {{ $course->color ?? $track['color'] }}35;">
                             {{ $course->icon ?? $track['icon'] }}
                         </div>
@@ -364,7 +364,7 @@
                      @click="openJob({{ $job->id }})">
                     @if($isLocked)<span class="oh-lock">🔒</span>@endif
                     {{-- Employer logo --}}
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
                         {{ $job->employer_logo ?? '🏢' }}
                     </div>

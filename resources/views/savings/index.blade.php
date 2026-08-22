@@ -78,39 +78,39 @@
 <div x-data="savingsApp()" x-init="init()" class="max-w-5xl mx-auto px-4 sm:px-6">
 
     {{-- Hero / header --}}
-    <div class="relative overflow-hidden border-b border-white/5 -mx-4 sm:-mx-6 px-4 sm:px-6 py-10 mb-8"
+    <div class="relative overflow-hidden border-b border-white/5 -mx-4 sm:-mx-6 px-4 sm:px-6 py-5 mb-5"
          style="background:linear-gradient(160deg,rgba(21,199,126,0.07) 0%,rgba(56,189,248,0.04) 100%);">
         <div class="absolute top-0 right-0 w-72 h-72 rounded-full opacity-5 pointer-events-none"
              style="background:radial-gradient(circle,#15C77E,transparent 70%);transform:translate(30%,-30%);"></div>
 
         <div class="relative">
-            <h1 class="text-3xl sm:text-4xl font-black shimmer-text mb-1 inline-flex items-center gap-2"><x-icon name="coin" class="w-8 h-8" /> My Savings</h1>
-            <p class="text-gray-400 text-sm mb-6">Track your goals and watch your money grow</p>
+            <h1 class="text-xl sm:text-2xl font-black shimmer-text mb-1 inline-flex items-center gap-1.5"><x-icon name="coin" class="w-5 h-5" /> My Savings</h1>
+            <p class="text-gray-400 text-xs mb-3">Track your goals and watch your money grow</p>
 
             {{-- Summary stats --}}
-            <div class="flex flex-wrap gap-3" x-show="!loading">
-                <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
+            <div class="flex flex-wrap gap-2.5" x-show="!loading">
+                <div class="rounded-xl px-4 py-2.5 flex items-center gap-2.5"
                      style="background:rgba(21,199,126,0.08);border:1px solid rgba(21,199,126,0.2);">
-                    <x-icon name="bank" class="w-6 h-6 text-emerald-400" />
+                    <x-icon name="bank" class="w-5 h-5 text-emerald-400" />
                     <div>
-                        <div class="text-xl font-black text-emerald-400" x-text="'KSh ' + totalSaved.toLocaleString()">—</div>
-                        <div class="text-xs text-gray-400">Total Saved</div>
+                        <div class="text-base font-black text-emerald-400" x-text="'KSh ' + totalSaved.toLocaleString()">—</div>
+                        <div class="text-[11px] text-gray-400">Total Saved</div>
                     </div>
                 </div>
-                <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
+                <div class="rounded-xl px-4 py-2.5 flex items-center gap-2.5"
                      style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);">
-                    <x-icon name="target" class="w-6 h-6 text-sky-400" />
+                    <x-icon name="target" class="w-5 h-5 text-sky-400" />
                     <div>
-                        <div class="text-xl font-black text-sky-400" x-text="schemes.length">—</div>
-                        <div class="text-xs text-gray-400">Active Goals</div>
+                        <div class="text-base font-black text-sky-400" x-text="schemes.length">—</div>
+                        <div class="text-[11px] text-gray-400">Active Goals</div>
                     </div>
                 </div>
-                <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
+                <div class="rounded-xl px-4 py-2.5 flex items-center gap-2.5"
                      style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);">
-                    <x-icon name="check-circle" class="w-6 h-6 text-violet-400" />
+                    <x-icon name="check-circle" class="w-5 h-5 text-violet-400" />
                     <div>
-                        <div class="text-xl font-black text-violet-400" x-text="completedCount">—</div>
-                        <div class="text-xs text-gray-400">Completed</div>
+                        <div class="text-base font-black text-violet-400" x-text="completedCount">—</div>
+                        <div class="text-[11px] text-gray-400">Completed</div>
                     </div>
                 </div>
             </div>
@@ -118,7 +118,7 @@
             {{-- New scheme button --}}
             <button @click="showNewForm = !showNewForm"
                     x-show="!loading"
-                    class="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-[1.03] active:scale-[0.97]"
+                    class="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-xs transition-all hover:scale-[1.03] active:scale-[0.97]"
                     style="background:linear-gradient(135deg,rgba(21,199,126,0.2),rgba(21,199,126,0.12));border:1px solid rgba(21,199,126,0.4);color:#15C77E;">
                 <span x-text="showNewForm ? '✕ Cancel' : '＋ New Scheme'"></span>
             </button>
@@ -133,10 +133,10 @@
 
     {{-- New Scheme form --}}
     <div x-show="showNewForm" x-cloak x-transition
-         class="mb-8 rounded-3xl p-6"
+         class="mb-5 rounded-2xl p-4"
          style="background:rgba(21,199,126,0.05);border:1px solid rgba(21,199,126,0.25);">
 
-        <h2 class="text-lg font-black text-emerald-400 mb-5">🆕 Create a New Savings Goal</h2>
+        <h2 class="text-sm font-black text-emerald-400 mb-3.5">🆕 Create a New Savings Goal</h2>
 
         <div class="grid sm:grid-cols-2 gap-4">
             {{-- Name --}}
@@ -216,7 +216,7 @@
         {{-- Cards --}}
         <div x-show="schemes.length > 0" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <template x-for="(scheme, idx) in schemes" :key="scheme.id">
-                <div class="scheme-card rounded-3xl p-5 flex flex-col gap-4 relative overflow-hidden"
+                <div class="scheme-card rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden"
                      :style="cardStyle(scheme)">
 
                     {{-- Decorative glow blob --}}
