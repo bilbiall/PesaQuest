@@ -49,9 +49,97 @@
         </div>
 
         {{-- Event list --}}
+        @php
+            // Per-item event types (one entry per bill/asset/loan) can wall-of-card
+            // the modal for a player who's been away a while — e.g. 5 overdue bills
+            // used to mean 5 full detail cards back to back. Bundle any type with
+            // 2+ occurrences into one compact summary with a "Show N" toggle;
+            // one-off types (milestones, job changes, life events…) render as before.
+            $groupableTypes = ['bill_missed', 'asset_income', 'asset_cost', 'loan_payment', 'chama_loan_payment', 'savings_interest', 'interest'];
+            $groupMeta = [
+                'bill_missed'        => ['icon' => '⚠️', 'label' => 'bills went overdue',       'tone' => 'red'],
+                'asset_income'       => ['icon' => '💵', 'label' => 'assets paid out',           'tone' => 'emerald'],
+                'asset_cost'         => ['icon' => '🔧', 'label' => 'asset upkeep charges',      'tone' => 'amber'],
+                'loan_payment'       => ['icon' => '🏦', 'label' => 'loan installments paid',    'tone' => 'amber'],
+                'chama_loan_payment' => ['icon' => '🤝', 'label' => 'chama loan payments',       'tone' => 'amber'],
+                'savings_interest'   => ['icon' => '🏦', 'label' => 'savings interest payouts',  'tone' => 'emerald'],
+                'interest'           => ['icon' => '📈', 'label' => 'interest payouts',          'tone' => 'emerald'],
+            ];
+            $toneStyles = [
+                'red'     => 'background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(190,18,60,0.06));border:1px solid rgba(239,68,68,0.35);',
+                'amber'   => 'background:linear-gradient(135deg,rgba(245,158,11,0.10),rgba(217,119,6,0.05));border:1px solid rgba(245,158,11,0.3);',
+                'emerald' => 'background:linear-gradient(135deg,rgba(16,185,129,0.10),rgba(5,150,105,0.05));border:1px solid rgba(16,185,129,0.3);',
+            ];
+
+            $groups = [];
+            $timeline = [];
+            foreach (($lifeSim['events'] ?? []) as $idx => $event) {
+                $t = $event['type'] ?? '';
+                if (in_array($t, $groupableTypes, true)) {
+                    $groups[$t][] = $event;
+                    if (!isset($groups[$t . '_first_seen'])) {
+                        $groups[$t . '_first_seen'] = true;
+                        $timeline[] = ['group' => $t];
+                    }
+                } else {
+                    $timeline[] = ['event' => $event, 'idx' => $idx];
+                }
+            }
+            // A "group" of exactly one item isn't worth collapsing — render it inline like normal.
+            // idx is renumbered to the final timeline position here (for every row,
+            // not just flattened ones) so the edu-toggle key is always a plain,
+            // guaranteed-unique integer — never a mix of two different index spaces.
+            foreach ($timeline as $i => $row) {
+                if (isset($row['group']) && count($groups[$row['group']]) < 2) {
+                    $timeline[$i] = ['event' => $groups[$row['group']][0], 'idx' => $i];
+                } elseif (isset($row['event'])) {
+                    $timeline[$i]['idx'] = $i;
+                }
+            }
+        @endphp
         <div class="px-3 py-3 sm:px-6 sm:py-4 space-y-1.5 sm:space-y-2 max-h-72 overflow-y-auto">
-            @forelse($lifeSim['events'] as $idx => $event)
-            @php $evType = $event['type'] ?? ''; @endphp
+            @forelse($timeline as $row)
+            @if(isset($row['group']))
+            @php
+                $gType   = $row['group'];
+                $gItems  = $groups[$gType];
+                $gMeta   = $groupMeta[$gType] ?? ['icon' => '📌', 'label' => $gType, 'tone' => 'amber'];
+                $gTotal  = collect($gItems)->sum(fn ($e) => $e['amount'] ?? abs($e['delta'] ?? 0));
+            @endphp
+            <div class="rounded-xl overflow-hidden" x-data="{ expanded: false }" style="{{ $toneStyles[$gMeta['tone']] }}">
+                <button type="button" @click="expanded = !expanded" class="w-full flex items-center gap-2 sm:gap-3 py-2 px-2.5 sm:py-2.5 sm:px-3 text-left">
+                    <span class="text-sm sm:text-lg leading-none flex-shrink-0">{{ $gMeta['icon'] }}</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[.78rem] sm:text-sm font-bold text-gray-200 leading-snug">
+                            {{ count($gItems) }} {{ $gMeta['label'] }}
+                            @if($gTotal > 0)
+                            <span class="text-gray-400 font-semibold">— Ksh {{ number_format($gTotal) }}</span>
+                            @endif
+                        </p>
+                    </div>
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0 transition-transform" :style="expanded ? 'transform:rotate(180deg)' : ''"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="expanded" x-cloak x-transition class="px-2.5 pb-2 sm:px-3 sm:pb-2.5 space-y-1.5">
+                    @foreach($gItems as $gi => $gEvent)
+                    <div class="rounded-lg px-2.5 py-2" style="background:rgba(0,0,0,0.18);">
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-[.75rem] sm:text-[.82rem] font-bold text-gray-200 leading-snug">{{ $gEvent['text'] }}</p>
+                            @if(($gEvent['delta'] ?? 0) != 0)
+                            <span class="text-[.68rem] sm:text-xs font-black whitespace-nowrap flex-shrink-0 {{ $gEvent['delta'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $gEvent['delta'] >= 0 ? '+' : '' }}Ksh {{ number_format(abs($gEvent['delta'])) }}
+                            </span>
+                            @endif
+                        </div>
+                        @if(!empty($gEvent['sub']))
+                        <p class="text-[.68rem] sm:text-xs text-gray-400 mt-0.5 leading-snug">{{ $gEvent['sub'] }}</p>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @else
+            @php $event = $row['event']; $idx = $row['idx']; $evType = $event['type'] ?? ''; @endphp
             <div class="rounded-xl overflow-hidden"
                  style="{{ $evType === 'wages_lost'
                         ? 'background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(190,18,60,0.06));border:1px solid rgba(239,68,68,0.4);'
@@ -103,6 +191,7 @@
                 </div>
                 @endif
             </div>
+            @endif
             @empty
             <p class="text-center text-gray-400 text-sm py-4">Time passed quietly. Nothing major happened.</p>
             @endforelse

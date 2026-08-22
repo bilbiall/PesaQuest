@@ -1676,11 +1676,15 @@ class LifeSimulator
 
             if ($missed > 0) {
                 $events[] = [
-                    'icon'  => '⚠️',
-                    'type'  => 'bill_missed',
-                    'text'  => "Overdue: {$pb->bill->name} — Ksh " . number_format($pb->amount) . ($missed > 1 ? " ({$missed} cycles unpaid)" : ''),
-                    'sub'   => trim(($pb->bill->consequence_text ? $pb->bill->consequence_text . ' ' : '') . 'Pay it from your Life HQ to stop the credit damage.'),
-                    'delta' => 0,
+                    'icon'   => '⚠️',
+                    'type'   => 'bill_missed',
+                    'text'   => "Overdue: {$pb->bill->name} — Ksh " . number_format($pb->amount) . ($missed > 1 ? " ({$missed} cycles unpaid)" : ''),
+                    'sub'    => trim(($pb->bill->consequence_text ? $pb->bill->consequence_text . ' ' : '') . 'Pay it from your Life HQ to stop the credit damage.'),
+                    'delta'  => 0,
+                    // Not folded into 'delta' — bills are never auto-paid, so
+                    // this is what's now owed, not a balance change. Used to
+                    // total up the grouped "N bills overdue" summary.
+                    'amount' => $pb->amount * $missed,
                 ];
             }
 
