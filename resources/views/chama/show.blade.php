@@ -84,23 +84,6 @@
     </div>
 </nav>
 
-{{-- ── Flash Messages ── --}}
-@if(session('success'))
-<div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
-    <div class="rounded-2xl px-5 py-3 text-sm font-semibold text-emerald-300 flex items-center gap-3"
-         style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);">
-        <span>✅</span> {{ session('success') }}
-    </div>
-</div>
-@endif
-@if(session('error'))
-<div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
-    <div class="rounded-2xl px-5 py-3 text-sm font-semibold text-red-300 flex items-center gap-3"
-         style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);">
-        <span>❌</span> {{ session('error') }}
-    </div>
-</div>
-@endif
 
 {{-- ── Main Alpine Tabs ── --}}
 <div x-data="{ activeTab: 'overview', showProposalForm: false, proposalType: 'buy_asset' }" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">

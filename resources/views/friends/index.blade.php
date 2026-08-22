@@ -62,18 +62,6 @@
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-    {{-- Flash messages --}}
-    @if(session('success'))
-    <div class="mb-6 rounded-2xl px-4 py-3 text-sm font-bold text-emerald-300" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);">
-        ✅ {{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-    <div class="mb-6 rounded-2xl px-4 py-3 text-sm font-bold text-amber-300" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);">
-        ⚠️ {{ session('error') }}
-    </div>
-    @endif
-
     {{-- Add friend --}}
     <div class="fr-card rounded-2xl p-5 mb-6">
         <h2 class="text-sm font-black text-white mb-3">+ Add a friend</h2>

@@ -74,23 +74,6 @@
     </div>
 </div>
 
-{{-- ── Flash messages ── --}}
-@if(session('success'))
-<div class="max-w-7xl mx-auto px-4 sm:px-6 mt-5">
-    <div class="rounded-2xl px-5 py-4 text-sm font-semibold text-emerald-300 flex items-center gap-3"
-         style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);">
-        <span class="text-base">✅</span> {{ session('success') }}
-    </div>
-</div>
-@endif
-@if(session('error'))
-<div class="max-w-7xl mx-auto px-4 sm:px-6 mt-5">
-    <div class="rounded-2xl px-5 py-4 text-sm font-semibold text-red-300 flex items-center gap-3"
-         style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);">
-        <span class="text-base">❌</span> {{ session('error') }}
-    </div>
-</div>
-@endif
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-14">
 

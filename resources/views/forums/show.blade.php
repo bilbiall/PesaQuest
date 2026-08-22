@@ -50,17 +50,6 @@
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-    {{-- Flash messages --}}
-    @if(session('success'))
-    <div class="mb-6 rounded-2xl px-4 py-3 text-sm font-bold text-emerald-300" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);">
-        ✅ {{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-    <div class="mb-6 rounded-2xl px-4 py-3 text-sm font-bold text-amber-300" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);">
-        ⚠️ {{ session('error') }}
-    </div>
-    @endif
     @if($errors->any())
     <div class="mb-6 rounded-2xl px-4 py-3 text-xs font-bold text-red-300" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);">
         @foreach($errors->all() as $err)<div>• {{ $err }}</div>@endforeach
