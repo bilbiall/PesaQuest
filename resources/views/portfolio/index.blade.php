@@ -57,43 +57,43 @@
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
     {{-- ── Header ── --}}
-    <div class="mb-6">
-        <h1 class="text-3xl sm:text-4xl font-black mb-1 inline-flex items-center gap-2"><x-icon name="bar-chart" class="w-8 h-8" /> Your Portfolio</h1>
-        <p class="text-gray-400 text-sm">Assets, investments, savings and debts — your whole money picture on day {{ number_format($tick) }}.</p>
+    <div class="mb-4">
+        <h1 class="text-xl sm:text-2xl font-black mb-1 inline-flex items-center gap-1.5"><x-icon name="bar-chart" class="w-5 h-5" /> Your Portfolio</h1>
+        <p class="text-gray-400 text-xs">Assets, investments, savings and debts — your whole money picture on day {{ number_format($tick) }}.</p>
     </div>
 
     {{-- ── Summary bar ── --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-        <div class="rounded-2xl p-4" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-5">
+        <div class="rounded-xl p-3" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);">
             <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1.5">Asset Value</p>
             <p class="text-lg font-black text-emerald-400">Ksh {{ number_format($totalValue) }}</p>
         </div>
-        <div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
             <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1.5">Invested</p>
             <p class="text-lg font-black text-gray-200">Ksh {{ number_format($totalInvested) }}</p>
         </div>
-        <div class="rounded-2xl p-4" style="background:{{ $unrealisedPL >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(248,113,113,0.07)' }};border:1px solid {{ $unrealisedPL >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(248,113,113,0.18)' }};">
+        <div class="rounded-xl p-3" style="background:{{ $unrealisedPL >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(248,113,113,0.07)' }};border:1px solid {{ $unrealisedPL >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(248,113,113,0.18)' }};">
             <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1.5">Unrealised P/L</p>
             <p class="text-lg font-black {{ $unrealisedPL >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                 {{ $unrealisedPL >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($unrealisedPL)) }}
             </p>
         </div>
-        <div class="rounded-2xl p-4" style="background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.18);">
+        <div class="rounded-xl p-3" style="background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.18);">
             <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1.5">Income /mo</p>
             <p class="text-lg font-black text-cyan-400">+Ksh {{ number_format($monthlyIncome) }}</p>
         </div>
-        <div class="rounded-2xl p-4" style="background:{{ $monthlyCost > 0 ? 'rgba(245,158,11,0.07)' : 'rgba(255,255,255,0.03)' }};border:1px solid {{ $monthlyCost > 0 ? 'rgba(245,158,11,0.18)' : 'rgba(255,255,255,0.08)' }};">
+        <div class="rounded-xl p-3" style="background:{{ $monthlyCost > 0 ? 'rgba(245,158,11,0.07)' : 'rgba(255,255,255,0.03)' }};border:1px solid {{ $monthlyCost > 0 ? 'rgba(245,158,11,0.18)' : 'rgba(255,255,255,0.08)' }};">
             <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1.5">Costs /mo</p>
             <p class="text-lg font-black {{ $monthlyCost > 0 ? 'text-amber-400' : 'text-gray-300' }}">−Ksh {{ number_format($monthlyCost) }}</p>
         </div>
-        <div class="rounded-2xl p-4" style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);">
+        <div class="rounded-xl p-3" style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);">
             <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1.5">Holdings</p>
             <p class="text-lg font-black text-purple-400">{{ $portfolioCount }}</p>
         </div>
     </div>
 
     {{-- ── Net worth sparkline ── --}}
-    <div class="pf-card rounded-3xl p-5 sm:p-6 mb-8" style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));">
+    <div class="pf-card rounded-2xl p-4 sm:p-5 mb-5" style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));">
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-sm font-black text-white uppercase tracking-widest inline-flex items-center gap-1"><x-icon name="trend-up" class="w-3.5 h-3.5" /> Asset Value Over Time</h2>
@@ -170,7 +170,7 @@
         </div>
 
         @if($activeDeals->isEmpty() && $myShares->isEmpty())
-        <div class="rounded-2xl p-6 text-center" style="background:rgba(6,182,212,0.04);border:1px dashed rgba(6,182,212,0.2);">
+        <div class="rounded-xl p-4 text-center" style="background:rgba(6,182,212,0.04);border:1px dashed rgba(6,182,212,0.2);">
             <p class="text-sm text-gray-400 mb-2">No money working for you right now.</p>
             <a href="{{ route('marketplace') }}" class="text-xs font-black text-cyan-400 hover:text-cyan-300">Find a deal or trade shares at Equity Square →</a>
         </div>
@@ -494,7 +494,7 @@
     </div>
 
     {{-- ── Savings + Loans (2-col on desktop) ── --}}
-    <div class="grid lg:grid-cols-2 gap-6 mb-10 items-start">
+    <div class="grid lg:grid-cols-2 gap-4 mb-6 items-start">
 
         {{-- Savings schemes (emerald) --}}
         <div>
@@ -505,7 +505,7 @@
             </div>
 
             @if($savingsSchemes->isEmpty())
-            <div class="rounded-2xl p-6 text-center" style="background:rgba(16,185,129,0.04);border:1px dashed rgba(16,185,129,0.2);">
+            <div class="rounded-xl p-4 text-center" style="background:rgba(16,185,129,0.04);border:1px dashed rgba(16,185,129,0.2);">
                 <p class="text-sm text-gray-400 mb-2">No savings goals yet.</p>
                 <a href="{{ route('savings.index') }}" class="text-xs font-black text-emerald-400 hover:text-emerald-300">Start one at the bank →</a>
             </div>
@@ -547,7 +547,7 @@
             </div>
 
             @if($loans->isEmpty())
-            <div class="rounded-2xl p-6 text-center" style="background:rgba(245,158,11,0.04);border:1px dashed rgba(245,158,11,0.2);">
+            <div class="rounded-xl p-4 text-center" style="background:rgba(245,158,11,0.04);border:1px dashed rgba(245,158,11,0.2);">
                 <div class="text-2xl mb-1">🎉</div>
                 <p class="text-sm text-gray-400">Debt-free! No active loans.</p>
             </div>

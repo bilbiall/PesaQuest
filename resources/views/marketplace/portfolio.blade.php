@@ -96,16 +96,16 @@
 </nav>
 
 {{-- ── Hero ── --}}
-<div class="relative overflow-hidden border-b border-white/5 py-10"
+<div class="relative overflow-hidden border-b border-white/5 py-5"
      style="background:linear-gradient(160deg,rgba(139,92,246,0.07) 0%,rgba(6,182,212,0.04) 100%);">
     <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5" style="background:radial-gradient(circle,#a78bfa,transparent 70%);transform:translate(30%,-30%);animation:glowpulse 5s ease infinite;"></div>
     <div class="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-5" style="background:radial-gradient(circle,#38bdf8,transparent 70%);transform:translate(-30%,30%);animation:glowpulse 5s ease infinite;animation-delay:-2.5s;"></div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-baseline gap-3 mb-2">
-            <h1 class="text-3xl sm:text-4xl font-black shimmer-text">💼 My Portfolio</h1>
+        <div class="flex items-baseline gap-3 mb-1">
+            <h1 class="text-xl sm:text-2xl font-black shimmer-text">💼 My Portfolio</h1>
         </div>
-        <p class="text-gray-400 text-sm mb-8">Everything you own — and how it's working for you</p>
+        <p class="text-gray-400 text-xs mb-4">Everything you own — and how it's working for you</p>
 
         @if($playerAssets->isEmpty())
         <div class="rounded-2xl p-8 text-center max-w-md" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);">
@@ -128,16 +128,16 @@
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {{-- Asset Value --}}
-            <div class="rounded-2xl p-4" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);">
+            <div class="rounded-xl p-3" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);">
                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Total Asset Value</p>
-                <p class="text-2xl font-black text-emerald-400">Ksh {{ number_format($totalValue) }}</p>
+                <p class="text-lg font-black text-emerald-400">Ksh {{ number_format($totalValue) }}</p>
                 <p class="text-xs text-gray-500 mt-0.5">{{ $playerAssets->count() }} asset{{ $playerAssets->count() !== 1 ? 's' : '' }} owned</p>
             </div>
 
             {{-- Unrealised P&L --}}
-            <div class="rounded-2xl p-4" style="background:{{ $totalGL >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(248,113,113,0.07)' }};border:1px solid {{ $totalGL >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(248,113,113,0.18)' }};">
+            <div class="rounded-xl p-3" style="background:{{ $totalGL >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(248,113,113,0.07)' }};border:1px solid {{ $totalGL >= 0 ? 'rgba(16,185,129,0.18)' : 'rgba(248,113,113,0.18)' }};">
                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Unrealised P&L</p>
-                <p class="text-2xl font-black {{ $totalGL >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                <p class="text-lg font-black {{ $totalGL >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                     {{ $totalGL >= 0 ? '+' : '' }}Ksh {{ number_format($totalGL) }}
                 </p>
                 <p class="text-xs {{ $totalGL >= 0 ? 'text-emerald-500' : 'text-red-500' }} mt-0.5">
@@ -146,18 +146,18 @@
             </div>
 
             {{-- Monthly Cash Flow --}}
-            <div class="rounded-2xl p-4" style="background:{{ $monthlyCashFlow >= 0 ? 'rgba(6,182,212,0.07)' : 'rgba(248,113,113,0.07)' }};border:1px solid {{ $monthlyCashFlow >= 0 ? 'rgba(6,182,212,0.18)' : 'rgba(248,113,113,0.18)' }};">
+            <div class="rounded-xl p-3" style="background:{{ $monthlyCashFlow >= 0 ? 'rgba(6,182,212,0.07)' : 'rgba(248,113,113,0.07)' }};border:1px solid {{ $monthlyCashFlow >= 0 ? 'rgba(6,182,212,0.18)' : 'rgba(248,113,113,0.18)' }};">
                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Net Cash Flow</p>
-                <p class="text-2xl font-black {{ $monthlyCashFlow >= 0 ? 'text-cyan-400' : 'text-red-400' }}">
+                <p class="text-lg font-black {{ $monthlyCashFlow >= 0 ? 'text-cyan-400' : 'text-red-400' }}">
                     {{ $monthlyCashFlow >= 0 ? '+' : '' }}Ksh {{ number_format($monthlyCashFlow) }}/mo
                 </p>
                 <p class="text-xs text-gray-500 mt-0.5">In: {{ number_format($monthlyIncome) }} · Out: {{ number_format($monthlyCost) }}</p>
             </div>
 
             {{-- Portfolio Yield --}}
-            <div class="rounded-2xl p-4" style="background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.18);">
+            <div class="rounded-xl p-3" style="background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.18);">
                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Annual Yield</p>
-                <p class="text-2xl font-black text-purple-400">{{ $portfolioYield }}%</p>
+                <p class="text-lg font-black text-purple-400">{{ $portfolioYield }}%</p>
                 <p class="text-xs text-gray-500 mt-0.5">Return on asset value</p>
             </div>
         </div>
