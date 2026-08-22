@@ -23,8 +23,8 @@
         .tab-pill.active { background:linear-gradient(135deg,rgba(99,102,241,.35),rgba(139,92,246,.25));
             border-color:rgba(139,92,246,.5); color:#fff; }
 
-        .glass-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:1.5rem; }
-        .glass-card-inner { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:1rem; }
+        .glass-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:1rem; }
+        .glass-card-inner { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:.75rem; }
 
         .pool-bar { height:8px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; }
         .pool-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#6366f1,#8b5cf6); transition:width 1s cubic-bezier(.4,0,.2,1); }
@@ -89,7 +89,7 @@
 <div x-data="{ activeTab: 'overview', showProposalForm: false, proposalType: 'buy_asset' }" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
     {{-- Tab bar --}}
-    <div class="flex items-center gap-1.5 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-hide">
         <button @click="activeTab='overview'"  :class="activeTab==='overview'  ? 'active' : ''" class="tab-pill">Overview</button>
         <button @click="activeTab='members'"   :class="activeTab==='members'   ? 'active' : ''" class="tab-pill">
             Members <span class="ml-1 text-gray-600 font-normal text-xs">{{ $chama->memberCount() }}</span>
@@ -117,7 +117,7 @@
     <div x-show="activeTab==='overview'" x-cloak>
 
         {{-- Hero pool number --}}
-        <div class="glass-card p-6 sm:p-8 mb-6" style="animation:heroNum .5s .05s ease both;">
+        <div class="glass-card p-4 sm:p-5 mb-4" style="animation:heroNum .5s .05s ease both;">
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                 <div>
                     <p class="text-sm text-gray-400 font-semibold uppercase tracking-wider mb-2">Chama Pool Balance</p>
@@ -161,7 +161,7 @@
         {{-- Rotation banner --}}
         @if($chama->is_rotating)
         @php $rotationRecipient = $chama->currentRotationRecipient(); @endphp
-        <div class="glass-card p-5 mb-6" style="border-color:rgba(139,92,246,.4);background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(255,255,255,.03));">
+        <div class="glass-card p-4 mb-4" style="border-color:rgba(139,92,246,.4);background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(255,255,255,.03));">
             <div class="flex items-center justify-between gap-4 flex-wrap">
                 <div>
                     <p class="font-black text-white mb-1 inline-flex items-center gap-1"><x-icon name="spin" class="w-4 h-4" /> Merry-Go-Round Active</p>
@@ -182,7 +182,7 @@
 
         {{-- Contribute this month --}}
         @if($myMember)
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <div class="flex items-center justify-between gap-4 flex-wrap">
                 <div>
                     <p class="font-black text-white">Monthly Contribution</p>
@@ -219,7 +219,7 @@
 
         {{-- My share card --}}
         @if($myMember)
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-bold text-gray-300 text-sm mb-4">My Position</p>
             <div class="grid grid-cols-3 gap-3 text-center">
                 <div class="glass-card-inner p-3">
@@ -242,7 +242,7 @@
 
         {{-- Description --}}
         @if($chama->description)
-        <div class="glass-card p-5">
+        <div class="glass-card p-4">
             <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">About this Chama</p>
             <p class="text-gray-300 text-sm leading-relaxed">{{ $chama->description }}</p>
         </div>
@@ -269,7 +269,7 @@
 
         {{-- Private chama: join code (visible to all members — share it!) --}}
         @if($myMember && $chama->isPrivate() && $chama->join_code)
-        <div class="glass-card p-5 mb-6 flex flex-wrap items-center justify-between gap-4"
+        <div class="glass-card p-4 mb-4 flex flex-wrap items-center justify-between gap-4"
              style="border:1px solid rgba(139,92,246,.35);">
             <div class="flex-1 min-w-0">
                 <p class="font-black text-white text-sm inline-flex items-center gap-1"><x-icon name="lock" class="w-3.5 h-3.5" /> Private chama · Join code</p>
@@ -285,7 +285,7 @@
 
         {{-- Invite friends directly (bell + push notification with the link) --}}
         @if($myMember && !$chama->isFull() && ($invitableFriends ?? collect())->isNotEmpty())
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-black text-white text-sm mb-1 inline-flex items-center gap-1"><x-icon name="people" class="w-3.5 h-3.5" /> Invite your friends</p>
             <p class="text-xs text-gray-400 mb-3">They get a notification with a one-tap invite — no link sharing needed.</p>
             <div class="flex flex-wrap gap-2">
@@ -306,7 +306,7 @@
 
         {{-- Invite link card --}}
         @if($myMember && !$chama->isFull())
-        <div class="glass-card p-5 mb-6"
+        <div class="glass-card p-4 mb-4"
              x-data="{ generating: false, inviteUrl: '', copied: false, error: '' }">
             <div class="flex items-start justify-between gap-4 flex-wrap">
                 <div class="flex-1 min-w-0">
@@ -367,7 +367,7 @@
 
         {{-- Chairman: distribute button --}}
         @if($isChairman && $monthlyIncome > 0)
-        <div class="glass-card p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div class="glass-card p-4 mb-4 flex items-center justify-between gap-4 flex-wrap">
             <div>
                 <p class="font-black text-white">Asset Income Ready</p>
                 <p class="text-sm text-gray-400">Ksh {{ number_format($monthlyIncome) }}/month from {{ $chama->chamaAssets->count() }} asset(s)</p>
@@ -385,7 +385,7 @@
 
         {{-- Chairman: launch a Chama Challenge --}}
         @if($isChairman && $challengeTemplates->isNotEmpty())
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-black text-white mb-1 inline-flex items-center gap-1"><x-icon name="group" class="w-4 h-4" /> Launch a Chama Challenge</p>
             <p class="text-sm text-gray-400 mb-4">Every active member gets auto-enrolled — ranked by who grows the most during the window.</p>
             <form action="{{ route('chama.challenge.create', $chama) }}" method="POST" class="flex flex-wrap items-end gap-3">
@@ -494,7 +494,7 @@
 
         {{-- New proposal toggle --}}
         @if($myMember)
-        <div class="mb-6">
+        <div class="mb-4">
             <button @click="showProposalForm = !showProposalForm"
                     class="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all"
                     style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);">
@@ -503,7 +503,7 @@
         </div>
 
         {{-- Proposal form --}}
-        <div x-show="showProposalForm" x-cloak class="glass-card p-6 mb-8">
+        <div x-show="showProposalForm" x-cloak class="glass-card p-4 mb-4">
             <h3 class="font-black text-white mb-5">Create Proposal</h3>
             <form action="{{ route('chama.propose', $chama) }}" method="POST" class="space-y-4">
                 @csrf
@@ -632,7 +632,7 @@
         {{-- Active proposals --}}
         @php $activeProposals = $chama->proposals->where('status', 'voting')->sortByDesc('created_at'); @endphp
         @if($activeProposals->count() > 0)
-        <div class="mb-8">
+        <div class="mb-5">
             <h3 class="font-black text-white mb-4">Active Voting</h3>
             <div class="space-y-4">
                 @foreach($activeProposals as $prop)
@@ -646,7 +646,7 @@
                     $isExpired      = $prop->isExpired();
                     $quorumPct      = $activeMCount > 0 ? round(($prop->votes_yes / $activeMCount)*100) : 0;
                 @endphp
-                <div class="glass-card p-5">
+                <div class="glass-card p-4">
                     <div class="flex items-start justify-between gap-3 mb-4">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
@@ -722,11 +722,11 @@
         {{-- Passed proposals awaiting execution --}}
         @php $passedProposals = $chama->proposals->where('status', 'passed'); @endphp
         @if($passedProposals->count() > 0)
-        <div class="mb-8">
+        <div class="mb-5">
             <h3 class="font-black text-white mb-4">Passed — Awaiting Execution</h3>
             <div class="space-y-3">
                 @foreach($passedProposals as $prop)
-                <div class="glass-card p-5 flex items-center justify-between gap-4">
+                <div class="glass-card p-4 flex items-center justify-between gap-4">
                     <div>
                         <p class="font-bold text-white text-sm">{{ $prop->title }}</p>
                         <p class="text-xs text-emerald-400 mt-0.5 inline-flex items-center gap-1"><x-icon name="check-circle" class="w-3 h-3" /> Passed ({{ $prop->votes_yes }} yes / {{ $prop->votes_no }} no)</p>
@@ -774,7 +774,7 @@
         @endif
 
         @if($chama->proposals->isEmpty())
-        <div class="text-center py-12 rounded-3xl" style="background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);">
+        <div class="text-center py-8 rounded-2xl" style="background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);">
             <div class="text-4xl mb-3">🗳️</div>
             <p class="text-gray-400 font-semibold">No proposals yet</p>
             <p class="text-gray-600 text-sm mt-1">Create the first proposal for this chama.</p>
@@ -789,7 +789,7 @@
 
         {{-- Total income header --}}
         @if($monthlyIncome > 0)
-        <div class="glass-card p-5 mb-6 flex items-center justify-between">
+        <div class="glass-card p-4 mb-4 flex items-center justify-between">
             <div>
                 <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">Total Monthly Income</p>
                 <p class="text-3xl font-black text-emerald-400">Ksh {{ number_format($monthlyIncome) }}/mo</p>
@@ -800,7 +800,7 @@
 
         {{-- Asset grid --}}
         @if($chama->chamaAssets->isEmpty())
-        <div class="text-center py-16 rounded-3xl" style="background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);">
+        <div class="text-center py-10 rounded-2xl" style="background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);">
             <div class="text-5xl mb-4">🏢</div>
             <p class="text-lg font-black text-gray-300">No assets yet</p>
             <p class="text-gray-500 text-sm mt-2 mb-6">Create a proposal to buy assets for the chama.</p>
@@ -820,7 +820,7 @@
                 $catClass = 'cat-' . ($asset->category ?? 'business');
                 $netMonth = (($asset->monthly_income ?? 0) - ($asset->monthly_cost ?? 0)) * $ca->quantity;
             @endphp
-            <div class="rounded-3xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+            <div class="rounded-2xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
                 {{-- Category header --}}
                 <div class="relative h-20 flex items-center px-5 gap-3 overflow-hidden {{ $catClass }}">
                     <div style="text-shadow:0 2px 8px rgba(0,0,0,.5);"><x-icon :name="$asset->icon ?? 'building'" class="w-7 h-7" /></div>
@@ -959,7 +959,7 @@
             $rotationOrder     = $chama->rotationOrder();
             $rotationRecipient = $chama->currentRotationRecipient();
         @endphp
-        <div class="glass-card p-5 mb-6" style="border-color:rgba(139,92,246,.4);background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(255,255,255,.03));">
+        <div class="glass-card p-4 mb-4" style="border-color:rgba(139,92,246,.4);background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(255,255,255,.03));">
             <div class="flex items-center justify-between gap-4 flex-wrap mb-4">
                 <div>
                     <p class="font-black text-white mb-1 inline-flex items-center gap-1"><x-icon name="spin" class="w-4 h-4" /> Merry-Go-Round Active</p>
@@ -994,7 +994,7 @@
             </div>
         </div>
         @elseif($myMember)
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <div class="flex items-center justify-between gap-4 flex-wrap">
                 <div>
                     <p class="font-bold text-gray-300 text-sm mb-1 inline-flex items-center gap-1"><x-icon name="spin" class="w-4 h-4" /> Try a Merry-Go-Round?</p>
@@ -1013,7 +1013,7 @@
 
         {{-- Pending dividend choices — most actionable, shown first --}}
         @foreach($myPendingDividends as $div)
-        <div class="glass-card p-5 mb-6" style="border-color:rgba(245,158,11,.4);background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(255,255,255,.03));">
+        <div class="glass-card p-4 mb-4" style="border-color:rgba(245,158,11,.4);background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(255,255,255,.03));">
             <p class="font-black text-white mb-1">🎉 Dividend Declared!</p>
             <p class="text-sm text-gray-300 mb-4">Your share is <strong class="text-amber-300">Ksh {{ number_format($div->amount) }}</strong> — cash it out now, or reinvest it to grow your stake in the chama.</p>
             <div class="flex gap-2">
@@ -1039,7 +1039,7 @@
 
         {{-- My active chama loan --}}
         @if($myChamaLoan)
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-bold text-gray-300 text-sm mb-4">My Chama Loan</p>
             <div class="grid grid-cols-3 gap-3 text-center mb-4">
                 <div class="glass-card-inner p-3">
@@ -1067,7 +1067,7 @@
         </div>
         @elseif($myMember)
         {{-- Request a loan --}}
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-bold text-gray-300 text-sm mb-2">Request a Chama Loan</p>
             <p class="text-xs text-gray-500 mb-4">
                 Instant approval up to <strong class="text-white">Ksh {{ number_format($instantLoanLimit) }}</strong> (1× your contribution) at {{ $chama->effectiveLoanInterestRate() }}% p.a. — anything more needs a member vote.
@@ -1092,7 +1092,7 @@
 
         {{-- Withdraw --}}
         @if($myMember && !$chama->is_rotating)
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-bold text-gray-300 text-sm mb-2">Withdraw From My Share</p>
             <p class="text-xs text-gray-500 mb-4">
                 You can withdraw up to <strong class="text-white">Ksh {{ number_format($vestedWithdrawable) }}</strong> right now (your contribution minus anything you owe the chama).
@@ -1108,7 +1108,7 @@
             </form>
         </div>
         @elseif($myMember)
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <p class="font-bold text-gray-300 text-sm mb-2">Withdraw From My Share</p>
             <p class="text-xs text-gray-500">
                 Withdrawals are off while the merry-go-round is running — each round's contributions pay out directly, so there's no pool balance to draw from.
@@ -1119,7 +1119,7 @@
         {{-- Chairman: declare dividend --}}
         @if($isChairman)
         @php $undistributedGains = (float) ($chama->undistributed_gains ?? 0); @endphp
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-4 mb-4">
             <div class="flex items-center justify-between gap-4 flex-wrap">
                 <div>
                     <p class="font-bold text-gray-300 text-sm">Undistributed Gains</p>
@@ -1196,7 +1196,7 @@
         @endphp
 
         @if($timeline->isEmpty())
-        <div class="text-center py-16 rounded-3xl" style="background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);">
+        <div class="text-center py-10 rounded-2xl" style="background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);">
             <div class="text-4xl mb-3">📜</div>
             <p class="text-gray-400 font-semibold">No activity yet</p>
             <p class="text-gray-600 text-sm mt-1">History will appear here as contributions and proposals are made.</p>

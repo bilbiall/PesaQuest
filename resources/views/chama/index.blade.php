@@ -48,49 +48,48 @@
 </nav>
 
 {{-- ── Hero / Stats bar ── --}}
-<div class="border-b border-white/5 py-8"
+<div class="border-b border-white/5 py-5"
      style="background:radial-gradient(ellipse at 20% 50%,rgba(99,102,241,.1) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(139,92,246,.08) 0%,transparent 50%),#07060f;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-                <div class="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-full mb-4">
+                <div class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full mb-2.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
                     Cooperative Investment Groups
                 </div>
-                <h2 class="text-3xl sm:text-4xl font-black"><span class="shimmer-text">My Chamas</span></h2>
-                <p class="text-gray-400 mt-2 max-w-lg text-sm">Pool resources with friends. Vote on investments. Share the rewards — or the lessons.</p>
+                <h2 class="text-xl sm:text-2xl font-black"><span class="shimmer-text">My Chamas</span></h2>
+                <p class="text-gray-400 mt-1 max-w-lg text-xs">Pool resources with friends. Vote on investments. Share the rewards — or the lessons.</p>
             </div>
-            <div class="grid grid-cols-2 gap-3 sm:w-72 shrink-0">
-                <div class="rounded-2xl p-4 text-center" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Pool</p>
-                    <p class="text-xl font-black text-indigo-300">Ksh {{ number_format($totalPool) }}</p>
+            <div class="grid grid-cols-2 gap-2.5 sm:w-64 shrink-0">
+                <div class="rounded-xl p-3 text-center" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">Total Pool</p>
+                    <p class="text-base font-black text-indigo-300">Ksh {{ number_format($totalPool) }}</p>
                 </div>
-                <div class="rounded-2xl p-4 text-center" style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Monthly Out</p>
-                    <p class="text-xl font-black text-violet-300">Ksh {{ number_format($totalMonthly) }}</p>
+                <div class="rounded-xl p-3 text-center" style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">Monthly Out</p>
+                    <p class="text-base font-black text-violet-300">Ksh {{ number_format($totalMonthly) }}</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-14">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
 
     {{-- ── Section 1: My Chamas ── --}}
     <section>
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-black text-white">My Chamas</h3>
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-black text-white">My Chamas</h3>
             <span class="text-xs text-gray-500 font-semibold">{{ $myChamas->count() }} group{{ $myChamas->count() !== 1 ? 's' : '' }}</span>
         </div>
 
         @if($myChamas->isEmpty())
-        <div class="rounded-3xl text-center py-16 px-6" style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);">
-            <div class="text-5xl mb-4" style="animation:glowpulse 3s ease-in-out infinite;">🤝</div>
-            <p class="text-lg font-black text-gray-300">You're not in any chama yet</p>
-            <p class="text-gray-500 mt-2 text-sm">Create one or join an existing group below.</p>
+        <div class="rounded-2xl text-center py-10 px-5" style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);">
+            <div class="text-4xl mb-3" style="animation:glowpulse 3s ease-in-out infinite;">🤝</div>
+            <p class="text-sm font-black text-gray-300">You're not in any chama yet</p>
+            <p class="text-gray-500 mt-1.5 text-xs">Create one or join an existing group below.</p>
             <a href="{{ route('chama.create') }}"
-               class="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl text-sm font-bold transition-all"
+               class="inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-xl text-xs font-bold transition-all"
                style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.3));border:1px solid rgba(139,92,246,.4);">
                 + Start a Chama
             </a>
@@ -103,9 +102,9 @@
                 $statusColors = ['forming'=>'#f59e0b','active'=>'#10b981','dissolved'=>'#6b7280'];
                 $statusColor  = $statusColors[$chama->status] ?? '#6b7280';
             @endphp
-            <div class="chama-card card-appear rounded-3xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+            <div class="chama-card card-appear rounded-2xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
                 {{-- Gradient header --}}
-                <div class="relative h-16 flex items-center px-5 gap-3 overflow-hidden"
+                <div class="relative h-14 flex items-center px-4 gap-2.5 overflow-hidden"
                      style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.25),rgba(15,14,26,.8));">
                     <div class="absolute inset-0 opacity-20" style="background:radial-gradient(circle at 20% 50%,#6366f1,transparent 60%);"></div>
                     <div class="relative"><x-icon name="group" class="w-6 h-6" /></div>
@@ -128,7 +127,7 @@
                 </div>
 
                 {{-- Body --}}
-                <div class="p-5 space-y-4">
+                <div class="p-4 space-y-3">
                     {{-- Pool balance --}}
                     <div>
                         <div class="flex justify-between text-xs mb-1.5">
@@ -159,7 +158,7 @@
                     </div>
 
                     <a href="{{ route('chama.show', $chama) }}"
-                       class="block w-full text-center py-3 rounded-2xl text-sm font-bold transition-all"
+                       class="block w-full text-center py-2.5 rounded-xl text-xs font-bold transition-all"
                        style="background:linear-gradient(135deg,rgba(99,102,241,.25),rgba(139,92,246,.2));border:1px solid rgba(139,92,246,.35);">
                         View Chama →
                     </a>
@@ -171,19 +170,19 @@
     </section>
 
     {{-- ── Join a private chama by code ── --}}
-    <section class="mb-10">
-        <div class="rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+    <section class="mb-6">
+        <div class="rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
              style="background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.25);">
             <div class="flex-1">
-                <p class="font-black text-white text-sm inline-flex items-center gap-1"><x-icon name="key" class="w-3.5 h-3.5" /> Have a join code?</p>
-                <p class="text-xs text-gray-500 mt-0.5">Private chamas don't appear below — enter the 6-character code a friend (or your teacher) shared.</p>
+                <p class="font-black text-white text-xs inline-flex items-center gap-1"><x-icon name="key" class="w-3.5 h-3.5" /> Have a join code?</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Private chamas don't appear below — enter the 6-character code a friend (or your teacher) shared.</p>
             </div>
             <form action="{{ route('chama.join-code') }}" method="POST" class="flex gap-2">
                 @csrf
                 <input type="text" name="code" required maxlength="12" placeholder="e.g. K7M2XP"
-                       class="w-36 rounded-xl px-4 py-2.5 text-sm text-white uppercase tracking-widest placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                       class="w-32 rounded-lg px-3 py-2 text-xs text-white uppercase tracking-widest placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                        style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
-                <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02]"
+                <button type="submit" class="px-4 py-2 rounded-lg text-xs font-black text-white transition-transform hover:scale-[1.02]"
                         style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">Join →</button>
             </form>
         </div>
@@ -191,16 +190,16 @@
 
     {{-- ── Section 2: Open Chamas to Join ── --}}
     <section>
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-black text-white">Open Chamas to Join</h3>
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-black text-white">Open Chamas to Join</h3>
             <span class="text-xs text-gray-500 font-semibold">{{ $openChamas->count() }} available</span>
         </div>
 
         @if($openChamas->isEmpty())
-        <div class="rounded-3xl text-center py-12 px-6" style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);">
-            <div class="text-4xl mb-3">🔍</div>
-            <p class="text-gray-400 font-semibold">No open chamas right now</p>
-            <p class="text-gray-500 text-sm mt-1">Start your own and invite others!</p>
+        <div class="rounded-2xl text-center py-8 px-5" style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);">
+            <div class="text-3xl mb-2">🔍</div>
+            <p class="text-gray-400 font-semibold text-sm">No open chamas right now</p>
+            <p class="text-gray-500 text-xs mt-1">Start your own and invite others!</p>
         </div>
         @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -210,8 +209,8 @@
                 $statusColors = ['forming'=>'#f59e0b','active'=>'#10b981'];
                 $statusColor  = $statusColors[$chama->status] ?? '#6b7280';
             @endphp
-            <div class="chama-card card-appear rounded-3xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
-                <div class="relative h-16 flex items-center px-5 gap-3 overflow-hidden"
+            <div class="chama-card card-appear rounded-2xl overflow-hidden" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                <div class="relative h-14 flex items-center px-4 gap-2.5 overflow-hidden"
                      style="background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(99,102,241,.15),rgba(15,14,26,.8));">
                     <div class="relative text-2xl">🤝</div>
                     <div class="relative flex-1 min-w-0">
@@ -224,7 +223,7 @@
                     </div>
                 </div>
 
-                <div class="p-5 space-y-4">
+                <div class="p-4 space-y-3">
                     @if($chama->goal_text)
                     <p class="text-xs text-gray-400 leading-relaxed line-clamp-2">{{ $chama->goal_text }}</p>
                     @endif
@@ -262,7 +261,7 @@
                     <form action="{{ route('chama.join', $chama) }}" method="POST">
                         @csrf
                         <button type="submit"
-                                class="w-full py-3 rounded-2xl text-sm font-bold transition-all"
+                                class="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
                                 style="background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(16,185,129,.15));border:1px solid rgba(16,185,129,.35);color:#6ee7b7;">
                             Join Chama →
                         </button>
