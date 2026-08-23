@@ -798,6 +798,9 @@ class WorldController extends Controller
                             'scope'          => $n->scope,
                             'sector'         => $n->sector,
                             'direction'      => $n->status === 'resolved' ? $n->direction : null,
+                            // Safe to reveal once resolved — the price has already
+                            // moved (or hasn't) by then, so this stops being a spoiler.
+                            'is_true'        => $n->status === 'resolved' ? $n->is_true : null,
                             'effect_at'      => $n->effect_at?->toIso8601String(),
                             'affected_shares'=> $affected,
                         ];
