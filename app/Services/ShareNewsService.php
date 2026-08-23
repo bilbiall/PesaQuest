@@ -30,6 +30,11 @@ class ShareNewsService
      *  repeating, so the pool needs to be genuinely varied to never repeat. */
     private const NO_REPEAT_WINDOW = 15;
 
+    /** Backstop: if it's been this many real days since the last bulletin,
+     *  force the next roll to publish instead of leaving it to chance — keeps
+     *  a run of bad luck from going silent for weeks on a low-probability roll. */
+    private const MAX_SILENT_DAYS = 7;
+
     /** Real game-days between publish and the effect landing — the window a
      *  keen player has to act before the price actually moves. */
     private const EFFECT_DELAY_MIN_TICKS = 2;
@@ -47,14 +52,24 @@ class ShareNewsService
     /** Rolls the dice on whether today's the day a new bulletin drops. Call
      *  this once a day; it decides internally whether anything happens.
      *  Kept low deliberately — this is a rare, special event to notice, not
-     *  a routine feed a player could learn to lean on. */
-    public function maybePublish(float $chance = 0.12): ?ShareNewsItem
+     *  a routine feed a player could learn to lean on — but a long enough
+     *  dry streak forces a publish rather than staying silent indefinitely. */
+    public function maybePublish(float $chance = 0.2): ?ShareNewsItem
     {
-        if (lcg_value() > $chance) {
+        if (!$this->isOverdue() && lcg_value() > $chance) {
             return null;
         }
 
         return $this->publish();
+    }
+
+    /** True once too many real days have passed since the last bulletin —
+     *  including if none has ever been published. */
+    private function isOverdue(): bool
+    {
+        $lastPublishedAt = ShareNewsItem::max('published_at');
+
+        return !$lastPublishedAt || now()->diffInDays($lastPublishedAt) >= self::MAX_SILENT_DAYS;
     }
 
     public function publish(): ?ShareNewsItem

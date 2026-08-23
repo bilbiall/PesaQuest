@@ -1705,7 +1705,9 @@ class LifeSimulator
         // to repeat on every login, same as the hourly `game:resolve-share-news`.
         try {
             $service->resolveDue();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            \Log::warning('Market Watch resolveDue failed: ' . $e->getMessage());
+        }
 
         // The publish dice-roll must not repeat per login — one roll per
         // calendar day, server-wide, matching what `game:publish-share-news`
@@ -1718,7 +1720,9 @@ class LifeSimulator
 
         try {
             $service->maybePublish();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            \Log::warning('Market Watch maybePublish failed: ' . $e->getMessage());
+        }
     }
 
     // ── Bill assignment — chapter-gated ────────────────────────────────────────
