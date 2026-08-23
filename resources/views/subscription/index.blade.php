@@ -12,7 +12,7 @@
         @if($activeSub)
         <div class="max-w-5xl mx-auto px-4 mb-6">
             <div class="bg-green-500/20 border border-green-400/40 rounded-2xl p-4 flex items-center gap-4">
-                <span class="text-3xl">✅</span>
+                <span class="text-2xl">✅</span>
                 <div>
                     <p class="text-green-300 font-semibold text-lg">You have an active subscription!</p>
                     <p class="text-green-400/80 text-sm">
@@ -29,7 +29,7 @@
         @if($upcomingSub)
         <div class="max-w-5xl mx-auto px-4 mb-6">
             <div class="bg-indigo-500/20 border border-indigo-400/40 rounded-2xl p-4 flex items-center gap-4">
-                <span class="text-3xl">📅</span>
+                <span class="text-2xl">📅</span>
                 <div>
                     <p class="text-indigo-300 font-semibold text-lg">You already have a renewal scheduled!</p>
                     <p class="text-indigo-400/80 text-sm">
@@ -47,10 +47,10 @@
             <div class="inline-flex items-center gap-2 bg-green-500/20 border border-green-400/30 rounded-full px-4 py-1.5 mb-4">
                 <span class="text-green-400 text-sm font-semibold">💎 PREMIUM ACCESS</span>
             </div>
-            <h1 class="text-3xl md:text-4xl font-black text-white mb-3">
+            <h1 class="text-xl md:text-2xl font-black text-white mb-2">
                 Unlock Everything in <span class="text-green-400">PesaQuest</span>
             </h1>
-            <p class="text-slate-300 text-lg max-w-xl mx-auto">
+            <p class="text-slate-300 text-sm max-w-xl mx-auto">
                 Get unlimited scenarios, Smart Money Tools, leaderboard ranking, and priority support — all via M-Pesa.
             </p>
         </div>
@@ -77,7 +77,7 @@
                     :class="selectedPlanId === {{ $plan->id }}
                         ? 'ring-2 ring-indigo-400 bg-indigo-900/40 border-indigo-400/60'
                         : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'"
-                    class="relative border rounded-2xl p-5 cursor-pointer transition-all duration-200"
+                    class="relative border rounded-xl p-4 cursor-pointer transition-all duration-200"
                 >
                     @if($plan->is_featured)
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-400 to-purple-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
@@ -91,7 +91,7 @@
                     @endif
                     <div class="text-center mt-2">
                         <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">{{ $plan->durationLabel() }}</p>
-                        <p class="text-white font-black text-3xl mb-0.5">Ksh {{ number_format($plan->price_kes) }}</p>
+                        <p class="text-white font-black text-xl mb-0.5">Ksh {{ number_format($plan->price_kes) }}</p>
                         <p class="text-slate-400 text-xs mb-3">
                             @if($plan->months === 1) per month
                             @else Ksh {{ number_format(round($plan->price_kes / $plan->months)) }}/mo
@@ -131,7 +131,7 @@
                     :class="selectedPlanId === {{ $plan->id }}
                         ? 'ring-2 ring-emerald-400 bg-emerald-900/30 border-emerald-400/60'
                         : 'border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/20 hover:border-emerald-700/50'"
-                    class="relative border rounded-2xl p-5 cursor-pointer transition-all duration-200"
+                    class="relative border rounded-xl p-4 cursor-pointer transition-all duration-200"
                 >
                     @if($plan->is_featured)
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-400 to-green-500 text-slate-900 text-xs font-black px-3 py-1 rounded-full shadow-lg whitespace-nowrap">

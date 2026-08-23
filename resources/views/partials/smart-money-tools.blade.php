@@ -31,7 +31,7 @@
         @unless($smartToolsUnlocked)
         <div class="absolute inset-0 z-10 flex items-center justify-center rounded-3xl" style="background:rgba(7,6,15,0.72);backdrop-filter:blur(2px);">
             <div class="text-center px-6">
-                <div class="text-4xl mb-3">🔒</div>
+                <div class="text-2xl mb-2">🔒</div>
                 <p class="text-white font-black mb-1">Subscribe to interact with these calculators</p>
                 <p class="text-gray-400 text-xs mb-4 max-w-xs mx-auto">You can see what's here — Premium unlocks typing your own numbers into them.</p>
                 <a href="{{ route('pricing') }}" class="inline-block text-black font-black px-6 py-2.5 rounded-2xl text-sm transition-all hover:scale-105" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">💎 See Premium Plans</a>
@@ -41,8 +41,8 @@
         <div class="grid md:grid-cols-2 gap-4 {{ $smartToolsUnlocked ? '' : 'opacity-50 pointer-events-none select-none' }}">
 
         {{-- BAJETI SMART --}}
-        <div x-data="bajetiTool()" x-init="load()" class="rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,rgba(16,185,129,0.07),rgba(5,150,105,0.03));border:1px solid rgba(16,185,129,0.2);">
-            <div class="p-5 cursor-pointer select-none" @click="open=!open">
+        <div x-data="bajetiTool()" x-init="load()" class="rounded-xl overflow-hidden" style="background:linear-gradient(135deg,rgba(16,185,129,0.07),rgba(5,150,105,0.03));border:1px solid rgba(16,185,129,0.2);">
+            <div class="p-4 cursor-pointer select-none" @click="open=!open">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.15));border:1px solid rgba(16,185,129,0.3);">💼</div>
@@ -84,13 +84,13 @@
                         </button>
                     </div>
                 </template>
-                <template x-if="!income || income <= 0"><div class="text-center py-8 text-gray-500 text-sm"><div class="text-4xl mb-2">💼</div>Enter your monthly income above to see your smart budget breakdown.</div></template>
+                <template x-if="!income || income <= 0"><div class="text-center py-8 text-gray-500 text-sm"><div class="text-2xl mb-2">💼</div>Enter your monthly income above to see your smart budget breakdown.</div></template>
             </div>
         </div>
 
         {{-- LENGO SAVER --}}
-        <div x-data="lengoTool()" x-init="load()" class="rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(139,92,246,0.03));border:1px solid rgba(99,102,241,0.2);">
-            <div class="p-5 cursor-pointer select-none" @click="open=!open">
+        <div x-data="lengoTool()" x-init="load()" class="rounded-xl overflow-hidden" style="background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(139,92,246,0.03));border:1px solid rgba(99,102,241,0.2);">
+            <div class="p-4 cursor-pointer select-none" @click="open=!open">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15));border:1px solid rgba(99,102,241,0.3);">🎯</div>
@@ -141,8 +141,8 @@
         </div>
 
         {{-- UKUAJI GROW --}}
-        <div x-data="ukuajiTool()" class="rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(251,191,36,0.03));border:1px solid rgba(245,158,11,0.2);">
-            <div class="p-5 cursor-pointer select-none" @click="open=!open">
+        <div x-data="ukuajiTool()" class="rounded-xl overflow-hidden" style="background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(251,191,36,0.03));border:1px solid rgba(245,158,11,0.2);">
+            <div class="p-4 cursor-pointer select-none" @click="open=!open">
                 <div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(251,191,36,0.15));border:1px solid rgba(245,158,11,0.3);">📈</div><div><div class="flex items-center gap-2"><h3 class="font-black text-white">Ukuaji Grow</h3><span class="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;">Wealth Calc</span></div><p class="text-xs text-gray-400 mt-0.5">Watch your savings compound</p></div></div><div class="w-7 h-7 rounded-xl flex items-center justify-center transition-transform" :class="open?'rotate-180':''" style="background:rgba(245,158,11,0.1);"><svg class="w-4 h-4" style="color:#fbbf24;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></div></div>
                 <p class="text-xs text-gray-400 mt-3 leading-relaxed">See how Ksh 1,000/month grows into serious wealth. Compare M-Pesa, Bank FD, SACCO, T-Bills, and NSE stocks side by side.</p>
             </div>
@@ -153,8 +153,8 @@
         </div>
 
         {{-- MKOPO PLANNER --}}
-        <div x-data="mkopoTool()" class="rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,rgba(239,68,68,0.07),rgba(220,38,38,0.03));border:1px solid rgba(239,68,68,0.2);">
-            <div class="p-5 cursor-pointer select-none" @click="open=!open"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(239,68,68,0.25),rgba(220,38,38,0.15));border:1px solid rgba(239,68,68,0.3);">🏦</div><div><div class="flex items-center gap-2"><h3 class="font-black text-white">Mkopo Planner</h3><span class="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;">Loan Calc</span></div><p class="text-xs text-gray-400 mt-0.5">See your true loan cost before you borrow</p></div></div><div class="w-7 h-7 rounded-xl flex items-center justify-center transition-transform" :class="open?'rotate-180':''" style="background:rgba(239,68,68,0.1);"><svg class="w-4 h-4" style="color:#f87171;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></div></div></div>
+        <div x-data="mkopoTool()" class="rounded-xl overflow-hidden" style="background:linear-gradient(135deg,rgba(239,68,68,0.07),rgba(220,38,38,0.03));border:1px solid rgba(239,68,68,0.2);">
+            <div class="p-4 cursor-pointer select-none" @click="open=!open"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(239,68,68,0.25),rgba(220,38,38,0.15));border:1px solid rgba(239,68,68,0.3);">🏦</div><div><div class="flex items-center gap-2"><h3 class="font-black text-white">Mkopo Planner</h3><span class="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;">Loan Calc</span></div><p class="text-xs text-gray-400 mt-0.5">See your true loan cost before you borrow</p></div></div><div class="w-7 h-7 rounded-xl flex items-center justify-center transition-transform" :class="open?'rotate-180':''" style="background:rgba(239,68,68,0.1);"><svg class="w-4 h-4" style="color:#f87171;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></div></div></div>
             <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" class="px-5 pb-5" style="border-top:1px solid rgba(239,68,68,0.12);">
                 <div class="mt-4 grid sm:grid-cols-3 gap-3"><div><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:#6b7280;">Loan Amount (Ksh)</label><input type="number" x-model.number="principal" min="1000" placeholder="e.g. 100000" class="w-full px-4 py-3 rounded-xl text-white font-black focus:outline-none" style="background:rgba(0,0,0,0.35);border:1px solid rgba(239,68,68,0.25);"></div><div><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:#6b7280;">Annual Rate (%)</label><input type="number" x-model.number="rate" min="0.1" max="200" step="0.1" placeholder="e.g. 14" class="w-full px-4 py-3 rounded-xl text-white font-black focus:outline-none" style="background:rgba(0,0,0,0.35);border:1px solid rgba(239,68,68,0.25);"></div><div><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:#6b7280;">Months</label><input type="number" x-model.number="months" min="1" max="360" placeholder="e.g. 24" class="w-full px-4 py-3 rounded-xl text-white font-black focus:outline-none" style="background:rgba(0,0,0,0.35);border:1px solid rgba(239,68,68,0.25);"></div></div>
                 <template x-if="principal > 0 && rate > 0 && months > 0"><div class="mt-4 grid grid-cols-3 gap-3"><div class="rounded-2xl p-4 text-center" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);"><div class="text-[10px] font-black uppercase tracking-wider mb-1" style="color:#f87171;">Monthly Payment</div><div class="text-lg font-black text-white" x-text="'Ksh '+fmt(monthlyPayment())"></div></div><div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);"><div class="text-[10px] font-black uppercase tracking-wider mb-1" style="color:#9ca3af;">Total Repaid</div><div class="text-lg font-black text-white" x-text="'Ksh '+fmt(monthlyPayment()*months)"></div></div><div class="rounded-2xl p-4 text-center" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);"><div class="text-[10px] font-black uppercase tracking-wider mb-1" style="color:#fbbf24;">Total Interest</div><div class="text-lg font-black text-yellow-400" x-text="'Ksh '+fmt(monthlyPayment()*months - principal)"></div></div></div></template>
@@ -162,8 +162,8 @@
         </div>
 
         {{-- FAIDA COMPOUNDER --}}
-        <div x-data="faidaTool()" class="rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(139,92,246,0.03));border:1px solid rgba(99,102,241,0.2);">
-            <div class="p-5 cursor-pointer select-none" @click="open=!open"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15));border:1px solid rgba(99,102,241,0.3);">💹</div><div><div class="flex items-center gap-2"><h3 class="font-black text-white">Faida Compounder</h3><span class="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;">Compound Interest</span></div><p class="text-xs text-gray-400 mt-0.5">The 8th wonder of the world — visualised</p></div></div><div class="w-7 h-7 rounded-xl flex items-center justify-center transition-transform" :class="open?'rotate-180':''" style="background:rgba(99,102,241,0.1);"><svg class="w-4 h-4" style="color:#a5b4fc;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></div></div></div>
+        <div x-data="faidaTool()" class="rounded-xl overflow-hidden" style="background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(139,92,246,0.03));border:1px solid rgba(99,102,241,0.2);">
+            <div class="p-4 cursor-pointer select-none" @click="open=!open"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15));border:1px solid rgba(99,102,241,0.3);">💹</div><div><div class="flex items-center gap-2"><h3 class="font-black text-white">Faida Compounder</h3><span class="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;">Compound Interest</span></div><p class="text-xs text-gray-400 mt-0.5">The 8th wonder of the world — visualised</p></div></div><div class="w-7 h-7 rounded-xl flex items-center justify-center transition-transform" :class="open?'rotate-180':''" style="background:rgba(99,102,241,0.1);"><svg class="w-4 h-4" style="color:#a5b4fc;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></div></div></div>
             <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" class="px-5 pb-5" style="border-top:1px solid rgba(99,102,241,0.12);">
                 <div class="mt-4 grid sm:grid-cols-3 gap-3"><div><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:#6b7280;">Initial Amount (Ksh)</label><input type="number" x-model.number="principal" min="0" placeholder="e.g. 50000" class="w-full px-4 py-3 rounded-xl text-white font-black focus:outline-none" style="background:rgba(0,0,0,0.35);border:1px solid rgba(99,102,241,0.25);"></div><div><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:#6b7280;">Monthly Addition (Ksh)</label><input type="number" x-model.number="monthly" min="0" placeholder="e.g. 5000" class="w-full px-4 py-3 rounded-xl text-white font-black focus:outline-none" style="background:rgba(0,0,0,0.35);border:1px solid rgba(99,102,241,0.25);"></div><div><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:#6b7280;">Years</label><input type="number" x-model.number="years" min="1" max="30" placeholder="e.g. 10" class="w-full px-4 py-3 rounded-xl text-white font-black focus:outline-none" style="background:rgba(0,0,0,0.35);border:1px solid rgba(99,102,241,0.25);"></div></div>
                 <template x-if="(principal > 0 || monthly > 0) && years > 0"><div class="mt-4 space-y-2"><template x-for="opt in options()" :key="opt.label"><div class="rounded-2xl px-4 py-3 flex items-center justify-between" :style="'background:'+opt.bg+';border:1px solid '+opt.border+';'"><div><span class="text-sm font-black" :style="'color:'+opt.color" x-text="opt.label"></span><span class="text-xs text-gray-500 ml-2" x-text="opt.rate+'% p.a.'"></span></div><div class="text-right"><div class="font-black text-white" x-text="'Ksh '+fmt(compound(opt.rate))"></div><div class="text-[10px]" :style="'color:'+opt.color" x-text="'+Ksh '+fmt(compound(opt.rate)-(principal+(monthly*years*12)))"></div></div></div></template></div></template>
@@ -174,7 +174,7 @@
     </div>{{-- /calculators lock wrapper --}}
 
     {{-- ── REAL-LIFE TOOLS — external, real calendar dates, zero effect on the game ── --}}
-    <div class="mt-8 rounded-3xl p-5 sm:p-6" style="background:linear-gradient(135deg,rgba(16,185,129,0.05),rgba(6,182,212,0.03));border:1px dashed rgba(16,185,129,0.3);">
+    <div class="mt-6 rounded-xl p-4" style="background:linear-gradient(135deg,rgba(16,185,129,0.05),rgba(6,182,212,0.03));border:1px dashed rgba(16,185,129,0.3);">
         <div class="flex items-center gap-2 mb-1">
             <span class="text-lg">🌍</span>
             <h3 class="font-black text-white text-base">Real-Life Tools</h3>
@@ -185,7 +185,7 @@
         <div class="grid sm:grid-cols-2 gap-4">
             {{-- REAL BILL REMINDERS --}}
             <div x-data="realBillsTool()" x-init="load()">
-                <div @click="open=true" class="rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);">
+                <div @click="open=true" class="rounded-xl p-4 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(16,185,129,0.18);border:1px solid rgba(16,185,129,0.3);">🔔</div>
                         <div class="flex-1 min-w-0">
@@ -259,7 +259,7 @@
 
             {{-- REAL SAVINGS GOALS --}}
             <div x-data="realGoalsTool()" x-init="load()">
-                <div @click="open=true" class="rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);">
+                <div @click="open=true" class="rounded-xl p-4 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(6,182,212,0.18);border:1px solid rgba(6,182,212,0.3);">🎯</div>
                         <div class="flex-1 min-w-0">
@@ -355,7 +355,7 @@
 
             {{-- REAL EXPENSES --}}
             <div x-data="realExpensesTool()" x-init="load()">
-                <div @click="open=true" class="rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);">
+                <div @click="open=true" class="rounded-xl p-4 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(249,115,22,0.18);border:1px solid rgba(249,115,22,0.3);">📊</div>
                         <div class="flex-1 min-w-0">
@@ -443,7 +443,7 @@
 
             {{-- MONTHLY REPORT & SNAPSHOT --}}
             <div x-data="realReportTool()">
-                <div @click="open=true" class="rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);">
+                <div @click="open=true" class="rounded-xl p-4 cursor-pointer transition-all hover:scale-[1.01]" style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(168,85,247,0.18);border:1px solid rgba(168,85,247,0.3);">📸</div>
                         <div class="flex-1 min-w-0">

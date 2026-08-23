@@ -54,8 +54,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
         {{-- ── Form ── --}}
-        <div class="form-panel rounded-3xl p-6 sm:p-8" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
-            <h2 class="text-xl font-black mb-6">Chama Details</h2>
+        <div class="form-panel rounded-2xl p-4 sm:p-5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+            <h2 class="text-lg font-black mb-4">Chama Details</h2>
 
             @if($errors->any())
             <div class="rounded-2xl px-5 py-4 mb-6 text-sm text-red-300" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);">
@@ -176,7 +176,7 @@
                 {{-- Header --}}
                 <div class="relative h-20 flex items-center px-5 gap-3 overflow-hidden"
                      style="background:linear-gradient(135deg,rgba(99,102,241,.35),rgba(139,92,246,.3),rgba(15,14,26,.8));">
-                    <div class="text-3xl">🤝</div>
+                    <div class="text-2xl">🤝</div>
                     <div class="flex-1 min-w-0">
                         <p class="font-black text-white leading-tight"
                            x-text="name || 'Your Chama Name'"></p>

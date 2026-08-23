@@ -24,7 +24,7 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: shimmer 3s linear infinite;
         }
-        .glass { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 1.5rem; }
+        .glass { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 1.1rem; }
         .glass-inner { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); border-radius: 1rem; }
         .rule-row { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid rgba(255,255,255,.05); }
         .rule-row:last-child { border-bottom: none; }
@@ -46,7 +46,7 @@
     </div>
 
     {{-- Inviter card --}}
-    <div class="glass p-6 mb-4 fade-up-1">
+    <div class="glass p-4 mb-4 fade-up-1">
         <div class="flex items-center gap-4 mb-4">
             <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl shrink-0"
                  style="background: linear-gradient(135deg, #6366f1, #a78bfa);">
@@ -67,11 +67,11 @@
     </div>
 
     {{-- Chama details --}}
-    <div class="glass p-6 mb-4 fade-up-2">
+    <div class="glass p-4 mb-4 fade-up-2">
         <div class="flex items-start justify-between gap-3 mb-5">
             <div>
                 <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Chama Name</p>
-                <h1 class="text-3xl font-black shimmer-name">{{ $chama->name }}</h1>
+                <h1 class="text-2xl font-black shimmer-name">{{ $chama->name }}</h1>
                 @if($chama->goal_text)
                 <p class="text-sm text-gray-400 mt-2 italic leading-relaxed">{{ $chama->goal_text }}</p>
                 @endif
@@ -106,7 +106,7 @@
     </div>
 
     {{-- Rules --}}
-    <div class="glass p-6 mb-6 fade-up-3">
+    <div class="glass p-4 mb-4 fade-up-3">
         <p class="text-sm font-black text-white mb-4">📋 Chama Rules</p>
         <div>
             <div class="rule-row">
@@ -160,13 +160,13 @@
     {{-- CTA --}}
     <div class="fade-up-4">
         @if($chama->isFull())
-        <div class="glass p-5 text-center">
-            <p class="text-2xl mb-2">😔</p>
+        <div class="glass p-4 text-center">
+            <p class="text-xl mb-2">😔</p>
             <p class="font-bold text-gray-300">This chama is full</p>
             <p class="text-sm text-gray-500 mt-1">All {{ $chama->max_members }} spots have been filled. Ask {{ $invite->inviter->name }} about other opportunities.</p>
         </div>
         @elseif(!auth()->check())
-        <div class="glass p-6 text-center">
+        <div class="glass p-4 text-center">
             <p class="text-sm text-gray-400 mb-4">You need a PesaQuest account to join. It's free!</p>
             <a href="{{ route('register') }}?invite={{ $invite->token }}"
                class="block w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 mb-3"

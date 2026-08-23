@@ -22,7 +22,7 @@
         .tab-btn:not(.active):hover{color:#9ca3af;background:rgba(255,255,255,0.03);}
         .calc-btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-weight:700;padding:0.625rem 1.5rem;border-radius:0.75rem;transition:all 0.2s;width:100%;}
         .calc-btn:hover{opacity:0.9;transform:scale(1.01);}
-        .tool-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:1.5rem;}
+        .tool-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:1.1rem;}
         .result-box{background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.06));border:1px solid rgba(16,185,129,0.3);border-radius:1rem;}
         .result-box.neg{background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(220,38,38,0.06));border-color:rgba(239,68,68,0.3);}
         .result-box.amber{background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,191,36,0.06));border-color:rgba(245,158,11,0.3);}
@@ -74,9 +74,9 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
         {{-- Hero --}}
-        <div class="rounded-3xl mb-7 p-6 sm:p-8 relative overflow-hidden"
+        <div class="rounded-2xl mb-5 p-4 sm:p-5 relative overflow-hidden"
              style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(99,102,241,0.10),rgba(245,158,11,0.08));border:1px solid rgba(16,185,129,0.2);">
-            <h2 class="text-2xl sm:text-3xl font-black text-white mb-1">Calculate Before You Commit</h2>
+            <h2 class="text-lg sm:text-xl font-black text-white mb-1">Calculate Before You Commit</h2>
             <p class="text-sm text-gray-400 max-w-lg">Real financial tools for Kenya. Plan, track, and grow your money.</p>
         </div>
 
@@ -99,7 +99,7 @@
         <div x-show="activeTool==='savings_schemes'" class="space-y-5">
 
             {{-- Create scheme --}}
-            <div class="tool-card p-5">
+            <div class="tool-card p-4">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 bg-emerald-500/15 border border-emerald-500/30 rounded-xl flex items-center justify-center text-xl">💳</div>
                     <div>
@@ -242,7 +242,7 @@
              BUDGET PLANNER 50/30/20
         ════════════════════════════════ --}}
         <div x-show="activeTool==='budget'" x-cloak class="space-y-5">
-            <div class="tool-card p-6">
+            <div class="tool-card p-4">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-10 h-10 bg-purple-500/15 border border-purple-500/30 rounded-xl flex items-center justify-center text-xl">📊</div>
                     <div>
@@ -385,7 +385,7 @@
              LOAN CALCULATOR
         ════════════════════════════════ --}}
         <div x-show="activeTool==='loan'" x-cloak class="space-y-5">
-            <div class="tool-card p-6">
+            <div class="tool-card p-4">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-10 h-10 bg-indigo-500/15 border border-indigo-500/30 rounded-xl flex items-center justify-center text-xl">🏦</div>
                     <div><h3 class="font-black text-sm">Loan Repayment Calculator</h3><p class="text-xs text-gray-500">Know your monthly payment before you borrow</p></div>
@@ -414,7 +414,7 @@
              SAVINGS GROWTH CALC
         ════════════════════════════════ --}}
         <div x-show="activeTool==='calculator'" x-cloak class="space-y-5">
-            <div class="tool-card p-6">
+            <div class="tool-card p-4">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-10 h-10 bg-emerald-500/15 border border-emerald-500/30 rounded-xl flex items-center justify-center text-xl">💰</div>
                     <div><h3 class="font-black text-sm">Savings Growth Calculator</h3><p class="text-xs text-gray-500">See how regular savings grow with compound interest</p></div>
@@ -442,7 +442,7 @@
              SAVINGS GOAL
         ════════════════════════════════ --}}
         <div x-show="activeTool==='goal'" x-cloak class="space-y-5">
-            <div class="tool-card p-6">
+            <div class="tool-card p-4">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-10 h-10 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-center justify-center text-xl">🎯</div>
                     <div><h3 class="font-black text-sm">Savings Goal Calculator</h3><p class="text-xs text-gray-500">How long to reach your target?</p></div>
@@ -461,12 +461,12 @@
                 <button class="calc-btn" @click="calcGoal()">Calculate Goal</button>
                 <div x-show="goal.answered" x-cloak class="mt-5 result-box amber p-5 space-y-3">
                     <div x-show="goal.mode==='time'" class="grid grid-cols-2 gap-3 text-center">
-                        <div><div class="text-xs text-gray-500 mb-1">Months to Goal</div><div class="text-3xl font-black text-amber-300" x-text="goal.resultMonths"></div><div class="text-xs text-gray-500" x-text="Math.ceil(goal.resultMonths/12*10)/10+' years'"></div></div>
+                        <div><div class="text-xs text-gray-500 mb-1">Months to Goal</div><div class="text-xl font-black text-amber-300" x-text="goal.resultMonths"></div><div class="text-xs text-gray-500" x-text="Math.ceil(goal.resultMonths/12*10)/10+' years'"></div></div>
                         <div><div class="text-xs text-gray-500 mb-1">Completion Date</div><div class="text-lg font-black text-white" x-text="goal.targetDate"></div></div>
                     </div>
                     <div x-show="goal.mode==='amount'" x-cloak class="text-center">
                         <div class="text-xs text-gray-500 mb-1">Monthly Saving Needed</div>
-                        <div class="text-3xl font-black text-amber-300">Ksh <span x-text="fmtK(goal.resultMonthly)"></span></div>
+                        <div class="text-xl font-black text-amber-300">Ksh <span x-text="fmtK(goal.resultMonthly)"></span></div>
                     </div>
                     <div class="pbar-bg h-3"><div class="pbar-fill h-3 amber" :style="`width:${goal.progressPct}%`"></div></div>
                     <div class="text-xs text-gray-500 text-right">Progress: <span class="text-amber-300 font-bold" x-text="goal.progressPct+'%'"></span></div>

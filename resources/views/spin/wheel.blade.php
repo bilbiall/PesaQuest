@@ -178,7 +178,7 @@
         <div class="flex-1 flex flex-col items-center gap-6">
 
             <div class="text-center">
-                <h1 class="text-3xl sm:text-4xl font-black text-white leading-tight">
+                <h1 class="text-xl sm:text-2xl font-black text-white leading-tight">
                     @if($canSpin) Spin to Win 🎰 @else Come Back Tomorrow @endif
                 </h1>
                 <p class="text-gray-400 text-sm mt-1">
@@ -223,7 +223,7 @@
         {{-- ══ RIGHT SIDEBAR ══ --}}
         <div class="w-full lg:w-80 flex-shrink-0 space-y-5">
 
-            <div class="glass-card p-5">
+            <div class="glass-card p-4">
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Possible Prizes</h3>
                 <div class="space-y-0.5">
                     @foreach($segments as $seg)
@@ -241,7 +241,7 @@
             </div>
 
             @if($history->isNotEmpty())
-            <div class="glass-card p-5">
+            <div class="glass-card p-4">
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Recent Spins</h3>
                 <div class="space-y-2">
                     @foreach($history as $h)
@@ -262,7 +262,7 @@
             </div>
             @endif
 
-            <div class="glass-card p-5">
+            <div class="glass-card p-4">
                 <div class="flex gap-3">
                     <span class="text-2xl">🎲</span>
                     <div>
