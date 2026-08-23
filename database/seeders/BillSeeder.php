@@ -23,6 +23,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Your tummy growls loudly in class. Mrs. Kamau asks if you ate. You lie and say yes. You can\'t focus on sums.',
                 'amount'             => 350,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 385],
+                    ['min_net_worth' => 200_000, 'amount' => 420],
                     ['min_net_worth' => 1_000_000, 'amount' => 490],
                     ['min_net_worth' => 5_000_000, 'amount' => 700],
                     ['min_net_worth' => 20_000_000, 'amount' => 980],
@@ -44,6 +46,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You arrive sweaty, dusty, and 20 minutes late. The headteacher writes a note in your diary. Mama is not happy.',
                 'amount'             => 200,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 220],
+                    ['min_net_worth' => 200_000, 'amount' => 240],
                     ['min_net_worth' => 1_000_000, 'amount' => 280],
                     ['min_net_worth' => 5_000_000, 'amount' => 400],
                     ['min_net_worth' => 20_000_000, 'amount' => 560],
@@ -65,6 +69,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Your phone is completely dry. You have to borrow a classmate\'s phone. It\'s embarrassing, and what if it\'s a real emergency?',
                 'amount'             => 50,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 55],
+                    ['min_net_worth' => 200_000, 'amount' => 60],
                     ['min_net_worth' => 1_000_000, 'amount' => 70],
                     ['min_net_worth' => 5_000_000, 'amount' => 100],
                     ['min_net_worth' => 20_000_000, 'amount' => 140],
@@ -86,6 +92,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You share a book with your desk-mate. The teacher notices. "Next time, come prepared," she says in front of everyone.',
                 'amount'             => 150,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 165],
+                    ['min_net_worth' => 200_000, 'amount' => 180],
                     ['min_net_worth' => 1_000_000, 'amount' => 210],
                     ['min_net_worth' => 5_000_000, 'amount' => 300],
                     ['min_net_worth' => 20_000_000, 'amount' => 420],
@@ -111,6 +119,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You skip lunch. By 2PM your concentration is gone, your head aches, and you bomb the Geography test. Your KCSE mock results will not explain "I was hungry."',
                 'amount'             => 560,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 616],
+                    ['min_net_worth' => 200_000, 'amount' => 672],
                     ['min_net_worth' => 1_000_000, 'amount' => 784],
                     ['min_net_worth' => 5_000_000, 'amount' => 1120],
                     ['min_net_worth' => 20_000_000, 'amount' => 1568],
@@ -132,6 +142,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You walk. School starts at 7:30. You arrive at 8:15. Mama gets a text from the school. Another explanation needed around the dinner table.',
                 'amount'             => 600,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 660],
+                    ['min_net_worth' => 200_000, 'amount' => 720],
                     ['min_net_worth' => 1_000_000, 'amount' => 840],
                     ['min_net_worth' => 5_000_000, 'amount' => 1200],
                     ['min_net_worth' => 20_000_000, 'amount' => 1680],
@@ -153,6 +165,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You\'re offline. The study group moved on. Someone shared the leaked mock answers. You\'re the only one who didn\'t see them. FOMO has real academic consequences.',
                 'amount'             => 300,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 330],
+                    ['min_net_worth' => 200_000, 'amount' => 360],
                     ['min_net_worth' => 1_000_000, 'amount' => 420],
                     ['min_net_worth' => 5_000_000, 'amount' => 600],
                     ['min_net_worth' => 20_000_000, 'amount' => 840],
@@ -174,6 +188,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You borrow pens from classmates every single day. Eventually they stop lending. You take notes on your phone — and the teacher confiscates it.',
                 'amount'             => 200,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 220],
+                    ['min_net_worth' => 200_000, 'amount' => 240],
                     ['min_net_worth' => 1_000_000, 'amount' => 280],
                     ['min_net_worth' => 5_000_000, 'amount' => 400],
                     ['min_net_worth' => 20_000_000, 'amount' => 560],
@@ -195,6 +211,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You stay behind when your classmates board the bus to Nairobi. You tell yourself it doesn\'t matter. It does. Next time, budget for it.',
                 'amount'             => 300,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 330],
+                    ['min_net_worth' => 200_000, 'amount' => 360],
                     ['min_net_worth' => 1_000_000, 'amount' => 420],
                     ['min_net_worth' => 5_000_000, 'amount' => 600],
                     ['min_net_worth' => 20_000_000, 'amount' => 840],
@@ -220,6 +238,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Lock-out. Your padlock is replaced by the landlord\'s. Your mattress is in the corridor. Social media is NOT ready for these pictures.',
                 'amount'             => 4500,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 4950],
+                    ['min_net_worth' => 200_000, 'amount' => 5400],
                     ['min_net_worth' => 1_000_000, 'amount' => 6300],
                     ['min_net_worth' => 5_000_000, 'amount' => 9000],
                     ['min_net_worth' => 20_000_000, 'amount' => 12600],
@@ -241,6 +261,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Power is out. Laptop dead. Phone dead. Your assignment deadline doesn\'t care about your power situation. Neither does your supervisor.',
                 'amount'             => 600,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 660],
+                    ['min_net_worth' => 200_000, 'amount' => 720],
                     ['min_net_worth' => 1_000_000, 'amount' => 840],
                     ['min_net_worth' => 5_000_000, 'amount' => 1200],
                     ['min_net_worth' => 20_000_000, 'amount' => 1680],
@@ -262,6 +284,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Day 3 without water. You\'re borrowing a bucket from your neighbor. They start locking their door. This is not a game anymore.',
                 'amount'             => 350,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 385],
+                    ['min_net_worth' => 200_000, 'amount' => 420],
                     ['min_net_worth' => 1_000_000, 'amount' => 490],
                     ['min_net_worth' => 5_000_000, 'amount' => 700],
                     ['min_net_worth' => 20_000_000, 'amount' => 980],
@@ -283,6 +307,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Day 4 of plain ugali with salt. Your focus, your mood, and your energy are all on strike. Hard to hustle on an empty stomach.',
                 'amount'             => 2500,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 2750],
+                    ['min_net_worth' => 200_000, 'amount' => 3000],
                     ['min_net_worth' => 1_000_000, 'amount' => 3500],
                     ['min_net_worth' => 5_000_000, 'amount' => 5000],
                     ['min_net_worth' => 20_000_000, 'amount' => 7000],
@@ -304,6 +330,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You walk everywhere. Your shoes wear out faster than your savings grow. That interview downtown? You arrive damp, late, and out of breath.',
                 'amount'             => 1500,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 1650],
+                    ['min_net_worth' => 200_000, 'amount' => 1800],
                     ['min_net_worth' => 1_000_000, 'amount' => 2100],
                     ['min_net_worth' => 5_000_000, 'amount' => 3000],
                     ['min_net_worth' => 20_000_000, 'amount' => 4200],
@@ -325,6 +353,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Your phone becomes a camera with no SIM. Calls drop. Clients can\'t reach you. That job callback you\'ve been waiting for goes to voicemail. Opportunities don\'t wait.',
                 'amount'             => 500,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 550],
+                    ['min_net_worth' => 200_000, 'amount' => 600],
                     ['min_net_worth' => 1_000_000, 'amount' => 700],
                     ['min_net_worth' => 5_000_000, 'amount' => 1000],
                     ['min_net_worth' => 20_000_000, 'amount' => 1400],
@@ -346,6 +376,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'The hospital asks for Ksh 5,000 upfront at the reception counter before they treat you. The nurse looks at you. You look at your balance. Life is brutally expensive without a health cover.',
                 'amount'             => 500,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 550],
+                    ['min_net_worth' => 200_000, 'amount' => 600],
                     ['min_net_worth' => 1_000_000, 'amount' => 700],
                     ['min_net_worth' => 5_000_000, 'amount' => 1000],
                     ['min_net_worth' => 20_000_000, 'amount' => 1400],
@@ -367,6 +399,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Interest accrues at 12% per annum. Your HELB default flag gets attached to your KRA PIN. Future bank loans become difficult. You\'ll wish you had paid the Ksh 1,000.',
                 'amount'             => 1000,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 1100],
+                    ['min_net_worth' => 200_000, 'amount' => 1200],
                     ['min_net_worth' => 1_000_000, 'amount' => 1400],
                     ['min_net_worth' => 5_000_000, 'amount' => 2000],
                     ['min_net_worth' => 20_000_000, 'amount' => 2800],
@@ -392,6 +426,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Eviction notice pinned on your door. Three days to vacate. Finding a new house mid-school-term with two kids is chaos. The deposit you lose stings more than the embarrassment.',
                 'amount'             => 12000,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 13200],
+                    ['min_net_worth' => 200_000, 'amount' => 14400],
                     ['min_net_worth' => 1_000_000, 'amount' => 16800],
                     ['min_net_worth' => 5_000_000, 'amount' => 24000],
                     ['min_net_worth' => 20_000_000, 'amount' => 33600],
@@ -413,6 +449,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Dark house. Angry spouse. Crying kids who can\'t do homework. The neighbor\'s generator starts at 10PM and runs till midnight. You lie there calculating what a bad financial decision this was.',
                 'amount'             => 1200,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 1320],
+                    ['min_net_worth' => 200_000, 'amount' => 1440],
                     ['min_net_worth' => 1_000_000, 'amount' => 1680],
                     ['min_net_worth' => 5_000_000, 'amount' => 2400],
                     ['min_net_worth' => 20_000_000, 'amount' => 3360],
@@ -434,6 +472,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'A water bowser costs Ksh 1,500 per load. The math is embarrassing. But with two kids who need baths and a kitchen that needs cleaning, you have no choice.',
                 'amount'             => 600,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 660],
+                    ['min_net_worth' => 200_000, 'amount' => 720],
                     ['min_net_worth' => 1_000_000, 'amount' => 840],
                     ['min_net_worth' => 5_000_000, 'amount' => 1200],
                     ['min_net_worth' => 20_000_000, 'amount' => 1680],
@@ -455,6 +495,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Mobile hotspot at 2KB/s. Your Zoom call freezes mid-presentation. The kids use your data for YouTube. Your boss thinks you work from a matatu.',
                 'amount'             => 1500,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 1650],
+                    ['min_net_worth' => 200_000, 'amount' => 1800],
                     ['min_net_worth' => 1_000_000, 'amount' => 2100],
                     ['min_net_worth' => 5_000_000, 'amount' => 3000],
                     ['min_net_worth' => 20_000_000, 'amount' => 4200],
@@ -476,6 +518,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'You borrow unga from the neighbor. Once. Twice. On the third time she stops opening the door immediately. It affects more than your fridge.',
                 'amount'             => 6000,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 6600],
+                    ['min_net_worth' => 200_000, 'amount' => 7200],
                     ['min_net_worth' => 1_000_000, 'amount' => 8400],
                     ['min_net_worth' => 5_000_000, 'amount' => 12000],
                     ['min_net_worth' => 20_000_000, 'amount' => 16800],
@@ -497,6 +541,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'The car doesn\'t move this month. You\'re back on matatu at 6AM. Your knees remind you exactly why you worked hard to buy that car.',
                 'amount'             => 3000,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 3300],
+                    ['min_net_worth' => 200_000, 'amount' => 3600],
                     ['min_net_worth' => 1_000_000, 'amount' => 4200],
                     ['min_net_worth' => 5_000_000, 'amount' => 6000],
                     ['min_net_worth' => 20_000_000, 'amount' => 8400],
@@ -518,6 +564,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'Your child gets malaria. The hospital asks for Ksh 20,000 upfront. You dig into your savings. Three months later you\'re still recovering financially. All because of Ksh 1,700.',
                 'amount'             => 1700,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 1870],
+                    ['min_net_worth' => 200_000, 'amount' => 2040],
                     ['min_net_worth' => 1_000_000, 'amount' => 2400],
                     ['min_net_worth' => 5_000_000, 'amount' => 3400],
                     ['min_net_worth' => 20_000_000, 'amount' => 4800],
@@ -539,6 +587,8 @@ class BillSeeder extends Seeder
                 'consequence_text'   => 'She stops calling for two weeks. Then your aunt calls. Then your cousin. The whole village has discussed your finances. Family pressure is a Kenyan bill that never expires.',
                 'amount'             => 2000,
                 'net_worth_tiers'    => ['tiers' => [
+                    ['min_net_worth' => 50_000, 'amount' => 2200],
+                    ['min_net_worth' => 200_000, 'amount' => 2400],
                     ['min_net_worth' => 1_000_000, 'amount' => 2800],
                     ['min_net_worth' => 5_000_000, 'amount' => 4000],
                     ['min_net_worth' => 20_000_000, 'amount' => 5600],
