@@ -471,6 +471,57 @@ class LifeSimulator
             if ($advanced) {
                 $progress->adjustCreditScoreWithLog(+15, 'Net worth milestone reached: ' . $progress->chapterName(), ['kind' => 'chapter_milestone', 'chapter' => $newChapter]);
             }
+
+            // A chapter change is a deliberate lifestyle shift — the moment
+            // already-assigned bills catch up to the player's new net worth.
+            $this->reassessBillPricing($progress, $events);
+        }
+    }
+
+    /** Re-prices every net-worth-tiered bill the player already holds against
+     *  their current net worth. Only called on a chapter transition (not
+     *  every tick), so cost-of-living changes read as a deliberate lifestyle
+     *  shift rather than constant background drift. Can move a bill's amount
+     *  up or down, matching how net worth itself can rise or fall. */
+    private function reassessBillPricing(UserProgress $progress, array &$events): void
+    {
+        $netWorth = (int) $progress->net_worth_cache;
+
+        $playerBills = PlayerBill::where('user_id', $progress->user_id)
+            ->whereIn('status', ['active', 'overdue'])
+            ->with('bill')
+            ->get()
+            ->filter(fn ($pb) => $pb->bill && !empty($pb->bill->net_worth_tiers['tiers'] ?? []));
+
+        foreach ($playerBills as $playerBill) {
+            $newAmount = $playerBill->bill->resolveAmount($netWorth);
+            if ($newAmount === (int) $playerBill->amount) {
+                continue;
+            }
+
+            $oldAmount = (int) $playerBill->amount;
+            $playerBill->update(['amount' => $newAmount]);
+
+            $risen = $newAmount > $oldAmount;
+            $verb  = $risen ? 'risen' : 'fallen';
+            $range = 'Ksh ' . number_format($oldAmount) . ' → Ksh ' . number_format($newAmount);
+
+            GameNotification::create([
+                'user_id' => $progress->user_id,
+                'type'    => 'bill_repriced',
+                'title'   => "{$playerBill->bill->icon} {$playerBill->bill->name} has {$verb}",
+                'body'    => "{$range} every {$playerBill->frequency_ticks} game days — your lifestyle costs now match your net worth.",
+                'icon'    => $playerBill->bill->icon,
+                'data'    => ['bill_id' => $playerBill->bill_id, 'old_amount' => $oldAmount, 'new_amount' => $newAmount],
+            ]);
+
+            $events[] = [
+                'icon'  => $playerBill->bill->icon ?? '🧾',
+                'type'  => 'bill_repriced',
+                'text'  => "{$playerBill->bill->name} {$verb}: {$range}",
+                'sub'   => "Every {$playerBill->frequency_ticks} game days, matching your new net worth.",
+                'delta' => 0,
+            ];
         }
     }
 
