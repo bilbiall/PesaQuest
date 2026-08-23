@@ -519,9 +519,29 @@ class CasinoWheel {
         this._resize();
     }
 
+    // Full DB labels ("Ksh 1,500 Fine", "+30 Credit", "2× Next Salary") are too
+    // long to fit a 28-segment wheel without truncating into unreadable
+    // fragments. The emoji + segment color already signal the prize TYPE
+    // (📈/🌟/🚀 = credit gain, 📉 = credit loss, ⭐/✨/🌠/💫 = XP, 😬/😩/💀 = fine),
+    // so on-wheel text only needs the AMOUNT — shortened, never truncated.
+    static shortLabel(label) {
+        const compact = (numStr) => {
+            const n = parseInt(numStr.replace(/,/g, ''), 10);
+            if (n >= 1000) { const v = n / 1000; return (v % 1 === 0 ? v : v.toFixed(1)) + 'K'; }
+            return String(n);
+        };
+        let m;
+        if ((m = label.match(/^Ksh\s([\d,]+)(?:\s(?:Fine|Jackpot))?$/))) return compact(m[1]);
+        if ((m = label.match(/^([+-]\d+)\sCredit(?:\sSurge)?$/))) return m[1];
+        if ((m = label.match(/^([\d,]+)\sXP(?:\sBoost)?$/))) return compact(m[1]) + ' XP';
+        if (label === '2× Next Salary') return '2× Salary';
+        if (label === 'Lucky Badge') return 'Badge';
+        return label.length > 10 ? label.slice(0, 9) + '…' : label;
+    }
+
     _resize() {
         // Canvas is slightly taller so flapper pivot clears the top edge
-        const w  = Math.min(window.innerWidth - 72, 380);
+        const w  = Math.min(window.innerWidth - 56, 420);
         const h  = w + 28;  // 28px extra at top for the flapper
         this.canvas.style.width  = w + 'px';
         this.canvas.style.height = h + 'px';
@@ -604,21 +624,30 @@ class CasinoWheel {
             ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 1; ctx.stroke();
         }
 
-        // 4 · Labels
+        // 4 · Labels — emoji signals prize TYPE, short text carries the AMOUNT.
+        // Font auto-shrinks per label so long ones (e.g. "2× Salary") never
+        // spill into a neighbouring segment, no matter how many segments exist.
         for (let i = 0; i < n; i++) {
             const mid  = i * arc + rotation - Math.PI / 2 + arc / 2;
-            const dist = hubR + (innerR - hubR) * .6;
+            const dist = hubR + (innerR - hubR) * .68;
             ctx.save();
             ctx.translate(cx, cy); ctx.rotate(mid);
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = 'rgba(0,0,0,.9)'; ctx.shadowBlur = 5;
-            ctx.font = `${Math.floor(W/24)}px Segoe UI Emoji, Apple Color Emoji, sans-serif`;
+            ctx.font = `${Math.floor(W/20)}px Segoe UI Emoji, Apple Color Emoji, sans-serif`;
             ctx.fillStyle = 'white';
-            ctx.fillText(this.segments[i].emoji, dist, -8);
-            const lbl = this.segments[i].label;
-            ctx.font = `bold ${Math.floor(W/34)}px Figtree, sans-serif`;
-            ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.shadowBlur = 3;
-            ctx.fillText(lbl.length > 9 ? lbl.slice(0,8)+'…' : lbl, dist, 9);
+            ctx.fillText(this.segments[i].emoji, dist, -9);
+
+            const lbl = CasinoWheel.shortLabel(this.segments[i].label);
+            const availWidth = 2 * dist * Math.sin(arc / 2) * 0.92;
+            let fontSize = Math.floor(W / 22);
+            ctx.font = `bold ${fontSize}px Figtree, sans-serif`;
+            while (fontSize > 7 && ctx.measureText(lbl).width > availWidth) {
+                fontSize -= 1;
+                ctx.font = `bold ${fontSize}px Figtree, sans-serif`;
+            }
+            ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.shadowBlur = 3;
+            ctx.fillText(lbl, dist, 10);
             ctx.restore();
         }
 
