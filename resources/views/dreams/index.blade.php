@@ -14,7 +14,7 @@ body{background:#07060f;}
     <a href="{{ route('world') }}" class="text-gray-400 hover:text-white text-sm mb-3 inline-flex items-center gap-2">← Back to Game</a>
     <div class="flex items-center justify-between flex-wrap gap-3 mb-2" style="animation:fadeUp .4s ease both;">
         <div>
-            <h1 class="text-2xl sm:text-3xl font-black text-white">🌟 Champions' Dreams</h1>
+            <h1 class="text-xl sm:text-2xl font-black text-white">🌟 Champions' Dreams</h1>
             <p class="text-sm text-gray-400 mt-1">Expensive. Aspirational. Never resellable. Once you claim one, it's yours forever — a permanent flex on your profile.</p>
         </div>
         <div class="stat-pill" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:.875rem;padding:.7rem 1.1rem;text-align:center;">

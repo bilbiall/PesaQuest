@@ -34,7 +34,7 @@
         .decision-card {
             background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
             border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 1.5rem;
+            border-radius: 1.1rem;
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -242,7 +242,7 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
                     <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Live</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black text-white leading-tight">
+                <h1 class="text-xl sm:text-2xl font-black text-white leading-tight">
                     @php
                         $hour = now()->hour;
                         $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
@@ -302,7 +302,7 @@
                     </div>
 
                     {{-- Content --}}
-                    <div class="p-5" style="padding-top: {{ $npc ? '2rem' : '1.25rem' }};">
+                    <div class="p-4" style="padding-top: {{ $npc ? '1.75rem' : '1rem' }};">
 
                         {{-- Title --}}
                         <h3 class="font-black text-white text-base leading-snug mb-2">{{ $decision->title }}</h3>
@@ -449,7 +449,7 @@
         <aside class="hidden lg:flex flex-col gap-4 w-72 flex-shrink-0">
 
             {{-- Progress snapshot --}}
-            <div class="glass-sidebar p-5">
+            <div class="glass-sidebar p-4">
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Your Finances</h3>
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
@@ -487,7 +487,7 @@
 
             {{-- NPC Relationships --}}
             @if($npcs->isNotEmpty())
-            <div class="glass-sidebar p-5">
+            <div class="glass-sidebar p-4">
                 <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">People in Your Life</h3>
                 <div class="space-y-3">
                     @foreach($npcs as $npc)
@@ -525,7 +525,7 @@
             ];
             $tip = $tips[($progress->tick_count ?? 0) % count($tips)];
             @endphp
-            <div class="glass-sidebar p-5">
+            <div class="glass-sidebar p-4">
                 <div class="flex gap-3">
                     <span class="text-2xl flex-shrink-0">{{ $tip['icon'] }}</span>
                     <div>

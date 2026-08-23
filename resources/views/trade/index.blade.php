@@ -34,10 +34,10 @@
             <a href="{{ route('marketplace') }}" class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">Game Market →</a>
         </div>
 
-        <div class="text-center mb-10">
-            <div class="text-6xl mb-3">🤝</div>
-            <h1 class="hero-gradient text-3xl sm:text-4xl font-black mb-2">Player Trade Market</h1>
-            <p class="text-gray-400 text-sm max-w-md mx-auto">Buy assets from other players at agreed prices. Real market dynamics — negotiate value, not just price.</p>
+        <div class="text-center mb-6">
+            <div class="text-4xl mb-2">🤝</div>
+            <h1 class="hero-gradient text-xl sm:text-2xl font-black mb-1.5">Player Trade Market</h1>
+            <p class="text-gray-400 text-xs max-w-md mx-auto">Buy assets from other players at agreed prices. Real market dynamics — negotiate value, not just price.</p>
         </div>
 
         {{-- Toast --}}
@@ -53,8 +53,8 @@
 
                 {{-- My listings --}}
                 @if($myListings->isNotEmpty())
-                <div class="glass rounded-3xl p-5">
-                    <h3 class="font-black mb-4 flex items-center gap-2"><span>📦</span> My Listings</h3>
+                <div class="glass rounded-xl p-4">
+                    <h3 class="font-black mb-3 flex items-center gap-2"><span>📦</span> My Listings</h3>
                     <div class="space-y-3">
                         @foreach($myListings as $ml)
                         <div class="rounded-2xl p-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
@@ -76,8 +76,8 @@
                 @endif
 
                 {{-- Edu tip --}}
-                <div class="rounded-3xl p-5" style="background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.04));border:1px solid rgba(99,102,241,0.2);">
-                    <div class="text-2xl mb-2">💡</div>
+                <div class="rounded-xl p-4" style="background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.04));border:1px solid rgba(99,102,241,0.2);">
+                    <div class="text-xl mb-1.5">💡</div>
                     <h4 class="font-black text-sm mb-1 text-indigo-300">Trading 101</h4>
                     <p class="text-xs text-gray-400 leading-relaxed">
                         In real markets, assets are worth what someone will pay. Price too high and it won't sell; price too low and you lose value. Check your asset's current market value before listing.
@@ -93,11 +93,11 @@
                 </div>
 
                 @forelse($listings as $listing)
-                <div class="listing-card rounded-3xl p-5 mb-4">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                <div class="listing-card rounded-xl p-4 mb-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                              style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
-                            <x-icon :name="$listing->playerAsset->asset->icon ?? 'store'" class="w-6 h-6" />
+                            <x-icon :name="$listing->playerAsset->asset->icon ?? 'store'" class="w-5 h-5" />
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">
@@ -147,8 +147,8 @@
         </div>
 
         {{-- CTA to list from portfolio --}}
-        <div class="mt-8 text-center glass rounded-3xl p-6">
-            <div class="text-3xl mb-2">📤</div>
+        <div class="mt-6 text-center glass rounded-xl p-4">
+            <div class="text-2xl mb-2">📤</div>
             <h3 class="font-black mb-1">Want to sell an asset?</h3>
             <p class="text-xs text-gray-400 mb-4">Go to your portfolio, click on any asset, and choose "List for Trade".</p>
             <a href="{{ route('portfolio') }}"
