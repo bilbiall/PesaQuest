@@ -12,7 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body { background:#0b0a16; font-family:'Figtree',sans-serif; color:#fff; }
-        .sc-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:1.25rem; }
+        .sc-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:.9rem; }
         .sc-input { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:.7rem; padding:.6rem .8rem; color:#fff; font-size:.85rem; width:100%; }
         .sc-btn { font-weight:800; border-radius:.85rem; padding:.75rem 1.1rem; font-size:.85rem; cursor:pointer; transition:transform .12s; }
         .sc-btn:active { transform:scale(.97); }
@@ -41,7 +41,7 @@
         @endif
 
         @if($myInvites->isNotEmpty())
-        <div class="sc-card p-5 mb-6" style="border-color:rgba(245,158,11,.4);">
+        <div class="sc-card p-4 mb-4" style="border-color:rgba(245,158,11,.4);">
             <p class="text-sm font-bold mb-3">🎲 Invited to a Rivals Trail round</p>
             <div class="space-y-2">
                 @foreach($myInvites as $invite)
@@ -73,7 +73,7 @@
         @endif
 
         @if($activeSession)
-        <div class="sc-card p-5 mb-6" style="border-color:rgba(245,158,11,.4);">
+        <div class="sc-card p-4 mb-4" style="border-color:rgba(245,158,11,.4);">
             <div class="flex items-center justify-between gap-3">
                 <a href="{{ route('arcade.snakes.play', $activeSession) }}" class="flex-1 flex items-center justify-between hover:opacity-80 transition-opacity">
                     <div>
@@ -99,7 +99,7 @@
             <div class="sc-card p-2.5 sm:p-4 text-center"><p class="text-lg sm:text-2xl font-black text-amber-400">{{ number_format($stats['best_pot']) }}</p><p class="text-[9px] sm:text-[10px] text-gray-500 uppercase font-bold tracking-wider mt-1">Best Savings (KES)</p></div>
         </div>
 
-        <div class="sc-card p-5 mb-6">
+        <div class="sc-card p-4 mb-4">
             <p class="text-sm font-bold mb-1">Your starting savings</p>
             <p class="text-xs text-gray-400 mb-3">Pick how much to bring into this round — it leaves your wallet and becomes your in-game savings; grow it by playing well and bank it anytime. If it runs out, the round ends early.</p>
             <form method="POST" action="{{ route('arcade.snakes.solo') }}" class="space-y-2" onsubmit="phTrack('pesatrail_solo_start')">
@@ -113,7 +113,7 @@
         </div>
 
         <details class="sc-card sc-accordion mb-6"{{ request('join') ? ' open' : '' }}>
-            <summary class="p-5 flex items-center justify-between">
+            <summary class="p-4 flex items-center justify-between">
                 <span class="text-sm font-bold">👥 Start or join a Standard Match</span>
                 <span class="chevron text-gray-500 text-xs">▼</span>
             </summary>
@@ -147,7 +147,7 @@
             </div>
         </details>
 
-        <div class="sc-card p-5 mb-6">
+        <div class="sc-card p-4 mb-4">
             <p class="text-sm font-bold mb-3">🌍 Open public matches</p>
             @if($openMatches->isNotEmpty())
             <div class="space-y-2">
@@ -167,7 +167,7 @@
 
         {{-- ── RIVALS TRAIL — head-to-head money round ── --}}
         <details class="sc-card sc-accordion mb-6" style="border-color:rgba(236,72,153,.3);">
-            <summary class="p-5 flex items-center justify-between">
+            <summary class="p-4 flex items-center justify-between">
                 <span class="text-sm font-bold">⚔️ Start or join a Rivals Trail round</span>
                 <span class="chevron text-gray-500 text-xs">▼</span>
             </summary>
@@ -216,7 +216,7 @@
             </div>
         </details>
 
-        <div class="sc-card p-5">
+        <div class="sc-card p-4">
             <p class="text-sm font-bold mb-3">🌍 Open Rivals Trail rounds</p>
             @if($openWagerMatches->isNotEmpty())
             <div class="space-y-2">
