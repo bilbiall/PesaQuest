@@ -195,7 +195,7 @@ class RealLifeToolsController extends Controller
             'notes'               => 'nullable|string|max:500',
         ]);
 
-        $data['icon']           = $data['icon'] ?: (RealLifeBill::CATEGORIES[$data['category']]['icon'] ?? '🧾');
+        $data['icon']           = ($data['icon'] ?? null) ?: (RealLifeBill::CATEGORIES[$data['category']]['icon'] ?? '🧾');
         $data['is_recurring']   = $request->boolean('is_recurring');
         $data['frequency_days'] = $data['is_recurring'] ? ($data['frequency_days'] ?? 30) : null;
 
@@ -235,7 +235,7 @@ class RealLifeToolsController extends Controller
             'target_amount' => 'required|integer|min:1|max:999999999',
             'target_date'   => 'nullable|date',
         ]);
-        $data['icon']    = $data['icon'] ?: '🎯';
+        $data['icon']    = ($data['icon'] ?? null) ?: '🎯';
         $data['user_id'] = auth()->id();
 
         $goal = RealLifeSavingsGoal::create($data);
