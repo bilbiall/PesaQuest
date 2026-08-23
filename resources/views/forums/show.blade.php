@@ -78,7 +78,7 @@
             <span class="text-[11px] font-black px-3 py-1 rounded-full inline-flex items-center gap-1" style="background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;"><x-icon name="pin" class="w-3 h-3" /> Pinned</span>
             @endif
         </div>
-        <h1 class="text-2xl sm:text-3xl font-black leading-tight" x-show="!editing">{{ $topic->title }}</h1>
+        <h1 class="text-xl sm:text-2xl font-black leading-tight" x-show="!editing">{{ $topic->title }}</h1>
         <div class="flex items-center gap-3 mt-3 text-xs text-gray-500 flex-wrap">
             @php $topBadges = $topic->user?->badges?->sortByDesc(fn ($b) => $b->pivot->earned_at)->take(3) ?? collect(); @endphp
             <span class="flex items-center gap-1.5">
@@ -145,7 +145,7 @@
 
     {{-- ── Edit form (author/mod) ── --}}
     @if($isAuthor || $isMod)
-    <div x-show="editing" x-cloak class="mb-6 rounded-2xl p-5" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.25);">
+    <div x-show="editing" x-cloak class="mb-4 rounded-xl p-4" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.25);">
         <h2 class="text-sm font-black text-violet-300 mb-4 inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" /> Edit Discussion</h2>
         <form method="POST" action="{{ route('forums.update', $topic) }}" class="space-y-3">
             @csrf @method('PUT')
@@ -164,7 +164,7 @@
     @endif
 
     {{-- ── Topic body ── --}}
-    <div class="rounded-2xl p-5 sm:p-6 mb-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);" x-show="!editing">
+    <div class="rounded-xl p-4 mb-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);" x-show="!editing">
         <p class="text-sm sm:text-[15px] text-gray-200 leading-relaxed whitespace-pre-line" style="border-left:2px solid rgba(139,92,246,0.35);padding-left:.9rem;">{{ $topic->body }}</p>
         @if($topic->image_path)
         <img src="{{ $topic->image_path }}" alt="" class="mt-4 rounded-xl w-full object-contain" style="max-height:32rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
@@ -190,8 +190,8 @@
     </div>
 
     @if($replyTree->isEmpty())
-    <div class="text-center py-10 rounded-2xl mb-8" style="background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.1);">
-        <p class="text-3xl mb-2">🦗</p>
+    <div class="text-center py-8 rounded-xl mb-5" style="background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.1);">
+        <p class="text-2xl mb-2">🦗</p>
         <p class="text-sm font-bold text-gray-400">No replies yet — be the first to weigh in!</p>
     </div>
     @else
@@ -221,13 +221,13 @@
 
     {{-- ── Reply form / locked state ── --}}
     @if($topic->is_locked)
-    <div class="rounded-2xl p-6 text-center" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);">
-        <p class="text-2xl mb-2">🔒</p>
+    <div class="rounded-xl p-4 text-center" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);">
+        <p class="text-xl mb-2">🔒</p>
         <p class="text-sm font-black text-amber-300">This discussion is locked</p>
         <p class="text-xs text-gray-500 mt-1">No new replies can be added.</p>
     </div>
     @else
-    <div class="rounded-2xl p-5" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);">
+    <div class="rounded-xl p-4" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);">
         <h3 class="text-sm font-black text-gray-200 mb-3 inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" /> Join the conversation</h3>
         <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data" class="space-y-3" x-data="{ fileName: '' }">
             @csrf

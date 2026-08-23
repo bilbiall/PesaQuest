@@ -49,7 +49,7 @@
 <div class="border-b border-white/5 py-8"
      style="background: linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(99,102,241,0.05) 100%);">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
-        <h1 class="text-3xl sm:text-4xl font-black mb-2 inline-flex items-center gap-2"><x-icon name="speech" class="w-8 h-8" /> Pesa Forums</h1>
+        <h1 class="text-xl sm:text-2xl font-black mb-1.5 inline-flex items-center gap-1.5"><x-icon name="speech" class="w-5 h-5" /> Pesa Forums</h1>
         <p class="text-gray-400 text-sm sm:text-base leading-relaxed">Talk money. Share real stories.<br class="sm:hidden"> Learn together. Level up together. 🚀</p>
 
         {{-- Stats strip --}}
