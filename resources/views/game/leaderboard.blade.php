@@ -245,8 +245,8 @@
                 </template>
             </div>
             @empty
-            <div class="text-center py-16 text-gray-500">
-                <div class="text-4xl mb-3">🏜️</div>
+            <div class="text-center py-10 text-gray-500">
+                <div class="text-2xl mb-2">🏜️</div>
                 <p>No players yet for this age group</p>
                 <p class="text-xs mt-1">Be the first to claim the top spot!</p>
             </div>

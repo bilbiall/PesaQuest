@@ -49,39 +49,39 @@
 </nav>
 
 {{-- Hero --}}
-<div class="relative overflow-hidden border-b border-white/5 py-10"
+<div class="relative overflow-hidden border-b border-white/5 py-6"
      style="background:linear-gradient(160deg,rgba(99,102,241,0.08) 0%,rgba(139,92,246,0.05) 100%);">
     <div class="absolute top-0 right-0 w-80 h-80 rounded-full opacity-6"
          style="background:radial-gradient(circle,#a78bfa,transparent 70%);transform:translate(30%,-30%);"></div>
 
     <div class="relative max-w-5xl mx-auto px-4 sm:px-6">
-        <h1 class="text-3xl sm:text-4xl font-black shimmer-text mb-2 inline-flex items-center gap-2"><x-icon name="map" class="w-8 h-8" /> Quest Board</h1>
-        <p class="text-gray-400 text-sm mb-6">Complete real-world financial challenges to earn bonus XP</p>
+        <h1 class="text-xl sm:text-2xl font-black shimmer-text mb-1.5 inline-flex items-center gap-1.5"><x-icon name="map" class="w-5 h-5" /> Quest Board</h1>
+        <p class="text-gray-400 text-xs mb-4">Complete real-world financial challenges to earn bonus XP</p>
 
         {{-- Summary stats --}}
-        <div class="flex flex-wrap gap-4">
-            <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
+        <div class="flex flex-wrap gap-3">
+            <div class="rounded-xl px-4 py-2.5 flex items-center gap-2.5"
                  style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
-                <x-icon name="check-circle" class="w-6 h-6 text-emerald-400" />
+                <x-icon name="check-circle" class="w-5 h-5 text-emerald-400" />
                 <div>
-                    <div class="text-xl font-black text-emerald-400">{{ $completedCount }}</div>
-                    <div class="text-xs text-gray-400">Completed</div>
+                    <div class="text-base font-black text-emerald-400">{{ $completedCount }}</div>
+                    <div class="text-[11px] text-gray-400">Completed</div>
                 </div>
             </div>
-            <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
+            <div class="rounded-xl px-4 py-2.5 flex items-center gap-2.5"
                  style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
-                <x-icon name="star" class="w-6 h-6 text-amber-400" />
+                <x-icon name="star" class="w-5 h-5 text-amber-400" />
                 <div>
-                    <div class="text-xl font-black text-amber-400">{{ number_format($totalPoints) }}</div>
-                    <div class="text-xs text-gray-400">XP Earned</div>
+                    <div class="text-base font-black text-amber-400">{{ number_format($totalPoints) }}</div>
+                    <div class="text-[11px] text-gray-400">XP Earned</div>
                 </div>
             </div>
-            <div class="rounded-2xl px-5 py-3 flex items-center gap-3"
+            <div class="rounded-xl px-4 py-2.5 flex items-center gap-2.5"
                  style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
-                <x-icon name="target" class="w-6 h-6 text-indigo-400" />
+                <x-icon name="target" class="w-5 h-5 text-indigo-400" />
                 <div>
-                    <div class="text-xl font-black text-indigo-400">{{ $quests->where('user_status', 'available')->count() }}</div>
-                    <div class="text-xs text-gray-400">Available</div>
+                    <div class="text-base font-black text-indigo-400">{{ $quests->where('user_status', 'available')->count() }}</div>
+                    <div class="text-[11px] text-gray-400">Available</div>
                 </div>
             </div>
         </div>
@@ -89,11 +89,11 @@
 </div>
 
 {{-- Quest cards --}}
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8" x-data="questBoard()">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6" x-data="questBoard()">
 
     @if($quests->isEmpty())
-    <div class="text-center py-16">
-        <div class="text-6xl mb-4">🗺️</div>
+    <div class="text-center py-10">
+        <div class="text-4xl mb-3">🗺️</div>
         <p class="text-gray-400 font-semibold mb-2">No quests available for your age group yet.</p>
         <p class="text-gray-600 text-sm">Check back soon — new challenges are added regularly.</p>
     </div>
@@ -126,14 +126,14 @@
                 default    => ['bg' => 'rgba(99,102,241,0.05)', 'border' => 'rgba(99,102,241,0.18)', 'pill' => 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30'],
             };
         @endphp
-        <div class="quest-card rounded-3xl p-5 flex flex-col gap-4 {{ $quest->user_status === 'available' ? 'quest-available' : '' }}"
+        <div class="quest-card rounded-xl p-4 flex flex-col gap-3 {{ $quest->user_status === 'available' ? 'quest-available' : '' }}"
              style="background:{{ $statusColor['bg'] }};border:1px solid {{ $statusColor['border'] }};"
              x-show="filter === 'all' || filter === '{{ $quest->user_status }}'">
 
             {{-- Header --}}
             <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <span class="text-3xl"><x-icon :name="$quest->icon ?? 'target'" class="w-7 h-7" /></span>
+                    <span class="text-2xl"><x-icon :name="$quest->icon ?? 'target'" class="w-6 h-6" /></span>
                     <div>
                         <p class="font-black text-white leading-tight">{{ $quest->title }}</p>
                         @if($quest->age_group)
