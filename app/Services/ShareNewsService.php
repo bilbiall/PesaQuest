@@ -89,24 +89,37 @@ class ShareNewsService
             $pool = ShareNewsTemplate::active()->get(); // pool exhausted — fall back rather than go silent
         }
         if ($pool->isEmpty()) {
+            \Log::warning('Market Watch: no active share_news_templates — has ShareNewsTemplateSeeder ever run?');
             return null;
         }
 
-        $template = $pool->random();
+        if (!Share::active()->exists()) {
+            \Log::warning('Market Watch: no active shares to write news about.');
+            return null;
+        }
 
-        $subjectShare = null;
-        $sector       = null;
+        $activeSectors = Share::active()->pluck('sector')->unique();
+
+        // Pick from whichever templates actually have a valid subject right
+        // now, rather than randomly landing on one template and giving up —
+        // one incompatible pick out of the pool shouldn't cost the whole roll.
+        $template = $pool->shuffle()->first(
+            fn ($t) => $t->scope === 'company' || $activeSectors->contains($t->sector)
+        );
+
+        if (!$template) {
+            \Log::warning('Market Watch: no template in the active pool matches any sector currently populated with shares.');
+            return null;
+        }
 
         if ($template->scope === 'company') {
             $subjectShare = Share::active()->inRandomOrder()->first();
-            if (!$subjectShare) return null;
-            $name = $subjectShare->name;
+            $sector       = null;
+            $name         = $subjectShare->name;
         } else {
-            $sector = $template->sector;
-            if (!$sector || !Share::active()->where('sector', $sector)->exists()) {
-                return null; // sector isn't populated right now — skip quietly
-            }
-            $name = "the {$sector} sector";
+            $subjectShare = null;
+            $sector       = $template->sector;
+            $name         = "the {$sector} sector";
         }
 
         $rendered = $template->render($name);
