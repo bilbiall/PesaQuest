@@ -1775,19 +1775,14 @@ class LifeSimulator
             \Log::warning('Market Watch resolveDue failed: ' . $e->getMessage());
         }
 
-        // The publish dice-roll must not repeat per login — one roll per
-        // calendar day, server-wide, matching what `game:publish-share-news`
-        // would do if the cron fired exactly once at its scheduled time.
-        $today = now()->toDateString();
-        if (\App\Models\Setting::get('market_watch_last_roll_date') === $today) {
-            return;
-        }
-        \App\Models\Setting::set('market_watch_last_roll_date', $today);
-
+        // The publish dice-roll is gated by game days elapsed (not real
+        // calendar days) so the cadence stays "roughly 3 a game week" no
+        // matter how fast the admin has the clock configured — see
+        // ShareNewsService::rollDueBulletins().
         try {
-            $service->maybePublish();
+            $service->rollDueBulletins();
         } catch (\Throwable $e) {
-            \Log::warning('Market Watch maybePublish failed: ' . $e->getMessage());
+            \Log::warning('Market Watch rollDueBulletins failed: ' . $e->getMessage());
         }
     }
 

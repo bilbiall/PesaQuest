@@ -245,7 +245,7 @@
                 {{ $sharesUnrealisedPL >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($sharesUnrealisedPL)) }} unrealised
             </span>
         </div>
-        <div class="grid sm:grid-cols-2 gap-3">
+        <div class="grid sm:grid-cols-2 gap-4">
             @foreach($myShares as $h)
             @php [$riskName, $riskDesc] = array_pad(explode(' — ', $h->share->riskLabel(), 2), 2, ''); @endphp
             <div id="pf-share-{{ $h->share_id }}" class="pf-card pf-appear rounded-2xl p-4" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
@@ -351,7 +351,7 @@
                     $exitPenalty= $pa->asset->early_exit_penalty_pct ?? 0;
                 @endphp
                 <div class="pf-card pf-appear rounded-2xl overflow-hidden" id="pf-asset-{{ $pa->id }}"
-                     style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));">
+                     style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));border-color:rgba(139,92,246,0.2);">
                     @if($pa->asset->image_url)
                     <div class="relative h-28 overflow-hidden">
                         <img src="{{ $pa->asset->image_url }}" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.55;" loading="lazy" alt="" onerror="this.parentElement.style.display='none'"/>

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ForumTopic;
+use App\Models\Setting;
 use App\Models\Share;
 use App\Models\ShareNewsItem;
 use App\Models\ShareNewsTemplate;
@@ -37,10 +38,16 @@ class ShareNewsService
      *  repeating, so the pool needs to be genuinely varied to never repeat. */
     private const NO_REPEAT_WINDOW = 15;
 
-    /** Backstop: if it's been this many real days since the last bulletin,
+    /** Backstop: if it's been this many game days since the last bulletin,
      *  force the next roll to publish instead of leaving it to chance — keeps
      *  a run of bad luck from going silent for weeks on a low-probability roll. */
     private const MAX_SILENT_DAYS = 7;
+
+    /** rollDueBulletins() catches up on every game day missed since the last
+     *  check (cron not running locally, a long gap between logins, ...), but
+     *  caps how many maybePublish() rolls happen in one go so a long absence
+     *  can't dump a wall of bulletins on return. */
+    private const MAX_CATCHUP_ROLLS = 10;
 
     /** Real game-days between publish and the effect landing — the window a
      *  keen player has to act before the price actually moves. */
@@ -78,13 +85,46 @@ class ShareNewsService
         return $this->publish();
     }
 
-    /** True once too many real days have passed since the last bulletin —
-     *  including if none has ever been published. */
+    /** True once too many game days have passed since the last bulletin —
+     *  including if none has ever been published. Measured in game days (via
+     *  GameClock), not real days, so this stays "roughly 3 a game week" no
+     *  matter how fast the admin has the clock configured to run. */
     private function isOverdue(): bool
     {
         $lastPublishedAt = ShareNewsItem::max('published_at');
 
-        return !$lastPublishedAt || now()->diffInDays($lastPublishedAt) >= self::MAX_SILENT_DAYS;
+        return !$lastPublishedAt || $this->clock->gameDaysSince(\Carbon\Carbon::parse($lastPublishedAt)) >= self::MAX_SILENT_DAYS;
+    }
+
+    /** Catches up on every game day missed since the last check — the roll
+     *  is meant to happen once per game day, but nothing calls this on a
+     *  fixed game-day schedule (the cron fires once per REAL day, and the
+     *  login-driven fallback fires once per request), so instead this looks
+     *  at how many game days have actually elapsed since the last check and
+     *  rolls once per elapsed day, capped so a long gap can't flood the
+     *  forum with bulletins all at once. Safe to call as often as you like —
+     *  it's a no-op once less than a full game day has elapsed. */
+    public function rollDueBulletins(): int
+    {
+        $lastCheckedAt = Setting::get('market_watch_last_roll_at');
+        $since = $lastCheckedAt ? \Carbon\Carbon::parse($lastCheckedAt) : null;
+
+        $elapsedDays = $since ? $this->clock->gameDaysSince($since) : 1;
+        if ($elapsedDays < 1) {
+            return 0;
+        }
+
+        $rolls = min($elapsedDays, self::MAX_CATCHUP_ROLLS);
+        $published = 0;
+        for ($i = 0; $i < $rolls; $i++) {
+            if ($this->maybePublish()) {
+                $published++;
+            }
+        }
+
+        Setting::set('market_watch_last_roll_at', now()->toDateTimeString());
+
+        return $published;
     }
 
     public function publish(): ?ShareNewsItem
