@@ -166,7 +166,7 @@
                                 <p class="text-xs text-indigo-300/80 leading-snug">{{ $ple->lifeEvent->educational_note }}</p>
                             </div>
                             @endif
-                            <p class="text-[10px] text-gray-600 mt-2">Level {{ $ple->game_age_at_trigger }} · Game Day {{ $ple->tick_triggered }}</p>
+                            <p class="text-[10px] text-gray-600 mt-2">Level {{ $ple->game_age_at_trigger }} · {{ $ple->calendarDateLabel() }}</p>
                         </div>
                     </div>
                 </div>

@@ -48,28 +48,7 @@
                 gap: 1rem;
             }
         }
-        .desktop-stats-strip { display: none; }
-        @media (min-width: 768px) {
-            .desktop-stats-strip {
-                display: grid !important;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 0.75rem;
-            }
-        }
-        @media (min-width: 1280px) {
-            .desktop-stats-strip { grid-template-columns: repeat(8, 1fr); }
-        }
-        /* Below-map 4-col strip — cards sit at natural height, don't stretch */
-        .desktop-bottom-strip { display: none; }
-        @media (min-width: 768px) {
-            .desktop-bottom-strip {
-                display: grid !important;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 0.75rem;
-                align-items: start;
-            }
-        }
-        /* Chapter + City News 2-col row */
+        /* Streak + Daily Reward / Current Chapter rows share this 2-col grid */
         .desktop-2col-strip { display: none; }
         @media (min-width: 768px) {
             .desktop-2col-strip {
@@ -672,6 +651,32 @@
                         </span>
                     </div>
                 </div>
+
+                {{-- Player stats — moved up from the old bottom stats strip so
+                     ranking/XP/badges/investments/credit live next to the rest
+                     of the character summary instead of a separate row. --}}
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="rounded-xl p-2 text-center" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
+                        <div class="text-xs font-black text-emerald-400">Top {{ max(1, 100 - $percentile + 1) }}%</div>
+                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Ranking</div>
+                    </div>
+                    <div class="rounded-xl p-2 text-center" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
+                        <div class="text-xs font-black text-indigo-400">{{ number_format($xp) }}</div>
+                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Total XP</div>
+                    </div>
+                    <div class="rounded-xl p-2 text-center" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);">
+                        <div class="text-xs font-black text-purple-400">{{ $badges->count() }}</div>
+                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Badges</div>
+                    </div>
+                    <div class="rounded-xl p-2 text-center" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+                        <div class="text-xs font-black text-amber-400">{{ $investmentCount }}</div>
+                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Investments</div>
+                    </div>
+                    <div class="col-span-2 rounded-xl p-2 text-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
+                        <div class="text-xs font-black {{ $creditScore >= 650 ? 'text-emerald-400' : ($creditScore >= 500 ? 'text-amber-400' : 'text-red-400') }}">{{ $creditScore }}</div>
+                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Credit Score</div>
+                    </div>
+                </div>
             </div>
             <div class="px-4 pb-4 flex flex-col gap-2">
                 @if($overdueBills->count() > 0)
@@ -872,31 +877,8 @@
         @include('dashboard.contracts-widget')
     </div>
 
-    {{-- BOTTOM STRIP: Quick Actions, Streak, Daily Reward, Today's Goals --}}
-    <div class="desktop-bottom-strip mt-4">
-
-        {{-- Quick Actions --}}
-        <div class="card rounded-2xl p-3">
-            <div class="text-[9px] font-black uppercase tracking-wider text-gray-500 mb-2 inline-flex items-center gap-1"><x-icon name="bolt" class="w-3 h-3" /> Quick Actions</div>
-            <div class="grid grid-cols-3 gap-1.5">
-                @php
-                $qActions = [
-                    ['icon'=>'bank','label'=>'Bank','href'=>route('savings.index')],
-                    ['icon'=>'shopping-bag','label'=>'Market','href'=>route('marketplace')],
-                    ['icon'=>'briefcase','label'=>'Jobs','href'=>route('life.career')],
-                    ['icon'=>'people','label'=>'Friends','href'=>route('friends.index')],
-                    ['icon'=>'trend-up','label'=>'Invest','href'=>route('portfolio')],
-                    ['icon'=>'house','label'=>'Home','href'=>route('life.board')],
-                ];
-                @endphp
-                @foreach($qActions as $qa)
-                <a href="{{ $qa['href'] }}" class="qa-tile rounded-xl py-2 text-center flex flex-col items-center gap-0.5">
-                    <x-icon :name="$qa['icon']" class="w-4 h-4" />
-                    <span class="text-[8px] font-bold text-gray-400">{{ $qa['label'] }}</span>
-                </a>
-                @endforeach
-            </div>
-        </div>
+    {{-- STREAK + DAILY REWARD --}}
+    <div class="desktop-2col-strip mt-4">
 
         {{-- Streak --}}
         <div class="rounded-2xl p-3" style="background:linear-gradient(135deg,#1a1008,#120b05);border:1px solid rgba(249,115,22,0.4);">
@@ -959,106 +941,29 @@
             @endif
         </div>
 
-        {{-- Today's Goals — from active user quests --}}
-        <div class="rounded-2xl p-3" style="background:linear-gradient(135deg,#110f28,#0d0b20);border:1px solid rgba(99,102,241,0.4);">
-            <div class="flex items-center justify-between mb-2">
-                <div class="text-xs font-black text-white">Today's Goals</div>
-                <a href="{{ route('world', ['open' => 'quests']) }}" class="text-[9px] text-indigo-400 font-semibold hover:text-indigo-300">View All</a>
+    </div>{{-- /streak + daily reward --}}
+
+    {{-- CURRENT CHAPTER --}}
+    <div class="rounded-2xl p-3 mt-4" style="background:{{ $chapterColor['bg'] }};border:1px solid {{ $chapterColor['border'] }};">
+        <div class="text-[9px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Current Chapter</div>
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-sm font-black {{ $chapterColor['text'] }}">{{ $chapterIcon }} {{ $chapterName }}</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">{{ $progress->chapterTagline() }}</div>
             </div>
-            @if($questGoals->isNotEmpty())
-            <div class="space-y-1.5">
-                @foreach($questGoals as $uq)
-                <a href="{{ route('world', ['open' => 'quests']) }}" class="flex items-center gap-2 group">
-                    <span class="text-base flex-shrink-0 leading-none"><x-icon :name="$uq->quest->icon ?? 'checklist'" class="w-4 h-4" /></span>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-[10px] font-semibold text-white truncate group-hover:text-indigo-300 transition-colors">{{ $uq->quest->title ?? 'Quest' }}</div>
-                        <div class="text-[8px] {{ $uq->isPending() ? 'text-amber-400' : 'text-indigo-400' }}">
-                            {{ $uq->isPending() ? '⏳ Reviewing' : '📜 Active' }} — +{{ $uq->quest->xp_reward ?? 50 }} XP
-                        </div>
-                    </div>
-                </a>
-                @endforeach
+            <div class="text-right">
+                <div class="text-xl font-black {{ $chapterColor['text'] }}">Lv {{ $progress->level ?? 1 }}</div>
+                <div class="text-[9px] text-gray-500">level</div>
             </div>
-            @else
-            <div class="space-y-2">
-                @forelse($challenges->take(4) as $ch)
-                @php $cp = ($ch->target_count ?? 0) > 0 ? min(100, round(($ch->user_progress ?? 0)/($ch->target_count)*100)) : 0; @endphp
-                <div class="flex items-center gap-2 {{ ($ch->user_claimed ?? false) ? 'opacity-50' : '' }}">
-                    <div class="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 text-[10px]"
-                         style="{{ ($ch->user_claimed ?? false) ? 'background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.5);' : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);' }}">
-                        {{ ($ch->user_claimed ?? false) ? '✓' : '' }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-[10px] font-semibold text-white truncate">{{ $ch->title }}</div>
-                        <div class="h-1 bg-white/5 rounded-full mt-0.5">
-                            <div class="h-full rounded-full bg-indigo-500" style="width:{{ $cp }}%;"></div>
-                        </div>
-                    </div>
-                    <span class="text-[9px] text-indigo-400 font-bold flex-shrink-0">+{{ $ch->reward_points ?? 50 }}XP</span>
-                </div>
-                @empty
-                <div class="text-center py-4">
-                    <div class="text-2xl mb-1">🎯</div>
-                    <div class="text-[10px] text-gray-500">Start a quest to see your goals here</div>
-                    <a href="{{ route('world', ['open' => 'quests']) }}" class="text-[10px] text-indigo-400 font-semibold mt-1 block">Browse Quests →</a>
-                </div>
-                @endforelse
-            </div>
-            @endif
         </div>
-
-    </div>{{-- /bottom strip --}}
-
-    {{-- 2-COL ROW: Current Chapter + City News --}}
-    <div class="desktop-2col-strip mt-4">
-
-        {{-- Current Chapter --}}
-        <div class="rounded-2xl p-3" style="background:{{ $chapterColor['bg'] }};border:1px solid {{ $chapterColor['border'] }};">
-            <div class="text-[9px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Current Chapter</div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-sm font-black {{ $chapterColor['text'] }}">{{ $chapterIcon }} {{ $chapterName }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">{{ $progress->chapterTagline() }}</div>
-                </div>
-                <div class="text-right">
-                    <div class="text-xl font-black {{ $chapterColor['text'] }}">Lv {{ $progress->level ?? 1 }}</div>
-                    <div class="text-[9px] text-gray-500">level</div>
-                </div>
-            </div>
-            <div class="mt-1.5 h-1.5 bg-white/5 rounded-full">
-                <div class="h-1.5 rounded-full chapter-bar" style="width:{{ $chapterPctVal }}%;background:{{ $chapterColor['bar'] }};"></div>
-            </div>
-            @if($nextChapterWorth)
-            <div class="text-[9px] text-gray-500 mt-1">Ksh {{ number_format($progress->netWorthToNextChapter()) }} to next chapter</div>
-            @endif
-            <a href="{{ route('life.timeline') }}" class="text-[9px] {{ $chapterColor['text'] }} font-semibold mt-1 block hover:opacity-80 transition-opacity">Timeline →</a>
+        <div class="mt-1.5 h-1.5 bg-white/5 rounded-full">
+            <div class="h-1.5 rounded-full chapter-bar" style="width:{{ $chapterPctVal }}%;background:{{ $chapterColor['bar'] }};"></div>
         </div>
-
-        {{-- City News --}}
-        <div class="card rounded-2xl p-3">
-            <div class="flex items-center justify-between mb-2">
-                <div class="text-xs font-black text-white">City News</div>
-                <button @click="showNotifPanel=true" class="text-[9px] text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">View All →</button>
-            </div>
-            @if($recentNotifications->count() > 0)
-            <div class="space-y-1">
-                @foreach($recentNotifications->take(4) as $notif)
-                <div class="notif-{{ $notif->type }} notif-item rounded-lg px-2 py-1.5 flex items-center gap-2">
-                    <span class="text-sm flex-shrink-0 leading-none">{{ $notif->icon }}</span>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-[10px] font-bold text-white truncate">{{ $notif->title }}</div>
-                        <div class="text-[8px] text-gray-500">{{ $notif->created_at->diffForHumans() }}</div>
-                    </div>
-                    @if(!$notif->is_read)<div class="w-1.5 h-1.5 bg-indigo-500 rounded-full flex-shrink-0 pulse-dot"></div>@endif
-                </div>
-                @endforeach
-            </div>
-            @else
-            <div class="text-center py-3 text-gray-500 text-xs">No city news yet</div>
-            @endif
-        </div>
-
-    </div>{{-- /2-col row --}}
+        @if($nextChapterWorth)
+        <div class="text-[9px] text-gray-500 mt-1">Ksh {{ number_format($progress->netWorthToNextChapter()) }} to next chapter</div>
+        @endif
+        <a href="{{ route('life.timeline') }}" class="text-[9px] {{ $chapterColor['text'] }} font-semibold mt-1 block hover:opacity-80 transition-opacity">Timeline →</a>
+    </div>
 
     {{-- MATURED INVESTMENTS (desktop — shown when ready) --}}
     @if($maturedInvestments->count() > 0)
@@ -1088,28 +993,6 @@
     </div>
     @endif
 
-    {{-- YOUR STATS STRIP (desktop) --}}
-    <div class="desktop-stats-strip grid-cols-4 xl:grid-cols-8 gap-3 mt-4">
-        @php
-        $statsRow = [
-            ['icon'=>'star','val'=>number_format($xp),'label'=>'Total XP','color'=>'text-indigo-400'],
-            ['icon'=>'layers','val'=>$level,'label'=>'Level','color'=>'text-purple-400'],
-            ['icon'=>'fire','val'=>$streak->current_streak ?? 0,'label'=>'Day Streak','color'=>'text-orange-400'],
-            ['icon'=>'trophy','val'=>'Top '.max(1,100-$percentile+1).'%','label'=>'Ranking','color'=>'text-emerald-400'],
-            ['icon'=>'coin','val'=>'Ksh '.number_format($balance),'label'=>'Cash Balance','color'=>'text-emerald-400'],
-            ['icon'=>'bar-chart','val'=>$investmentCount,'label'=>'Investments','color'=>'text-amber-400'],
-            ['icon'=>'target','val'=>$creditScore,'label'=>'Credit Score','color'=>$creditScore>=650?'text-emerald-400':($creditScore>=500?'text-amber-400':'text-red-400')],
-            ['icon'=>'medal','val'=>$badges->count(),'label'=>'Badges','color'=>'text-purple-400'],
-        ];
-        @endphp
-        @foreach($statsRow as $s)
-        <a href="{{ route('portfolio') }}" class="stat-tile rounded-2xl p-4 text-center transition-all hover:scale-105 card-hover">
-            <div class="mb-1 flex justify-center"><x-icon :name="$s['icon']" class="w-5 h-5 {{ $s['color'] }}" /></div>
-            <div class="text-lg font-black {{ $s['color'] }}">{{ $s['val'] }}</div>
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{{ $s['label'] }}</div>
-        </a>
-        @endforeach
-    </div>
 
     {{-- MOBILE LAYOUT (hidden md+) --}}
     <div class="mobile-game-layout space-y-4">

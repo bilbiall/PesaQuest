@@ -23,8 +23,42 @@ class GameCalendarService
     public const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     public const HORIZON_DAYS = 14; // how far ahead the strip/API looks
 
+    public const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Standard (non-leap) civil month lengths — sums to exactly 365, so it
+    // maps cleanly onto the existing 365-tick game year with no leftover
+    // days. This is a purely cosmetic calendar laid over the tick count —
+    // the 30-tick bill/payday/chama cycles elsewhere are untouched by it.
+    private const MONTH_LENGTHS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
     public function __construct(private GameClock $clock)
     {
+    }
+
+    /**
+     * Converts an absolute tick into a calendar-style date — month name, day
+     * of month, and game year — so a maturity/event date reads as "Dec 15,
+     * Yr 6" instead of a raw tick count a player has no intuition for.
+     */
+    public function calendarDate(int $tick): array
+    {
+        $tick      = max(0, $tick);
+        $year      = intdiv($tick, 365) + 1;
+        $remaining = $tick % 365; // 0-indexed day within the game year
+
+        $month = 0;
+        foreach (self::MONTH_LENGTHS as $i => $len) {
+            if ($remaining < $len) { $month = $i; break; }
+            $remaining -= $len;
+        }
+        $dayOfMonth = $remaining + 1;
+
+        return [
+            'month_name'   => self::MONTH_NAMES[$month],
+            'day_of_month' => $dayOfMonth,
+            'year'         => $year,
+            'label'        => self::MONTH_NAMES[$month] . " {$dayOfMonth}, Yr {$year}",
+        ];
     }
 
     /** Chip payload: where the player stands in game time right now. */
@@ -33,7 +67,7 @@ class GameCalendarService
         $progress = $user->getOrCreateProgress();
         $tick     = (int) ($progress->tick_count ?? 0);
 
-        return [
+        return array_merge([
             'tick'    => $tick,
             'day'     => $tick + 1,                          // humans start at Day 1
             'weekday' => self::WEEKDAYS[$tick % 7],
@@ -41,7 +75,7 @@ class GameCalendarService
             'month'   => intdiv($tick, 30) + 1,
             'year'    => intdiv($tick, 365) + 1,
             'month_progress' => round(($tick % 30) / 30 * 100),
-        ];
+        ], $this->calendarDate($tick));
     }
 
     /** The next HORIZON_DAYS game days, each with its scheduled events. */
@@ -66,13 +100,13 @@ class GameCalendarService
         $days = [];
         for ($i = 0; $i < self::HORIZON_DAYS; $i++) {
             $dayTick = $tick + $i;
-            $days[] = [
+            $days[] = array_merge([
                 'offset'   => $i,
                 'day'      => $dayTick + 1,
                 'weekday'  => self::WEEKDAYS[$dayTick % 7],
                 'is_today' => $i === 0,
                 'events'   => $byOffset[$i],
-            ];
+            ], $this->calendarDate($dayTick));
         }
 
         return ['today' => $this->today($user), 'days' => $days];

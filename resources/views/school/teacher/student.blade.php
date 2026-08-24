@@ -93,7 +93,7 @@
                     <span class="text-lg flex-shrink-0">{{ $ple->lifeEvent->icon ?? '⚡' }}</span>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-white">{{ $ple->lifeEvent->title ?? 'Life Event' }}</p>
-                        <p class="text-[11px] text-gray-500 mt-0.5">Game Day {{ $ple->tick_triggered }}</p>
+                        <p class="text-[11px] text-gray-500 mt-0.5">{{ $ple->calendarDateLabel() }}</p>
                     </div>
                 </div>
                 @endforeach

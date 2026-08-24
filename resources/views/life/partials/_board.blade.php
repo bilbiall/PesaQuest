@@ -864,7 +864,7 @@
                                 <p class="text-[11px] text-gray-400 mt-0.5 leading-snug">{{ $ple->lifeEvent->description }}</p>
                                 @endif
                                 <p class="text-[10px] text-gray-600 mt-1.5">
-                                    Game Day {{ $ple->tick_triggered }} · {{ $feedChapterNames[$ple->chapter_at_trigger] ?? ucfirst($ple->chapter_at_trigger ?? 'Journey') }}
+                                    {{ $ple->calendarDateLabel() }} · {{ $feedChapterNames[$ple->chapter_at_trigger] ?? ucfirst($ple->chapter_at_trigger ?? 'Journey') }}
                                 </p>
                             </div>
                         </div>

@@ -31,17 +31,34 @@ class SpinController extends Controller
             }
         } catch (\Exception $e) {
             // spin_results table not yet migrated — degrade gracefully
-            $canSpin  = false;
-            $lastSpin = null;
-            $history  = collect();
+            $canSpin      = false;
+            $lastSpin     = null;
+            $history      = collect();
+            $spinCooldown = 0;
+        }
+
+        // When the wheel's locked, the exact moment it unlocks again — the
+        // later of "midnight after the last spin" and "the plan's cooldown
+        // has elapsed" — so the countdown chip is never optimistic for a
+        // free account still under a multi-day cooldown.
+        $nextSpinAt = null;
+        if (!$canSpin && $lastSpin) {
+            $nextSpinAt = $lastSpin->created_at->copy()->startOfDay()->addDay();
+            if ($spinCooldown > 0) {
+                $cooldownEnd = $lastSpin->created_at->copy()->addDays($spinCooldown);
+                if ($cooldownEnd->gt($nextSpinAt)) {
+                    $nextSpinAt = $cooldownEnd;
+                }
+            }
         }
 
         return view('spin.wheel', [
-            'progress'  => $progress,
-            'canSpin'   => $canSpin,
-            'lastSpin'  => $lastSpin,
-            'history'   => $history,
-            'segments'  => \App\Models\SpinSegment::wheelSegments($progress->level ?? 1),
+            'progress'   => $progress,
+            'canSpin'    => $canSpin,
+            'lastSpin'   => $lastSpin,
+            'history'    => $history,
+            'nextSpinAt' => $nextSpinAt,
+            'segments'   => \App\Models\SpinSegment::wheelSegments($progress->level ?? 1),
         ]);
     }
 

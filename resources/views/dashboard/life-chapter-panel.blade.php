@@ -134,7 +134,7 @@ $chapterImgKw = match($chapterKey) {
                     <span class="text-base flex-shrink-0">{{ $ple->lifeEvent->icon ?? '⚡' }}</span>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-gray-300 truncate">{{ $ple->lifeEvent->title ?? 'Event' }}</p>
-                        <p class="text-[10px] text-gray-500">Level {{ $ple->game_age_at_trigger }} · Game Day {{ $ple->tick_triggered }}</p>
+                        <p class="text-[10px] text-gray-500">Level {{ $ple->game_age_at_trigger }} · {{ $ple->calendarDateLabel() }}</p>
                     </div>
                     @if(!empty($ple->effect_applied['balance_change']) && $ple->effect_applied['balance_change'] != 0)
                     <span class="text-[10px] font-black flex-shrink-0 {{ $ple->effect_applied['balance_change'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">

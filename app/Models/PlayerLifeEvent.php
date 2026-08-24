@@ -25,4 +25,11 @@ class PlayerLifeEvent extends Model
     {
         return $this->belongsTo(LifeEvent::class);
     }
+
+    /** Calendar-style label for when this fired, e.g. "Dec 15, Yr 6" — reads
+     *  as an actual date instead of a raw game-day tick count. */
+    public function calendarDateLabel(): string
+    {
+        return app(\App\Services\GameCalendarService::class)->calendarDate((int) $this->tick_triggered)['label'];
+    }
 }

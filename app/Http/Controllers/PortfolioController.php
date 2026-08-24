@@ -9,6 +9,7 @@ use App\Models\PlayerShareHolding;
 use App\Models\SavingsScheme;
 use App\Models\ShareTrade;
 use App\Models\StockPriceHistory;
+use Illuminate\Support\Str;
 
 class PortfolioController extends Controller
 {
@@ -37,6 +38,10 @@ class PortfolioController extends Controller
 
         // Grouped for the view: property / vehicle / business / investment / gadget / other
         $assetsByCategory = $playerAssets->groupBy(fn ($pa) => $pa->asset->category ?? 'other');
+
+        // Plain-language "why" statements for the summary bar, built from this
+        // player's actual holdings so they read as an answer, not a definition.
+        $assetInsights = $this->buildAssetInsights($playerAssets, $totalValue, $totalInvested, $unrealisedPL);
 
         /* ── Active investment deals (cyan) ── */
         $activeDeals = PlayerDeal::where('user_id', $user->id)
@@ -164,6 +169,7 @@ class PortfolioController extends Controller
             'monthlyIncome'    => $monthlyIncome,
             'monthlyCost'      => $monthlyCost,
             'portfolioCount'   => $playerAssets->count(),
+            'assetInsights'    => $assetInsights,
             'activeDeals'      => $activeDeals,
             'totalDealCapital' => $totalDealCapital,
             'completedDeals'   => $completedDeals,
@@ -177,5 +183,82 @@ class PortfolioController extends Controller
             'totalDebt'        => $totalDebt,
             'netWorthSeries'   => $netWorthSeries,
         ]);
+    }
+
+    /**
+     * Turns the six summary-bar numbers into brief, player-specific
+     * sentences — naming the actual category/asset driving each figure
+     * instead of a generic dictionary definition.
+     */
+    private function buildAssetInsights($playerAssets, int $totalValue, int $totalInvested, int $unrealisedPL): array
+    {
+        $count = $playerAssets->count();
+
+        if ($count === 0) {
+            return [
+                'asset_value'   => "You don't own any assets yet — buy your first one from the Marketplace to start building this picture.",
+                'invested'      => "Nothing invested yet.",
+                'unrealised_pl' => "No holdings to gain or lose value on yet.",
+                'income'        => "No assets generating income yet.",
+                'costs'         => "No ongoing asset costs right now.",
+                'holdings'      => "Your holdings will show up here once you buy your first asset.",
+            ];
+        }
+
+        $byCategoryValue = $playerAssets->groupBy(fn ($pa) => $pa->asset->categoryLabel())
+            ->map(fn ($group) => (int) $group->sum('current_value'))
+            ->sortDesc();
+
+        $byCategoryPL = $playerAssets->groupBy(fn ($pa) => $pa->asset->categoryLabel())
+            ->map(fn ($group) => (int) $group->sum(fn ($pa) => $pa->gainLoss()));
+
+        $topValueCat  = $byCategoryValue->keys()->first();
+        $worstPlCat   = $byCategoryPL->sort()->keys()->first();
+        $bestPlCat    = $byCategoryPL->sortDesc()->keys()->first();
+
+        $incomeAssets = $playerAssets->filter(fn ($pa) => ($pa->asset->monthly_income ?? 0) > 0);
+        $topIncomeAsset = $incomeAssets->sortByDesc(fn ($pa) => ($pa->asset->monthly_income ?? 0) * $pa->quantity)->first();
+
+        $costAssets = $playerAssets->filter(fn ($pa) => ($pa->asset->monthly_cost ?? 0) > 0);
+        $topCostAsset = $costAssets->sortByDesc(fn ($pa) => ($pa->asset->monthly_cost ?? 0) * $pa->quantity)->first();
+
+        $holdingsBreakdown = $playerAssets->groupBy(fn ($pa) => $pa->asset->categoryLabel())
+            ->map->count()
+            ->sortDesc()
+            ->map(fn ($n, $label) => $n . ' ' . ($n === 1 ? $label : Str::plural($label)))
+            ->implode(', ');
+
+        $insights = [];
+
+        $insights['asset_value'] = "Your {$count} " . Str::plural('asset', $count) . " are worth Ksh " . number_format($totalValue) . " combined right now"
+            . ($topValueCat ? " — mostly {$topValueCat} (Ksh " . number_format($byCategoryValue->first()) . ')' : '') . '.';
+
+        $insights['invested'] = "You've put Ksh " . number_format($totalInvested) . " into these assets since buying them. This number only changes when you buy or sell — never just because prices move.";
+
+        if ($unrealisedPL < 0 && $worstPlCat) {
+            $insights['unrealised_pl'] = "You're down Ksh " . number_format(abs($unrealisedPL)) . " on paper, mostly from {$worstPlCat} losing value (Ksh " . number_format(abs($byCategoryPL[$worstPlCat])) . "). This is only a loss on paper until you actually sell — values can recover.";
+        } elseif ($unrealisedPL > 0 && $bestPlCat) {
+            $insights['unrealised_pl'] = "You're up Ksh " . number_format($unrealisedPL) . " on paper, led by {$bestPlCat} (+Ksh " . number_format($byCategoryPL[$bestPlCat]) . "). Still just a paper gain until you sell.";
+        } else {
+            $insights['unrealised_pl'] = "Your assets are worth exactly what you paid for them — no gain or loss yet.";
+        }
+
+        if ($topIncomeAsset) {
+            $incomeAmt = ($topIncomeAsset->asset->monthly_income ?? 0) * $topIncomeAsset->quantity;
+            $insights['income'] = $incomeAssets->count() . " of your {$count} assets pay out every month — {$topIncomeAsset->asset->name} is your biggest earner at Ksh " . number_format($incomeAmt) . '/mo.';
+        } else {
+            $insights['income'] = "None of your current assets pay monthly income — they're value plays (buy low, sell high) rather than cash generators.";
+        }
+
+        if ($topCostAsset) {
+            $costAmt = ($topCostAsset->asset->monthly_cost ?? 0) * $topCostAsset->quantity;
+            $insights['costs'] = "Costs/mo come from upkeep or loan repayments on assets like {$topCostAsset->asset->name} (Ksh " . number_format($costAmt) . "/mo) — these apply whether or not the asset is making you money.";
+        } else {
+            $insights['costs'] = "None of your assets have ongoing costs right now.";
+        }
+
+        $insights['holdings'] = "You own {$count} active " . Str::plural('asset', $count) . ": {$holdingsBreakdown}. Selling or losing one removes it from this count.";
+
+        return $insights;
     }
 }

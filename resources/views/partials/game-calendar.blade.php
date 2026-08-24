@@ -106,7 +106,7 @@
 
 <div id="gc-chip" class="{{ $gcInline ? 'gc-inline' : '' }}" title="Pesa City calendar" onclick="gcToggle()">
     <span>📅</span>
-    <span class="gc-daytext">Day {{ number_format($gcToday['day']) }} · {{ substr($gcToday['weekday'], 0, 3) }} · Yr {{ $gcToday['year'] }}</span>
+    <span class="gc-daytext">{{ $gcToday['month_name'] }} {{ $gcToday['day_of_month'] }} · {{ substr($gcToday['weekday'], 0, 3) }} · Yr {{ $gcToday['year'] }}</span>
     <span class="gc-bar" title="Month progress"><i style="width:{{ $gcToday['month_progress'] }}%"></i></span>
     @if($gcPayReady)
     <span class="gc-paytext" style="color:#34d399;font-weight:900;" title="You have uncollected pay — Report to Work on the Career page">💰 Pay ready!</span>
@@ -118,7 +118,7 @@
 
 <div id="gc-strip">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:12px;font-weight:900;color:#fff;">📅 This Week in Pesa City <span style="color:#6b7280;font-weight:700;">· Month {{ $gcToday['month'] }}, Year {{ $gcToday['year'] }}</span></div>
+        <div style="font-size:12px;font-weight:900;color:#fff;">📅 This Week in Pesa City <span style="color:#6b7280;font-weight:700;">· {{ $gcToday['month_name'] }}, Year {{ $gcToday['year'] }}</span></div>
         <button onclick="gcOpenModal()" style="font-size:11px;font-weight:800;color:#a5b4fc;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:4px 10px;cursor:pointer;">Next 2 weeks →</button>
     </div>
     <div class="gc-days" id="gc-week"><div style="grid-column:1/-1;text-align:center;color:#6b7280;font-size:12px;padding:12px 0;">Loading…</div></div>
@@ -207,12 +207,12 @@
         const week = gcData.days.slice(0, 7).map(d => {
             const dots = d.events.slice(0, 4).map(ev => `<b style="background:${dotColor(ev)}"></b>`).join('');
             const tip  = d.events.length
-                ? `<div class="gc-tip"><div style="font-weight:900;color:#fff;margin-bottom:3px;">Day ${d.day.toLocaleString()} · ${d.weekday}</div>` +
+                ? `<div class="gc-tip"><div style="font-weight:900;color:#fff;margin-bottom:3px;">${d.month_name} ${d.day_of_month} · ${d.weekday}</div>` +
                   d.events.map(ev => `<div class="gc-ev-line"><span>${ev.icon} ${ev.label}</span>${fmtAmt(ev.amount)}</div>`).join('') + `</div>`
                 : '';
             return `<div class="gc-day ${d.is_today ? 'gc-today' : ''}">
                         <div class="gc-wd">${d.weekday.slice(0, 3)}</div>
-                        <div class="gc-num">${d.is_today ? '★' : d.day.toLocaleString()}</div>
+                        <div class="gc-num">${d.is_today ? '★' : d.day_of_month}</div>
                         <div class="gc-ev">${dots}</div>${tip}
                     </div>`;
         }).join('');
@@ -224,7 +224,7 @@
                 ? d.events.map(ev => `<div class="gc-ev-line" style="white-space:normal;"><span>${ev.icon} ${ev.label}</span>${fmtAmt(ev.amount)}</div>`).join('')
                 : '<span style="color:#4b5563;">Nothing scheduled — a good day to save 😉</span>';
             return `<div class="gc-row ${d.is_today ? 'gc-today-row' : ''}">
-                        <div class="gc-when">${d.is_today ? 'TODAY' : 'Day ' + d.day.toLocaleString()}<small>${d.weekday}</small></div>
+                        <div class="gc-when">${d.is_today ? 'TODAY' : d.month_name + ' ' + d.day_of_month}<small>${d.weekday}</small></div>
                         <div style="flex:1;min-width:0;">${evs}</div>
                     </div>`;
         }).join('');

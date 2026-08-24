@@ -142,6 +142,8 @@
             padding:.5rem .75rem; border-radius:.75rem; transition:background .15s;
         }
         .prize-list-item:hover { background:rgba(255,255,255,.04); }
+        .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body x-data="spinApp()" @keydown.window="handleKey">
@@ -172,6 +174,19 @@
 </nav>
 
 <div class="relative z-10 max-w-5xl mx-auto px-4 py-8">
+
+    {{-- Info chip row --}}
+    <div class="flex flex-wrap justify-center items-center gap-2 mb-6">
+        <div class="px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fcd34d;">
+            🎁 1 free spin every 24 hours
+        </div>
+        @if(!$canSpin && $nextSpinAt)
+        <div class="px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5" id="spin-countdown" data-reset="{{ $nextSpinAt->toIso8601String() }}" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#d1d5db;">
+            ⏰ <span id="spin-countdown-text">calculating…</span>
+        </div>
+        @endif
+    </div>
+
     <div class="flex flex-col lg:flex-row gap-8 items-start">
 
         {{-- ══ LEFT ══ --}}
@@ -189,6 +204,9 @@
                         @if($lastSpin) Last prize: <span class="text-amber-400 font-bold">{{ $lastSpin->prize_emoji }} {{ $lastSpin->prize_label }}</span>@endif
                     @endif
                 </p>
+                <div class="mt-3 text-xs font-bold px-3 py-1.5 rounded-full inline-flex items-center gap-1.5" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:#c4b5fd;">
+                    ✨ {{ count($segments) }} Prizes <span class="text-gray-500 font-normal">· Updated daily</span>
+                </div>
             </div>
 
             {{-- Wheel --}}
@@ -223,39 +241,54 @@
         {{-- ══ RIGHT SIDEBAR ══ --}}
         <div class="w-full lg:w-80 flex-shrink-0 space-y-5">
 
-            <div class="glass-card p-4">
-                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Possible Prizes</h3>
-                <div class="space-y-0.5">
-                    @foreach($segments as $seg)
-                    <div class="prize-list-item">
-                        <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:{{ $seg['color'] }}"></span>
-                        <span class="text-sm text-white flex-1">{{ $seg['emoji'] }} {{ $seg['label'] }}</span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0
-                            {{ $seg['tier']==='great' ? 'bg-amber-500/15 text-amber-400' : ($seg['tier']==='bad' ? 'bg-red-500/15 text-red-400' : 'bg-indigo-500/15 text-indigo-300') }}">
-                            {{ $seg['tier']==='great' ? 'Rare' : ($seg['tier']==='bad' ? 'Risky' : 'Common') }}
-                        </span>
+            <div class="glass-card p-4" x-data="{ open: false }">
+                <button type="button" class="w-full flex items-center justify-between" @click="open = !open">
+                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest">Possible Prizes</h3>
+                    <svg class="w-3.5 h-3.5 text-gray-500 flex-shrink-0 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="open" x-cloak x-transition class="mt-4">
+                    <div class="space-y-0.5">
+                        @foreach($segments as $seg)
+                        <div class="prize-list-item">
+                            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:{{ $seg['color'] }}"></span>
+                            <span class="text-sm text-white flex-1">{{ $seg['emoji'] }} {{ $seg['label'] }}</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0
+                                {{ $seg['tier']==='great' ? 'bg-amber-500/15 text-amber-400' : ($seg['tier']==='bad' ? 'bg-red-500/15 text-red-400' : 'bg-indigo-500/15 text-indigo-300') }}">
+                                {{ $seg['tier']==='great' ? 'Rare' : ($seg['tier']==='bad' ? 'Risky' : 'Common') }}
+                            </span>
+                        </div>
+                        @endforeach
                     </div>
-                    @endforeach
+                    <p class="text-[10px] text-gray-600 mt-3 leading-relaxed">Rare prizes have lower probability. Bad outcomes simulate real financial risk.</p>
                 </div>
-                <p class="text-[10px] text-gray-600 mt-3 leading-relaxed">Rare prizes have lower probability. Bad outcomes simulate real financial risk.</p>
             </div>
 
             @if($history->isNotEmpty())
             <div class="glass-card p-4">
-                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Recent Spins</h3>
-                <div class="space-y-2">
+                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-3 inline-flex items-center gap-1.5">🕐 Recent Spins</h3>
+                <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                     @foreach($history as $h)
-                    <div class="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
-                        <span class="text-xl flex-shrink-0">{{ $h->prize_emoji }}</span>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-gray-300">{{ $h->prize_label }}</p>
-                            <p class="text-[10px] text-gray-600">{{ $h->created_at->diffForHumans() }}</p>
+                    @php
+                        $typeLabel = match($h->prize_type) {
+                            'balance'   => ($h->prize_value ?? 0) < 0 ? 'Fine' : 'Cash',
+                            'xp'        => 'XP',
+                            'credit'    => 'Credit',
+                            'salary_2x' => 'Bonus',
+                            'badge'     => 'Badge',
+                            default     => ucfirst($h->prize_type),
+                        };
+                    @endphp
+                    <div class="flex-shrink-0 rounded-xl p-3 text-center" style="min-width:104px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                        <div class="flex items-center justify-center gap-1">
+                            <span class="text-base flex-shrink-0">{{ $h->prize_emoji }}</span>
+                            @if($h->prize_type === 'balance')
+                            <span class="text-xs font-black flex-shrink-0 {{ $h->prize_value > 0 ? 'text-emerald-400' : 'text-red-400' }}">{{ $h->prize_value > 0 ? '+' : '' }}Ksh {{ number_format(abs($h->prize_value)) }}</span>
+                            @else
+                            <span class="text-xs font-black text-white truncate">{{ $h->prize_label }}</span>
+                            @endif
                         </div>
-                        @if($h->prize_type === 'balance')
-                        <span class="text-xs font-black flex-shrink-0 {{ $h->prize_value > 0 ? 'text-emerald-500' : 'text-red-500' }}">
-                            {{ $h->prize_value > 0 ? '+' : '' }}Ksh {{ number_format(abs($h->prize_value)) }}
-                        </span>
-                        @endif
+                        <div class="text-[9px] text-gray-500 mt-1.5">{{ $typeLabel }}</div>
+                        <div class="text-[9px] text-gray-600 mt-0.5">{{ $h->created_at->diffForHumans() }}</div>
                     </div>
                     @endforeach
                 </div>
@@ -349,6 +382,29 @@
 
 <script>
 const SEGMENTS = @json($segments);
+
+// ─── "Next spin unlocks in Xh Ym" countdown chip ──────────────────────────
+(function () {
+    const chip = document.getElementById('spin-countdown');
+    if (!chip) return;
+    const resetAt = new Date(chip.dataset.reset).getTime();
+    const text = document.getElementById('spin-countdown-text');
+    let timer;
+
+    function tick() {
+        const ms = resetAt - Date.now();
+        if (ms <= 0) {
+            text.textContent = 'ready — refresh to spin!';
+            clearInterval(timer);
+            return;
+        }
+        const h = Math.floor(ms / 3600000);
+        const m = Math.floor((ms % 3600000) / 60000);
+        text.textContent = `${h}h ${m}m left`;
+    }
+    tick();
+    timer = setInterval(tick, 30000);
+})();
 
 // ─── Alpine app ────────────────────────────────────────────────────────────
 function spinApp() {

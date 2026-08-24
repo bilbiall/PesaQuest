@@ -92,6 +92,24 @@
         </div>
     </div>
 
+    {{-- ── "What do these numbers mean?" — hidden until asked for, then
+         explains each figure using the player's own holdings, not a
+         generic dictionary definition. ── --}}
+    <div class="mb-5" x-data="{ open: false }">
+        <button type="button" @click="open = !open" class="text-xs font-bold text-gray-400 hover:text-white inline-flex items-center gap-1.5 transition-colors">
+            <span>❓ What do these numbers mean?</span>
+            <svg class="w-3 h-3 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="open" x-cloak x-transition class="mt-3 rounded-xl p-4 space-y-2.5" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
+            <p class="text-xs text-gray-300 leading-relaxed"><b class="text-emerald-400">Asset Value</b> — {{ $assetInsights['asset_value'] }}</p>
+            <p class="text-xs text-gray-300 leading-relaxed"><b class="text-gray-200">Invested</b> — {{ $assetInsights['invested'] }}</p>
+            <p class="text-xs text-gray-300 leading-relaxed"><b class="{{ $unrealisedPL >= 0 ? 'text-emerald-400' : 'text-red-400' }}">Unrealised P/L</b> — {{ $assetInsights['unrealised_pl'] }}</p>
+            <p class="text-xs text-gray-300 leading-relaxed"><b class="text-cyan-400">Income /mo</b> — {{ $assetInsights['income'] }}</p>
+            <p class="text-xs text-gray-300 leading-relaxed"><b class="text-amber-400">Costs /mo</b> — {{ $assetInsights['costs'] }}</p>
+            <p class="text-xs text-gray-300 leading-relaxed"><b class="text-purple-400">Holdings</b> — {{ $assetInsights['holdings'] }}</p>
+        </div>
+    </div>
+
     {{-- ── Net worth sparkline ── --}}
     <div class="pf-card rounded-2xl p-4 sm:p-5 mb-5" style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));">
         <div class="flex items-center justify-between mb-4">
