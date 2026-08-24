@@ -47,14 +47,20 @@
             <p class="text-gray-400 text-xs sm:text-sm">Team up: lend and borrow with agreed rates, and build chamas together.</p>
         </div>
         @if($code)
-        <div class="rounded-lg px-3 py-2 text-center" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.35);">
-            <div class="text-[9px] font-black uppercase tracking-wider text-indigo-300">My friend code</div>
-            <div class="flex items-center gap-1.5 mt-0.5">
-                <span id="fr-code" class="text-sm font-black text-white tracking-widest">{{ $code }}</span>
-                <button onclick="navigator.clipboard.writeText('{{ $code }}').then(() => { this.textContent = '✓'; setTimeout(() => this.textContent = '📋', 1200); })"
-                        class="text-xs hover:scale-110 transition-transform" title="Copy code">📋</button>
+        <div class="rounded-lg" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.35);" x-data="{ codeOpen: false }">
+            <button type="button" @click="codeOpen = !codeOpen" class="w-full flex items-center gap-2 px-3 py-2">
+                <span class="text-[9px] font-black uppercase tracking-wider text-indigo-300">🔗 My friend code</span>
+                <svg class="w-3 h-3 text-indigo-300 transition-transform flex-shrink-0" :class="codeOpen ? 'rotate-180' : ''"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div x-show="codeOpen" x-cloak x-transition.opacity.duration.150ms class="px-3 pb-2.5 text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                    <span id="fr-code" class="text-sm font-black text-white tracking-widest">{{ $code }}</span>
+                    <button onclick="navigator.clipboard.writeText('{{ $code }}').then(() => { this.textContent = '✓'; setTimeout(() => this.textContent = '📋', 1200); })"
+                            class="text-xs hover:scale-110 transition-transform" title="Copy code">📋</button>
+                </div>
+                <div class="text-[9px] text-gray-500 mt-0.5">Share it — friends add you instantly</div>
             </div>
-            <div class="text-[9px] text-gray-500 mt-0.5">Share it — friends add you instantly</div>
         </div>
         @endif
     </div>
@@ -154,45 +160,51 @@
             @foreach($friends as $f)
             @php $friend = $f->otherUser($user->id); @endphp
             @if($friend)
-            <div class="rounded-xl p-3 flex items-center gap-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
-                <a href="{{ route('players.show', $friend) }}" class="flex-shrink-0 hover:opacity-80">
-                    @if($friend->avatar_url)
-                    <img src="{{ $friend->avatar_url }}" class="w-11 h-11 rounded-full object-cover" style="box-shadow:0 0 0 2px rgba(99,102,241,0.35);" alt=""
-                         onerror="this.outerHTML='<span class=\'w-11 h-11 rounded-full flex items-center justify-center text-sm font-black\' style=\'background:linear-gradient(135deg,#4f46e5,#a78bfa);box-shadow:0 0 0 2px rgba(99,102,241,0.35);display:flex;\'>{{ strtoupper(substr($friend->name, 0, 1)) }}</span>'">
-                    @else
-                    <span class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-black" style="background:linear-gradient(135deg,#4f46e5,#a78bfa);box-shadow:0 0 0 2px rgba(99,102,241,0.35);display:flex;">{{ strtoupper(substr($friend->name, 0, 1)) }}</span>
-                    @endif
-                </a>
-                <div class="flex-1 min-w-0">
-                    <a href="{{ route('players.show', $friend) }}" class="text-xs font-black text-white truncate block hover:text-indigo-300">{{ $friend->name }}</a>
-                    <div class="text-[10px] text-gray-500">
-                        @if($friend->username)<span class="text-indigo-300/80 font-bold">{{ $friend->handle }}</span> · @endif
-                        Lvl {{ $friend->progress->level ?? 1 }}
-                        @if($friend->progress)
-                        · <span class="{{ ($friend->progress->credit_score ?? 500) >= 650 ? 'text-emerald-400' : (($friend->progress->credit_score ?? 500) >= 550 ? 'text-amber-400' : 'text-red-400') }}">{{ $friend->progress->creditScoreLabel() }} credit</span>
+            <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+                <div class="flex items-start gap-3">
+                    <a href="{{ route('players.show', $friend) }}" class="flex-shrink-0 hover:opacity-80">
+                        @if($friend->avatar_url)
+                        <img src="{{ $friend->avatar_url }}" class="w-11 h-11 rounded-full object-cover" style="box-shadow:0 0 0 2px rgba(99,102,241,0.35);" alt=""
+                             onerror="this.outerHTML='<span class=\'w-11 h-11 rounded-full flex items-center justify-center text-sm font-black\' style=\'background:linear-gradient(135deg,#4f46e5,#a78bfa);box-shadow:0 0 0 2px rgba(99,102,241,0.35);display:flex;\'>{{ strtoupper(substr($friend->name, 0, 1)) }}</span>'">
+                        @else
+                        <span class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-black" style="background:linear-gradient(135deg,#4f46e5,#a78bfa);box-shadow:0 0 0 2px rgba(99,102,241,0.35);display:flex;">{{ strtoupper(substr($friend->name, 0, 1)) }}</span>
                         @endif
+                    </a>
+                    <div class="flex-1 min-w-0 pt-0.5">
+                        <a href="{{ route('players.show', $friend) }}" class="text-xs font-black text-white truncate block hover:text-indigo-300">{{ $friend->name }}</a>
+                        <div class="text-[10px] text-gray-500 truncate">
+                            @if($friend->username)<span class="text-indigo-300/80 font-bold">{{ $friend->handle }}</span> · @endif
+                            Lvl {{ $friend->progress->level ?? 1 }}
+                            @if($friend->progress)
+                            · <span class="{{ ($friend->progress->credit_score ?? 500) >= 650 ? 'text-emerald-400' : (($friend->progress->credit_score ?? 500) >= 550 ? 'text-amber-400' : 'text-red-400') }}">{{ $friend->progress->creditScoreLabel() }} credit</span>
+                            @endif
+                        </div>
                     </div>
+                    <form method="POST" action="{{ route('friends.destroy', $f) }}" onsubmit="return confirm('Remove {{ addslashes($friend->name) }} from your friends?')" class="flex-shrink-0">
+                        @csrf @method('DELETE')
+                        <button class="text-[11px] px-1.5 py-1 rounded-lg text-gray-500 hover:text-red-400" title="Unfriend">✕</button>
+                    </form>
                 </div>
-                @if($giftsEnabled)
-                    @if($sendMoneyAccess)
-                    <button @click="openGiftModal({{ $friend->id }}, '{{ addslashes($friend->name) }}')"
-                            class="text-[10px] font-black px-2.5 py-1.5 rounded-lg text-amber-300 flex-shrink-0" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);"
-                            title="Send {{ $friend->name }} money">💰 Send</button>
-                    @else
-                    <a href="{{ route('subscribe.index') }}"
-                       class="text-[10px] font-black px-2.5 py-1.5 rounded-lg text-gray-500 flex-shrink-0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);"
-                       title="Subscribe to send money to friends">🔒 Send</a>
+                @if($giftsEnabled || $loansEnabled)
+                <div class="flex items-center gap-2 mt-2.5">
+                    @if($giftsEnabled)
+                        @if($sendMoneyAccess)
+                        <button @click="openGiftModal({{ $friend->id }}, '{{ addslashes($friend->name) }}')"
+                                class="flex-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg text-amber-300 text-center" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);"
+                                title="Send {{ $friend->name }} money">💰 Send</button>
+                        @else
+                        <a href="{{ route('subscribe.index') }}"
+                           class="flex-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg text-gray-500 text-center" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);"
+                           title="Subscribe to send money to friends">🔒 Send</a>
+                        @endif
                     @endif
+                    @if($loansEnabled)
+                    <button @click="openLoanModal({{ $friend->id }}, '{{ addslashes($friend->name) }}')"
+                            class="flex-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg text-emerald-300 text-center" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);"
+                            title="Ask {{ $friend->name }} for a loan">💸 Borrow</button>
+                    @endif
+                </div>
                 @endif
-                @if($loansEnabled)
-                <button @click="openLoanModal({{ $friend->id }}, '{{ addslashes($friend->name) }}')"
-                        class="text-[10px] font-black px-2.5 py-1.5 rounded-lg text-emerald-300 flex-shrink-0" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);"
-                        title="Ask {{ $friend->name }} for a loan">💸 Borrow</button>
-                @endif
-                <form method="POST" action="{{ route('friends.destroy', $f) }}" onsubmit="return confirm('Remove {{ addslashes($friend->name) }} from your friends?')">
-                    @csrf @method('DELETE')
-                    <button class="text-[10px] px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-400 flex-shrink-0" title="Unfriend">✕</button>
-                </form>
             </div>
             @endif
             @endforeach
