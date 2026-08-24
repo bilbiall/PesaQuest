@@ -1572,7 +1572,7 @@
 .pc-news-overlay {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 9200; /* above every HUD/panel/nav layer on this page (max elsewhere is 9100) */
   display: flex;
   align-items: center;
   justify-content: center;
