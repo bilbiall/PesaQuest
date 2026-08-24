@@ -70,13 +70,17 @@ trait UploadsImages
         $mime    = $uploadedFile->getMimeType();
         $tmpPath = $uploadedFile->getRealPath();
 
-        // GD only ever reads/writes the first frame of a GIF, so running an
-        // animated GIF through imagecreatefromgif()/imagegif() below would
-        // silently flatten it to a still image. Store it byte-for-byte
-        // instead — animation (and the "GIF" attach control) only works if
-        // we never decode it.
-        if ($mime === 'image/gif') {
-            $filename = $folder . '/' . uniqid() . '.gif';
+        // Formats GD can't (GIF: only reads/writes the first frame, silently
+        // flattening any animation) or shouldn't (SVG: vector/XML, not a
+        // decodable raster at all) round-trip through imagecreateXXX()/
+        // imageXXX() below. Store these byte-for-byte instead.
+        $passthroughExt = match ($mime) {
+            'image/gif'    => 'gif',
+            'image/svg+xml'=> 'svg',
+            default        => null,
+        };
+        if ($passthroughExt !== null) {
+            $filename = $folder . '/' . uniqid() . '.' . $passthroughExt;
             $fullPath = public_path('uploads/' . $filename);
             @mkdir(dirname($fullPath), 0755, true);
             $uploadedFile->move(dirname($fullPath), basename($fullPath));

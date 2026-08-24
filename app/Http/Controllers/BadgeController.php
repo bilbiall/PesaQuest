@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\UploadsImages;
 use App\Models\Badge;
 use App\Models\User;
 use App\Models\UserBadge;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class BadgeController extends Controller
 {
+    use UploadsImages;
+
     public function index()
     {
         $badges = Badge::orderBy('trigger_value')->get();
@@ -32,8 +34,7 @@ class BadgeController extends Controller
         $data['is_active'] = $request->boolean('is_active', true);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('badges', 'public');
-            $data['image_url'] = '/storage/' . $path;
+            $data['image_url'] = '/uploads/' . $this->resizeContain($request->file('image'), 'badges', 256, 256, 90);
         }
 
         // Map trigger_type → legacy fields for backward compat
@@ -64,11 +65,8 @@ class BadgeController extends Controller
         $data['is_active'] = $request->boolean('is_active', true);
 
         if ($request->hasFile('image')) {
-            if ($badge->image_url && str_starts_with($badge->image_url, '/storage/')) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $badge->image_url));
-            }
-            $path = $request->file('image')->store('badges', 'public');
-            $data['image_url'] = '/storage/' . $path;
+            $this->deleteStoredImage($badge->image_url);
+            $data['image_url'] = '/uploads/' . $this->resizeContain($request->file('image'), 'badges', 256, 256, 90);
         }
 
         if ($data['trigger_type'] === 'level') {
@@ -84,9 +82,7 @@ class BadgeController extends Controller
 
     public function destroy(Badge $badge)
     {
-        if ($badge->image_url && str_starts_with($badge->image_url, '/storage/')) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $badge->image_url));
-        }
+        $this->deleteStoredImage($badge->image_url);
         $badge->delete();
         return response()->json(['success' => true]);
     }

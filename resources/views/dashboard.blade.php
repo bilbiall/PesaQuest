@@ -401,7 +401,7 @@
 @endphp
 
 <nav class="hud-bar sticky top-0 z-50 backdrop-blur-xl">
-    <div class="max-w-[1400px] mx-auto px-3 sm:px-5 h-14 flex items-center gap-2 sm:gap-3">
+    <div class="max-w-[1800px] mx-auto px-3 sm:px-5 h-14 flex items-center gap-2 sm:gap-3">
 
         {{-- Logo --}}
         <a href="{{ route('landing') }}" class="flex-shrink-0">
@@ -571,7 +571,7 @@
     $chapterBg = \App\Models\UserProgress::chapterMeta($chapterKey)['background_image'] ?? null;
 @endphp
 
-<div class="max-w-[1400px] mx-auto px-3 sm:px-5 py-5">
+<div class="max-w-[1800px] mx-auto px-3 sm:px-5 py-5">
 
     {{-- DESKTOP LAYOUT (md+) --}}
     {{-- 3-COLUMN MAIN GRID: Col 1 Character (row-span-2), Col 2 Your Home
@@ -1362,7 +1362,7 @@
 </div>{{-- /max-w container --}}
 
 {{-- SMART MONEY TOOLS — summary card (full toolkit lives on its own page) --}}
-<div class="max-w-[1400px] mx-auto px-3 sm:px-5 pb-8 mt-6">
+<div class="max-w-[1800px] mx-auto px-3 sm:px-5 pb-8 mt-6">
     <a href="{{ route('money-toolkit') }}"
        class="flex items-center gap-4 rounded-3xl p-5 sm:p-6 transition-all hover:scale-[1.01]"
        style="background:linear-gradient(135deg,rgba(16,185,129,0.09),rgba(6,182,212,0.04));border:1px solid rgba(16,185,129,0.25);">
