@@ -194,7 +194,7 @@ class ShareNewsService
     {
         $topic = ForumTopic::create([
             'user_id'         => $this->wireUser()->id,
-            'posted_by_name'  => 'Pesa City Wire',
+            'posted_by_name'  => 'Pesa City News',
             'title'           => $item->headline,
             'slug'            => Str::slug($item->headline) . '-' . $item->id,
             'body'            => $item->flavor . "\n\nNot every story pans out — trade on your own judgement.",
@@ -226,8 +226,8 @@ class ShareNewsService
         return User::firstOrCreate(
             ['email' => 'market-watch@pesaquest.system'],
             [
-                'name'     => 'Pesa City Wire',
-                'username' => 'pesacitywire',
+                'name'     => 'Pesa City News',
+                'username' => 'pesacitynews',
                 'password' => bcrypt(Str::random(40)),
                 'is_active'=> true,
             ]

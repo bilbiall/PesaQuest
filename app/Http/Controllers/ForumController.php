@@ -23,7 +23,7 @@ class ForumController extends Controller
         'saving-tips'  => ['icon' => '🏦', 'label' => 'Saving & Chamas'],
         'school'       => ['icon' => '🎓', 'label' => 'School Corner'],
         'help'         => ['icon' => '🆘', 'label' => 'Help & Questions'],
-        // System-authored only (Pesa City Wire) — kept out of the player
+        // System-authored only (Pesa City News) — kept out of the player
         // create-form / submit validation below so nobody can post a fake
         // "official" market bulletin under this category.
         'market-watch' => ['icon' => '📰', 'label' => 'Market Watch'],
