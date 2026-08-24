@@ -58,11 +58,6 @@
         .drop-chips { display:flex; flex-wrap:wrap; gap:.35rem; }
         .drop-chip { background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); color:#e5e7eb; font-size:.68rem; font-weight:600; padding:.25rem .55rem; border-radius:.6rem; }
         .drop-chip.dream { background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.28); }
-        .drop-badges-toggle { cursor:pointer; background:none; border:none; padding:0; font:inherit; }
-        .drop-badges-toggle svg { transition:transform .15s; }
-        .drop-badges-scroll { display:flex; gap:.4rem; overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none; padding:.5rem .05rem .1rem; }
-        .drop-badges-scroll::-webkit-scrollbar { display:none; }
-        .drop-badges-scroll .drop-chip { flex-shrink:0; }
 
         /* Slim pill filters */
         .pill-row { display:flex; gap:.4rem; flex-wrap:wrap; justify-content:center; }
@@ -213,23 +208,17 @@
                     <div class="text-xs text-gray-500 py-1">Loading…</div>
                 </template>
                 <template x-if="cache[{{ $leader['user_id'] }}]">
-                    <div x-data="{ badgesOpen: false }">
-                        <template x-if="cache[{{ $leader['user_id'] }}].badges.length > 0">
-                            <button type="button" class="drop-badges-toggle drop-label inline-flex items-center gap-1" @click="badgesOpen = !badgesOpen">
-                                <x-icon name="medal" class="w-3 h-3" />
-                                <span x-text="'Badges Earned (' + cache[{{ $leader['user_id'] }}].badges.length + ') — tap to view'"></span>
-                                <svg class="w-3 h-3" :style="badgesOpen ? 'transform:rotate(180deg);' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                            </button>
-                        </template>
-                        <template x-if="cache[{{ $leader['user_id'] }}].badges.length === 0">
-                            <div class="drop-label inline-flex items-center gap-1"><x-icon name="medal" class="w-3 h-3" /> Badges Earned</div>
-                        </template>
-                        <template x-if="cache[{{ $leader['user_id'] }}].badges.length === 0">
-                            <span class="text-xs text-gray-500">No badges yet</span>
-                        </template>
-                        <div class="drop-badges-scroll mb-1" x-show="badgesOpen" x-cloak>
+                    <div>
+                        <div class="drop-label inline-flex items-center gap-1">
+                            <x-icon name="medal" class="w-3 h-3" />
+                            <span x-text="'Badges Earned (' + cache[{{ $leader['user_id'] }}].badges.length + ')'"></span>
+                        </div>
+                        <div class="drop-chips mb-1">
                             <template x-for="b in cache[{{ $leader['user_id'] }}].badges" :key="b.name">
                                 <span class="drop-chip inline-flex items-center gap-1"><span class="w-3 h-3" x-html="pqIcon(b.icon, 'w-3 h-3')"></span> <span x-text="b.name"></span></span>
+                            </template>
+                            <template x-if="cache[{{ $leader['user_id'] }}].badges.length === 0">
+                                <span class="text-xs text-gray-500">No badges yet</span>
                             </template>
                         </div>
                         <div class="drop-label inline-flex items-center gap-1" style="margin-top:.55rem;"><x-icon name="star" class="w-3 h-3" /> Dreams Achieved</div>
