@@ -25,30 +25,31 @@ class SpinSegment extends Model
     /** The wheel needs at least this many wedges to look/spin right. */
     public const MIN_SEGMENTS = 4;
 
-    /** Pre-CRUD defaults — also the fallback until the table is migrated/seeded. */
+    /**
+     * Pre-CRUD defaults — also the fallback until the table is migrated/seeded.
+     *
+     * Rebalanced (Aug 2026): the previous 22-wedge pool was ~72% win-weighted
+     * with an expected value of roughly +1,180 KES per free spin -- every
+     * category except balance/credit had zero downside wedges at all, so it
+     * read more as a guaranteed daily gift than a game of chance. This pool
+     * targets ~55% win / ~36% loss / ~9% "nothing" by weight, and a modest
+     * near-zero KES expected value, while staying meaningfully rewarding.
+     */
     public const DEFAULTS = [
-        ['label' => 'Ksh 2,500',      'emoji' => '💰', 'color' => '#6366f1', 'type' => 'balance',   'value' => 2500,   'weight' => 20, 'tier' => 'good'],
-        ['label' => 'Ksh 5,000',      'emoji' => '💵', 'color' => '#7c3aed', 'type' => 'balance',   'value' => 5000,   'weight' => 12, 'tier' => 'good'],
-        ['label' => '2× Next Salary', 'emoji' => '⚡', 'color' => '#d97706', 'type' => 'salary_2x', 'value' => 2,      'weight' => 4,  'tier' => 'great'],
-        ['label' => 'Ksh 1,500 Fine', 'emoji' => '😬', 'color' => '#dc2626', 'type' => 'balance',   'value' => -1500,  'weight' => 18, 'tier' => 'bad'],
-        ['label' => '+30 Credit',     'emoji' => '📈', 'color' => '#059669', 'type' => 'credit',    'value' => 30,     'weight' => 10, 'tier' => 'good'],
-        ['label' => 'Ksh 10,000',     'emoji' => '🤑', 'color' => '#f59e0b', 'type' => 'balance',   'value' => 10000,  'weight' => 4,  'tier' => 'great'],
-        ['label' => 'Ksh 4,000 Fine', 'emoji' => '😩', 'color' => '#991b1b', 'type' => 'balance',   'value' => -4000,  'weight' => 8,  'tier' => 'bad'],
-        ['label' => '1,500 XP',       'emoji' => '⭐', 'color' => '#0ea5e9', 'type' => 'xp',        'value' => 1500,   'weight' => 15, 'tier' => 'good'],
-        ['label' => 'Ksh 3,000',      'emoji' => '💰', 'color' => '#4f46e5', 'type' => 'balance',   'value' => 3000,   'weight' => 18, 'tier' => 'good'],
-        ['label' => '-20 Credit',     'emoji' => '📉', 'color' => '#7f1d1d', 'type' => 'credit',    'value' => -20,    'weight' => 10, 'tier' => 'bad'],
-        ['label' => 'Ksh 7,500',      'emoji' => '💎', 'color' => '#5b21b6', 'type' => 'balance',   'value' => 7500,   'weight' => 8,  'tier' => 'good'],
-        ['label' => 'Lucky Badge',    'emoji' => '🏆', 'color' => '#92400e', 'type' => 'badge',     'value' => 1,      'weight' => 2,  'tier' => 'great'],
-        ['label' => 'Ksh 500',        'emoji' => '🪙', 'color' => '#10b981', 'type' => 'balance',   'value' => 500,    'weight' => 24, 'tier' => 'good'],
-        ['label' => 'Ksh 1,000',      'emoji' => '💸', 'color' => '#22c55e', 'type' => 'balance',   'value' => 1000,   'weight' => 18, 'tier' => 'good'],
-        ['label' => 'Ksh 6,000',      'emoji' => '💰', 'color' => '#db2777', 'type' => 'balance',   'value' => 6000,   'weight' => 9,  'tier' => 'good'],
-        ['label' => 'Ksh 15,000',     'emoji' => '🎉', 'color' => '#eab308', 'type' => 'balance',   'value' => 15000,  'weight' => 2,  'tier' => 'great'],
-        ['label' => 'Ksh 800 Fine',   'emoji' => '😕', 'color' => '#ef4444', 'type' => 'balance',   'value' => -800,   'weight' => 16, 'tier' => 'bad'],
-        ['label' => 'Ksh 2,800 Fine', 'emoji' => '😖', 'color' => '#b91c1c', 'type' => 'balance',   'value' => -2800,  'weight' => 9,  'tier' => 'bad'],
-        ['label' => '+50 Credit',     'emoji' => '🌟', 'color' => '#0d9488', 'type' => 'credit',    'value' => 50,     'weight' => 5,  'tier' => 'great'],
-        ['label' => '-40 Credit',     'emoji' => '📉', 'color' => '#9a3412', 'type' => 'credit',    'value' => -40,    'weight' => 6,  'tier' => 'bad'],
-        ['label' => '500 XP',         'emoji' => '✨', 'color' => '#38bdf8', 'type' => 'xp',        'value' => 500,    'weight' => 16, 'tier' => 'good'],
-        ['label' => '3,000 XP',       'emoji' => '🌠', 'color' => '#1d4ed8', 'type' => 'xp',        'value' => 3000,   'weight' => 4,  'tier' => 'great'],
+        ['label' => 'Ksh 500',            'emoji' => '🪙', 'color' => '#10b981', 'type' => 'balance',   'value' => 500,    'weight' => 22, 'tier' => 'good'],
+        ['label' => 'Ksh 1,500',          'emoji' => '💸', 'color' => '#22c55e', 'type' => 'balance',   'value' => 1500,   'weight' => 16, 'tier' => 'good'],
+        ['label' => 'Ksh 3,500',          'emoji' => '💰', 'color' => '#4f46e5', 'type' => 'balance',   'value' => 3500,   'weight' => 10, 'tier' => 'good'],
+        ['label' => 'Ksh 7,000',          'emoji' => '💎', 'color' => '#5b21b6', 'type' => 'balance',   'value' => 7000,   'weight' => 4,  'tier' => 'great'],
+        ['label' => 'Ksh 500 Fine',       'emoji' => '😕', 'color' => '#ef4444', 'type' => 'balance',   'value' => -500,   'weight' => 20, 'tier' => 'bad'],
+        ['label' => 'Ksh 1,500 Fine',     'emoji' => '😬', 'color' => '#dc2626', 'type' => 'balance',   'value' => -1500,  'weight' => 14, 'tier' => 'bad'],
+        ['label' => 'Ksh 3,500 Fine',     'emoji' => '😩', 'color' => '#991b1b', 'type' => 'balance',   'value' => -3500,  'weight' => 8,  'tier' => 'bad'],
+        ['label' => 'Ksh 6,000 Fine',     'emoji' => '💀', 'color' => '#7f1d1d', 'type' => 'balance',   'value' => -6000,  'weight' => 3,  'tier' => 'bad'],
+        ['label' => 'Nothing This Time',  'emoji' => '🌀', 'color' => '#64748b', 'type' => 'balance',   'value' => 0,      'weight' => 14, 'tier' => 'good'],
+        ['label' => '+30 Credit',         'emoji' => '📈', 'color' => '#059669', 'type' => 'credit',    'value' => 30,     'weight' => 10, 'tier' => 'good'],
+        ['label' => '-20 Credit',         'emoji' => '📉', 'color' => '#7f1d1d', 'type' => 'credit',    'value' => -20,    'weight' => 10, 'tier' => 'bad'],
+        ['label' => '800 XP',             'emoji' => '✨', 'color' => '#38bdf8', 'type' => 'xp',        'value' => 800,    'weight' => 14, 'tier' => 'good'],
+        ['label' => '2,000 XP',           'emoji' => '🌠', 'color' => '#1d4ed8', 'type' => 'xp',        'value' => 2000,   'weight' => 4,  'tier' => 'great'],
+        ['label' => '2× Next Salary',     'emoji' => '⚡', 'color' => '#d97706', 'type' => 'salary_2x', 'value' => 2,      'weight' => 3,  'tier' => 'great'],
     ];
 
     /**

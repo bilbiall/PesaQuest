@@ -135,6 +135,7 @@
         <form method="POST" action="{{ route('gameset.spin.update', $seg) }}" class="seg-row {{ $seg->is_active ? '' : 'opacity-40' }}">
             @csrf @method('PUT')
             <input type="hidden" name="sort_order" value="{{ $seg->sort_order }}">
+            <input type="hidden" name="min_level" value="{{ $seg->min_level }}">
             <input name="color" type="color" value="{{ $seg->color }}" class="seg-input" style="height:34px;padding:2px;" title="Wedge color">
             <input name="label" value="{{ $seg->label }}" class="seg-input" required maxlength="40">
             <input name="emoji" value="{{ $seg->emoji }}" class="seg-input" required maxlength="10">
