@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\UploadsImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 class GameSetController extends Controller
 {
+    use UploadsImages;
+
     /**
      * GameSet Hub — the content-manager landing page. Scenario/node tooling
      * was retired; this now routes managers to every live game system.
@@ -142,6 +145,20 @@ class GameSetController extends Controller
 
         \App\Models\Setting::set('life_chapters', json_encode($chapters), 'game');
         return response()->json(['success' => true]);
+    }
+
+    /** Uploads a chapter backdrop image and hands back its /uploads/ URL —
+     *  the chapter row's URL field then holds that URL like any other, so
+     *  saveChapters() above needs no changes to accept it. */
+    public function uploadChapterBackdrop(Request $request)
+    {
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+        ]);
+
+        $path = $this->resizeContain($request->file('image'), 'life-chapters', 1600, 900, 80);
+
+        return response()->json(['url' => '/uploads/' . $path]);
     }
 
     // ── Career Fields & Tracks (quiz interests + course/job groupings) ─────

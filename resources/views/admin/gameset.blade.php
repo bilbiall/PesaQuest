@@ -324,7 +324,7 @@
                         <x-help-tip text="Tagline column: the one-line description shown under the name when a player enters the stage. Max 120 characters; leave blank for none." example="Small money, big lessons." />
                         <x-help-tip text="From Ksh column: the net worth (cash + assets + savings − debts) that moves a player into this chapter. Stage 1 is locked at 0 and every stage must be strictly higher than the one above it, or saving is rejected. Raise them all if you raise salaries or asset yields." example="Defaults ascend 0 / 50,000 / 200,000 / 1M / 5M / 20M" />
                         <x-help-tip text="Location: the neighbourhood shown next to the player's name on the Life HQ header for this chapter — purely flavor text, doesn't affect gameplay." example="Kilimani, Nairobi" />
-                        <x-help-tip text="Backdrop image URL: shown behind the character card on the Life HQ header while a player is in this chapter — a skyline, street or scene that matches the stage. Leave blank to use the plain gradient background instead." example="https://example.com/img/kilimani-sunset.jpg" />
+                        <x-help-tip text="Backdrop image URL: shown behind the character card on the Life HQ header while a player is in this chapter — a skyline, street or scene that matches the stage. Type a URL or use the Upload button to pick an image from your device. Leave blank to use the plain gradient background instead." example="https://example.com/img/kilimani-sunset.jpg" />
                     </h2>
                     <p class="text-gray-400 text-sm mt-1">The six life stages every player climbs through, triggered by <b class="text-gray-300">net worth</b> (cash + assets + savings − debts). Rename them, restyle them, give each a location + backdrop, and set the net-worth trigger for each.</p>
                 </div>
@@ -365,6 +365,14 @@
                             <span class="text-[10px] font-bold text-gray-500 uppercase flex-shrink-0">🖼️ backdrop URL</span>
                             <input type="text" x-model="ch.background_image" maxlength="500" placeholder="https://… (blank = plain gradient)"
                                    class="rounded-lg px-3 py-1.5 text-xs" style="flex:2;min-width:12rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#d1d5db;outline:none;">
+                            <label class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer flex-shrink-0 inline-flex items-center gap-1"
+                                   style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;"
+                                   :style="uploading[i] ? 'opacity:.55;pointer-events:none;' : ''">
+                                <span x-show="!uploading[i]">📤 Upload</span>
+                                <span x-show="uploading[i]">Uploading…</span>
+                                <input type="file" accept="image/*" class="hidden"
+                                       @change="uploadBackdrop(i, $event.target.files[0]); $event.target.value = ''">
+                            </label>
                         </div>
                     </div>
                 </template>
@@ -842,6 +850,25 @@
         return {
             chapters: @json($lifeChapters),
             saving: false, saved: false, error: '',
+            uploading: {},
+            async uploadBackdrop(i, file) {
+                if (!file) return;
+                this.uploading = { ...this.uploading, [i]: true };
+                this.error = '';
+                try {
+                    const fd = new FormData();
+                    fd.append('image', file);
+                    const res = await fetch('/gameset/chapters/upload-backdrop', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                        body: fd,
+                    });
+                    const data = await res.json();
+                    if (res.ok) { this.chapters[i].background_image = data.url; }
+                    else { this.error = data.message || Object.values(data.errors || {}).flat().join(' ') || 'Could not upload image.'; }
+                } catch (e) { this.error = 'Network error uploading image.'; }
+                finally { this.uploading = { ...this.uploading, [i]: false }; }
+            },
             async save() {
                 this.saving = true; this.saved = false; this.error = '';
                 for (let i = 1; i < this.chapters.length; i++) {

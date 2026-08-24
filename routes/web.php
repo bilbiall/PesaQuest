@@ -688,7 +688,8 @@ Route::middleware(['auth', 'gameset'])->prefix('gameset')->name('gameset.')->gro
     Route::delete('/crises/{crisis}',     [\App\Http\Controllers\GamesetCrisisController::class, 'destroy'])->name('crises.destroy');
 
     Route::post('/game-rules',           [GameSetController::class, 'saveGameRules'])->name('game-rules.save');
-    Route::post('/chapters',             [GameSetController::class, 'saveChapters'])->name('chapters.save');
+    Route::post('/chapters',                       [GameSetController::class, 'saveChapters'])->name('chapters.save');
+    Route::post('/chapters/upload-backdrop',       [GameSetController::class, 'uploadChapterBackdrop'])->name('chapters.upload-backdrop');
     Route::post('/career-fields',        [GameSetController::class, 'saveCareerFields'])->name('career-fields.save');
     Route::post('/career-tracks',        [GameSetController::class, 'saveCareerTracks'])->name('career-tracks.save');
     Route::get('/level-config',          [GameSetController::class, 'getLevelConfig'])->name('level-config.index');
