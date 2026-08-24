@@ -1161,17 +1161,30 @@
                                                 <template x-if="!h.image_url"><span x-html="pqIcon(h.icon, 'w-6 h-6')"></span></template>
                                             </div>
                                             <div class="share-card-info">
-                                                <div class="share-name" x-text="h.symbol + ' · ' + h.quantity + ' shares'"></div>
-                                                <div class="share-card-tags">
-                                                    <span class="share-tag" x-text="'Avg KES ' + h.avg_cost.toLocaleString()"></span>
-                                                    <span class="share-tag" x-text="'Now KES ' + h.price.toLocaleString()"></span>
-                                                    <span class="share-tag" :style="'color:' + h.risk_color + ';border-color:' + h.risk_color + '40;background:' + h.risk_color + '14;'" x-text="h.risk_label"></span>
-                                                </div>
+                                                <div class="share-name" x-text="h.name + ' (' + h.symbol + ')'"></div>
+                                                <div class="share-sub" x-text="h.quantity + ' shares · avg KES ' + h.avg_cost.toLocaleString()"></div>
                                             </div>
-                                            <div class="share-gain-pill">
-                                                <div class="share-gain-val" :style="h.gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
+                                            <div class="share-risk-badge" :style="'border-color:' + h.risk_color + '40;background:' + h.risk_color + '14;'">
+                                                <div class="share-risk-name" :style="'color:' + h.risk_color" x-text="riskParts(h.risk_label).name"></div>
+                                                <div class="share-risk-desc" x-text="riskParts(h.risk_label).desc"></div>
+                                            </div>
+                                        </div>
+                                        <div class="share-divider"></div>
+                                        <div class="share-stats-grid">
+                                            <div>
+                                                <div class="share-stat-label">Current Value</div>
+                                                <div class="share-stat-val" style="color:#35C3F0;" x-text="'KES ' + h.value.toLocaleString()"></div>
+                                                <div class="share-stat-sub" x-text="'KES ' + h.price.toLocaleString() + '/share'"></div>
+                                            </div>
+                                            <div>
+                                                <div class="share-stat-label">Gain / Loss</div>
+                                                <div class="share-stat-val" :style="h.gain_loss >= 0 ? 'color:#34d399' : 'color:#f87171'"
                                                      x-text="(h.gain_loss >= 0 ? '+' : '') + 'KES ' + h.gain_loss.toLocaleString()"></div>
-                                                <div class="share-gain-pct" x-text="(h.gain_loss_pct >= 0 ? '+' : '') + h.gain_loss_pct + '%'"></div>
+                                                <div class="share-stat-sub" x-text="(h.gain_loss_pct >= 0 ? '+' : '') + h.gain_loss_pct + '%'"></div>
+                                            </div>
+                                            <div>
+                                                <div class="share-stat-label">Qty</div>
+                                                <div class="share-stat-val" x-text="h.quantity"></div>
                                             </div>
                                         </div>
                                         <div class="share-card-mid">
@@ -1244,14 +1257,22 @@
                                     </div>
                                     <div class="share-card-info">
                                         <div class="share-name" x-text="s.name + ' (' + s.symbol + ')'"></div>
-                                        <div class="share-card-tags">
-                                            <span class="share-tag" x-text="s.sector"></span>
-                                            <span class="share-tag" :style="'color:' + s.risk_color + ';border-color:' + s.risk_color + '40;background:' + s.risk_color + '14;'" x-text="s.risk_label"></span>
-                                        </div>
+                                        <div class="share-sub" x-text="s.sector"></div>
                                     </div>
-                                    <div class="share-price-block">
-                                        <div class="share-price" x-text="'KES ' + s.price.toLocaleString()"></div>
-                                        <div class="share-change-chip" :class="s.direction === 'up' ? 'up' : (s.direction === 'down' ? 'down' : 'flat')"
+                                    <div class="share-risk-badge" :style="'border-color:' + s.risk_color + '40;background:' + s.risk_color + '14;'">
+                                        <div class="share-risk-name" :style="'color:' + s.risk_color" x-text="riskParts(s.risk_label).name"></div>
+                                        <div class="share-risk-desc" x-text="riskParts(s.risk_label).desc"></div>
+                                    </div>
+                                </div>
+                                <div class="share-divider"></div>
+                                <div class="share-stats-grid cols-2">
+                                    <div>
+                                        <div class="share-stat-label">Price</div>
+                                        <div class="share-stat-val" x-text="'KES ' + s.price.toLocaleString()"></div>
+                                    </div>
+                                    <div>
+                                        <div class="share-stat-label">Today</div>
+                                        <div class="share-stat-val" :style="s.direction === 'up' ? 'color:#34d399' : (s.direction === 'down' ? 'color:#f87171' : 'color:#9ca3af')"
                                              x-text="(s.direction === 'up' ? '↑' : (s.direction === 'down' ? '↓' : '—')) + ' ' + Math.abs(s.change_pct) + '%'"></div>
                                     </div>
                                 </div>
@@ -2774,18 +2795,21 @@
     box-shadow: 0 3px 10px rgba(0,0,0,.25); background-color: rgba(255,255,255,.03); }
 .share-icon-badge img { width: 100%; height: 100%; object-fit: cover; }
 .share-card-info { flex: 1; min-width: 0; }
-.share-name { font-size: 13px; font-weight: 800; color: #f9fafb; margin-bottom: 4px;
+.share-name { font-size: 13px; font-weight: 800; color: #f9fafb; margin-bottom: 2px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.share-card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-.share-tag { font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
-    border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: #9ca3af; white-space: nowrap; }
-.share-price-block { text-align: right; flex-shrink: 0; }
-.share-price { font-size: 16px; font-weight: 900; color: #f9fafb; line-height: 1.1; }
-.share-change-chip { display: inline-flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 800;
-    padding: 2px 7px; border-radius: 999px; margin-top: 4px; }
-.share-change-chip.up { background: rgba(16,185,129,.16); color: #34d399; }
-.share-change-chip.down { background: rgba(239,68,68,.16); color: #f87171; }
-.share-change-chip.flat { background: rgba(255,255,255,.07); color: #9ca3af; }
+.share-sub { font-size: 10.5px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Two-line risk badge — name + description — replacing a row of stacked
+   pill tags (Avg/Now/Risk) that used to wrap across multiple lines and
+   made the card read far busier than its Portfolio-page counterpart. */
+.share-risk-badge { text-align: right; flex-shrink: 0; border-radius: 10px; padding: 6px 9px; border: 1px solid; }
+.share-risk-name { font-size: 10.5px; font-weight: 800; white-space: nowrap; }
+.share-risk-desc { font-size: 9px; color: #9ca3af; text-transform: capitalize; white-space: nowrap; }
+.share-divider { height: 1px; background: rgba(255,255,255,.06); margin: 11px 0; }
+.share-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.share-stats-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.share-stat-label { font-size: 8.5px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.share-stat-val { font-size: 13px; font-weight: 800; color: #f9fafb; line-height: 1.2; }
+.share-stat-sub { font-size: 9px; color: #6b7280; margin-top: 1px; }
 .share-card-mid { display: flex; align-items: center; justify-content: space-between; gap: 10px;
     margin-top: 11px; padding-top: 11px; border-top: 1px solid rgba(255,255,255,.06); }
 .share-trend-label { font-size: 9px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
@@ -2807,9 +2831,6 @@
     white-space: nowrap; transition: background .15s; }
 .share-sell-btn:hover:not(:disabled) { background: rgba(239,68,68,.24); }
 .share-sell-btn:disabled { opacity: .5; cursor: not-allowed; }
-.share-gain-pill { text-align: right; flex-shrink: 0; }
-.share-gain-val { font-size: 13px; font-weight: 800; }
-.share-gain-pct { font-size: 10px; color: #6b7280; margin-top: 1px; }
 .share-estimate { font-size: 10.5px; color: #9ca3af; margin-top: 6px; text-align: center; }
 .share-estimate strong { color: #e5e7eb; font-weight: 800; }
 </style>

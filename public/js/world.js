@@ -2253,6 +2253,13 @@ function equitySquare() {
       }));
     },
 
+    // Share::riskLabel() renders as "Balanced — moderate swings" — split for
+    // the two-line risk badge (name on top, description underneath).
+    riskParts(label) {
+      const [name, desc] = (label || '').split(' — ');
+      return { name: name || '', desc: desc || '' };
+    },
+
     async enterDeal(deal, district) {
       if (this.dealLoading) return;
       const cs = document.querySelector('meta[name=csrf-token]')?.content ?? '';
