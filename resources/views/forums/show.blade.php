@@ -229,21 +229,30 @@
     @else
     <div class="rounded-xl p-4" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);">
         <h3 class="text-sm font-black text-gray-200 mb-3 inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" /> Join the conversation</h3>
-        <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data" class="space-y-3" x-data="{ fileName: '' }">
+        <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data" class="space-y-3"
+              x-data="{ fileName: '', previewUrl: null, clearImage() { this.previewUrl = null; this.fileName = ''; this.$refs.imageInput.value = ''; } }">
             @csrf
             <textarea name="body" id="reply-body" rows="3" required minlength="2" maxlength="3000"
                       placeholder="Share your thoughts…"
                       class="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-y"
                       style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">{{ old('body') }}</textarea>
+            <div x-show="previewUrl" x-cloak class="relative inline-block">
+                <img :src="previewUrl" class="rounded-xl object-cover" style="max-width:220px;max-height:160px;">
+                <button type="button" @click="clearImage()" title="Remove image"
+                        class="absolute flex items-center justify-center text-white text-xs font-black rounded-full"
+                        style="top:-8px;right:-8px;width:22px;height:22px;background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.2);">✕</button>
+            </div>
             <div class="flex items-center gap-2.5">
                 <div class="relative">
                     <button type="button" class="composer-icon-btn" title="Add emoji" onclick="emojiToggle(event, 'reply-body')">😊</button>
                 </div>
-                <label class="composer-icon-btn" title="Attach an image">
-                    📎
-                    <input type="file" name="image" accept="image/*" class="hidden" @change="fileName = $event.target.files[0]?.name ?? ''">
+                <label class="composer-icon-btn" title="Attach a photo">
+                    📷
+                    <input type="file" name="image" x-ref="imageInput" accept="image/*" class="hidden"
+                           @change="fileName = $event.target.files[0]?.name ?? ''; previewUrl = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
                 </label>
-                <span class="text-[11px] text-gray-500 truncate flex-1" x-text="fileName || 'No image attached'"></span>
+                <span class="text-[11px] text-gray-500 flex-1" x-show="!previewUrl">No image attached</span>
+                <span class="text-[11px] text-emerald-400 font-bold flex-1" x-show="previewUrl" x-cloak>📷 Photo attached</span>
                 <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02] flex-shrink-0"
                         style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
                     Reply{{ ($showXp ?? true) ? ' · +25 XP' : '' }}
