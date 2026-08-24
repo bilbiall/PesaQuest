@@ -100,7 +100,7 @@
                 </label>
                 <span class="text-[10px] text-gray-500 flex-1" x-show="!previewUrl">No image</span>
                 <span class="text-[10px] text-emerald-400 font-bold flex-1" x-show="previewUrl" x-cloak>📷 Photo attached</span>
-                <button type="submit" class="px-4 py-1.5 rounded-lg text-xs font-black text-white flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">Reply · +25 XP</button>
+                <button type="submit" class="px-4 py-1.5 rounded-lg text-xs font-black text-white flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">Reply{{ ($showXp ?? true) ? ' · +' . ($forumXpReply ?? 25) . ' XP' : '' }}</button>
             </div>
         </form>
         @endif

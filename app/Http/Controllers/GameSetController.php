@@ -62,6 +62,9 @@ class GameSetController extends Controller
         $mapAmbience     = \App\Models\Setting::get('map_ambience', 'lively') ?: 'lively';
         $ambienceBanner  = (string) \App\Models\Setting::get('ambience_banner', '');
         $forumShowXp     = \App\Models\Setting::get('forum_show_xp', '1') !== '0';
+        $forumXpTopic    = (int) \App\Models\Setting::get('forum_xp_topic', 40);
+        $forumXpReply    = (int) \App\Models\Setting::get('forum_xp_reply', 25);
+        $forumDailyXpCap = (int) \App\Models\Setting::get('forum_daily_xp_cap', 5);
         $lifeChapters    = \App\Models\UserProgress::chapters();
         $careerFields    = \App\Services\CareerService::fields();
         $careerTracks    = \App\Services\CareerService::tracks();
@@ -72,7 +75,8 @@ class GameSetController extends Controller
             'stats', 'crises', 'hustleTips', 'journeyMilestones', 'quizQuestions',
             'maxQuestsPerDay', 'wywaMinTicks', 'wywaCooldownMin', 'lifeChapters',
             'careerFields', 'careerTracks', 'financingTerms', 'onboardingSteps',
-            'mapAmbience', 'ambienceBanner', 'forumShowXp'
+            'mapAmbience', 'ambienceBanner', 'forumShowXp',
+            'forumXpTopic', 'forumXpReply', 'forumDailyXpCap'
         ));
     }
 
@@ -87,6 +91,9 @@ class GameSetController extends Controller
             'map_ambience'          => 'nullable|in:off,calm,lively',
             'ambience_banner'       => 'nullable|string|max:60',
             'forum_show_xp'         => 'required|boolean',
+            'forum_xp_topic'        => 'required|integer|min:0|max:1000',
+            'forum_xp_reply'        => 'required|integer|min:0|max:1000',
+            'forum_daily_xp_cap'    => 'required|integer|min:1|max:100',
         ]);
 
         \App\Models\Setting::set('max_quests_per_day',    (string) $data['max_quests_per_day'],    'game');
@@ -95,6 +102,9 @@ class GameSetController extends Controller
         \App\Models\Setting::set('map_ambience',          $data['map_ambience'] ?? 'lively',       'game');
         \App\Models\Setting::set('ambience_banner',       trim((string) ($data['ambience_banner'] ?? '')), 'game');
         \App\Models\Setting::set('forum_show_xp',         $data['forum_show_xp'] ? '1' : '0',      'game');
+        \App\Models\Setting::set('forum_xp_topic',        (string) $data['forum_xp_topic'],        'game');
+        \App\Models\Setting::set('forum_xp_reply',        (string) $data['forum_xp_reply'],        'game');
+        \App\Models\Setting::set('forum_daily_xp_cap',    (string) $data['forum_daily_xp_cap'],     'game');
         return response()->json(['success' => true]);
     }
 

@@ -4,7 +4,7 @@
     <p class="text-xl font-black text-gray-300">No discussions here yet</p>
     <p class="text-gray-500 mt-2 text-sm">Be the first to break the ice — ask a question or share a money win.</p>
     <button @click="newTopicOpen = true" class="mt-6 inline-block px-6 py-3 rounded-xl text-sm font-black text-white"
-            style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">✍️ Start a Discussion{{ ($showXp ?? true) ? ' · +40 XP' : '' }}</button>
+            style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">✍️ Start a Discussion{{ ($showXp ?? true) ? ' · +' . ($forumXpTopic ?? 40) . ' XP' : '' }}</button>
 </div>
 @else
 {{-- data-newest tracks the true max(created_at) among what's on screen, not

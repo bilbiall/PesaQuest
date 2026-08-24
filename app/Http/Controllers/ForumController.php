@@ -37,12 +37,24 @@ class ForumController extends Controller
         'mind_blown' => ['emoji' => '🤯', 'label' => 'Mind blown'],
     ];
 
-    /** XP awards */
-    private const XP_TOPIC = 40;
-    private const XP_REPLY = 25;
+    /** XP awarded for a new topic — admin-editable in GameSet Hub → Game Rules. */
+    private function xpTopic(): int
+    {
+        return (int) \App\Models\Setting::get('forum_xp_topic', 40);
+    }
 
-    /** Max XP-earning forum posts (topics + replies) per user per real day. */
-    private const DAILY_XP_POST_CAP = 5;
+    /** XP awarded for a reply — admin-editable in GameSet Hub → Game Rules. */
+    private function xpReply(): int
+    {
+        return (int) \App\Models\Setting::get('forum_xp_reply', 25);
+    }
+
+    /** Max XP-earning forum posts (topics + replies) per user per real day —
+     *  admin-editable in GameSet Hub → Game Rules. */
+    private function dailyXpPostCap(): int
+    {
+        return (int) \App\Models\Setting::get('forum_daily_xp_cap', 5);
+    }
 
     public function index(Request $request)
     {
@@ -130,6 +142,9 @@ class ForumController extends Controller
             'votesEnabled'     => $votesEnabled,
             'myTopicVotes'     => $myTopicVotes,
             'showXp'           => \App\Models\Setting::get('forum_show_xp', '1') !== '0',
+            'forumXpTopic'     => $this->xpTopic(),
+            'forumXpReply'     => $this->xpReply(),
+            'forumDailyXpCap'  => $this->dailyXpPostCap(),
         ], $this->communityStats());
 
         // Pagination / "new discussions" pill fetch just the results fragment
@@ -337,6 +352,7 @@ class ForumController extends Controller
             'reactionCounts' => $reactionCounts,
             'myReactions'    => $myReactions,
             'showXp'         => \App\Models\Setting::get('forum_show_xp', '1') !== '0',
+            'forumXpReply'   => $this->xpReply(),
         ]);
     }
 
@@ -503,12 +519,13 @@ class ForumController extends Controller
             'last_activity_at'       => now(),
         ]);
 
-        $awarded = $this->awardForumXp($user, self::XP_TOPIC, exclude: ['topic_id' => $topic->id]);
+        $xpTopic = $this->xpTopic();
+        $awarded = $this->awardForumXp($user, $xpTopic, exclude: ['topic_id' => $topic->id]);
         $showXp  = \App\Models\Setting::get('forum_show_xp', '1') !== '0';
 
         return redirect()
             ->route('forums.show', $topic->slug)
-            ->with('success', ($awarded && $showXp) ? 'Posted! +' . self::XP_TOPIC . ' XP' : 'Posted!');
+            ->with('success', ($awarded && $showXp) ? "Posted! +{$xpTopic} XP" : 'Posted!');
     }
 
     public function reply(Request $request, ForumTopic $topic)
@@ -547,7 +564,8 @@ class ForumController extends Controller
         $topic->increment('replies_count');
         $topic->forceFill(['last_activity_at' => now()])->save();
 
-        $awarded = $this->awardForumXp($user, self::XP_REPLY, exclude: ['reply_id' => $reply->id]);
+        $xpReply = $this->xpReply();
+        $awarded = $this->awardForumXp($user, $xpReply, exclude: ['reply_id' => $reply->id]);
         $showXp  = \App\Models\Setting::get('forum_show_xp', '1') !== '0';
 
         $parent = $reply->parent_id ? $reply->parent()->first() : null;
@@ -583,7 +601,7 @@ class ForumController extends Controller
 
         return redirect()
             ->to(route('forums.show', $topic->slug) . ($lastPage > 1 ? '?page=' . $lastPage : '') . '#reply-' . $reply->id)
-            ->with('success', ($awarded && $showXp) ? 'Reply posted! +' . self::XP_REPLY . ' XP' : 'Reply posted!');
+            ->with('success', ($awarded && $showXp) ? "Reply posted! +{$xpReply} XP" : 'Reply posted!');
     }
 
     public function update(Request $request, ForumTopic $topic)
@@ -700,7 +718,7 @@ class ForumController extends Controller
 
         $postsToday = $topicQuery->count() + $replyQuery->count();
 
-        if ($postsToday >= self::DAILY_XP_POST_CAP) {
+        if ($postsToday >= $this->dailyXpPostCap()) {
             return false;
         }
 

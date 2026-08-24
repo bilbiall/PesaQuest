@@ -292,6 +292,25 @@
                     </label>
                     <p class="text-[11px] text-gray-600 mt-1.5">Only hides the on-screen number — XP is still earned in the background either way.</p>
                 </div>
+                <div>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">💬 Forums — XP per new topic
+                        <x-help-tip text="XP awarded for starting a new discussion topic (subject to the daily cap below)." example="40" />
+                    </span>
+                    <input type="number" min="0" max="1000" x-model.number="forumXpTopic" class="ifield">
+                </div>
+                <div>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">💬 Forums — XP per reply
+                        <x-help-tip text="XP awarded for posting a reply (subject to the daily cap below)." example="25" />
+                    </span>
+                    <input type="number" min="0" max="1000" x-model.number="forumXpReply" class="ifield">
+                </div>
+                <div>
+                    <span style="font-size:.68rem;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem;">💬 Forums — daily XP-earning posts
+                        <x-help-tip text="Anti-farm cap: only a player's first N forum posts (topics + replies combined) each real day earn XP. Posting beyond this still works, it just stops earning XP for that day." example="5" />
+                    </span>
+                    <input type="number" min="1" max="100" x-model.number="forumDailyXpCap" class="ifield">
+                    <p class="text-[11px] text-gray-600 mt-1.5">Posts beyond this many per day still work fine — they just stop earning XP until the next day.</p>
+                </div>
             </div>
         </div>
 
@@ -789,6 +808,9 @@
             ambience:     @json($mapAmbience ?? 'lively'),
             ambBanner:    @json($ambienceBanner ?? ''),
             forumShowXp:  {{ ($forumShowXp ?? true) ? 'true' : 'false' }},
+            forumXpTopic:    {{ (int) ($forumXpTopic ?? 40) }},
+            forumXpReply:    {{ (int) ($forumXpReply ?? 25) }},
+            forumDailyXpCap: {{ (int) ($forumDailyXpCap ?? 5) }},
             saving: false, saved: false, error: '',
             async save() {
                 this.saving = true; this.saved = false; this.error = '';
@@ -803,6 +825,9 @@
                             map_ambience:          this.ambience,
                             ambience_banner:       this.ambBanner,
                             forum_show_xp:         this.forumShowXp,
+                            forum_xp_topic:        this.forumXpTopic,
+                            forum_xp_reply:        this.forumXpReply,
+                            forum_daily_xp_cap:    this.forumDailyXpCap,
                         }),
                     });
                     if (res.ok) { this.saved = true; setTimeout(() => this.saved = false, 3000); }

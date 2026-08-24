@@ -108,8 +108,8 @@
                 <x-icon name="pencil" class="w-3.5 h-3.5 inline-block" /> New Discussion
             </button>
             @if($showXp ?? true)
-            <span class="text-[11px] font-black px-3.5 py-2 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;"><x-icon name="speech" class="w-3 h-3" /> Reply +25 XP</span>
-            <span class="text-[11px] font-bold px-3.5 py-2 rounded-full" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;">XP on your first 5 posts each day</span>
+            <span class="text-[11px] font-black px-3.5 py-2 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;"><x-icon name="speech" class="w-3 h-3" /> Reply +{{ $forumXpReply ?? 25 }} XP</span>
+            <span class="text-[11px] font-bold px-3.5 py-2 rounded-full" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;">XP on your first {{ $forumDailyXpCap ?? 5 }} posts each day</span>
             @endif
         </div>
     </div>

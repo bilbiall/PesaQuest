@@ -278,7 +278,7 @@
                        @change="fileName = $event.target.files[0]?.name ?? ''; previewUrl = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
             </label>
             <button type="submit" class="rx-composer-submit flex-shrink-0">
-                Reply{{ ($showXp ?? true) ? ' · +25 XP' : '' }}
+                Reply{{ ($showXp ?? true) ? ' · +' . ($forumXpReply ?? 25) . ' XP' : '' }}
             </button>
         </div>
         <div class="mt-1">
