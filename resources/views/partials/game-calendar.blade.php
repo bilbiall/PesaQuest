@@ -87,8 +87,12 @@
        centering them. */
     .gc-day:nth-child(-n+2) .gc-tip { left:0; transform:translateX(0); }
     .gc-day:nth-child(n+6) .gc-tip { left:auto; right:0; transform:translateX(0); }
-    .gc-ev-line { display:flex; justify-content:space-between; gap:8px; padding:1.5px 0; white-space:normal; }
-    .gc-ev-line .neg { color:#fca5a5; font-weight:800; flex-shrink:0; } .gc-ev-line .pos { color:#6ee7b7; font-weight:800; flex-shrink:0; }
+    /* Stacked, not side-by-side with the amount — a long event label used to
+       wrap right past the amount badge, overlapping it. Label gets the full
+       row width; the amount sits on its own line right under it. */
+    .gc-ev-line { display:flex; flex-direction:column; gap:3px; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,.03); }
+    .gc-ev-line .ev-label { white-space:normal; line-height:1.4; }
+    .gc-ev-line .neg { color:#fca5a5; font-weight:800; } .gc-ev-line .pos { color:#6ee7b7; font-weight:800; }
 
     /* Fortnight view: anchored panel below the chip — the dark surface is only
        as big as the calendar itself, never a full-screen scrim. */
@@ -97,10 +101,13 @@
     #gc-modal.gc-open { display:block; animation:gcIn .18s ease; }
     #gc-modal .gc-sheet { background:#100e1e; border:1px solid rgba(99,102,241,.3); border-radius:22px; padding:22px;
         max-height:min(560px, calc(100vh - 130px)); overflow-y:auto; box-shadow:0 26px 70px rgba(0,0,0,.65); backdrop-filter:blur(6px); }
-    .gc-row { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:12px; margin-bottom:4px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); font-size:13px; color:#d1d5db; }
+    /* Each day is its own card now: a date heading row, then one full-width
+       block per event — instead of a fixed date column squeezed beside a
+       label+amount pair that used to fight for width and wrap into each other. */
+    .gc-row { display:flex; flex-direction:column; gap:6px; padding:10px 12px; border-radius:12px; margin-bottom:6px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); font-size:13px; color:#d1d5db; }
     .gc-row.gc-today-row { border-color:rgba(21,199,126,.4); background:rgba(21,199,126,.07); }
-    .gc-row .gc-when { width:86px; flex-shrink:0; font-weight:900; color:#fff; font-size:12px; }
-    .gc-row .gc-when small { display:block; font-weight:700; color:#6b7280; font-size:9.5px; text-transform:uppercase; letter-spacing:.05em; }
+    .gc-row .gc-when { display:flex; align-items:baseline; gap:6px; font-weight:900; color:#fff; font-size:12px; }
+    .gc-row .gc-when small { font-weight:700; color:#6b7280; font-size:9.5px; text-transform:uppercase; letter-spacing:.05em; }
     @media (max-width:640px){ #gc-chip { top:60px; } #gc-strip { top:106px; } #gc-modal { top:106px; } }
 </style>
 
@@ -202,13 +209,23 @@
             .finally(() => gcLoading = false);
     }
 
+    // One event = one card: icon+label on its own full-width line, the
+    // amount (if any) on the line below — never squeezed side-by-side.
+    function renderEvLine(ev) {
+        const amt = fmtAmt(ev.amount);
+        return `<div class="gc-ev-line">
+                    <div class="ev-label">${ev.icon} ${ev.label}</div>
+                    ${amt ? `<div>${amt}</div>` : ''}
+                </div>`;
+    }
+
     function render() {
         // Week strip: first 7 days
         const week = gcData.days.slice(0, 7).map(d => {
             const dots = d.events.slice(0, 4).map(ev => `<b style="background:${dotColor(ev)}"></b>`).join('');
             const tip  = d.events.length
-                ? `<div class="gc-tip"><div style="font-weight:900;color:#fff;margin-bottom:3px;">${d.month_name} ${d.day_of_month} · ${d.weekday}</div>` +
-                  d.events.map(ev => `<div class="gc-ev-line"><span>${ev.icon} ${ev.label}</span>${fmtAmt(ev.amount)}</div>`).join('') + `</div>`
+                ? `<div class="gc-tip"><div style="font-weight:900;color:#fff;margin-bottom:5px;">${d.month_name} ${d.day_of_month} · ${d.weekday}</div>` +
+                  d.events.map(renderEvLine).join('') + `</div>`
                 : '';
             return `<div class="gc-day ${d.is_today ? 'gc-today' : ''}">
                         <div class="gc-wd">${d.weekday.slice(0, 3)}</div>
@@ -221,11 +238,11 @@
         // Fortnight list: only days that have events (plus today)
         const rows = gcData.days.filter(d => d.is_today || d.events.length).map(d => {
             const evs = d.events.length
-                ? d.events.map(ev => `<div class="gc-ev-line" style="white-space:normal;"><span>${ev.icon} ${ev.label}</span>${fmtAmt(ev.amount)}</div>`).join('')
-                : '<span style="color:#4b5563;">Nothing scheduled — a good day to save 😉</span>';
+                ? d.events.map(renderEvLine).join('')
+                : '<div style="color:#4b5563;">Nothing scheduled — a good day to save 😉</div>';
             return `<div class="gc-row ${d.is_today ? 'gc-today-row' : ''}">
                         <div class="gc-when">${d.is_today ? 'TODAY' : d.month_name + ' ' + d.day_of_month}<small>${d.weekday}</small></div>
-                        <div style="flex:1;min-width:0;">${evs}</div>
+                        ${evs}
                     </div>`;
         }).join('');
         document.getElementById('gc-fortnight').innerHTML = rows ||

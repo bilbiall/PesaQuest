@@ -65,6 +65,8 @@ class PlayerShareHolding extends Model
             'history'       => $this->share->recentHistory(),
             'direction'     => $this->share->priceChangeDirection(),
             'change_pct'    => $this->share->priceChangePct(),
+            'risk_label'    => $this->share->riskLabel(),
+            'risk_color'    => $this->share->riskColor(),
         ];
     }
 }

@@ -245,40 +245,46 @@
                 {{ $sharesUnrealisedPL >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($sharesUnrealisedPL)) }} unrealised
             </span>
         </div>
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid sm:grid-cols-2 gap-3">
             @foreach($myShares as $h)
-            <div id="pf-share-{{ $h->share_id }}" class="pf-card pf-appear rounded-2xl p-5" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
-                <div class="flex items-start justify-between gap-3 mb-3">
-                    <div class="flex items-center gap-3">
+            @php [$riskName, $riskDesc] = array_pad(explode(' — ', $h->share->riskLabel(), 2), 2, ''); @endphp
+            <div id="pf-share-{{ $h->share_id }}" class="pf-card pf-appear rounded-2xl p-4" style="background:linear-gradient(160deg,rgba(8,28,40,0.95),rgba(12,18,38,0.9));border-color:rgba(6,182,212,0.2);">
+                <div class="flex items-start justify-between gap-2.5 mb-3">
+                    <div class="flex items-center gap-2.5 min-w-0">
                         @if($h->share->image_url)
-                            <img src="{{ $h->share->image_url }}" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" style="box-shadow:0 3px 10px rgba(0,0,0,.25);">
+                            <img src="{{ $h->share->image_url }}" alt="" class="w-11 h-11 rounded-xl object-cover flex-shrink-0" style="box-shadow:0 3px 10px rgba(0,0,0,.25);">
                         @else
-                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
-                                <x-icon :name="$h->share->icon" class="w-6 h-6" />
+                            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                                <x-icon :name="$h->share->icon" class="w-5 h-5" />
                             </div>
                         @endif
-                        <div>
-                            <p class="font-black text-white text-sm leading-tight">{{ $h->share->name }} ({{ $h->share->symbol }})</p>
-                            <p class="text-[11px] text-gray-500 mt-0.5">{{ $h->quantity }} shares · avg Ksh {{ number_format($h->avg_cost, 2) }}</p>
+                        <div class="min-w-0">
+                            <p class="font-black text-white text-[13px] leading-tight truncate">{{ $h->share->name }} <span class="text-gray-500 font-bold">({{ $h->share->symbol }})</span></p>
+                            <p class="text-[10.5px] text-gray-500 mt-0.5">{{ $h->quantity }} shares · avg Ksh {{ number_format($h->avg_cost, 2) }}</p>
                         </div>
                     </div>
-                    <span class="pf-tag border flex-shrink-0"
-                          style="color:{{ $h->share->riskColor() }};border-color:{{ $h->share->riskColor() }}44;background:{{ $h->share->riskColor() }}11;">
-                        {{ $h->share->riskLabel() }}
-                    </span>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div class="rounded-xl p-3" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);">
-                        <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider mb-1">Current Value</p>
-                        <p class="text-sm font-black text-cyan-300">Ksh {{ number_format($h->currentValue()) }}</p>
-                        <p class="text-[10px] text-gray-500">Ksh {{ number_format($h->share->current_price, 2) }}/share now</p>
+                    <div class="text-right flex-shrink-0 rounded-xl px-2.5 py-1.5" style="border:1px solid {{ $h->share->riskColor() }}44;background:{{ $h->share->riskColor() }}11;">
+                        <div class="text-[10.5px] font-black" style="color:{{ $h->share->riskColor() }};">{{ $riskName }}</div>
+                        <div class="text-[9px] text-gray-500 capitalize">{{ $riskDesc }}</div>
                     </div>
-                    <div class="rounded-xl p-3" style="background:{{ $h->gainLoss() >= 0 ? 'rgba(16,185,129,0.06)' : 'rgba(248,113,113,0.06)' }};border:1px solid {{ $h->gainLoss() >= 0 ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)' }};">
-                        <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider mb-1">Gain / Loss</p>
-                        <p class="text-sm font-black {{ $h->gainLoss() >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                </div>
+                <div class="h-px mb-3" style="background:rgba(255,255,255,0.06);"></div>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div>
+                        <p class="text-[9px] text-gray-500 font-black uppercase tracking-wider mb-1">Current Value</p>
+                        <p class="text-[13px] font-black text-cyan-300">Ksh {{ number_format($h->currentValue()) }}</p>
+                        <p class="text-[9px] text-gray-500">Ksh {{ number_format($h->share->current_price, 2) }}/share</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-gray-500 font-black uppercase tracking-wider mb-1">Gain / Loss</p>
+                        <p class="text-[13px] font-black {{ $h->gainLoss() >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                             {{ $h->gainLoss() >= 0 ? '+' : '−' }}Ksh {{ number_format(abs($h->gainLoss())) }}
                         </p>
-                        <p class="text-[10px] text-gray-500">{{ $h->gainLossPct() >= 0 ? '+' : '' }}{{ $h->gainLossPct() }}%</p>
+                        <p class="text-[9px] text-gray-500">{{ $h->gainLossPct() >= 0 ? '+' : '' }}{{ $h->gainLossPct() }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-gray-500 font-black uppercase tracking-wider mb-1">Qty</p>
+                        <p class="text-[13px] font-black text-white">{{ $h->quantity }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">

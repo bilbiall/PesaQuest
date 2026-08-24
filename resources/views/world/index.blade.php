@@ -1165,6 +1165,7 @@
                                                 <div class="share-card-tags">
                                                     <span class="share-tag" x-text="'Avg KES ' + h.avg_cost.toLocaleString()"></span>
                                                     <span class="share-tag" x-text="'Now KES ' + h.price.toLocaleString()"></span>
+                                                    <span class="share-tag" :style="'color:' + h.risk_color + ';border-color:' + h.risk_color + '40;background:' + h.risk_color + '14;'" x-text="h.risk_label"></span>
                                                 </div>
                                             </div>
                                             <div class="share-gain-pill">

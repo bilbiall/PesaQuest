@@ -44,7 +44,7 @@
         @media (min-width: 768px) {
             .desktop-game-grid {
                 display: grid !important;
-                grid-template-columns: 220px 1fr 1fr;
+                grid-template-columns: 280px 1fr 1fr;
                 gap: 1rem;
             }
         }
@@ -568,6 +568,7 @@
     };
     $todayQuest = $challenges->where('user_claimed', false)->first();
     $recentLifeEvents = $recentLifeEvents ?? collect();
+    $chapterBg = \App\Models\UserProgress::chapterMeta($chapterKey)['background_image'] ?? null;
 @endphp
 
 <div class="max-w-[1400px] mx-auto px-3 sm:px-5 py-5">
@@ -580,29 +581,29 @@
         {{-- COL 1: YOUR CHARACTER --}}
         <div class="card rounded-2xl overflow-hidden flex flex-col" style="border-color:rgba(99,102,241,0.25);">
             {{-- Avatar hero area --}}
-            <div class="relative text-center px-4 pt-5 pb-4"
+            <div class="relative text-center px-3.5 pt-4 pb-3"
                  style="background:linear-gradient(160deg,rgba(99,102,241,0.22) 0%,rgba(139,92,246,0.12) 60%,rgba(7,6,15,0) 100%);">
-                <div class="absolute top-2 right-2 text-[10px] font-black text-amber-400 px-2 py-0.5 rounded-full" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);">{{ $lvlIcon }} Lv.{{ $level }}</div>
-                <div class="relative inline-block mb-2">
+                <div class="absolute top-2 right-2 text-[9px] font-black text-amber-400 px-1.5 py-0.5 rounded-full" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);">{{ $lvlIcon }} Lv.{{ $level }}</div>
+                <div class="relative inline-block mb-1.5">
                     @if($user->profile_photo)
-                    <div class="w-24 h-24 rounded-full mx-auto overflow-hidden avatar-pulse"
+                    <div class="w-16 h-16 rounded-full mx-auto overflow-hidden avatar-pulse"
                          style="border:2.5px solid rgba(99,102,241,0.55);">
                         <img src="{{ $user->profile_photo }}" alt="{{ $user->name }}"
                              class="w-full h-full object-cover">
                     </div>
                     @else
-                    <div class="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-3xl font-black avatar-pulse"
+                    <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-2xl font-black avatar-pulse"
                          style="background:linear-gradient(135deg,#4f46e5,#7c3aed,#a78bfa);">
                         {{ $initials }}
                     </div>
                     @endif
                     @if(($streak->current_streak ?? 0) > 1)
-                    <div class="absolute -top-1 -right-1 text-xl animate-bounce" style="animation-duration:1.5s;">🔥</div>
+                    <div class="absolute -top-1 -right-1 text-base animate-bounce" style="animation-duration:1.5s;">🔥</div>
                     @endif
                 </div>
-                <h3 class="font-black text-base text-white leading-tight">{{ explode(' ', auth()->user()->name)[0] }}</h3>
-                <p class="text-xs font-bold mt-0.5" style="color:#a78bfa;">{{ $charTitle }}</p>
-                <div class="mt-3">
+                <h3 class="font-black text-sm text-white leading-tight">{{ explode(' ', auth()->user()->name)[0] }}</h3>
+                <p class="text-[11px] font-bold mt-0.5" style="color:#a78bfa;">{{ $charTitle }}</p>
+                <div class="mt-2">
                     <div class="flex justify-between text-[9px] text-gray-500 mb-1">
                         <span>XP Progress</span><span>{{ $xpPct }}%</span>
                     </div>
@@ -611,42 +612,42 @@
                     </div>
                 </div>
                 @if($questGate['blocked'] ?? false)
-                <div class="mt-2.5 px-2.5 py-2 rounded-lg text-left" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.35);">
-                    <div class="text-[10px] font-black" style="color:#fbbf24;">⛰️ Level {{ $questGate['xp_level'] }} is waiting for you!</div>
-                    <div class="text-[9.5px] mt-0.5 leading-relaxed" style="color:rgba(251,191,36,0.75);">
+                <div class="mt-2 px-2 py-1.5 rounded-lg text-left" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.35);">
+                    <div class="text-[9px] font-black" style="color:#fbbf24;">⛰️ Level {{ $questGate['xp_level'] }} is waiting for you!</div>
+                    <div class="text-[8.5px] mt-0.5 leading-relaxed" style="color:rgba(251,191,36,0.75);">
                         You've earned the XP — finish {{ $questGate['remaining'] }} more quest{{ $questGate['remaining'] === 1 ? '' : 's' }} at Level {{ $questGate['gate_level'] }} to unlock it.
                     </div>
                 </div>
                 @endif
             </div>
-            <div class="px-4 py-4 flex-1 flex flex-col gap-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="rounded-xl p-2.5 text-center" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
-                        <div class="text-[9px] text-gray-500 font-semibold uppercase mb-1">Cash</div>
-                        <div class="text-xs font-black text-emerald-400">Ksh {{ number_format($balance) }}</div>
+            <div class="px-3.5 py-3 flex-1 flex flex-col gap-2.5">
+                <div class="grid grid-cols-2 gap-1.5">
+                    <div class="rounded-xl p-2 text-center" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
+                        <div class="text-[9px] text-gray-500 font-semibold uppercase mb-0.5">Cash</div>
+                        <div class="text-[11px] font-black text-emerald-400">Ksh {{ number_format($balance) }}</div>
                     </div>
-                    <div class="rounded-xl p-2.5 text-center" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);">
-                        <div class="text-[9px] text-gray-500 font-semibold uppercase mb-1">Net Worth</div>
-                        <div class="text-xs font-black text-blue-400">Ksh {{ number_format($netWorth) }}</div>
+                    <div class="rounded-xl p-2 text-center" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);">
+                        <div class="text-[9px] text-gray-500 font-semibold uppercase mb-0.5">Net Worth</div>
+                        <div class="text-[11px] font-black text-blue-400">Ksh {{ number_format($netWorth) }}</div>
                     </div>
                 </div>
-                <div class="flex flex-col gap-2.5">
-                    <div class="flex items-center justify-between py-1.5 border-b" style="border-color:rgba(255,255,255,0.06);">
-                        <span class="text-[11px] text-gray-500">Level</span>
-                        <span class="text-[11px] font-bold text-white">Lv {{ $progress->level ?? 1 }}</span>
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between py-1 border-b" style="border-color:rgba(255,255,255,0.06);">
+                        <span class="text-[10px] text-gray-500">Level</span>
+                        <span class="text-[10px] font-bold text-white">Lv {{ $progress->level ?? 1 }}</span>
                     </div>
-                    <div class="flex items-center justify-between py-1.5 border-b" style="border-color:rgba(255,255,255,0.06);">
-                        <span class="text-[11px] text-gray-500">Career</span>
-                        <span class="text-[11px] font-bold text-white truncate max-w-[95px] text-right">{{ $progress->career_field ?? 'None set' }}</span>
+                    <div class="flex items-center justify-between py-1 border-b" style="border-color:rgba(255,255,255,0.06);">
+                        <span class="text-[10px] text-gray-500">Career</span>
+                        <span class="text-[10px] font-bold text-white truncate max-w-[130px] text-right">{{ $progress->career_field ?? 'None set' }}</span>
                     </div>
-                    <div class="flex items-center justify-between py-1.5 border-b" style="border-color:rgba(255,255,255,0.06);">
-                        <span class="text-[11px] text-gray-500">Salary</span>
-                        <span class="text-[11px] font-bold text-emerald-400">Ksh {{ number_format($salaryAmount) }}/mo</span>
+                    <div class="flex items-center justify-between py-1 border-b" style="border-color:rgba(255,255,255,0.06);">
+                        <span class="text-[10px] text-gray-500">Salary</span>
+                        <span class="text-[10px] font-bold text-emerald-400">Ksh {{ number_format($salaryAmount) }}/mo</span>
                     </div>
                     @php $charMood = $progress->mood ?? 70; @endphp
-                    <div class="flex items-center justify-between py-1.5">
-                        <span class="text-[11px] text-gray-500">Mood</span>
-                        <span class="text-[11px] font-bold {{ $charMood >= 55 ? 'text-emerald-400' : ($charMood >= 40 ? 'text-amber-400' : 'text-red-400') }}">
+                    <div class="flex items-center justify-between py-1">
+                        <span class="text-[10px] text-gray-500">Mood</span>
+                        <span class="text-[10px] font-bold {{ $charMood >= 55 ? 'text-emerald-400' : ($charMood >= 40 ? 'text-amber-400' : 'text-red-400') }}">
                             {{ $charMood >= 80 ? '😄' : ($charMood >= 55 ? '🙂' : ($charMood >= 35 ? '😐' : '😟')) }} {{ $charMood }}/100
                         </span>
                     </div>
@@ -655,56 +656,56 @@
                 {{-- Player stats — moved up from the old bottom stats strip so
                      ranking/XP/badges/investments/credit live next to the rest
                      of the character summary instead of a separate row. --}}
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="rounded-xl p-2 text-center" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
-                        <div class="text-xs font-black text-emerald-400">Top {{ max(1, 100 - $percentile + 1) }}%</div>
-                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Ranking</div>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <div class="rounded-xl p-1.5 text-center" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
+                        <div class="text-[11px] font-black text-emerald-400">Top {{ max(1, 100 - $percentile + 1) }}%</div>
+                        <div class="text-[7.5px] text-gray-500 uppercase tracking-wider mt-0.5">Ranking</div>
                     </div>
-                    <div class="rounded-xl p-2 text-center" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
-                        <div class="text-xs font-black text-indigo-400">{{ number_format($xp) }}</div>
-                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Total XP</div>
+                    <div class="rounded-xl p-1.5 text-center" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
+                        <div class="text-[11px] font-black text-indigo-400">{{ number_format($xp) }}</div>
+                        <div class="text-[7.5px] text-gray-500 uppercase tracking-wider mt-0.5">Total XP</div>
                     </div>
-                    <div class="rounded-xl p-2 text-center" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);">
-                        <div class="text-xs font-black text-purple-400">{{ $badges->count() }}</div>
-                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Badges</div>
+                    <div class="rounded-xl p-1.5 text-center" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);">
+                        <div class="text-[11px] font-black text-purple-400">{{ $badges->count() }}</div>
+                        <div class="text-[7.5px] text-gray-500 uppercase tracking-wider mt-0.5">Badges</div>
                     </div>
-                    <div class="rounded-xl p-2 text-center" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
-                        <div class="text-xs font-black text-amber-400">{{ $investmentCount }}</div>
-                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Investments</div>
+                    <div class="rounded-xl p-1.5 text-center" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+                        <div class="text-[11px] font-black text-amber-400">{{ $investmentCount }}</div>
+                        <div class="text-[7.5px] text-gray-500 uppercase tracking-wider mt-0.5">Investments</div>
                     </div>
-                    <div class="col-span-2 rounded-xl p-2 text-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
-                        <div class="text-xs font-black {{ $creditScore >= 650 ? 'text-emerald-400' : ($creditScore >= 500 ? 'text-amber-400' : 'text-red-400') }}">{{ $creditScore }}</div>
-                        <div class="text-[8px] text-gray-500 uppercase tracking-wider mt-0.5">Credit Score</div>
+                    <div class="col-span-2 rounded-xl p-1.5 text-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">
+                        <div class="text-[11px] font-black {{ $creditScore >= 650 ? 'text-emerald-400' : ($creditScore >= 500 ? 'text-amber-400' : 'text-red-400') }}">{{ $creditScore }}</div>
+                        <div class="text-[7.5px] text-gray-500 uppercase tracking-wider mt-0.5">Credit Score</div>
                     </div>
                 </div>
             </div>
-            <div class="px-4 pb-4 flex flex-col gap-2">
+            <div class="px-3.5 pb-3.5 flex flex-col gap-1.5">
                 @if($overdueBills->count() > 0)
-                <a href="{{ route('life.board') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold animate-pulse"
+                <a href="{{ route('life.board') }}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[11px] font-bold animate-pulse"
                    style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;">
                     🚨 OVERDUE — {{ $overdueBills->count() }} bill{{ $overdueBills->count()>1?'s':'' }}, pay now
                 </a>
                 @endif
                 @php $nextTwoBills = $upcomingBills->take(2); @endphp
                 @if($nextTwoBills->count() > 0 || $monthlyBurn > 0)
-                <a href="{{ route('life.board') }}" class="rounded-xl px-3 py-2.5 flex flex-col gap-1.5"
+                <a href="{{ route('life.board') }}" class="rounded-xl px-2.5 py-2 flex flex-col gap-1"
                    style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);">
                     @foreach($nextTwoBills as $nb)
-                    <div class="flex items-center justify-between text-[11px]">
+                    <div class="flex items-center justify-between text-[10px]">
                         <span class="text-gray-400 truncate">{{ $nb->bill->icon ?? '🧾' }} {{ $nb->bill->name ?? 'Bill' }}</span>
                         <span class="font-bold text-amber-300 flex-shrink-0 ml-2">
                             Ksh {{ number_format($nb->amount) }} — {{ max(0, $nb->next_due_tick - ($progress->tick_count ?? 0)) }}d
                         </span>
                     </div>
                     @endforeach
-                    <div class="flex items-center justify-between text-[10px] pt-1 border-t" style="border-color:rgba(245,158,11,0.15);">
+                    <div class="flex items-center justify-between text-[9px] pt-1 border-t" style="border-color:rgba(245,158,11,0.15);">
                         <span class="text-gray-500 uppercase tracking-wider font-semibold">Bills / game month</span>
                         <span class="font-black text-amber-400">Ksh {{ number_format($monthlyBurn) }}</span>
                     </div>
                 </a>
                 @endif
                 <a href="{{ route('profile.edit') }}"
-                   class="text-center py-2.5 rounded-xl text-sm font-black transition-all hover:scale-105"
+                   class="text-center py-2 rounded-xl text-xs font-black transition-all hover:scale-105"
                    style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;">
                     <span class="inline-flex items-center gap-1"><x-icon name="gear" class="w-3.5 h-3.5" /> Customize</span>
                 </a>
@@ -943,8 +944,8 @@
 
     </div>{{-- /streak + daily reward --}}
 
-    {{-- CURRENT CHAPTER --}}
-    <div class="rounded-2xl p-3 mt-4" style="background:{{ $chapterColor['bg'] }};border:1px solid {{ $chapterColor['border'] }};">
+    {{-- CURRENT CHAPTER (desktop) --}}
+    <div class="desktop-only rounded-2xl p-3 mt-4" style="background:{{ $chapterColor['bg'] }};border:1px solid {{ $chapterColor['border'] }};">
         <div class="text-[9px] font-black uppercase tracking-wider text-gray-500 mb-1.5">Current Chapter</div>
         <div class="flex items-center justify-between">
             <div>
@@ -997,8 +998,10 @@
     {{-- MOBILE LAYOUT (hidden md+) --}}
     <div class="mobile-game-layout space-y-4">
 
-        {{-- Mobile character card --}}
-        <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.3);">
+        {{-- Mobile character card — backed by the current chapter's banner,
+             matching Life HQ's header, so which chapter you're in is visible
+             at a glance before you even read the stat row below. --}}
+        <div class="rounded-2xl overflow-hidden" style="{{ $chapterBg ? "background-image: linear-gradient(135deg, rgba(20,17,40,.88), rgba(15,12,32,.78)), url('{$chapterBg}'); background-size: cover; background-position: center;" : 'background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(139,92,246,0.08));' }} border:1px solid rgba(99,102,241,0.3);">
             <div class="p-4 flex items-center gap-4">
                 <div class="relative flex-shrink-0">
                     @if($user->profile_photo)
@@ -1049,6 +1052,26 @@
                     <div class="text-[9px] text-gray-500 uppercase font-semibold">Streak</div>
                     <div class="text-xs font-black text-orange-400">🔥 {{ $streak->current_streak ?? 0 }}d</div>
                 </div>
+            </div>
+        </div>
+
+        {{-- Current chapter — right under the profile card, so checking your
+             level/chapter progress is the very next thing after who you are. --}}
+        <div class="rounded-2xl p-4" style="background:{{ $chapterColor['bg'] }};border:1px solid {{ $chapterColor['border'] }};">
+            <div class="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-2">Current Chapter</div>
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <div class="text-base font-black {{ $chapterColor['text'] }}">{{ $chapterIcon }} {{ $chapterName }}</div>
+                    <div class="text-xs text-gray-400">{{ $progress->chapterTagline() }}</div>
+                </div>
+                <div class="text-3xl font-black {{ $chapterColor['text'] }}">{{ $chapterIcon }}</div>
+            </div>
+            <div class="h-1.5 bg-white/5 rounded-full mb-1.5">
+                <div class="h-1.5 rounded-full chapter-bar" style="width:{{ $chapterPctVal }}%;background:{{ $chapterColor['bar'] }};"></div>
+            </div>
+            <div class="flex items-center justify-between">
+                @if($nextChapterWorth)<span class="text-[10px] text-gray-500">Ksh {{ number_format($progress->netWorthToNextChapter()) }} to next</span>@endif
+                <a href="{{ route('life.timeline') }}" class="text-[10px] {{ $chapterColor['text'] }} font-semibold ml-auto hover:opacity-80">Timeline →</a>
             </div>
         </div>
 
@@ -1264,25 +1287,6 @@
                 <div class="text-[9px] text-gray-500 uppercase tracking-wider">{{ $lbl }}</div>
             </div>
             @endforeach
-        </div>
-
-        {{-- Mobile current chapter --}}
-        <div class="rounded-2xl p-4" style="background:{{ $chapterColor['bg'] }};border:1px solid {{ $chapterColor['border'] }};">
-            <div class="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-2">Current Chapter</div>
-            <div class="flex items-center justify-between mb-2">
-                <div>
-                    <div class="text-base font-black {{ $chapterColor['text'] }}">{{ $chapterIcon }} {{ $chapterName }}</div>
-                    <div class="text-xs text-gray-400">{{ $progress->chapterTagline() }}</div>
-                </div>
-                <div class="text-3xl font-black {{ $chapterColor['text'] }}">{{ $chapterIcon }}</div>
-            </div>
-            <div class="h-1.5 bg-white/5 rounded-full mb-1.5">
-                <div class="h-1.5 rounded-full chapter-bar" style="width:{{ $chapterPctVal }}%;background:{{ $chapterColor['bar'] }};"></div>
-            </div>
-            <div class="flex items-center justify-between">
-                @if($nextChapterWorth)<span class="text-[10px] text-gray-500">Ksh {{ number_format($progress->netWorthToNextChapter()) }} to next</span>@endif
-                <a href="{{ route('life.timeline') }}" class="text-[10px] {{ $chapterColor['text'] }} font-semibold ml-auto hover:opacity-80">Timeline →</a>
-            </div>
         </div>
 
         {{-- Mobile city news --}}
