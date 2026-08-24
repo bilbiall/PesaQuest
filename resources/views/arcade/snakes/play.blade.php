@@ -409,7 +409,7 @@
            flat fade, and a shrinking accent bar along the bottom edge shows at
            a glance how long is left before it auto-clears (see JS: the bar's
            animation duration is set to match toastTimer's actual delay). */
-        .event-toast { position:fixed; left:50%; bottom:170px; transform:translateX(-50%) translateY(18px) scale(.94); max-width:340px; background:rgba(10,9,20,.96); border:1px solid rgba(255,255,255,.18); border-radius:1.1rem; padding:.85rem 1.1rem .75rem; font-size:.78rem; z-index:9998; opacity:0; pointer-events:none; transition:opacity .4s cubic-bezier(.34,1.56,.64,1), transform .4s cubic-bezier(.34,1.56,.64,1); line-height:1.5; box-shadow:0 12px 34px rgba(0,0,0,.5); overflow:hidden; }
+        .event-toast { position:fixed; left:50%; bottom:170px; transform:translateX(-50%) translateY(18px) scale(.94); max-width:340px; background:rgba(10,9,20,.62); border:1px solid rgba(255,255,255,.18); border-radius:1.1rem; padding:.85rem 1.1rem .75rem; font-size:.78rem; z-index:9998; opacity:0; pointer-events:none; transition:opacity .4s cubic-bezier(.34,1.56,.64,1), transform .4s cubic-bezier(.34,1.56,.64,1); line-height:1.5; box-shadow:0 12px 34px rgba(0,0,0,.5); overflow:hidden; text-shadow:0 1px 3px rgba(0,0,0,.7); }
         .event-toast.show { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
         .event-toast .toast-headline { font-weight:900; font-size:.92rem; margin-top:.35rem; animation:toastPop .35s ease .05s both; }
         .event-toast .toast-headline:first-child { margin-top:0; }
@@ -471,10 +471,11 @@
         @keyframes sparkleUp { 0% { transform:translate(0,0) scale(.4) rotate(0deg); opacity:1; } 100% { transform:translate(var(--sx,0),-46px) scale(1.1) rotate(90deg); opacity:0; } }
 
         /* The board is CSS-rotated 90° into landscape on narrow portrait phones
-           (see .panel-board above) — everything else that floats on top of it
-           needs to rotate the same way, or it reads upright/sideways against a
-           sideways board: the die, the whose-turn/countdown banner, the event
-           toast, and the win/bust/cash-out modals. */
+           (see .panel-board above) — most things floating on top of it need to
+           rotate the same way, or they read upright/sideways against a sideways
+           board: the die, the whose-turn/countdown banner, and the win/bust/
+           cash-out modals. The event toast is the deliberate exception — see
+           its own rule below for why. */
         @media (max-width:1023px) and (orientation:portrait) {
             .die-panel { transform:rotate(90deg); }
             /* Unlike the die/banner/toast/overlay above (all position:fixed
@@ -509,13 +510,36 @@
                 width:max-content; max-width:100%; white-space:nowrap;
             }
             .die-panel #turnBanner .turn-secs-badge { width:18px; height:18px; font-size:.58rem; }
-            /* left/top are set from the board's real rotated center by
-               positionToastOverBoard() (JS) — a plain left:50% here would center
-               against the screen's un-rotated X axis, which is NOT the rotated
-               board's visual horizontal, exactly the "toast sits too far over"
-               bug. translate(-50%,-50%) anchors on that computed center point. */
-            .event-toast { left:var(--toast-left, 50%); top:var(--toast-top, 50%); bottom:auto; transform:translate(-50%,-50%) scale(.9) rotate(90deg); }
-            .event-toast.show { transform:translate(-50%,-50%) scale(1) rotate(90deg); }
+            /* Deliberately NOT rotated, unlike the die/banner/overlay above — this
+               is read text, not board iconography, and rotating a wrapped block
+               of text only spins its already-wrapped LINES 90°, turning a short
+               sentence into a tall column of sideways letters. It reads far
+               better upright, same as the desktop rule above, just re-anchored
+               near the bottom of the actual (rotated) board instead of the
+               screen's un-rotated bottom edge. left/top come from the board's
+               real on-screen rect via positionToastOverBoard() (JS) — plain
+               left:50%/bottom:Npx would sit against the screen's un-rotated
+               axes, which don't line up with the rotated board's visual
+               horizontal/vertical. translate(-50%,-100%) pins the toast's own
+               BOTTOM edge to that computed point so it grows upward and never
+               overflows past the board. Widened + lightened so one sentence
+               fits on a single row (long ones wrap to a second, never more, via
+               the shared max-height/line-clamp rules below). */
+            .event-toast {
+                left:var(--toast-left, 50%); top:var(--toast-top, 92%); bottom:auto;
+                transform:translate(-50%,-100%) scale(.9);
+                max-width:min(90vw, 480px); width:max-content;
+                background:rgba(10,9,20,.55);
+            }
+            .event-toast.show { transform:translate(-50%,-100%) scale(1); }
+            /* Caps each message line at 2 rows rather than letting a long
+               sentence keep growing the toast's height — matches the width
+               above (one row for a typical sentence, two for a longer one),
+               with the rare overflow simply clipped instead of pushed further
+               down the (limited, board-bottom-anchored) available height. */
+            .event-toast .toast-headline, .event-toast .toast-lesson {
+                display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+            }
             .overlay-card { transform:rotate(90deg); }
             /* The drawer itself is a full-height edge panel — rotating it like the
                small die/banner/toast above would need the same dimension-swapping
@@ -1180,11 +1204,15 @@
         });
         window.addEventListener('orientationchange', () => setTimeout(relocateGameHud, 250));
 
-        // Centers the event toast on the ROTATED board's true visual center — see
-        // the .event-toast rule's comment for why a plain CSS left:50% can't do
-        // this once the board (and the toast's own rotate(90deg)) are involved.
-        // No-ops outside the forced-landscape case, clearing any inline override
-        // so the plain (already-centered) CSS rule takes over normally.
+        // Anchors the event toast near the BOTTOM of the ROTATED board's true
+        // on-screen rect — see the .event-toast rule's comment for why a plain
+        // CSS left:50%/bottom:Npx can't do this once the board's rotation is
+        // involved (its rect's left/top/width/height already reflect the real
+        // rotated screen position, no extra math needed, same trick
+        // dockOverBoard() uses for the die). Used to center it instead, which
+        // sat the toast right on top of active gameplay in the board's middle.
+        // No-ops outside the forced-landscape case, clearing any inline
+        // override so the plain (already bottom-anchored) CSS rule takes over.
         function positionToastOverBoard() {
             const toast = document.getElementById('eventToast');
             const board = document.getElementById('boardWrap');
@@ -1197,7 +1225,7 @@
             }
             const r = board.getBoundingClientRect();
             toast.style.setProperty('--toast-left', (r.left + r.width / 2) + 'px');
-            toast.style.setProperty('--toast-top', (r.top + r.height / 2) + 'px');
+            toast.style.setProperty('--toast-top', (r.top + r.height - 18) + 'px');
         }
         positionToastOverBoard();
         window.addEventListener('load', positionToastOverBoard);
