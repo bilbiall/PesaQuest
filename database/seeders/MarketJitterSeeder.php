@@ -28,6 +28,11 @@ class MarketJitterSeeder extends Seeder
         'sector_up'   => "A sector rally can look like easy money, but it rarely lasts forever — enjoy the gain without betting your whole portfolio on it repeating.",
     ];
 
+    /** Game days before scheduled_at that the vague heads-up posts — same
+     *  lead used to backfill jitters seeded before this column existed, see
+     *  the 2026_08_24_150000_add_warning_to_market_jitters migration. */
+    private const WARNING_LEAD_TICKS = 3;
+
     public function run(GameClock $clock): void
     {
         $added = 0;
@@ -48,6 +53,7 @@ class MarketJitterSeeder extends Seeder
                 'window_steps'    => $j['window_steps'] ?? 8,
                 'game_day_offset' => $j['game_day_offset'],
                 'scheduled_at'    => now()->addSeconds($clock->realSecondsForTicks($j['game_day_offset'])),
+                'warn_at'         => now()->addSeconds($clock->realSecondsForTicks(max(0, $j['game_day_offset'] - self::WARNING_LEAD_TICKS))),
                 'status'          => 'scheduled',
             ]);
             $added++;

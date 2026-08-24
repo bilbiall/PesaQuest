@@ -1793,8 +1793,16 @@ class LifeSimulator
     {
         if (!Schema::hasTable('market_jitters')) return;
 
+        $service = app(\App\Services\MarketJitterService::class);
+
         try {
-            app(\App\Services\MarketJitterService::class)->applyDue();
+            $service->sendDueWarnings();
+        } catch (\Throwable $e) {
+            \Log::warning('Market Jitters sendDueWarnings failed: ' . $e->getMessage());
+        }
+
+        try {
+            $service->applyDue();
         } catch (\Throwable $e) {
             \Log::warning('Market Jitters applyDue failed: ' . $e->getMessage());
         }
