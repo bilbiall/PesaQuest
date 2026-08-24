@@ -173,30 +173,11 @@ class ForumController extends Controller
     }
 
     /**
-     * Header stat strip + trending category chips — cheap aggregate queries,
-     * all scoped to the public board (school-private activity stays out of
-     * the public "pulse" widgets).
+     * Trending category chips — cheap aggregate query, scoped to the public
+     * board (school-private activity stays out of the public "pulse" widget).
      */
     private function communityStats(): array
     {
-        $today = now()->toDateString();
-
-        $onlineNow = \Illuminate\Support\Facades\Schema::hasTable('sessions')
-            ? \Illuminate\Support\Facades\DB::table('sessions')
-                ->whereNotNull('user_id')
-                ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
-                ->distinct('user_id')
-                ->count('user_id')
-            : 0;
-
-        $discussionsToday = ForumTopic::visible()->whereNull('school_subscription_id')->whereDate('created_at', $today)->count();
-        $repliesToday     = ForumReply::whereHas('topic', fn ($q) => $q->whereNull('school_subscription_id'))
-            ->whereDate('created_at', $today)->count();
-
-        $topContributor = \Illuminate\Support\Facades\Schema::hasColumn('users', 'forum_karma')
-            ? User::where('forum_karma', '>', 0)->orderByDesc('forum_karma')->first(['id', 'name', 'profile_photo', 'forum_karma'])
-            : null;
-
         $trending = ForumTopic::visible()
             ->whereNull('school_subscription_id')
             ->where('created_at', '>=', now()->subDays(7))
@@ -210,11 +191,7 @@ class ForumController extends Controller
             ->values();
 
         return [
-            'onlineNow'        => $onlineNow,
-            'discussionsToday' => $discussionsToday,
-            'repliesToday'     => $repliesToday,
-            'topContributor'   => $topContributor,
-            'trending'         => $trending,
+            'trending' => $trending,
         ];
     }
 

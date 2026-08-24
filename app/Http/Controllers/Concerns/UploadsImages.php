@@ -70,10 +70,22 @@ trait UploadsImages
         $mime    = $uploadedFile->getMimeType();
         $tmpPath = $uploadedFile->getRealPath();
 
+        // GD only ever reads/writes the first frame of a GIF, so running an
+        // animated GIF through imagecreatefromgif()/imagegif() below would
+        // silently flatten it to a still image. Store it byte-for-byte
+        // instead — animation (and the "GIF" attach control) only works if
+        // we never decode it.
+        if ($mime === 'image/gif') {
+            $filename = $folder . '/' . uniqid() . '.gif';
+            $fullPath = public_path('uploads/' . $filename);
+            @mkdir(dirname($fullPath), 0755, true);
+            $uploadedFile->move(dirname($fullPath), basename($fullPath));
+            return $filename;
+        }
+
         $src = match ($mime) {
             'image/jpeg' => imagecreatefromjpeg($tmpPath),
             'image/png'  => imagecreatefrompng($tmpPath),
-            'image/gif'  => imagecreatefromgif($tmpPath),
             'image/webp' => imagecreatefromwebp($tmpPath),
             default      => imagecreatefromjpeg($tmpPath),
         };

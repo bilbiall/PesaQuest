@@ -12,13 +12,19 @@
     <style>
         body { background: #07060f; font-family: 'Figtree', sans-serif; }
         [x-cloak] { display: none !important; }
-        .pf-stat { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:10px 12px; }
         .pf-trend { flex-shrink:0; font-size:11.5px; font-weight:900; padding:.4rem .85rem; border-radius:999px; white-space:nowrap; transition:all .15s; }
         .pf-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:13px; transition:background .15s, border-color .15s, transform .15s; }
         .pf-card:hover { background:rgba(255,255,255,0.05); transform:translateY(-1px); }
         .pf-card.pinned { border-color:rgba(139,92,246,0.35); }
         #pf-newpill { position:sticky; top:70px; z-index:40; display:flex; justify-content:center; margin-bottom:.75rem; }
         #pf-newpill button { pointer-events:auto; }
+
+        /* Floating "New Discussion" bubble — replaces the old inline hero button */
+        .pf-fab { position:fixed; right:18px; bottom:84px; z-index:9002; width:54px; height:54px; border-radius:999px;
+            display:flex; align-items:center; justify-content:center; font-size:24px; line-height:1;
+            background:linear-gradient(135deg,#7c3aed,#4f46e5); box-shadow:0 8px 28px rgba(124,58,237,0.45);
+            border:none; cursor:pointer; transition:transform .15s; }
+        .pf-fab:hover { transform:translateY(-2px) scale(1.05); }
 
         /* WhatsApp-style attach control on the New Discussion form */
         .pf-attach-zone { cursor:pointer; border-radius:14px; padding:1.1rem; text-align:center; font-size:.75rem; color:#9ca3af; background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.18); transition:border-color .15s, color .15s; }
@@ -45,75 +51,25 @@
     </div>
 </nav>
 
-{{-- ── Hero ── --}}
-<div class="border-b border-white/5 py-8"
-     style="background: linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(99,102,241,0.05) 100%);">
+{{-- ── Trending topics ── --}}
+@if($trending->isNotEmpty())
+<div class="border-b border-white/5 py-4">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
-        <h1 class="text-xl sm:text-2xl font-black mb-1.5 inline-flex items-center gap-1.5"><x-icon name="speech" class="w-5 h-5" /> Pesa Forums</h1>
-        <p class="text-gray-400 text-sm sm:text-base leading-relaxed">Talk money. Share real stories.<br class="sm:hidden"> Learn together. Level up together. 🚀</p>
-
-        {{-- Stats strip --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-5">
-            <div class="pf-stat">
-                <div class="flex items-center gap-1.5 text-sm font-black text-emerald-400">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400" style="box-shadow:0 0 6px 2px rgba(16,185,129,.5);animation:pfPulse 1.8s infinite;"></span>
-                    {{ number_format($onlineNow) }}
-                </div>
-                <div class="text-[10px] text-gray-500 font-bold mt-0.5">Online now</div>
-            </div>
-            <div class="pf-stat">
-                <div class="text-sm font-black text-white inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> {{ number_format($discussionsToday) }}</div>
-                <div class="text-[10px] text-gray-500 font-bold mt-0.5">Discussions today</div>
-            </div>
-            <div class="pf-stat">
-                <div class="text-sm font-black text-white inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> {{ number_format($repliesToday) }}</div>
-                <div class="text-[10px] text-gray-500 font-bold mt-0.5">Replies today</div>
-            </div>
-            <div class="pf-stat flex items-center gap-2">
-                @if($topContributor)
-                    @if($topContributor->profile_photo)
-                    <img src="{{ $topContributor->profile_photo }}" alt="" class="w-7 h-7 rounded-full object-cover flex-shrink-0" style="box-shadow:0 0 0 2px rgba(245,158,11,0.4);">
-                    @else
-                    <span class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-black text-amber-300" style="background:rgba(245,158,11,0.15);box-shadow:0 0 0 2px rgba(245,158,11,0.4);">{{ strtoupper(substr($topContributor->name,0,1)) }}</span>
-                    @endif
-                    <div class="min-w-0">
-                        <div class="text-xs font-black text-white truncate">👑 {{ Str::limit($topContributor->name, 14) }}</div>
-                        <div class="text-[10px] text-gray-500 font-bold">Top contributor</div>
-                    </div>
-                @else
-                <div class="text-[11px] text-gray-500 font-bold self-center">🌱 Be the first top contributor</div>
-                @endif
-            </div>
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-black text-gray-500 uppercase tracking-wider inline-flex items-center gap-1"><x-icon name="fire" class="w-3 h-3" /> Trending Topics</span>
+            <a href="{{ route('forums.index') }}" class="text-[11px] font-black text-violet-300 hover:text-violet-200 inline-flex items-center gap-1">View all →</a>
         </div>
-
-        {{-- Trending topics --}}
-        @if($trending->isNotEmpty())
-        <div class="mt-5">
-            <div class="text-[11px] font-black text-gray-500 uppercase tracking-wider mb-2 inline-flex items-center gap-1"><x-icon name="fire" class="w-3 h-3" /> Trending Topics</div>
-            <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-                @foreach($trending as $t)
-                <a href="{{ route('forums.index', ['category' => $t['key']]) }}" class="pf-trend text-amber-200 hover:text-white"
-                   style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.28);">
-                    {{ $t['meta']['icon'] }} {{ $t['meta']['label'] }}
-                </a>
-                @endforeach
-                <a href="{{ route('forums.index') }}" class="pf-trend text-gray-400 hover:text-white" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">See all →</a>
-            </div>
-        </div>
-        @endif
-
-        <div class="flex flex-wrap gap-2 mt-5">
-            <button @click="newTopicOpen = true" class="text-[12px] font-black px-4 py-2 rounded-full text-white transition-transform hover:scale-[1.02]"
-                    style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
-                <x-icon name="pencil" class="w-3.5 h-3.5 inline-block" /> New Discussion
-            </button>
-            @if($showXp ?? true)
-            <span class="text-[11px] font-black px-3.5 py-2 rounded-full inline-flex items-center gap-1" style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;"><x-icon name="speech" class="w-3 h-3" /> Reply +{{ $forumXpReply ?? 25 }} XP</span>
-            <span class="text-[11px] font-bold px-3.5 py-2 rounded-full" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;">XP on your first {{ $forumDailyXpCap ?? 5 }} posts each day</span>
-            @endif
+        <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            @foreach($trending as $t)
+            <a href="{{ route('forums.index', ['category' => $t['key']]) }}" class="pf-trend text-amber-200 hover:text-white"
+               style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.28);">
+                {{ $t['meta']['icon'] }} {{ $t['meta']['label'] }}
+            </a>
+            @endforeach
         </div>
     </div>
 </div>
+@endif
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
@@ -192,6 +148,9 @@
         @include('forums.partials._topic-results')
     </div>
 </div>
+
+{{-- ── Floating "New Discussion" bubble ── --}}
+<button type="button" @click="newTopicOpen = true" class="pf-fab" title="New Discussion" aria-label="New Discussion">💭</button>
 
 {{-- ── New Discussion Modal ── --}}
 <div x-show="newTopicOpen" x-cloak
@@ -293,7 +252,6 @@
 @include('forums.partials.vote-assets')
 @endif
 
-<style>@keyframes pfPulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }</style>
 <script>
 // Swap the results container in place — no full-page reload for pagination
 // or the "new discussions" pill. Keeps the URL/back-button in sync via
