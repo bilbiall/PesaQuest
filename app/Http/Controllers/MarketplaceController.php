@@ -142,7 +142,7 @@ class MarketplaceController extends Controller
             default      => $query->orderBy('tier')->orderBy('base_price'),
         };
 
-        $assets         = $query->paginate(12)->withQueryString();
+        $assets         = $query->with('mmfSponsor')->paginate(12)->withQueryString();
         $categoryCounts = Asset::active()->selectRaw('category, count(*) as cnt')->groupBy('category')->pluck('cnt', 'category');
         $totalCount     = Asset::active()->count();
         $maxPrice       = Asset::active()->max('base_price') ?? 5000000;

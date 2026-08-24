@@ -237,6 +237,25 @@
                             </select>
                         </div>
                         <div>
+                            <label class="form-label">Product Type <span class="text-gray-600 font-normal normal-case">— Fixed Income only</span>
+                                <x-help-tip text="Sub-classifies a Fixed Income asset (Money Market Fund, Treasury Bill, ...) so the Marketplace can group and compare them as real product types instead of one flat list. Ignored for every other category." example="money_market_fund" />
+                            </label>
+                            <select name="product_type" class="form-input">
+                                <option value="" {{ old('product_type',$asset?->product_type)==='' || old('product_type',$asset?->product_type)===null ? 'selected':'' }}>— None —</option>
+                                <option value="money_market_fund" {{ old('product_type',$asset?->product_type)==='money_market_fund' ? 'selected':'' }}>Money Market Fund</option>
+                                <option value="treasury_bill"     {{ old('product_type',$asset?->product_type)==='treasury_bill'     ? 'selected':'' }}>Treasury Bill</option>
+                                <option value="treasury_bond"     {{ old('product_type',$asset?->product_type)==='treasury_bond'     ? 'selected':'' }}>Treasury Bond</option>
+                                <option value="fixed_deposit"     {{ old('product_type',$asset?->product_type)==='fixed_deposit'     ? 'selected':'' }}>Fixed Deposit</option>
+                                <option value="corporate_bond"    {{ old('product_type',$asset?->product_type)==='corporate_bond'    ? 'selected':'' }}>Corporate Bond</option>
+                                <option value="sacco_deposit"     {{ old('product_type',$asset?->product_type)==='sacco_deposit'     ? 'selected':'' }}>SACCO Deposit</option>
+                                <option value="endowment"         {{ old('product_type',$asset?->product_type)==='endowment'         ? 'selected':'' }}>Endowment Plan</option>
+                                <option value="sukuk"             {{ old('product_type',$asset?->product_type)==='sukuk'             ? 'selected':'' }}>Sukuk Bond</option>
+                            </select>
+                            @if($asset?->mmf_sponsor_id)
+                            <p class="text-xs text-gray-500 mt-1">🏆 Sponsored by <b class="text-gray-300">{{ $asset->mmfSponsor->name }}</b> — manage sponsor assignment from Admin → Sponsors.</p>
+                            @endif
+                        </div>
+                        <div>
                             <label class="form-label">Age Group *
                                 <x-help-tip text="Restricts which players can see and buy this asset in the marketplace. Choose 'All Ages' unless the item only makes sense for a specific age bracket." example="18-25" />
                             </label>

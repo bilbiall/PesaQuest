@@ -86,10 +86,19 @@ class AdminController extends Controller
             ? \App\Models\ArcadeTile::with('sponsor')->where('money_effect', 'reward')->orderBy('number')->get()
             : collect();
 
+        $mmfSponsors = \Illuminate\Support\Facades\Schema::hasTable('mmf_sponsors')
+            ? \App\Models\MmfSponsor::withCount('assets')->latest()->get()
+            : collect();
+
+        $mmfAssignableAssets = \Illuminate\Support\Facades\Schema::hasColumn('assets', 'mmf_sponsor_id')
+            ? \App\Models\Asset::with('mmfSponsor')->where('category', 'fixed_income')->orderBy('product_type')->orderBy('name')->get()
+            : collect();
+
         return view('admin.panel', compact(
             'users', 'stats', 'recentActivity', 'plans',
             'allSubscriptions', 'payments', 'settings', 'schools', 'crises', 'coupons',
             'freeGates', 'gateMeta', 'usersHaveActiveColumn', 'sponsors', 'sponsorableTiles',
+            'mmfSponsors', 'mmfAssignableAssets',
             'schoolClassesTableExists'
         ));
     }
@@ -232,6 +241,56 @@ class AdminController extends Controller
             'name'      => 'required|string|max:60',
             'logo_path' => 'required|string|max:255',
             'tagline'   => 'nullable|string|max:120',
+        ]);
+        $data['is_active'] = $request->boolean('is_active', true);
+
+        return $data;
+    }
+
+    // ── MMF Sponsors — real-world financial-institution branding for
+    //    Marketplace fixed-income products (Money Market Funds, T-Bills,
+    //    ...). Same business/monetization-kept-out-of-GameSet pattern as
+    //    Arcade Sponsors above, deliberately a separate table — see the
+    //    create_mmf_sponsors_table migration for why. ─────────────────────
+
+    public function storeMmfSponsor(Request $request)
+    {
+        \App\Models\MmfSponsor::create($this->validatedMmfSponsor($request));
+        return back()->with('success', 'MMF sponsor added.');
+    }
+
+    public function updateMmfSponsor(Request $request, \App\Models\MmfSponsor $mmfSponsor)
+    {
+        $mmfSponsor->update($this->validatedMmfSponsor($request));
+        return back()->with('success', 'MMF sponsor updated.');
+    }
+
+    public function destroyMmfSponsor(\App\Models\MmfSponsor $mmfSponsor)
+    {
+        $mmfSponsor->delete(); // asset assignments null out via nullOnDelete
+        return back()->with('success', 'MMF sponsor deleted. Any funds carrying its branding revert to unsponsored.');
+    }
+
+    public function assignAssetSponsor(Request $request, \App\Models\Asset $asset)
+    {
+        $data = $request->validate(['mmf_sponsor_id' => 'nullable|exists:mmf_sponsors,id']);
+        $asset->update([
+            'mmf_sponsor_id'  => $data['mmf_sponsor_id'] ?? null,
+            // Assigning/changing a sponsor counts as reviewing the rate —
+            // keeps Asset::rateIsStale() from immediately nagging about a
+            // brand-new assignment.
+            'rate_updated_at' => now(),
+        ]);
+        return back()->with('success', "\"{$asset->name}\" sponsor updated.");
+    }
+
+    private function validatedMmfSponsor(Request $request): array
+    {
+        $data = $request->validate([
+            'name'        => 'required|string|max:60',
+            'logo_path'   => 'nullable|string|max:255',
+            'tagline'     => 'nullable|string|max:120',
+            'website_url' => 'nullable|url|max:255',
         ]);
         $data['is_active'] = $request->boolean('is_active', true);
 
@@ -1251,6 +1310,7 @@ class AdminController extends Controller
             'seed:journey-milestones' => ['cmd' => 'db:seed', 'args' => ['--class' => 'JourneyMilestoneExpansionSeeder', '--force' => true]],
             'seed:career-content' => ['cmd' => 'db:seed', 'args' => ['--class' => 'CareerContentExpansionSeeder', '--force' => true]],
             'seed:market-jitters' => ['cmd' => 'db:seed', 'args' => ['--class' => 'MarketJitterSeeder',           '--force' => true]],
+            'seed:mmf-sponsors'   => ['cmd' => 'db:seed', 'args' => ['--class' => 'MmfSponsorSeeder',             '--force' => true]],
             // Destructive seeders (truncate first — danger!)
             'seed:assets'         => ['cmd' => 'db:seed', 'args' => ['--class' => 'AssetSeeder',             '--force' => true]],
             'seed:bills'          => ['cmd' => 'db:seed', 'args' => ['--class' => 'BillSeeder',              '--force' => true]],

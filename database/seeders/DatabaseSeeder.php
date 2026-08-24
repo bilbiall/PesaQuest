@@ -78,6 +78,7 @@ class DatabaseSeeder extends Seeder
             JourneyMilestoneExpansionSeeder::class,
             CareerContentExpansionSeeder::class,
             MarketJitterSeeder::class,
+            MmfSponsorSeeder::class,
         ]);
     }
 }

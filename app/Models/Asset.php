@@ -3,18 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Asset extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'brand', 'category', 'tier', 'age_group',
+        'name', 'slug', 'brand', 'category', 'product_type', 'tier', 'age_group',
         'base_price', 'monthly_income', 'monthly_cost', 'income_period_ticks',
         'income_description', 'cost_description',
         'appreciation_rate', 'volatility', 'risk_level',
         'icon', 'image_url', 'description', 'flavor_text', 'educational_note',
         'creates_bill_slug', 'max_per_player', 'is_active', 'is_luxury',
-        'badge', 'featured_section',
+        'badge', 'featured_section', 'mmf_sponsor_id', 'rate_updated_at',
         'maturity_ticks', 'locked', 'early_exit_penalty_pct', 'maturity_bonus_pct',
     ];
 
@@ -32,7 +33,42 @@ class Asset extends Model
         'locked'             => 'boolean',
         'early_exit_penalty_pct' => 'float',
         'maturity_bonus_pct' => 'float',
+        'rate_updated_at'    => 'datetime',
     ];
+
+    public function mmfSponsor(): BelongsTo
+    {
+        return $this->belongsTo(MmfSponsor::class);
+    }
+
+    /** Human label for the fixed_income sub-classification — plain string
+     *  column (not an enum) so new product types are cheap to add; anything
+     *  not in this list just gets title-cased rather than failing. */
+    public function productTypeLabel(): string
+    {
+        return match ($this->product_type) {
+            'money_market_fund' => 'Money Market Fund',
+            'treasury_bill'     => 'Treasury Bill',
+            'treasury_bond'     => 'Treasury Bond',
+            'fixed_deposit'     => 'Fixed Deposit',
+            'corporate_bond'    => 'Corporate Bond',
+            'sacco_deposit'     => 'SACCO Deposit',
+            'endowment'         => 'Endowment Plan',
+            'sukuk'             => 'Sukuk Bond',
+            null, ''            => '',
+            default             => ucwords(str_replace('_', ' ', $this->product_type)),
+        };
+    }
+
+    /** True once a rate hasn't been reviewed in a while — only meaningful
+     *  for sponsor-branded products, where a stale number reads as wrong
+     *  rather than merely simulated. Admin surfaces this as a nag. */
+    public function rateIsStale(int $days = 30): bool
+    {
+        if (!$this->mmf_sponsor_id) return false;
+        if (!$this->rate_updated_at) return true;
+        return $this->rate_updated_at->diffInDays(now()) >= $days;
+    }
 
     /** Fixed-income instrument with a maturity date (T-Bill, T-Bond) vs. always-liquid (MMF, everything else). */
     public function hasMaturity(): bool

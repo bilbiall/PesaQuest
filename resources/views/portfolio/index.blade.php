@@ -376,6 +376,11 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2 mb-3">
+                            @if($pa->asset->mmfSponsor)
+                            <span class="pf-tag text-amber-300 border border-amber-500/30 bg-amber-500/10">
+                                🏆 {{ $pa->asset->mmfSponsor->name }}
+                            </span>
+                            @endif
                             @if($maturesIn !== null)
                             <span class="pf-tag {{ $isLocked ? 'text-amber-400 border border-amber-500/30 bg-amber-500/10' : 'text-cyan-400 border border-cyan-500/30 bg-cyan-500/10' }}">
                                 {{ $isLocked ? '🔒 Locked' : '⏳' }} matures in {{ $maturesIn }} game day{{ $maturesIn == 1 ? '' : 's' }}

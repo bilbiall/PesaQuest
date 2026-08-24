@@ -26,7 +26,7 @@ class PortfolioController extends Controller
         /* ── Owned assets ── */
         $playerAssets = PlayerAsset::where('user_id', $user->id)
             ->active()
-            ->with('asset')
+            ->with('asset.mmfSponsor')
             ->orderByDesc('created_at')
             ->get();
 

@@ -3552,6 +3552,87 @@ async function toggleDecision(id, btn) {
             @endif
         </div>
     </div>
+
+    <div class="panel rounded-2xl overflow-hidden mb-6 mt-6">
+        <div class="px-6 py-4 border-b border-white/5">
+            <h2 class="font-bold text-white text-base">🏦 MMF Sponsors</h2>
+            <p class="text-gray-400 text-xs mt-0.5">Real-world financial-institution branding for Marketplace fixed-income products (Money Market Funds, T-Bills, ...). Separate from Arcade Sponsors above — a different relationship with real product terms attached.</p>
+        </div>
+        <div class="p-6">
+            <form method="POST" action="{{ route('admin.mmf-sponsors.store') }}" class="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end mb-6">
+                @csrf
+                <div class="col-span-2">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Name</label>
+                    <input name="name" required maxlength="60" placeholder="e.g. Britam" class="w-full rounded-lg px-3 py-2 text-sm text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Logo path (in public/, optional)</label>
+                    <input name="logo_path" maxlength="255" placeholder="sponsors/britam-logo.png" class="w-full rounded-lg px-3 py-2 text-sm text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                </div>
+                <button type="submit" class="rounded-lg px-4 py-2 text-sm font-bold text-white" style="background:linear-gradient(135deg,#f59e0b,#d97706);">Add</button>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tagline (optional)</label>
+                    <input name="tagline" maxlength="120" class="w-full rounded-lg px-3 py-2 text-sm text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Website (optional — for a future "learn more" link)</label>
+                    <input name="website_url" type="url" maxlength="255" placeholder="https://..." class="w-full rounded-lg px-3 py-2 text-sm text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                </div>
+            </form>
+
+            <div class="space-y-2">
+                @foreach($mmfSponsors as $mmfSponsor)
+                <form method="POST" action="{{ route('admin.mmf-sponsors.update', $mmfSponsor) }}" class="flex flex-wrap items-center gap-2 p-3 rounded-xl {{ $mmfSponsor->is_active ? '' : 'opacity-40' }}" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);">
+                    @csrf @method('PUT')
+                    @if($mmfSponsor->logo_path)
+                    <img src="{{ asset($mmfSponsor->logo_path) }}" alt="" class="w-8 h-8 rounded-lg object-cover flex-shrink-0" style="background:rgba(255,255,255,.05);">
+                    @else
+                    <span class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-black text-gray-400" style="background:rgba(255,255,255,.05);">{{ strtoupper(substr($mmfSponsor->name, 0, 1)) }}</span>
+                    @endif
+                    <input name="name" value="{{ $mmfSponsor->name }}" class="rounded-lg px-2 py-1.5 text-sm text-white w-28" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                    <input name="logo_path" value="{{ $mmfSponsor->logo_path }}" placeholder="logo path" class="rounded-lg px-2 py-1.5 text-sm text-white flex-1 min-w-[7rem]" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                    <input name="tagline" value="{{ $mmfSponsor->tagline }}" placeholder="tagline" class="rounded-lg px-2 py-1.5 text-sm text-white flex-1 min-w-[7rem]" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                    <input name="website_url" value="{{ $mmfSponsor->website_url }}" placeholder="website" class="rounded-lg px-2 py-1.5 text-sm text-white flex-1 min-w-[7rem]" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                    <span class="text-[10px] text-gray-500">{{ $mmfSponsor->assets_count }} fund{{ $mmfSponsor->assets_count === 1 ? '' : 's' }}</span>
+                    <label class="flex items-center gap-1 text-xs text-gray-400"><input type="checkbox" name="is_active" value="1" {{ $mmfSponsor->is_active ? 'checked' : '' }}> Active</label>
+                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-lg" style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;">Save</button>
+                    <button type="submit" form="del-mmf-sponsor-{{ $mmfSponsor->id }}" onclick="return confirm('Delete this sponsor? Funds carrying its branding revert to unsponsored.')" class="text-xs font-bold px-3 py-1.5 rounded-lg" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#fca5a5;">✕</button>
+                </form>
+                <form id="del-mmf-sponsor-{{ $mmfSponsor->id }}" method="POST" action="{{ route('admin.mmf-sponsors.destroy', $mmfSponsor) }}">@csrf @method('DELETE')</form>
+                @endforeach
+                @if($mmfSponsors->isEmpty())
+                <p class="text-sm text-gray-500 italic">No MMF sponsors yet — add one above (migrations may not have run).</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="panel rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/5">
+            <h2 class="font-bold text-white text-base">Fixed Income Fund Branding</h2>
+            <p class="text-gray-400 text-xs mt-0.5">Assign a sponsor to any fixed-income Marketplace item — Product Type &amp; economics are still edited from GameSet Hub → Assets.</p>
+        </div>
+        <div class="p-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            @foreach($mmfAssignableAssets as $mmfAsset)
+            <form method="POST" action="{{ route('admin.mmf-sponsors.assets.assign', $mmfAsset) }}" class="flex items-center gap-2 p-2 rounded-lg" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);">
+                @csrf
+                <div class="flex-shrink-0 min-w-0">
+                    <div class="text-xs font-black text-teal-300 truncate">{{ $mmfAsset->name }}</div>
+                    <div class="text-[10px] text-gray-500">{{ $mmfAsset->productTypeLabel() ?: 'Unclassified' }}{{ $mmfAsset->rateIsStale() ? ' · ⚠ rate stale' : '' }}</div>
+                </div>
+                <select name="mmf_sponsor_id" onchange="this.form.submit()" class="flex-1 rounded-lg px-2 py-1.5 text-xs text-white" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);">
+                    <option value="">— No sponsor —</option>
+                    @foreach($mmfSponsors as $mmfSponsor)
+                    <option value="{{ $mmfSponsor->id }}" {{ $mmfAsset->mmf_sponsor_id === $mmfSponsor->id ? 'selected' : '' }}>{{ $mmfSponsor->name }}</option>
+                    @endforeach
+                </select>
+            </form>
+            @endforeach
+            @if($mmfAssignableAssets->isEmpty())
+            <p class="text-sm text-gray-500 italic col-span-3">No fixed-income assets found yet — add some from GameSet Hub → Assets.</p>
+            @endif
+        </div>
+    </div>
 </div>
 
 <script>
@@ -3604,6 +3685,7 @@ function artisanRunner() {
             { key: 'seed:journey-milestones', label: 'Journey Milestones (adds new)', icon: '🗺️', danger: false },
             { key: 'seed:career-content',  label: 'Career Fields + Quiz (adds new)', icon: '🧭', danger: false },
             { key: 'seed:market-jitters',  label: 'Market Jitters Roster', icon: '📉', danger: false },
+            { key: 'seed:mmf-sponsors',    label: 'MMF Sponsor Placeholders', icon: '🏦', danger: false },
             { key: 'seed:scenarios-bulk',  label: 'Bulk Scenarios',   icon: '📖', danger: false },
             { key: 'seed:scenarios-adult', label: 'Adult Scenarios',  icon: '📋', danger: false },
             { key: 'seed:asset-events',    label: 'Asset Events',     icon: '💼', danger: false },

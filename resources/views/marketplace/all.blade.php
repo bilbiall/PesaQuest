@@ -652,8 +652,13 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     <div :class="viewMode==='list' ? 'card-body-left' : ''" style="flex:1;">
                         <span class="card-chip"
                               style="background:{{ $asset->categoryChipColor() }};color:{{ $asset->categoryTextColor() }}">
-                            {{ $asset->categoryEmoji() }} {{ $asset->categoryLabel() }}
+                            {{ $asset->categoryEmoji() }} {{ $asset->productTypeLabel() ?: $asset->categoryLabel() }}
                         </span>
+                        @if($asset->mmfSponsor)
+                        <span class="card-chip" style="background:rgba(251,191,36,.14);color:#fbbf24;margin-left:.3rem;">
+                            🏆 {{ $asset->mmfSponsor->name }}
+                        </span>
+                        @endif
                         <div class="card-name">{{ $asset->name }}</div>
                         <div class="card-desc">{{ $asset->description }}</div>
                     </div>

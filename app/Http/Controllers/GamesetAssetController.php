@@ -49,6 +49,9 @@ class GamesetAssetController extends Controller
         $data = $this->validateAsset($request);
         $data['slug'] = Str::slug($data['name'] . '-' . uniqid());
         $data['image_url'] = $this->resolveImage($request, null);
+        if ($data['category'] === 'fixed_income') {
+            $data['rate_updated_at'] = now();
+        }
 
         $asset = Asset::create($data);
 
@@ -65,6 +68,12 @@ class GamesetAssetController extends Controller
     {
         $data = $this->validateAsset($request, $asset->id);
         $data['image_url'] = $this->resolveImage($request, $asset);
+        // A GameSet edit to a fixed-income asset's terms counts as a fresh
+        // review of its rate — surfaced in Admin as "N days since reviewed"
+        // for anything carrying a real sponsor's branding (Asset::rateIsStale()).
+        if ($data['category'] === 'fixed_income') {
+            $data['rate_updated_at'] = now();
+        }
 
         $asset->update($data);
 
@@ -99,6 +108,7 @@ class GamesetAssetController extends Controller
             'name'                => 'required|string|max:120',
             'brand'               => 'nullable|string|max:80',
             'category'            => 'required|in:vehicle,property,business,investment,gadget,fixed_income',
+            'product_type'        => 'nullable|string|max:40',
             'tier'                => 'required|integer|min:1|max:5',
             'age_group'           => 'required|in:8-12,13-17,18-25,26+,all',
             'icon'                => 'nullable|string|max:8',
@@ -132,6 +142,7 @@ class GamesetAssetController extends Controller
         $data['badge']            = $request->input('badge') ?: null;
         $data['featured_section'] = $request->input('featured_section') ?: null;
         $data['maturity_ticks']   = $request->input('maturity_ticks') ?: null;
+        $data['product_type']     = $request->input('product_type') ?: null;
         return $data;
     }
 

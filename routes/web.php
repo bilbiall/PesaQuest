@@ -367,6 +367,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/sponsors/{sponsor}',        [AdminController::class, 'destroySponsor'])->name('sponsors.destroy');
     Route::post('/sponsors/tiles/{tile}',       [AdminController::class, 'assignSponsorTile'])->name('sponsors.tiles.assign');
 
+    // MMF sponsors — real-world financial-institution branding for
+    // Marketplace fixed-income products, same business/monetization-kept-
+    // out-of-GameSet pattern as Arcade sponsors above.
+    Route::post('/mmf-sponsors',                    [AdminController::class, 'storeMmfSponsor'])->name('mmf-sponsors.store');
+    Route::put('/mmf-sponsors/{mmfSponsor}',        [AdminController::class, 'updateMmfSponsor'])->name('mmf-sponsors.update');
+    Route::delete('/mmf-sponsors/{mmfSponsor}',     [AdminController::class, 'destroyMmfSponsor'])->name('mmf-sponsors.destroy');
+    Route::post('/mmf-sponsors/assets/{asset}',     [AdminController::class, 'assignAssetSponsor'])->name('mmf-sponsors.assets.assign');
+
     // User management
     Route::post('/users',                         [AdminController::class, 'createUser'])->name('users.create');
     Route::post('/users/{user}/gameset',         [AdminController::class, 'toggleGameset'])->name('users.gameset');
