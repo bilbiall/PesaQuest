@@ -383,12 +383,12 @@
                                         <span class="text-[8px] font-bold text-gray-500 border border-white/10 rounded px-1 py-px uppercase tracking-wider">Essential</span>
                                         @endif
                                     </div>
-                                    <div class="text-[10px] {{ $urgColor }}">{{ $urgLabel }}</div>
+                                    <div class="js-bill-due-label text-[10px] {{ $urgColor }}">{{ $urgLabel }}</div>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
                                     <span class="text-xs font-bold text-white">{{ number_format($pb->amount) }}</span>
                                     <button @click.stop="payBill({{ $pb->id }}, '{{ addslashes($pb->bill->name) }}', {{ $pb->amount }})"
-                                            class="text-[10px] font-bold {{ $pb->status === 'overdue' ? 'bg-red-500/20 hover:bg-red-500/30 text-red-300' : 'bg-white/10 hover:bg-white/20 text-white' }} px-2.5 py-1 rounded-lg transition-colors">
+                                            class="js-bill-pay-btn text-[10px] font-bold {{ $pb->status === 'overdue' ? 'bg-red-500/20 hover:bg-red-500/30 text-red-300' : 'bg-white/10 hover:bg-white/20 text-white' }} px-2.5 py-1 rounded-lg transition-colors">
                                         Pay Now
                                     </button>
                                     <svg class="w-3 h-3 text-gray-500 transition-transform" :class="open ? 'rotate-180' : ''"
@@ -1033,9 +1033,27 @@
                         this.showToast(`✅ ${billName} paid! Balance: Ksh ${fmt(data.new_balance)}`, true);
                         pesaSound('bill');
 
+                        // Stays on the board (not removed) so a player can still
+                        // pay the next cycle early if they want — just re-flavor
+                        // it as paid/not-overdue with its new due date.
                         const row = document.getElementById(`bill-row-${billId}`);
                         const wasOverdue = row?.dataset.overdue === '1';
-                        row?.remove();
+                        if (row) {
+                            row.dataset.overdue = '0';
+                            row.classList.remove('bill-overdue', 'bill-urgent', 'bill-ok');
+                            row.classList.add(data.urgent ? 'bill-urgent' : 'bill-ok');
+
+                            const dueEl = row.querySelector('.js-bill-due-label');
+                            if (dueEl) {
+                                dueEl.textContent = data.due_label;
+                                dueEl.className = 'text-[10px] ' + (data.urgent ? 'text-amber-400' : 'text-emerald-400');
+                            }
+
+                            const payBtn = row.querySelector('.js-bill-pay-btn');
+                            if (payBtn) {
+                                payBtn.className = 'text-[10px] font-bold bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-lg transition-colors';
+                            }
+                        }
 
                         document.querySelectorAll('[data-balance]').forEach(el => el.textContent = `Ksh ${fmt(data.new_balance)}`);
 

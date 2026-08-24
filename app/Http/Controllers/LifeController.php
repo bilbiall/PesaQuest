@@ -642,11 +642,23 @@ class LifeController extends Controller
             'data'    => ['bill_id' => $bill->id, 'amount' => $playerBill->amount],
         ]);
 
+        // The row stays on the board after paying (so a player can still pay
+        // the next cycle early if they want) — send enough to re-render it
+        // in its new, not-overdue state instead of the client just deleting it.
+        $ticksUntilDue = max(0, $playerBill->next_due_tick - $progress->tick_count);
+        $urgent        = $ticksUntilDue <= 5;
+        $clock         = app(\App\Services\GameClock::class);
+        $dueLabel      = 'Due in ' . $ticksUntilDue . ' game day' . ($ticksUntilDue === 1 ? '' : 's')
+                        . " ({$clock->approxRealLabel($ticksUntilDue)})";
+
         return response()->json([
-            'success'      => true,
-            'new_balance'  => $progress->balance,
-            'credit_score' => $progress->credit_score,
-            'credit_label' => $progress->creditScoreLabel(),
+            'success'        => true,
+            'new_balance'    => $progress->balance,
+            'credit_score'   => $progress->credit_score,
+            'credit_label'   => $progress->creditScoreLabel(),
+            'next_due_tick'  => $playerBill->next_due_tick,
+            'due_label'      => $dueLabel,
+            'urgent'         => $urgent,
         ]);
     }
 }
