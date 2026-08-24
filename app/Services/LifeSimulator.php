@@ -222,6 +222,15 @@ class LifeSimulator
             $this->assignEligibleBills($user, $progress, $events);
 
             $progress->save();
+
+            // One row per player per tick actually reached (not per real
+            // login) -- lets the "vs last game month" header stats look
+            // back to the closest snapshot ~30 ticks ago. See
+            // PlayerFinancialSnapshot::asOf().
+            \App\Models\PlayerFinancialSnapshot::updateOrCreate(
+                ['user_id' => $user->id, 'tick' => $progress->tick_count],
+                ['balance' => $progress->balance, 'net_worth' => $progress->net_worth_cache, 'recorded_at' => now()]
+            );
         });
 
         $gameTimeLabel = $this->clock->formatTicks($ticks);

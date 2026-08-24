@@ -227,6 +227,18 @@ class LifeController extends Controller
         $netWorth     = (int) ($progress->net_worth_cache ?? $progress->balance ?? 0);
         $chapterMeta  = \App\Models\UserProgress::chapterMeta($progress->chapterKey());
         $location     = $chapterMeta['location'] ?? 'Nairobi';
+
+        // "vs last game month" — compares to the closest snapshot at-or-before
+        // 30 game-days ago, not calendar time. Null (hidden) until a player
+        // has at least one snapshot that old, and skipped when the prior
+        // value was 0 (a % change against zero isn't meaningful).
+        $priorSnapshot    = \App\Models\PlayerFinancialSnapshot::asOf($user->id, max(0, $currentTick - 30));
+        $balanceDeltaPct  = ($priorSnapshot && $priorSnapshot->balance != 0)
+            ? round((($progress->balance - $priorSnapshot->balance) / abs($priorSnapshot->balance)) * 100, 1)
+            : null;
+        $netWorthDeltaPct = ($priorSnapshot && $priorSnapshot->net_worth != 0)
+            ? round((($netWorth - $priorSnapshot->net_worth) / abs($priorSnapshot->net_worth)) * 100, 1)
+            : null;
         $chapterBg    = $chapterMeta['background_image'] ?? null;
 
         $lifeFeed = GameNotification::where('user_id', $user->id)
@@ -276,7 +288,8 @@ class LifeController extends Controller
             'netMonthly', 'savingsRate',
             'nextAsset', 'daysToNextAsset', 'progressToNextAsset',
             'location', 'chapterBg', 'netWorth', 'lifeFeed', 'statement', 'statementFilter',
-            'creditHistory', 'lifeEvents', 'pendingPay'
+            'creditHistory', 'lifeEvents', 'pendingPay',
+            'balanceDeltaPct', 'netWorthDeltaPct'
         ));
     }
 

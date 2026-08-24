@@ -66,16 +66,27 @@
                 <div>
                     <div class="text-[11px] text-gray-500 mb-0.5">Balance</div>
                     <div class="text-sm sm:text-base font-black text-emerald-400 whitespace-nowrap" data-balance>Ksh {{ number_format($progress->balance) }}</div>
+                    @if(($balanceDeltaPct ?? null) !== null)
+                    <div class="text-[10px] font-bold whitespace-nowrap {{ $balanceDeltaPct >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                        {{ $balanceDeltaPct >= 0 ? '↑' : '↓' }} {{ number_format(abs($balanceDeltaPct), 1) }}% vs last game month
+                    </div>
+                    @endif
                 </div>
                 <div>
                     <div class="text-[11px] text-gray-500 mb-0.5">Net Worth</div>
                     <div class="text-sm sm:text-base font-black text-indigo-400 whitespace-nowrap">Ksh {{ number_format($netWorth) }}</div>
+                    @if(($netWorthDeltaPct ?? null) !== null)
+                    <div class="text-[10px] font-bold whitespace-nowrap {{ $netWorthDeltaPct >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                        {{ $netWorthDeltaPct >= 0 ? '↑' : '↓' }} {{ number_format(abs($netWorthDeltaPct), 1) }}% vs last game month
+                    </div>
+                    @endif
                 </div>
                 <div>
                     <div class="text-[11px] text-gray-500 mb-0.5">Monthly Net</div>
                     <div class="text-sm sm:text-base font-black whitespace-nowrap {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                         {{ $netMonthly >= 0 ? '+' : '' }}Ksh {{ number_format($netMonthly) }}
                     </div>
+                    <div class="text-[10px] font-bold text-gray-500 whitespace-nowrap">{{ $savingsRate }}% savings rate</div>
                 </div>
             </div>
         </div>
