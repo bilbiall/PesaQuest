@@ -23,7 +23,7 @@
 @endphp
 <div id="reply-{{ $reply->id }}" class="mt-2" style="margin-left:{{ $marginLeft }};{{ $isIndented ? 'border-left:2px solid rgba(139,92,246,0.18);padding-left:.6rem;' : '' }}"
      x-data="{ replying: false }">
-    <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+    <div class="rounded-xl p-3 {{ $reply->is_market_update ? 'fr-mw-update' : '' }}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
         <div class="flex items-center justify-between gap-2 mb-1.5">
             <div class="flex items-center gap-1.5">
                 @if($reply->user?->profile_photo)

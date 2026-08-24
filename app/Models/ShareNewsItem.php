@@ -11,6 +11,7 @@ class ShareNewsItem extends Model
         'template_id', 'headline', 'flavor', 'lesson', 'scope',
         'share_id', 'sector', 'is_true', 'direction', 'magnitude_pct',
         'published_at', 'effect_at', 'status', 'resolved_at', 'forum_topic_id',
+        'announce_at', 'announced_at',
     ];
 
     protected $casts = [
@@ -19,6 +20,8 @@ class ShareNewsItem extends Model
         'published_at'  => 'datetime',
         'effect_at'     => 'datetime',
         'resolved_at'   => 'datetime',
+        'announce_at'   => 'datetime',
+        'announced_at'  => 'datetime',
     ];
 
     public function template(): BelongsTo

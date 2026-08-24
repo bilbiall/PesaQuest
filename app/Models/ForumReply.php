@@ -8,7 +8,11 @@ use Illuminate\Support\Collection;
 class ForumReply extends Model
 {
     protected $fillable = [
-        'topic_id', 'parent_id', 'user_id', 'body', 'image_path',
+        'topic_id', 'parent_id', 'user_id', 'body', 'image_path', 'is_market_update',
+    ];
+
+    protected $casts = [
+        'is_market_update' => 'boolean',
     ];
 
     public function user()

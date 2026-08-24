@@ -15,10 +15,12 @@ use Illuminate\Support\Str;
  * (Community) as the one place a keen player can catch wind of them and
  * discuss it while it's still live; the real effect lands days later, so
  * acting on a hunch is genuinely a bet, not a certainty — some bulletins
- * are duds by design. The outcome (and its lesson) only gets posted back
- * to that same thread once it resolves (see postOutcomeReply()) — by then
- * the price has already moved (or hasn't), so it's no longer actionable
- * information, just the retrospective answer.
+ * are duds by design. Resolution happens in two separate steps, on purpose:
+ * resolveDue() moves the price the moment its effect_at comes due, but the
+ * outcome reply doesn't get posted until announceDue() — a further delay
+ * later — picks it up. By the time the forum finds out, the price has
+ * already been sitting at its new level for a while, so reading the update
+ * can only ever tell you what you missed, never give you time to act on it.
  */
 class ShareNewsService
 {
@@ -44,6 +46,13 @@ class ShareNewsService
      *  keen player has to act before the price actually moves. */
     private const EFFECT_DELAY_MIN_TICKS = 2;
     private const EFFECT_DELAY_MAX_TICKS = 5;
+
+    /** Real game-days between the price actually moving and the forum finding
+     *  out about it. The outcome reply is the "spoiler" — waiting until the
+     *  move has plainly already happened means reading it can never help you
+     *  catch the move, only regret missing it (or celebrate having acted). */
+    private const ANNOUNCE_DELAY_MIN_TICKS = 2;
+    private const ANNOUNCE_DELAY_MAX_TICKS = 4;
 
     /** The hidden, actual size of the move once it lands. */
     private const MAGNITUDE_MIN_PCT = 4.0;
@@ -165,13 +174,14 @@ class ShareNewsService
     }
 
     /** Applies the outcome of every item whose effect has come due — moves
-     *  the price for real bulletins, does nothing (by design) for duds, and
-     *  posts the outcome back to the forum topic either way. */
+     *  the price for real bulletins, does nothing (by design) for duds — but
+     *  does NOT tell the forum yet. That happens later, in announceDue(),
+     *  once the move has had time to actually show up in the price. */
     public function resolveDue(): int
     {
         $due = ShareNewsItem::where('status', 'scheduled')
             ->where('effect_at', '<=', now())
-            ->with(['share', 'forumTopic'])
+            ->with(['share'])
             ->get();
 
         foreach ($due as $item) {
@@ -184,8 +194,32 @@ class ShareNewsService
                 }
             }
 
-            $item->update(['status' => 'resolved', 'resolved_at' => now()]);
+            $ticks = rand(self::ANNOUNCE_DELAY_MIN_TICKS, self::ANNOUNCE_DELAY_MAX_TICKS);
+            $item->update([
+                'status'      => 'resolved',
+                'resolved_at' => now(),
+                'announce_at' => now()->addSeconds($this->clock->realSecondsForTicks($ticks)),
+            ]);
+        }
+
+        return $due->count();
+    }
+
+    /** Posts the outcome reply for every resolved item whose announce_at has
+     *  come due — by now the price has already sat at its new level for a
+     *  while, so a player only finds out here whether their hunch (or lack
+     *  of one) paid off, never in time to act on it. */
+    public function announceDue(): int
+    {
+        $due = ShareNewsItem::where('status', 'resolved')
+            ->whereNull('announced_at')
+            ->where('announce_at', '<=', now())
+            ->with(['forumTopic'])
+            ->get();
+
+        foreach ($due as $item) {
             $this->postOutcomeReply($item);
+            $item->update(['announced_at' => now()]);
         }
 
         return $due->count();
@@ -196,13 +230,14 @@ class ShareNewsService
         if (!$item->forum_topic_id) return;
 
         $outcome = $item->is_true
-            ? 'Looks like this one was real — ' . ($item->direction === 'up' ? 'expect a gradual climb over the next while, not an overnight jump. 📈' : 'expect a gradual slide over the next while, not an overnight crash. 📉')
-            : "In the end, nothing came of it — the price just does its normal thing. Not every story pans out.";
+            ? 'Looks like this one was real — ' . ($item->direction === 'up' ? 'the price has already climbed. 📈' : 'the price has already slid. 📉')
+            : "In the end, nothing came of it — the price just did its normal thing. Not every story pans out.";
 
         \App\Models\ForumReply::create([
-            'topic_id' => $item->forum_topic_id,
-            'user_id'  => $this->wireUser()->id,
-            'body'     => "📰 Update: {$outcome}\n\n{$item->lesson}",
+            'topic_id'         => $item->forum_topic_id,
+            'user_id'          => $this->wireUser()->id,
+            'body'             => "📰 Update: {$outcome}\n\n{$item->lesson}",
+            'is_market_update' => true,
         ]);
 
         $item->forumTopic?->increment('replies_count');

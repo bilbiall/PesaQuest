@@ -25,31 +25,33 @@
         #emoji-pop button { font-size:20px; padding:5px 0; border-radius:8px; background:none; border:none; cursor:pointer; }
         #emoji-pop button:hover { background:rgba(255,255,255,0.08); }
 
-        /* ── Sticky reply composer ── */
+        /* ── Sticky reply composer — collapsed to one pill row at rest;
+             icons only appear once the box is focused/has content, so the
+             resting state stays compact instead of a big permanent panel. ── */
         .rx-sticky-composer { position:fixed; left:0; right:0; bottom:0; z-index:500;
             background:rgba(10,9,20,0.97); backdrop-filter:blur(16px);
             border-top:1px solid rgba(139,92,246,0.25);
-            padding:10px 12px calc(10px + env(safe-area-inset-bottom)); }
+            padding:8px 12px calc(8px + env(safe-area-inset-bottom)); }
         @media (max-width:767px) { .rx-sticky-composer { bottom:64px; } }
         .rx-sticky-composer .max-w-5xl { margin:0 auto; }
-        .rx-composer-box { border-radius:18px; border:1px solid rgba(139,92,246,0.22); background:rgba(255,255,255,0.03); padding:10px 12px; }
-        .rx-composer-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-        .rx-composer-head-icon { width:28px; height:28px; border-radius:999px; display:flex; align-items:center; justify-content:center;
-            font-size:14px; flex-shrink:0; background:rgba(139,92,246,0.16); border:1px solid rgba(139,92,246,0.35); }
-        .rx-composer-title { font-size:12.5px; font-weight:900; color:#fff; line-height:1.25; }
-        .rx-composer-subtitle { font-size:10px; color:#9ca3af; font-weight:600; line-height:1.2; }
-        .rx-composer-textarea { width:100%; font-size:13px; padding:9px 12px; max-height:90px; border-radius:12px; display:block; }
-        .rx-composer-count { text-align:right; font-size:9.5px; color:#6b7280; margin-top:2px; }
-        .rx-composer-toolbar { display:flex; align-items:center; gap:6px; margin-top:8px; }
-        .rx-composer-icon-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:15px;
+        .rx-composer-row { display:flex; align-items:center; gap:8px; }
+        .rx-composer-textarea { flex:1; font-size:13px; padding:8px 14px; max-height:90px; }
+        .rx-composer-count { text-align:right; font-size:9px; color:#6b7280; margin-top:3px; }
+        .rx-composer-toolbar { display:flex; align-items:center; gap:6px; margin-top:6px; }
+        .rx-composer-icon-btn { width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:14px;
             border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); cursor:pointer;
             transition:all .15s; flex-shrink:0; }
         .rx-composer-icon-btn:hover { background:rgba(255,255,255,0.09); }
-        .rx-composer-icon-btn.rx-gif-btn { width:auto; padding:0 9px; font-size:10px; font-weight:900; letter-spacing:.03em; color:#c4b5fd; }
+        .rx-composer-icon-btn.rx-gif-btn { width:auto; padding:0 9px; font-size:9.5px; font-weight:900; letter-spacing:.03em; color:#c4b5fd; }
         .rx-composer-submit { padding:8px 16px; border-radius:999px; font-size:12px; font-weight:900; color:#fff;
             background:linear-gradient(135deg,#7c3aed,#4f46e5); box-shadow:0 4px 16px rgba(124,58,237,0.3);
-            transition:transform .15s; border:none; cursor:pointer; margin-left:auto; display:inline-flex; align-items:center; gap:5px; }
+            transition:transform .15s; border:none; cursor:pointer; flex-shrink:0; }
         .rx-composer-submit:hover { transform:scale(1.02); }
+
+        /* ── Market Watch outcome reply — subtle "something just landed" cue ── */
+        .fr-mw-update { border-color:rgba(16,185,129,0.35) !important; animation:frMwPulse 2.6s ease-in-out infinite; }
+        @keyframes frMwPulse { 0%,100% { box-shadow:0 0 0 0 rgba(16,185,129,0); } 50% { box-shadow:0 0 0 3px rgba(16,185,129,0.14); } }
+        @media (prefers-reduced-motion: reduce) { .fr-mw-update { animation:none; box-shadow:0 0 0 2px rgba(16,185,129,0.16); } }
     </style>
 </head>
 @php
@@ -74,7 +76,7 @@
     </div>
 </nav>
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8" style="padding-bottom:240px;">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8" style="padding-bottom:180px;">
 
     @if($errors->any())
     <div class="mb-6 rounded-2xl px-4 py-3 text-xs font-bold text-red-300" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);">
@@ -263,19 +265,13 @@
   <div class="max-w-5xl px-1 sm:px-2">
     <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data"
           x-data="{ fileName: '', previewUrl: null, isGif: false, body: {{ Js::from(old('body', '')) }},
+                     expanded: {{ ($errors->any() && old('body') !== null) ? 'true' : 'false' }},
                      clearImage() { this.previewUrl = null; this.fileName = ''; this.isGif = false; this.$refs.imageInput.value = ''; },
                      pickImage() { this.$refs.imageInput.removeAttribute('capture'); this.$refs.imageInput.setAttribute('accept', 'image/*'); this.$refs.imageInput.click(); },
                      pickGif() { this.$refs.imageInput.removeAttribute('capture'); this.$refs.imageInput.setAttribute('accept', 'image/gif'); this.$refs.imageInput.click(); },
-                     onFile(e) { const f = e.target.files[0]; this.fileName = f?.name ?? ''; this.previewUrl = f ? URL.createObjectURL(f) : null; this.isGif = f?.type === 'image/gif'; }"
-          class="rx-composer-box">
+                     onFile(e) { const f = e.target.files[0]; this.fileName = f?.name ?? ''; this.previewUrl = f ? URL.createObjectURL(f) : null; this.isGif = f?.type === 'image/gif'; },
+                     collapseIfEmpty() { if (!this.body && !this.previewUrl) this.expanded = false; }">
         @csrf
-        <div class="rx-composer-head">
-            <span class="rx-composer-head-icon">💬</span>
-            <div>
-                <div class="rx-composer-title">Join the conversation</div>
-                <div class="rx-composer-subtitle">Share your thoughts{{ ($showXp ?? true) ? ' and earn XP' : '' }}</div>
-            </div>
-        </div>
         <div x-show="previewUrl" x-cloak class="relative inline-block mb-2">
             <img :src="previewUrl" class="rounded-lg object-cover" style="max-width:140px;max-height:100px;">
             <span x-show="isGif" x-cloak class="absolute bottom-1 left-1 text-[8px] font-black px-1 py-0.5 rounded" style="background:rgba(0,0,0,0.75);color:#c4b5fd;">GIF</span>
@@ -283,23 +279,23 @@
                     class="absolute flex items-center justify-center text-white text-xs font-black rounded-full"
                     style="top:-7px;right:-7px;width:20px;height:20px;background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.2);">✕</button>
         </div>
-        <textarea name="body" id="reply-body" rows="1" required minlength="2" maxlength="3000"
-                  x-model="body"
-                  placeholder="Share your thoughts…"
-                  class="rx-composer-textarea text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-none"
-                  style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);"></textarea>
-        <div class="rx-composer-count"><span x-text="body.length"></span>/3000</div>
-        <div class="rx-composer-toolbar">
+        <div class="rx-composer-row">
+            <textarea name="body" id="reply-body" rows="1" required minlength="2" maxlength="3000"
+                      x-model="body" @focus="expanded = true" @blur="collapseIfEmpty()"
+                      placeholder="Share your thoughts…"
+                      class="rx-composer-textarea rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-none"
+                      style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);"></textarea>
+            <button type="submit" class="rx-composer-submit">Reply</button>
+        </div>
+        <div x-show="expanded" x-cloak x-transition.opacity.duration.150ms class="rx-composer-toolbar">
             <div class="relative">
-                <button type="button" class="rx-composer-icon-btn" title="Add emoji" onclick="emojiToggle(event, 'reply-body')">😊</button>
+                <button type="button" class="rx-composer-icon-btn" title="Add emoji" @mousedown.prevent onclick="emojiToggle(event, 'reply-body')">😊</button>
             </div>
-            <button type="button" class="rx-composer-icon-btn" title="Attach a photo" @click="pickImage()">📷</button>
-            <button type="button" class="rx-composer-icon-btn" title="Attach a file" @click="pickImage()">📎</button>
-            <button type="button" class="rx-composer-icon-btn rx-gif-btn" title="Attach a GIF" @click="pickGif()">GIF</button>
+            <button type="button" class="rx-composer-icon-btn" title="Attach a photo" @mousedown.prevent @click="pickImage()">📷</button>
+            <button type="button" class="rx-composer-icon-btn" title="Attach a file" @mousedown.prevent @click="pickImage()">📎</button>
+            <button type="button" class="rx-composer-icon-btn rx-gif-btn" title="Attach a GIF" @mousedown.prevent @click="pickGif()">GIF</button>
             <input type="file" name="image" x-ref="imageInput" accept="image/*" class="hidden" @change="onFile($event)">
-            <button type="submit" class="rx-composer-submit">
-                <x-icon name="send" class="w-3 h-3" /> Post Reply
-            </button>
+            <span class="rx-composer-count" style="margin-left:auto;margin-top:0;"><span x-text="body.length"></span>/3000</span>
         </div>
     </form>
   </div>
@@ -325,7 +321,7 @@
             return;
         }
         emojiTargetId = targetId;
-        pop.innerHTML = EMOJI_SET.map(em => `<button type="button" onclick="emojiInsert('${em}')">${em}</button>`).join('');
+        pop.innerHTML = EMOJI_SET.map(em => `<button type="button" onmousedown="event.preventDefault()" onclick="emojiInsert('${em}')">${em}</button>`).join('');
         const btn = e.currentTarget;
         btn.parentElement.appendChild(pop);
         pop.classList.remove('hidden');

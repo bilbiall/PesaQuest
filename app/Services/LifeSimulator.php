@@ -480,18 +480,22 @@ class LifeSimulator
             if ($advanced) {
                 $progress->adjustCreditScoreWithLog(+15, 'Net worth milestone reached: ' . $progress->chapterName(), ['kind' => 'chapter_milestone', 'chapter' => $newChapter]);
             }
-
-            // A chapter change is a deliberate lifestyle shift — the moment
-            // already-assigned bills catch up to the player's new net worth.
-            $this->reassessBillPricing($progress, $events);
         }
+
+        // Re-price on every tick, not just a chapter flip — a chapter's own
+        // tiers only ever move on the same net-worth boundaries anyway, so
+        // this is a no-op most ticks, but it's what actually catches bills
+        // that were assigned (or last repriced) before an admin edited the
+        // tier table, or a custom tier that doesn't line up with a chapter
+        // boundary at all. Gating this to chapter changes only meant a bill
+        // could sit at a stale price indefinitely once a player had already
+        // passed the relevant threshold under an older tier config.
+        $this->reassessBillPricing($progress, $events);
     }
 
     /** Re-prices every net-worth-tiered bill the player already holds against
-     *  their current net worth. Only called on a chapter transition (not
-     *  every tick), so cost-of-living changes read as a deliberate lifestyle
-     *  shift rather than constant background drift. Can move a bill's amount
-     *  up or down, matching how net worth itself can rise or fall. */
+     *  their current net worth. Can move a bill's amount up or down, matching
+     *  how net worth itself can rise or fall. */
     private function reassessBillPricing(UserProgress $progress, array &$events): void
     {
         $netWorth = (int) $progress->net_worth_cache;
@@ -1761,10 +1765,12 @@ class LifeSimulator
 
         $service = app(ShareNewsService::class);
 
-        // Resolving due bulletins is just a timestamp check — safe and cheap
-        // to repeat on every login, same as the hourly `game:resolve-share-news`.
+        // Resolving/announcing due bulletins is just a timestamp check — safe
+        // and cheap to repeat on every login, same as the hourly
+        // `game:resolve-share-news`.
         try {
             $service->resolveDue();
+            $service->announceDue();
         } catch (\Throwable $e) {
             \Log::warning('Market Watch resolveDue failed: ' . $e->getMessage());
         }

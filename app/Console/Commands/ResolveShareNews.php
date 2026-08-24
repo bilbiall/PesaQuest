@@ -9,13 +9,15 @@ class ResolveShareNews extends Command
 {
     protected $signature = 'game:resolve-share-news';
 
-    protected $description = 'Apply the outcome of any Market Watch bulletin whose effect has come due';
+    protected $description = 'Apply the outcome of any Market Watch bulletin whose effect has come due, and post the outcome reply for any whose announcement delay has since elapsed';
 
     public function handle(ShareNewsService $service): int
     {
-        $count = $service->resolveDue();
+        $resolved  = $service->resolveDue();
+        $announced = $service->announceDue();
 
-        $this->info($count > 0 ? "Resolved {$count} bulletin(s)." : 'No bulletins due.');
+        $this->info($resolved > 0 ? "Resolved {$resolved} bulletin(s)." : 'No bulletins due to resolve.');
+        $this->info($announced > 0 ? "Announced {$announced} bulletin(s)." : 'No bulletins due to announce.');
         return self::SUCCESS;
     }
 }
