@@ -774,9 +774,9 @@ class WorldController extends Controller
                 // Visible here until "long overdue" (game days, not real
                 // calendar time — same clock everything else in the sim
                 // runs on). Past that it drops off the map/popup for good,
-                // but its Forum topic (created once it resolves, see
-                // ShareNewsService::postOutcomeReply()) is never touched and
-                // stays discussable forever.
+                // but its Forum topic (created at publish, see
+                // ShareNewsService::publish()) is never touched and stays
+                // discussable forever.
                 $mwOverdueCutoff = now()->subSeconds($mwClock->realSecondsForTicks(14));
 
                 $district['market_news'] = \App\Models\ShareNewsItem::where(function ($q) use ($mwOverdueCutoff) {

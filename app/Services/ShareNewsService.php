@@ -11,14 +11,14 @@ use Illuminate\Support\Str;
 
 /**
  * "Market Watch" — occasional, indirect news bulletins that telegraph a
- * future share price move without spelling it out. Only the World map/popup
- * shows a bulletin while it's still live, so acting on a hunch is genuinely
- * a bet, not a certainty — some bulletins are duds by design. The Forum
- * thread for each bulletin only gets created once it resolves (see
- * postOutcomeReply()) — a thread appearing early would itself be a tell
- * that something's definitely coming, so the Forum is purely a
- * post-resolution "what actually happened" discussion, never a second
- * early-warning channel.
+ * future share price move without spelling it out. Published to the Forums
+ * (Community) as the one place a keen player can catch wind of them and
+ * discuss it while it's still live; the real effect lands days later, so
+ * acting on a hunch is genuinely a bet, not a certainty — some bulletins
+ * are duds by design. The outcome (and its lesson) only gets posted back
+ * to that same thread once it resolves (see postOutcomeReply()) — by then
+ * the price has already moved (or hasn't), so it's no longer actionable
+ * information, just the retrospective answer.
  */
 class ShareNewsService
 {
@@ -148,12 +148,18 @@ class ShareNewsService
             'status'         => 'scheduled',
         ]);
 
-        // No Forum topic yet — it's created once this resolves (see
-        // resolveDue()), on purpose: a public thread appearing the moment a
-        // bulletin is scheduled would itself be a tell that "yes, something
-        // is definitely about to happen," even before anyone reads it. The
-        // World map/popup stays the only place to catch it while it's still
-        // live and actionable; the Forum is where it's discussed afterward.
+        $topic = ForumTopic::create([
+            'user_id'         => $this->wireUser()->id,
+            'posted_by_name'  => 'Pesa City News',
+            'title'           => $item->headline,
+            'slug'            => Str::slug($item->headline) . '-' . $item->id,
+            'body'            => $item->flavor . "\n\nNot every story pans out — trade on your own judgement.",
+            'category'        => 'market-watch',
+            'is_pinned'       => true,
+            'last_activity_at'=> now(),
+        ]);
+
+        $item->update(['forum_topic_id' => $topic->id]);
 
         return $item;
     }
@@ -165,7 +171,7 @@ class ShareNewsService
     {
         $due = ShareNewsItem::where('status', 'scheduled')
             ->where('effect_at', '<=', now())
-            ->with('share')
+            ->with(['share', 'forumTopic'])
             ->get();
 
         foreach ($due as $item) {
@@ -185,37 +191,26 @@ class ShareNewsService
         return $due->count();
     }
 
-    /** Creates the Forum thread for a bulletin that just resolved (never
-     *  existed before now — see publish()), then immediately posts the
-     *  outcome as the first reply, so the thread reads as a complete,
-     *  retrospective story from the moment anyone sees it: what the rumor
-     *  was, then what actually happened. */
     private function postOutcomeReply(ShareNewsItem $item): void
     {
-        $topic = ForumTopic::create([
-            'user_id'         => $this->wireUser()->id,
-            'posted_by_name'  => 'Pesa City News',
-            'title'           => $item->headline,
-            'slug'            => Str::slug($item->headline) . '-' . $item->id,
-            'body'            => $item->flavor . "\n\nNot every story pans out — trade on your own judgement.",
-            'category'        => 'market-watch',
-            'is_pinned'       => false,
-            'last_activity_at'=> now(),
-        ]);
-        $item->update(['forum_topic_id' => $topic->id]);
+        if (!$item->forum_topic_id) return;
 
         $outcome = $item->is_true
             ? 'Looks like this one was real — ' . ($item->direction === 'up' ? 'expect a gradual climb over the next while, not an overnight jump. 📈' : 'expect a gradual slide over the next while, not an overnight crash. 📉')
             : "In the end, nothing came of it — the price just does its normal thing. Not every story pans out.";
 
         \App\Models\ForumReply::create([
-            'topic_id' => $topic->id,
+            'topic_id' => $item->forum_topic_id,
             'user_id'  => $this->wireUser()->id,
             'body'     => "📰 Update: {$outcome}\n\n{$item->lesson}",
         ]);
 
-        $topic->increment('replies_count');
-        $topic->update(['last_activity_at' => now()]);
+        $item->forumTopic?->increment('replies_count');
+        // Pinned only while the story is still live and actionable — once it
+        // resolves (and the outcome/lesson above has just been posted, when
+        // the move has already happened and it's no longer something to act
+        // on) it un-pins itself and quietly recedes into the ordinary feed.
+        $item->forumTopic?->update(['last_activity_at' => now(), 'is_pinned' => false]);
     }
 
     /** The system "author" behind every Market Watch post — created once,
