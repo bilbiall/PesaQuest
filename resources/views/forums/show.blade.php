@@ -12,8 +12,13 @@
     <style>
         body { background: #07060f; font-family: 'Figtree', sans-serif; }
         [x-cloak] { display: none !important; }
-        .rx-chip { display:inline-flex; align-items:center; gap:.4rem; font-size:11.5px; font-weight:900; padding:.5rem .9rem;
+        /* Emoji-only now — the text label ("Helpful", "Facts"…) ate far more
+           width than the reaction itself needed, at the cost of everything
+           below (replies) sitting further off-screen. */
+        .rx-chip { display:inline-flex; align-items:center; gap:.2rem; font-weight:900; padding:.4rem .55rem;
                    border-radius:999px; cursor:pointer; transition:all .15s; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); color:#9ca3af; }
+        .rx-chip .rx-emoji { font-size:16px; line-height:1; }
+        .rx-chip .rx-count { font-size:10.5px; font-weight:800; }
         .rx-chip:hover { color:#fff; background:rgba(255,255,255,0.08); transform:translateY(-1px); }
         .rx-chip.rx-on { color:#fcd34d; background:rgba(245,158,11,0.14); border-color:rgba(245,158,11,0.4); }
         .composer-icon-btn { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:22px;
@@ -200,19 +205,18 @@
     </div>
 
     {{-- ── Reactions ── --}}
-    <div class="flex flex-wrap gap-2 mb-8" id="rx-wrap" data-topic="{{ $topic->id }}">
+    <div class="flex flex-wrap gap-1.5 mb-4" id="rx-wrap" data-topic="{{ $topic->id }}">
         @foreach($reactionTypes as $type => $meta)
         @php $count = (int) ($reactionCounts[$type] ?? 0); @endphp
-        <button type="button" class="rx-chip {{ in_array($type, $myReactions) ? 'rx-on' : '' }}" data-type="{{ $type }}" onclick="rxToggle(this)">
-            <span>{{ $meta['emoji'] }}</span>
-            <span>{{ $meta['label'] }}</span>
+        <button type="button" class="rx-chip {{ in_array($type, $myReactions) ? 'rx-on' : '' }}" data-type="{{ $type }}" onclick="rxToggle(this)" title="{{ $meta['label'] }}">
+            <span class="rx-emoji">{{ $meta['emoji'] }}</span>
             <span class="rx-count">{{ $count > 0 ? $count : '' }}</span>
         </button>
         @endforeach
     </div>
 
     {{-- ── Replies ── --}}
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-black text-gray-400 uppercase tracking-wider inline-flex items-center gap-1"><x-icon name="speech" class="w-3.5 h-3.5" /> Replies ({{ $topic->replies_count }})</h2>
         <span class="text-[11px] font-bold text-gray-600">Oldest first</span>
     </div>
