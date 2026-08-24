@@ -2613,8 +2613,8 @@ class AssetSeeder extends Seeder
                 'is_active'        => true,
             ],
             [
-                'name'             => 'Smart TV (55-inch)',
-                'slug'             => 'smart-tv-55',
+                'name'             => 'Smart TV — Event Rental Unit',
+                'slug'             => 'smart-tv-event-rental',
                 'brand'            => 'Samsung',
                 'category'         => 'gadget',
                 'tier'             => 1,
