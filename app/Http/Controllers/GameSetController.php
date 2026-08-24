@@ -360,6 +360,45 @@ class GameSetController extends Controller
                     ['emoji' => '🔩', 'label' => 'Buy tools or technical materials',   'sub' => 'Arduino kit, construction materials, lab gear',    'fields' => ['engineering' => 3]],
                 ],
             ],
+            [
+                'question' => 'Which of these activities would you actually enjoy doing this weekend?',
+                'options'  => [
+                    ['emoji' => '🏨', 'label' => 'Plan a trip and manage the whole itinerary', 'sub' => 'Bookings, budgets, making sure everyone has fun',    'fields' => ['hospitality' => 3, 'business' => 1]],
+                    ['emoji' => '⚽', 'label' => 'Coach a local team or organize a sports day', 'sub' => 'Drills, teamwork, getting the best out of people',   'fields' => ['sports' => 3, 'healthcare' => 1]],
+                    ['emoji' => '🛠️', 'label' => 'Fix something broken with your own hands',    'sub' => 'Wiring, pipes, engines — hands-on problem solving',  'fields' => ['trades' => 3, 'engineering' => 1]],
+                    ['emoji' => '🚚', 'label' => 'Organize how goods get from A to B efficiently', 'sub' => 'Routes, schedules, delivery timing',               'fields' => ['logistics' => 3, 'business' => 1]],
+                    ['emoji' => '🌍', 'label' => 'Clean up a river or plant trees in your estate', 'sub' => 'Conservation, community environmental action',      'fields' => ['environment' => 3, 'agriculture' => 1]],
+                    ['emoji' => '🛡️', 'label' => 'Volunteer for neighborhood watch or a safety drive', 'sub' => 'Keeping people and property safe',               'fields' => ['security' => 3, 'law' => 1]],
+                    ['emoji' => '🏘️', 'label' => 'Tour houses for sale just to see what they\'re worth', 'sub' => 'Property, land value, spotting a good deal',      'fields' => ['realestate' => 3, 'finance' => 1]],
+                    ['emoji' => '🔬', 'label' => 'Run a small experiment just to see what happens', 'sub' => 'Curiosity, testing ideas, figuring things out',     'fields' => ['science' => 3, 'engineering' => 1]],
+                ],
+            ],
+            [
+                'question' => 'Pick a Saturday job that actually sounds fun.',
+                'options'  => [
+                    ['emoji' => '🏨', 'label' => 'Front desk at a busy hotel or lodge',      'sub' => 'Guests, bookings, making every stay memorable',       'fields' => ['hospitality' => 3]],
+                    ['emoji' => '⚽', 'label' => 'Assistant coach at a football academy',    'sub' => 'Training sessions, match day, mentoring players',     'fields' => ['sports' => 3]],
+                    ['emoji' => '🛠️', 'label' => 'Apprentice electrician or mechanic',       'sub' => 'Learning a trade that always finds work',             'fields' => ['trades' => 3]],
+                    ['emoji' => '🚚', 'label' => 'Dispatch rider or fleet coordinator',      'sub' => 'Deliveries, routes, keeping vehicles moving',          'fields' => ['logistics' => 3]],
+                    ['emoji' => '🌍', 'label' => 'Junior ranger at a conservancy',           'sub' => 'Wildlife, habitats, protecting nature',                'fields' => ['environment' => 3]],
+                    ['emoji' => '🛡️', 'label' => 'Security intern at a corporate estate',    'sub' => 'Patrols, access control, keeping people safe',         'fields' => ['security' => 3]],
+                    ['emoji' => '🏘️', 'label' => 'Real estate agent showing plots on weekends', 'sub' => 'Site visits, negotiating, closing deals',           'fields' => ['realestate' => 3]],
+                    ['emoji' => '🔬', 'label' => 'Lab assistant at a research institute',    'sub' => 'Samples, data, careful experiments',                   'fields' => ['science' => 3]],
+                ],
+            ],
+            [
+                'question' => 'What headline about your future would make you proudest?',
+                'options'  => [
+                    ['emoji' => '🏨', 'label' => '"Local youth builds a chain of budget lodges"',        'sub' => 'A hospitality empire built from scratch',           'fields' => ['hospitality' => 3]],
+                    ['emoji' => '⚽', 'label' => '"Former player now runs a national sports academy"',    'sub' => 'Turning talent into a lasting institution',         'fields' => ['sports' => 3]],
+                    ['emoji' => '🛠️', 'label' => '"Self-taught electrician now runs his own firm"',       'sub' => 'A trade skill grown into a real business',          'fields' => ['trades' => 3, 'business' => 1]],
+                    ['emoji' => '🚚', 'label' => '"Startup fixes Kenya\'s last-mile delivery problem"',    'sub' => 'Solving a real logistics headache at scale',        'fields' => ['logistics' => 3, 'technology' => 1]],
+                    ['emoji' => '🌍', 'label' => '"Young conservationist restores a dying forest"',        'sub' => 'Real, visible environmental impact',                'fields' => ['environment' => 3]],
+                    ['emoji' => '🛡️', 'label' => '"Officer promoted for community safety innovation"',    'sub' => 'Recognized for serving and protecting well',        'fields' => ['security' => 3]],
+                    ['emoji' => '🏘️', 'label' => '"First-time investor builds a rental property portfolio"', 'sub' => 'Property income that grows year after year',     'fields' => ['realestate' => 3, 'finance' => 1]],
+                    ['emoji' => '🔬', 'label' => '"Kenyan researcher publishes a breakthrough study"',      'sub' => 'Discovery that gets the world\'s attention',        'fields' => ['science' => 3, 'education' => 1]],
+                ],
+            ],
         ];
     }
 
@@ -404,7 +443,7 @@ class GameSetController extends Controller
             'milestones.*.icon'       => 'required|string|max:10',
             'milestones.*.title'      => 'required|string|max:80',
             'milestones.*.description'=> 'nullable|string|max:200',
-            'milestones.*.type'       => 'required|in:level,balance,net_worth,job,course,quest,asset,manual',
+            'milestones.*.type'       => 'required|in:level,balance,net_worth,job,course,quest,asset,game_day,manual',
             'milestones.*.threshold'  => 'nullable|integer|min:0',
         ]);
 
@@ -425,14 +464,36 @@ class GameSetController extends Controller
     public static function defaultMilestones(): array
     {
         return [
-            ['icon' => '🌱', 'title' => 'First Steps',       'description' => 'Begin your PesaQuest journey',          'type' => 'manual',   'threshold' => 0],
-            ['icon' => '💼', 'title' => 'First Job',          'description' => 'Get hired for the first time',           'type' => 'job',      'threshold' => 1],
-            ['icon' => '📚', 'title' => 'Student of Finance', 'description' => 'Complete your first course',             'type' => 'course',   'threshold' => 1],
-            ['icon' => '💰', 'title' => 'First Savings Goal', 'description' => 'Save KES 10,000',                        'type' => 'balance',  'threshold' => 10000],
-            ['icon' => '🗺️', 'title' => 'Quest Seeker',       'description' => 'Complete 3 quests',                      'type' => 'quest',    'threshold' => 3],
-            ['icon' => '🏘️', 'title' => 'Property Owner',     'description' => 'Buy your first asset',                   'type' => 'asset',    'threshold' => 1],
-            ['icon' => '📈', 'title' => 'Investor',           'description' => 'Reach Level 5',                          'type' => 'level',    'threshold' => 5],
-            ['icon' => '🏦', 'title' => 'Wealth Builder',     'description' => 'Reach a net worth of KES 200,000',       'type' => 'net_worth','threshold' => 200000],
+            ['icon' => '🌱', 'title' => 'First Steps',          'description' => 'Begin your PesaQuest journey',          'type' => 'manual',   'threshold' => 0],
+            ['icon' => '💼', 'title' => 'First Job',             'description' => 'Get hired for the first time',           'type' => 'job',      'threshold' => 1],
+            ['icon' => '📚', 'title' => 'Student of Finance',    'description' => 'Complete your first course',             'type' => 'course',   'threshold' => 1],
+            ['icon' => '💰', 'title' => 'First Savings Goal',    'description' => 'Save KES 10,000',                        'type' => 'balance',  'threshold' => 10000],
+            ['icon' => '🗺️', 'title' => 'Quest Seeker',          'description' => 'Complete 3 quests',                      'type' => 'quest',    'threshold' => 3],
+            ['icon' => '🏘️', 'title' => 'Property Owner',        'description' => 'Buy your first asset',                   'type' => 'asset',    'threshold' => 1],
+            ['icon' => '📈', 'title' => 'Investor',              'description' => 'Reach Level 5',                          'type' => 'level',    'threshold' => 5],
+            ['icon' => '🏦', 'title' => 'Wealth Builder',        'description' => 'Reach a net worth of KES 200,000',       'type' => 'net_worth','threshold' => 200000],
+            // ── Added: deeper progression ladder across every existing trigger
+            // type, plus a new time-based "game_day" type for tenure milestones.
+            ['icon' => '🎯', 'title' => 'Rising Star',          'description' => 'Reach Level 10',                         'type' => 'level',    'threshold' => 10],
+            ['icon' => '🏅', 'title' => 'Money Mind',           'description' => 'Reach Level 15',                         'type' => 'level',    'threshold' => 15],
+            ['icon' => '👑', 'title' => 'Financial Guru',       'description' => 'Reach Level 20',                         'type' => 'level',    'threshold' => 20],
+            ['icon' => '🚀', 'title' => 'PesaQuest Elite',      'description' => 'Reach Level 25',                         'type' => 'level',    'threshold' => 25],
+            ['icon' => '💵', 'title' => 'Steady Saver',         'description' => 'Save KES 50,000',                        'type' => 'balance',  'threshold' => 50000],
+            ['icon' => '🏆', 'title' => 'Six-Figure Saver',     'description' => 'Save KES 250,000',                       'type' => 'balance',  'threshold' => 250000],
+            ['icon' => '📖', 'title' => 'Lifelong Learner',     'description' => 'Complete 3 courses',                     'type' => 'course',   'threshold' => 3],
+            ['icon' => '🎓', 'title' => 'Scholar of Money',     'description' => 'Complete 5 courses',                     'type' => 'course',   'threshold' => 5],
+            ['icon' => '🏛️', 'title' => 'Finance Graduate',     'description' => 'Complete 10 courses',                    'type' => 'course',   'threshold' => 10],
+            ['icon' => '🗺️', 'title' => 'Quest Champion',       'description' => 'Complete 10 quests',                     'type' => 'quest',    'threshold' => 10],
+            ['icon' => '⚔️', 'title' => 'Quest Legend',         'description' => 'Complete 25 quests',                     'type' => 'quest',    'threshold' => 25],
+            ['icon' => '🌟', 'title' => 'Quest Master',         'description' => 'Complete 50 quests',                     'type' => 'quest',    'threshold' => 50],
+            ['icon' => '👔', 'title' => 'Career Climber',       'description' => 'Get hired 2 times',                      'type' => 'job',      'threshold' => 2],
+            ['icon' => '🏠', 'title' => 'Asset Collector',      'description' => 'Own 3 assets',                           'type' => 'asset',    'threshold' => 3],
+            ['icon' => '🏙️', 'title' => 'Portfolio Builder',    'description' => 'Own 5 assets',                           'type' => 'asset',    'threshold' => 5],
+            ['icon' => '🏰', 'title' => 'Empire Builder',       'description' => 'Own 10 assets',                          'type' => 'asset',    'threshold' => 10],
+            ['icon' => '💰', 'title' => 'Half-Millionaire',     'description' => 'Reach a net worth of KES 500,000',       'type' => 'net_worth','threshold' => 500000],
+            ['icon' => '💎', 'title' => 'PesaQuest Millionaire','description' => 'Reach a net worth of KES 1,000,000',     'type' => 'net_worth','threshold' => 1000000],
+            ['icon' => '🏔️', 'title' => 'Wealth Titan',         'description' => 'Reach a net worth of KES 5,000,000',     'type' => 'net_worth','threshold' => 5000000],
+            ['icon' => '🎂', 'title' => 'One Year in Pesa City','description' => 'Play for 365 game days',                 'type' => 'game_day', 'threshold' => 365],
         ];
     }
 }

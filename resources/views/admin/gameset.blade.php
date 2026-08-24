@@ -460,7 +460,7 @@
                         <x-help-tip text="Icon column: the emoji shown on the milestone's row in the Life Timeline." example="🏘️" />
                         <x-help-tip text="Title column: the goal as the player reads it on their Life Timeline. Short and aspirational beats descriptive. Max 80 characters." example="Property Owner" />
                         <x-help-tip text="Description column: optional second line under the title spelling out what the player actually has to do. Max 200 characters." example="Buy your first asset" />
-                        <x-help-tip text="Type column: what the game measures to tick this milestone off — see the legend above for what each type counts. Pick manual for a narrative marker that is always shown and never auto-completes." example="asset (number of assets owned)" />
+                        <x-help-tip text="Type column: what the game measures to tick this milestone off — see the legend above for what each type counts. game_day counts a player's own game-day tick count, not real calendar days. Pick manual for a narrative marker that is always shown and never auto-completes." example="asset (number of assets owned)" />
                         <x-help-tip text="Value column: the number the chosen type must reach before the milestone gets its checkmark — a KES amount for balance and net_worth, a plain count for level, job, course, quest and asset. Ignored when the type is manual." example="1 for a first asset; 10000 for Save KES 10,000" />
                     </h2>
                     <p class="text-gray-400 text-sm mt-1">Progression goals players see on their Life Timeline. Completed ones get a checkmark.</p>
@@ -484,6 +484,7 @@
                 <span class="text-[10px] px-2 py-1 rounded-full text-gray-400" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">course = X courses</span>
                 <span class="text-[10px] px-2 py-1 rounded-full text-gray-400" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">quest = X quests</span>
                 <span class="text-[10px] px-2 py-1 rounded-full text-gray-400" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">asset = X assets</span>
+                <span class="text-[10px] px-2 py-1 rounded-full text-gray-400" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">game_day = X game days played</span>
                 <span class="text-[10px] px-2 py-1 rounded-full text-gray-400" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">manual = always shown</span>
             </div>
 
@@ -510,6 +511,7 @@
                                 <option value="course">course</option>
                                 <option value="quest">quest</option>
                                 <option value="asset">asset</option>
+                                <option value="game_day">game_day</option>
                             </select>
                             <input type="number" x-model.number="ms.threshold" placeholder="Value" min="0"
                                    :disabled="ms.type === 'manual'"

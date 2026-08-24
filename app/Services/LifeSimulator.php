@@ -47,16 +47,17 @@ class LifeSimulator
         // and effects are also processed opportunistically on login (idempotent).
         app(CrisisService::class)->processIfPending();
 
-        // Market Watch bulletins — unlike everything else above, this had NO
-        // login-driven fallback until now: it only ran via the two scheduled
-        // artisan commands, so a misconfigured or missing cPanel cron meant
-        // zero bulletins ever, silently, forever. Mirrors the same
-        // opportunistic pattern: resolving due bulletins is cheap and
-        // idempotent so it's safe on every login; the publish dice-roll is
-        // gated to at most once per calendar day, server-wide (a Setting
-        // flag, not per-user), so many logins in one day don't multiply the
-        // odds beyond the intended ~12%/day.
+        // Market Watch bulletins — a login-driven fallback for the scheduled
+        // artisan commands, so a misconfigured or missing cPanel cron doesn't
+        // mean zero bulletins ever, silently, forever. Resolving/announcing
+        // due bulletins is cheap and idempotent so it's safe on every login;
+        // the publish dice-roll is gated by game days elapsed (server-wide,
+        // via ShareNewsService::rollDueBulletins()), not real calendar days.
         $this->checkMarketWatch();
+
+        // Market Jitters — same login-driven fallback, for the bulk-preset,
+        // game-time-scheduled share market shocks. See MarketJitterService.
+        $this->checkMarketJitters();
 
         // Birthday gift + automatic age-group transition (private DOB; idempotent per year/day)
         try {
@@ -1783,6 +1784,19 @@ class LifeSimulator
             $service->rollDueBulletins();
         } catch (\Throwable $e) {
             \Log::warning('Market Watch rollDueBulletins failed: ' . $e->getMessage());
+        }
+    }
+
+    // ── Market Jitters — login-driven fallback for the cron-only shock engine ──
+
+    private function checkMarketJitters(): void
+    {
+        if (!Schema::hasTable('market_jitters')) return;
+
+        try {
+            app(\App\Services\MarketJitterService::class)->applyDue();
+        } catch (\Throwable $e) {
+            \Log::warning('Market Jitters applyDue failed: ' . $e->getMessage());
         }
     }
 

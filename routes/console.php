@@ -23,3 +23,4 @@ Schedule::command('game:update-share-prices')->everyFiveMinutes();
 Schedule::command('game:settle-chama-deals')->hourly();
 Schedule::command('game:publish-share-news')->hourly();
 Schedule::command('game:resolve-share-news')->hourly();
+Schedule::command('game:apply-market-jitters')->hourly();

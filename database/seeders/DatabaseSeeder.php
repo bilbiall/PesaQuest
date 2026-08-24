@@ -75,6 +75,9 @@ class DatabaseSeeder extends Seeder
             ChallengeQuest13to17Band2Seeder::class,
             ChallengeQuest18to25Band2Seeder::class,
             ChallengeQuest26PlusBand2Seeder::class,
+            JourneyMilestoneExpansionSeeder::class,
+            CareerContentExpansionSeeder::class,
+            MarketJitterSeeder::class,
         ]);
     }
 }

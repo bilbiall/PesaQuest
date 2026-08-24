@@ -346,6 +346,7 @@ class UserProgress extends Model
                 'course'    => $courseDone >= ($ms['threshold'] ?? 1),
                 'quest'     => $questsDone >= ($ms['threshold'] ?? 1),
                 'asset'     => $assetCount >= ($ms['threshold'] ?? 1),
+                'game_day'  => ($progress->tick_count ?? 0) >= ($ms['threshold'] ?? 0),
                 default     => false,
             };
         }

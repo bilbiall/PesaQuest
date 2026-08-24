@@ -36,6 +36,22 @@ class CareerService
             'desc' => "You build things that last. Your analytical mind and love for solving physical problems make you a natural engineer — whether civil, mechanical, electrical, or software-based."],
         ['key' => 'law',         'label' => 'Law & Justice',      'icon' => '⚖️', 'color' => '#d97706', 'track' => 'business',
             'desc' => "You have a strong sense of right and wrong and the courage to stand up for it. Law, policy, governance, and human rights work are calling your name."],
+        ['key' => 'hospitality', 'label' => 'Hospitality & Tourism', 'icon' => '🏨', 'color' => '#14b8a6', 'track' => 'business',
+            'desc' => "You make people feel welcome wherever you go. Hotels, travel, tour guiding, and event planning are where your warmth and organizational flair turn into a thriving career."],
+        ['key' => 'sports',      'label' => 'Sports & Fitness',   'icon' => '⚽', 'color' => '#16a34a', 'track' => 'business',
+            'desc' => "You live for movement, competition, and pushing limits. Coaching, sports management, personal training, and athlete careers are built for your discipline and drive."],
+        ['key' => 'trades',      'label' => 'Skilled Trades',     'icon' => '🛠️', 'color' => '#78716c', 'track' => 'tech',
+            'desc' => "You'd rather build it with your hands than talk about it. Electrical work, plumbing, motor mechanics, and welding are steady, in-demand trades where real skill always finds work."],
+        ['key' => 'logistics',   'label' => 'Logistics & Transport', 'icon' => '🚚', 'color' => '#f97316', 'track' => 'business',
+            'desc' => "You think in routes, schedules, and supply chains. Freight, warehousing, fleet management, and import/export are where your knack for keeping things moving pays off."],
+        ['key' => 'environment', 'label' => 'Environment & Conservation', 'icon' => '🌍', 'color' => '#059669', 'track' => 'business',
+            'desc' => "You care about the planet's future and want a hand in protecting it. Conservation, renewable energy, waste management, and climate work need people exactly like you."],
+        ['key' => 'security',    'label' => 'Security & Public Service', 'icon' => '🛡️', 'color' => '#475569', 'track' => 'business',
+            'desc' => "You're the one people count on when things get serious. Police, military, private security, and civil service careers reward your discipline and sense of duty."],
+        ['key' => 'realestate',  'label' => 'Real Estate',        'icon' => '🏘️', 'color' => '#eab308', 'track' => 'finance',
+            'desc' => "You see value in land and buildings before anyone else does. Property sales, valuation, development, and real estate investment are where your eye for opportunity pays off."],
+        ['key' => 'science',     'label' => 'Science & Research', 'icon' => '🔬', 'color' => '#06b6d4', 'track' => 'tech',
+            'desc' => "You want to understand how the world actually works. Laboratory science, research, environmental testing, and academia are where your curiosity turns into discovery."],
     ];
 
     /** Fallback track set — the groupings courses/jobs are filed under. */
