@@ -106,9 +106,16 @@ class CareerService
         return (int) floor($progress->career_income_claimed_at->diffInDays(now())) >= 30;
     }
 
-    public function generatePayslip(UserProgress $progress): array
+    /**
+     * $grossOverride lets the caller pass the player's real Pesa City job
+     * salary — generatePayslip() would otherwise only ever look at the
+     * legacy career_income_rate field, which is 0 for every player hired
+     * through the current job system, showing "not earning a salary yet"
+     * on the Career page even for someone with an active, paying job.
+     */
+    public function generatePayslip(UserProgress $progress, ?int $grossOverride = null): array
     {
-        $gross = $progress->career_income_rate;
+        $gross = $grossOverride ?? $progress->career_income_rate;
         if ($gross <= 0) return [];
 
         $paye = $this->calculatePAYE($gross);

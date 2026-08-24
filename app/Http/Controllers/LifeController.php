@@ -387,7 +387,6 @@ class LifeController extends Controller
         $progress = $user->getOrCreateProgress();
         $career   = app(CareerService::class);
 
-        $payslip   = $career->generatePayslip($progress);
         $fieldMeta = $progress->career_field ? $career->fieldMeta($progress->career_field) : null;
 
         $careerLadder = [
@@ -408,7 +407,8 @@ class LifeController extends Controller
             ->get()
             ->sum(fn($pj) => $pj->job ? $pj->effectiveSalary() : 0);
 
-        $salary = max((int) ($progress->career_income_rate ?? 0), (int) $cityJobSalary);
+        $salary  = max((int) ($progress->career_income_rate ?? 0), (int) $cityJobSalary);
+        $payslip = $career->generatePayslip($progress, $salary);
 
         $currentRung = 0;
         foreach ($careerLadder as $i => $rung) {

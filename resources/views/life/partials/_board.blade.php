@@ -67,8 +67,8 @@
                     <div class="text-[11px] text-gray-500 mb-0.5">Balance</div>
                     <div class="text-sm sm:text-base font-black text-emerald-400 whitespace-nowrap" data-balance>Ksh {{ number_format($progress->balance) }}</div>
                     @if(($balanceDeltaPct ?? null) !== null)
-                    <div class="text-[10px] font-bold whitespace-nowrap {{ $balanceDeltaPct >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
-                        {{ $balanceDeltaPct >= 0 ? '↑' : '↓' }} {{ number_format(abs($balanceDeltaPct), 1) }}% vs last game month
+                    <div class="text-[10px] font-bold whitespace-nowrap {{ $balanceDeltaPct >= 0 ? 'text-emerald-400' : 'text-red-400' }}" title="vs last game month">
+                        {{ $balanceDeltaPct >= 0 ? '↑' : '↓' }} {{ number_format(abs($balanceDeltaPct), 1) }}%
                     </div>
                     @endif
                 </div>
@@ -76,8 +76,8 @@
                     <div class="text-[11px] text-gray-500 mb-0.5">Net Worth</div>
                     <div class="text-sm sm:text-base font-black text-indigo-400 whitespace-nowrap">Ksh {{ number_format($netWorth) }}</div>
                     @if(($netWorthDeltaPct ?? null) !== null)
-                    <div class="text-[10px] font-bold whitespace-nowrap {{ $netWorthDeltaPct >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
-                        {{ $netWorthDeltaPct >= 0 ? '↑' : '↓' }} {{ number_format(abs($netWorthDeltaPct), 1) }}% vs last game month
+                    <div class="text-[10px] font-bold whitespace-nowrap {{ $netWorthDeltaPct >= 0 ? 'text-emerald-400' : 'text-red-400' }}" title="vs last game month">
+                        {{ $netWorthDeltaPct >= 0 ? '↑' : '↓' }} {{ number_format(abs($netWorthDeltaPct), 1) }}%
                     </div>
                     @endif
                 </div>
