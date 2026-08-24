@@ -2081,6 +2081,18 @@ function pesaCity() {
       this.newsDetail.show = false;
     },
 
+    // All in game days, not real calendar time — "imminent" (about to
+    // land, act now), "fresh" (just resolved), plain "resolved", or
+    // "overdue" (about to drop off this list; the Forum thread stays).
+    newsTimeBadge(state) {
+      return {
+        imminent: { icon: '⏳', label: 'About to happen', color: '#fbbf24' },
+        fresh:    { icon: '🆕', label: 'Just happened',   color: '#34d399' },
+        resolved: { icon: '📋', label: 'Resolved',        color: '#9ca3af' },
+        overdue:  { icon: '🕰️', label: 'Long overdue',    color: '#6b7280' },
+      }[state] || { icon: '📰', label: 'Market Watch', color: '#67e8f9' };
+    },
+
     // ══════════════════════════════════════════════════════════════
     //  WORLD EVENT SYSTEM  (Phase 8 — EventEngine integration)
     // ══════════════════════════════════════════════════════════════

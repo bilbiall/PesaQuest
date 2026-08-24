@@ -769,15 +769,24 @@ class WorldController extends Controller
             // Market Watch bulletins on the map — never hand the raw model to
             // the view: is_true/magnitude_pct must stay hidden until a
             // bulletin resolves (see App\Services\ShareNewsService).
-            $district['market_news'] = Schema::hasTable('share_news_items')
-                ? \App\Models\ShareNewsItem::where(function ($q) {
+            if (Schema::hasTable('share_news_items')) {
+                $mwClock = app(\App\Services\GameClock::class);
+                // Visible here until "long overdue" (game days, not real
+                // calendar time — same clock everything else in the sim
+                // runs on). Past that it drops off the map/popup for good,
+                // but its Forum topic (created for every bulletin, see
+                // ShareNewsService::publish()) is never touched and stays
+                // discussable forever.
+                $mwOverdueCutoff = now()->subSeconds($mwClock->realSecondsForTicks(14));
+
+                $district['market_news'] = \App\Models\ShareNewsItem::where(function ($q) use ($mwOverdueCutoff) {
                         $q->where('status', 'scheduled')
-                          ->orWhere('resolved_at', '>=', now()->subDays(3));
+                          ->orWhere('resolved_at', '>=', $mwOverdueCutoff);
                     })
                     ->latest('published_at')
                     ->limit(5)
                     ->get()
-                    ->map(function ($n) {
+                    ->map(function ($n) use ($mwClock) {
                         // Which company/sector this is about — already named
                         // in the rendered headline/flavor prose, this just
                         // makes it scannable in a detail popup. Direction and
@@ -789,6 +798,17 @@ class WorldController extends Controller
                             'symbol' => $s->symbol,
                             'icon'   => $s->icon,
                         ])->values();
+
+                        // Time-awareness, in game days: "imminent" (act now,
+                        // before it lands), "fresh" (just resolved), plain
+                        // "resolved", or "overdue" (about to drop off this
+                        // list, though its Forum thread lives on).
+                        if ($n->status === 'scheduled') {
+                            $timeState = $n->effect_at && $mwClock->gameDaysUntil($n->effect_at) <= 1 ? 'imminent' : 'live';
+                        } else {
+                            $daysAgo   = $n->resolved_at ? $mwClock->gameDaysSince($n->resolved_at) : 0;
+                            $timeState = $daysAgo < 2 ? 'fresh' : ($daysAgo < 10 ? 'resolved' : 'overdue');
+                        }
 
                         return [
                             'headline'       => $n->headline,
@@ -802,11 +822,14 @@ class WorldController extends Controller
                             // moved (or hasn't) by then, so this stops being a spoiler.
                             'is_true'        => $n->status === 'resolved' ? $n->is_true : null,
                             'effect_at'      => $n->effect_at?->toIso8601String(),
+                            'time_state'     => $timeState,
                             'affected_shares'=> $affected,
                         ];
                     })
-                    ->values()
-                : collect();
+                    ->values();
+            } else {
+                $district['market_news'] = collect();
+            }
         }
 
         if ($slug === 'workplace') {

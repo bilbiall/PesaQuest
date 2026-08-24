@@ -18,9 +18,10 @@ use Illuminate\Support\Str;
  */
 class ShareNewsService
 {
-    /** At most this many news items unresolved at once — keeps it rare and
-     *  each one worth noticing, not a constant ticker. */
-    private const MAX_CONCURRENT_LIVE = 1;
+    /** At most this many news items unresolved at once — high enough to
+     *  sustain a steady ~3-a-week cadence without ever feeling like a
+     *  constant ticker (each one still gets its own moment). */
+    private const MAX_CONCURRENT_LIVE = 2;
 
     /** Fraction of published news that's actually true — high enough that
      *  paying attention is worth it, low enough that it's never a no-brainer. */
@@ -51,10 +52,11 @@ class ShareNewsService
 
     /** Rolls the dice on whether today's the day a new bulletin drops. Call
      *  this once a day; it decides internally whether anything happens.
-     *  Kept low deliberately — this is a rare, special event to notice, not
-     *  a routine feed a player could learn to lean on — but a long enough
-     *  dry streak forces a publish rather than staying silent indefinitely. */
-    public function maybePublish(float $chance = 0.2): ?ShareNewsItem
+     *  Combined with MAX_CONCURRENT_LIVE=2 and a ~3.5-tick average resolve
+     *  time, this settles into roughly 3 bulletins per game week — frequent
+     *  enough to feel alive without becoming background noise — with a
+     *  long dry streak forcing a publish rather than staying silent. */
+    public function maybePublish(float $chance = 0.45): ?ShareNewsItem
     {
         if (!$this->isOverdue() && lcg_value() > $chance) {
             return null;

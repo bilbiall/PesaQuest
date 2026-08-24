@@ -2072,11 +2072,14 @@
                             <template x-for="item in (district.market_news || [])" :key="item.headline">
                                 <div class="pc-dream-card" style="flex-direction:column;align-items:flex-start;gap:4px;cursor:pointer;" @click="openNewsDetail(item)">
                                     <div style="display:flex;align-items:center;gap:6px;">
-                                        <span class="pc-dream-icon" x-text="item.status === 'resolved' ? '📋' : '📰'"></span>
+                                        <span class="pc-dream-icon" x-text="newsTimeBadge(item.time_state).icon"></span>
                                         <span class="pc-dream-text" style="font-weight:800;" x-text="item.headline"></span>
                                     </div>
                                     <span style="font-size:11px;color:rgba(255,255,255,.5);" x-text="item.status === 'resolved' ? item.lesson : item.flavor"></span>
-                                    <span style="font-size:10px;font-weight:700;color:#67e8f9;">Read more →</span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;" :style="'color:' + newsTimeBadge(item.time_state).color" x-text="newsTimeBadge(item.time_state).label"></span>
+                                        <span style="font-size:10px;font-weight:700;color:#67e8f9;">Read more →</span>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -3048,8 +3051,8 @@
         <div class="pc-news-popup">
             <button class="pc-news-close" @click="closeNewsDetail()">✕</button>
 
-            <div class="pc-news-eyebrow" x-text="newsDetail.item && newsDetail.item.status === 'resolved' ? 'Resolved' : 'Market Watch'"></div>
-            <div class="pc-news-icon" x-text="newsDetail.item && newsDetail.item.status === 'resolved' ? '📋' : '📰'"></div>
+            <div class="pc-news-eyebrow" :style="newsDetail.item ? 'color:' + newsTimeBadge(newsDetail.item.time_state).color : ''" x-text="newsDetail.item ? newsTimeBadge(newsDetail.item.time_state).label : 'Market Watch'"></div>
+            <div class="pc-news-icon" x-text="newsDetail.item ? newsTimeBadge(newsDetail.item.time_state).icon : '📰'"></div>
             <div class="pc-news-headline" x-text="newsDetail.item ? newsDetail.item.headline : ''"></div>
             <div class="pc-news-body" x-text="newsDetail.item ? newsDetail.item.flavor : ''"></div>
 
