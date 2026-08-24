@@ -24,6 +24,25 @@
                      box-shadow:0 16px 40px rgba(0,0,0,0.5); display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
         #emoji-pop button { font-size:20px; padding:5px 0; border-radius:8px; background:none; border:none; cursor:pointer; }
         #emoji-pop button:hover { background:rgba(255,255,255,0.08); }
+
+        /* ── Sticky reply composer ── */
+        .rx-sticky-composer { position:fixed; left:0; right:0; bottom:0; z-index:500;
+            background:rgba(10,9,20,0.97); backdrop-filter:blur(16px);
+            border-top:1px solid rgba(139,92,246,0.25);
+            padding:8px 12px calc(8px + env(safe-area-inset-bottom)); }
+        @media (max-width:767px) { .rx-sticky-composer { bottom:64px; } }
+        .rx-sticky-composer .max-w-5xl { margin:0 auto; }
+        .rx-composer-label { font-size:10.5px; font-weight:800; color:#9ca3af; margin-bottom:6px;
+            display:flex; align-items:center; gap:4px; }
+        .rx-composer-textarea { font-size:13px; padding:8px 14px; max-height:90px; }
+        .rx-composer-icon-btn { width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:16px;
+            border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); cursor:pointer;
+            transition:all .15s; flex-shrink:0; }
+        .rx-composer-icon-btn:hover { background:rgba(255,255,255,0.09); }
+        .rx-composer-submit { padding:8px 16px; border-radius:999px; font-size:12px; font-weight:900; color:#fff;
+            background:linear-gradient(135deg,#7c3aed,#4f46e5); box-shadow:0 4px 16px rgba(124,58,237,0.3);
+            transition:transform .15s; border:none; cursor:pointer; }
+        .rx-composer-submit:hover { transform:scale(1.02); }
     </style>
 </head>
 @php
@@ -48,7 +67,7 @@
     </div>
 </nav>
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8" style="padding-bottom:130px;">
 
     @if($errors->any())
     <div class="mb-6 rounded-2xl px-4 py-3 text-xs font-bold text-red-300" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);">
@@ -219,49 +238,57 @@
     @endif
     @endif
 
-    {{-- ── Reply form / locked state ── --}}
+    {{-- ── Locked state (sticky composer below handles the normal case) ── --}}
     @if($topic->is_locked)
-    <div class="rounded-xl p-4 text-center" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);">
+    <div class="rounded-xl p-4 text-center mb-4" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);">
         <p class="text-xl mb-2">🔒</p>
         <p class="text-sm font-black text-amber-300">This discussion is locked</p>
         <p class="text-xs text-gray-500 mt-1">No new replies can be added.</p>
     </div>
-    @else
-    <div class="rounded-xl p-4" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);">
-        <h3 class="text-sm font-black text-gray-200 mb-3 inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" /> Join the conversation</h3>
-        <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data" class="space-y-3"
-              x-data="{ fileName: '', previewUrl: null, clearImage() { this.previewUrl = null; this.fileName = ''; this.$refs.imageInput.value = ''; } }">
-            @csrf
-            <textarea name="body" id="reply-body" rows="3" required minlength="2" maxlength="3000"
-                      placeholder="Share your thoughts…"
-                      class="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-y"
-                      style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);">{{ old('body') }}</textarea>
-            <div x-show="previewUrl" x-cloak class="relative inline-block">
-                <img :src="previewUrl" class="rounded-xl object-cover" style="max-width:220px;max-height:160px;">
-                <button type="button" @click="clearImage()" title="Remove image"
-                        class="absolute flex items-center justify-center text-white text-xs font-black rounded-full"
-                        style="top:-8px;right:-8px;width:22px;height:22px;background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.2);">✕</button>
-            </div>
-            <div class="flex items-center gap-2.5">
-                <div class="relative">
-                    <button type="button" class="composer-icon-btn" title="Add emoji" onclick="emojiToggle(event, 'reply-body')">😊</button>
-                </div>
-                <label class="composer-icon-btn" title="Attach a photo">
-                    📷
-                    <input type="file" name="image" x-ref="imageInput" accept="image/*" class="hidden"
-                           @change="fileName = $event.target.files[0]?.name ?? ''; previewUrl = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
-                </label>
-                <span class="text-[11px] text-gray-500 flex-1" x-show="!previewUrl">No image attached</span>
-                <span class="text-[11px] text-emerald-400 font-bold flex-1" x-show="previewUrl" x-cloak>📷 Photo attached</span>
-                <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black text-white transition-transform hover:scale-[1.02] flex-shrink-0"
-                        style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 4px 20px rgba(124,58,237,0.3);">
-                    Reply{{ ($showXp ?? true) ? ' · +25 XP' : '' }}
-                </button>
-            </div>
-        </form>
-    </div>
     @endif
 </div>
+
+@unless($topic->is_locked)
+{{-- ── Sticky reply composer — stays pinned to the bottom of the viewport
+     while scrolling, like a chat/X-style compose bar, instead of sitting
+     inline at the end of the page where it'd need scrolling to reach. ── --}}
+<div class="rx-sticky-composer">
+  <div class="max-w-5xl px-1 sm:px-2">
+    <form method="POST" action="{{ route('forums.reply', $topic) }}" enctype="multipart/form-data"
+          x-data="{ fileName: '', previewUrl: null, clearImage() { this.previewUrl = null; this.fileName = ''; this.$refs.imageInput.value = ''; } }">
+        @csrf
+        <div class="rx-composer-label"><x-icon name="pencil" class="w-3 h-3" /> Join the conversation</div>
+        <div x-show="previewUrl" x-cloak class="relative inline-block mb-2">
+            <img :src="previewUrl" class="rounded-lg object-cover" style="max-width:140px;max-height:100px;">
+            <button type="button" @click="clearImage()" title="Remove image"
+                    class="absolute flex items-center justify-center text-white text-xs font-black rounded-full"
+                    style="top:-7px;right:-7px;width:20px;height:20px;background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.2);">✕</button>
+        </div>
+        <div class="flex items-end gap-2">
+            <textarea name="body" id="reply-body" rows="1" required minlength="2" maxlength="3000"
+                      placeholder="Share your thoughts…"
+                      class="rx-composer-textarea flex-1 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-none"
+                      style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);">{{ old('body') }}</textarea>
+            <div class="relative">
+                <button type="button" class="rx-composer-icon-btn" title="Add emoji" onclick="emojiToggle(event, 'reply-body')">😊</button>
+            </div>
+            <label class="rx-composer-icon-btn" title="Attach a photo">
+                📷
+                <input type="file" name="image" x-ref="imageInput" accept="image/*" class="hidden"
+                       @change="fileName = $event.target.files[0]?.name ?? ''; previewUrl = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
+            </label>
+            <button type="submit" class="rx-composer-submit flex-shrink-0">
+                Reply{{ ($showXp ?? true) ? ' · +25 XP' : '' }}
+            </button>
+        </div>
+        <div class="mt-1">
+            <span class="text-[10px] text-gray-500" x-show="!previewUrl">No image attached</span>
+            <span class="text-[10px] text-emerald-400 font-bold" x-show="previewUrl" x-cloak>📷 Photo attached</span>
+        </div>
+    </form>
+  </div>
+</div>
+@endunless
 
 {{-- Shared emoji popover — one instance reused for whichever composer opened it --}}
 <div id="emoji-pop" class="hidden"></div>
