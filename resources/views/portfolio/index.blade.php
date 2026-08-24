@@ -375,13 +375,17 @@
                             </span>
                         </div>
 
-                        @if($maturesIn !== null)
-                        <div class="mb-3">
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            @if($maturesIn !== null)
                             <span class="pf-tag {{ $isLocked ? 'text-amber-400 border border-amber-500/30 bg-amber-500/10' : 'text-cyan-400 border border-cyan-500/30 bg-cyan-500/10' }}">
                                 {{ $isLocked ? '🔒 Locked' : '⏳' }} matures in {{ $maturesIn }} game day{{ $maturesIn == 1 ? '' : 's' }}
                             </span>
+                            @endif
+                            <span class="pf-tag" style="color:{{ $pa->asset->appreciationColor() }};border:1px solid {{ $pa->asset->appreciationColor() }}4D;background:{{ $pa->asset->appreciationColor() }}1A;"
+                                  title="{{ $pa->asset->appreciationNote() }}">
+                                {{ $pa->asset->appreciationIcon() }} {{ $pa->asset->appreciationLabel() }}
+                            </span>
                         </div>
-                        @endif
 
                         <div class="grid grid-cols-2 gap-2 mb-3">
                             <div class="rounded-xl p-2.5" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">

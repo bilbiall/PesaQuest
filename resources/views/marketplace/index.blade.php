@@ -716,8 +716,10 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                         </div>
                         <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
                             <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Value/Month</p>
-                            <p class="text-xs sm:text-sm font-black mt-1 truncate" :class="inspecting.rate >= 0 ? 'text-emerald-400' : 'text-red-400'"
-                               x-text="(inspecting.rate >= 0 ? '+' : '') + inspecting.rate + '%'"></p>
+                            <p class="text-xs sm:text-sm font-black mt-1 truncate" :class="inspecting.rate > 0 ? 'text-emerald-400' : (inspecting.rate < 0 ? 'text-orange-400' : 'text-sky-400')"
+                               x-text="(inspecting.rate > 0 ? '+' : '') + inspecting.rate + '%'"></p>
+                            <p class="text-[8.5px] sm:text-[9px] font-bold mt-0.5" :class="inspecting.rate > 0 ? 'text-emerald-400/80' : (inspecting.rate < 0 ? 'text-orange-400/80' : 'text-sky-400/80')"
+                               x-text="inspecting.rate > 0 ? '📈 Growth' : (inspecting.rate < 0 ? '📉 Depreciating' : '➡️ Stable')"></p>
                         </div>
                     </div>
 
@@ -758,6 +760,13 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                                      style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);">
                                     <x-icon name="trend-up" class="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 mt-0.5" />
                                     <span>At <span x-text="inspecting.rate"></span>%/mo, worth ~Ksh <span x-text="(inspecting.projected||0).toLocaleString()"></span> in 12 game months (<span x-text="gdApprox(360)"></span>)</span>
+                                </div>
+                            </template>
+                            <template x-if="inspecting.rate < 0">
+                                <div class="mt-3 rounded-xl px-2.5 py-2 sm:px-3 text-[11px] sm:text-xs font-bold text-orange-300 flex items-start gap-1"
+                                     style="background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);">
+                                    <x-icon name="warning" class="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 mt-0.5" />
+                                    <span>Loses ~<span x-text="Math.abs(inspecting.rate)"></span>%/mo in value regardless of upkeep — maintaining it protects the income, not the price. Good for cash flow, not for growing net worth.</span>
                                 </div>
                             </template>
                             <template x-if="inspecting.net < 0 && !inspecting.payback">

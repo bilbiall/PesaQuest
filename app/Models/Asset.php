@@ -69,6 +69,52 @@ class Asset extends Model
         };
     }
 
+    /**
+     * Whether this asset is a growth play, an income play, or holds steady —
+     * derived purely from appreciation_rate, the actual number that drives
+     * value drift in LifeSimulator::settleAssets(). Condition/maintenance
+     * never factors into value, only income — this badge exists so a player
+     * can tell the two apart before buying, instead of only discovering
+     * "this was never going to grow" months later from a shrinking WORTH NOW.
+     */
+    public function appreciationLabel(): string
+    {
+        return match (true) {
+            $this->appreciation_rate > 0 => 'Growth Asset',
+            $this->appreciation_rate < 0 => 'Depreciating',
+            default                      => 'Stable Value',
+        };
+    }
+
+    public function appreciationIcon(): string
+    {
+        return match (true) {
+            $this->appreciation_rate > 0 => '📈',
+            $this->appreciation_rate < 0 => '📉',
+            default                      => '➡️',
+        };
+    }
+
+    public function appreciationColor(): string
+    {
+        return match (true) {
+            $this->appreciation_rate > 0 => '#34d399',
+            $this->appreciation_rate < 0 => '#fb923c',
+            default                      => '#60a5fa',
+        };
+    }
+
+    /** Plain-language explainer — condition/maintenance never changes this;
+     *  it only ever protects income, never value. */
+    public function appreciationNote(): string
+    {
+        return match (true) {
+            $this->appreciation_rate > 0 => 'Tends to gain value over time — maintaining it keeps the income flowing, but the growth here is the real prize.',
+            $this->appreciation_rate < 0 => "Tends to lose value over time regardless of maintenance — maintenance only protects the income. Good for cash flow, not for building net worth.",
+            default                      => "Value tends to hold roughly steady — maintenance protects the income; don't expect this one to grow your net worth on its own.",
+        };
+    }
+
     public function categoryLabel(): string
     {
         return match($this->category) {
