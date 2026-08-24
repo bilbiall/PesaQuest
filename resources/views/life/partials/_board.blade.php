@@ -8,75 +8,73 @@
     </div>
 
     {{-- ── CHARACTER BANNER ── --}}
-    <section class="char-banner py-6 sm:py-8">
+    <section class="char-banner py-5 sm:py-7"
+        @if($chapterBg ?? null)
+        style="background-image: linear-gradient(100deg, rgba(7,6,15,.96) 0%, rgba(7,6,15,.85) 38%, rgba(7,6,15,.4) 72%, rgba(7,6,15,.12) 100%), url('{{ $chapterBg }}'); background-size: cover; background-position: center right;"
+        @endif>
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-start gap-3 mb-4">
+                {{-- Avatar --}}
+                @if(auth()->user()->profile_photo)
+                <img src="{{ auth()->user()->profile_photo }}" alt="{{ auth()->user()->name }}"
+                     class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shrink-0 ring-2 ring-indigo-400/60 ring-offset-2 ring-offset-black">
+                @else
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-lg sm:text-xl font-black text-white shrink-0 ring-2 ring-indigo-400/60 ring-offset-2 ring-offset-black"
+                     style="background:linear-gradient(135deg,#6366f1,#a78bfa);">
+                    {{ strtoupper(substr(auth()->user()->name,0,1)) }}{{ strtoupper(substr(explode(' ',auth()->user()->name)[1]??'',0,1)) }}
+                </div>
+                @endif
 
-                {{-- Left: Identity --}}
-                <div class="flex items-start gap-4">
-                    {{-- Avatar --}}
-                    @if(auth()->user()->profile_photo)
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 ring-2 ring-indigo-500/40 ring-offset-2 ring-offset-black">
-                        <img src="{{ auth()->user()->profile_photo }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                <div class="min-w-0">
+                    {{-- Location + chapter breadcrumb --}}
+                    <div class="flex items-center gap-2 flex-wrap mb-1 text-[11px]">
+                        <span class="text-gray-400">📍 {{ $location }}</span>
+                        <span class="text-gray-700">·</span>
+                        <span class="text-indigo-300">{{ $progress->chapterIcon() }} {{ $progress->chapterName() }}</span>
                     </div>
-                    @else
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center text-xl sm:text-2xl font-black text-white shrink-0 ring-2 ring-indigo-500/40 ring-offset-2 ring-offset-black"
-                         style="background:linear-gradient(135deg,#6366f1,#a78bfa);">
-                        {{ strtoupper(substr(auth()->user()->name,0,1)) }}{{ strtoupper(substr(explode(' ',auth()->user()->name)[1]??'',0,1)) }}
-                    </div>
-                    @endif
 
-                    <div>
-                        {{-- Location + chapter breadcrumb --}}
-                        <div class="flex items-center gap-2 flex-wrap mb-2 text-xs">
-                            <span class="text-gray-400">📍 {{ $location }}</span>
-                            <span class="text-gray-700">·</span>
-                            <span class="text-indigo-300">{{ $progress->chapterIcon() }} {{ $progress->chapterName() }}</span>
-                        </div>
+                    <h1 class="text-lg sm:text-xl font-black text-white tracking-tight truncate">
+                        {{ auth()->user()->name }}
+                    </h1>
 
-                        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
-                            {{ auth()->user()->name }}
-                        </h1>
-
-                        {{-- Tags row --}}
-                        <div class="flex items-center gap-2 flex-wrap mt-2">
-                            <span class="inline-flex items-center gap-1 text-xs bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 px-2.5 py-0.5 rounded-full font-bold">
-                                ⭐ Lv {{ $progress->level ?? 1 }}
-                            </span>
-                            @if($progress->career_title)
-                            <span class="inline-flex items-center gap-1 text-xs bg-amber-500/10 border border-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full font-medium">
-                                💼 {{ $progress->career_title }}
-                            </span>
-                            @endif
-                            @if($progress->financial_personality)
-                            <span class="inline-flex items-center gap-1 text-xs bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full font-medium">
-                                🧠 {{ $progress->financial_personality }}
-                            </span>
-                            @endif
-                            @if($playerAssets->count() > 0)
-                            <span class="inline-flex items-center gap-1 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full font-medium">
-                                🏢 {{ $playerAssets->count() }} asset{{ $playerAssets->count() !== 1 ? 's' : '' }}
-                            </span>
-                            @endif
-                        </div>
+                    {{-- Tags row --}}
+                    <div class="flex items-center gap-1.5 flex-wrap mt-1.5">
+                        <span class="inline-flex items-center gap-1 text-[11px] bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 px-2 py-0.5 rounded-full font-bold">
+                            ⭐ Lv {{ $progress->level ?? 1 }}
+                        </span>
+                        @if($progress->career_title)
+                        <span class="inline-flex items-center gap-1 text-[11px] bg-amber-500/10 border border-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">
+                            💼 {{ $progress->career_title }}
+                        </span>
+                        @endif
+                        @if($progress->financial_personality)
+                        <span class="inline-flex items-center gap-1 text-[11px] bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-medium">
+                            🧠 {{ $progress->financial_personality }}
+                        </span>
+                        @endif
+                        @if($playerAssets->count() > 0)
+                        <span class="inline-flex items-center gap-1 text-[11px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">
+                            🏢 {{ $playerAssets->count() }} asset{{ $playerAssets->count() !== 1 ? 's' : '' }}
+                        </span>
+                        @endif
                     </div>
                 </div>
+            </div>
 
-                {{-- Right: Key financial stats --}}
-                <div class="flex gap-5 sm:gap-8">
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-0.5">Balance</div>
-                        <div class="text-xl font-black text-emerald-400" data-balance>Ksh {{ number_format($progress->balance) }}</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-0.5">Net Worth</div>
-                        <div class="text-xl font-black text-indigo-400">Ksh {{ number_format($netWorth) }}</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-0.5">Monthly Net</div>
-                        <div class="text-xl font-black {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
-                            {{ $netMonthly >= 0 ? '+' : '' }}Ksh {{ number_format($netMonthly) }}
-                        </div>
+            {{-- Key financial stats --}}
+            <div class="grid grid-cols-3 gap-3 sm:max-w-md">
+                <div>
+                    <div class="text-[11px] text-gray-500 mb-0.5">Balance</div>
+                    <div class="text-sm sm:text-base font-black text-emerald-400 whitespace-nowrap" data-balance>Ksh {{ number_format($progress->balance) }}</div>
+                </div>
+                <div>
+                    <div class="text-[11px] text-gray-500 mb-0.5">Net Worth</div>
+                    <div class="text-sm sm:text-base font-black text-indigo-400 whitespace-nowrap">Ksh {{ number_format($netWorth) }}</div>
+                </div>
+                <div>
+                    <div class="text-[11px] text-gray-500 mb-0.5">Monthly Net</div>
+                    <div class="text-sm sm:text-base font-black whitespace-nowrap {{ $netMonthly >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                        {{ $netMonthly >= 0 ? '+' : '' }}Ksh {{ number_format($netMonthly) }}
                     </div>
                 </div>
             </div>

@@ -221,16 +221,13 @@ class LifeController extends Controller
             }
         }
 
-        // Location from net worth
-        $netWorth = (int) ($progress->net_worth_cache ?? $progress->balance ?? 0);
-        $location = match(true) {
-            $netWorth >= 5_000_000 => 'Karen, Nairobi',
-            $netWorth >= 2_000_000 => 'Westlands, Nairobi',
-            $netWorth >= 1_000_000 => 'Kilimani, Nairobi',
-            $netWorth >= 500_000   => 'Kasarani, Nairobi',
-            $netWorth >= 200_000   => 'Embakasi, Nairobi',
-            default                => 'Eastleigh, Nairobi',
-        };
+        // Location + backdrop — both admin-editable per chapter in GameSet Hub
+        // → Life Chapters, so "which neighbourhood" tracks the same chapter
+        // system driving everything else instead of its own separate ladder.
+        $netWorth     = (int) ($progress->net_worth_cache ?? $progress->balance ?? 0);
+        $chapterMeta  = \App\Models\UserProgress::chapterMeta($progress->chapterKey());
+        $location     = $chapterMeta['location'] ?? 'Nairobi';
+        $chapterBg    = $chapterMeta['background_image'] ?? null;
 
         $lifeFeed = GameNotification::where('user_id', $user->id)
             ->whereIn('type', ['life_sim', 'bill_paid', 'bill_missed', 'asset_income', 'salary', 'life_event'])
@@ -278,7 +275,7 @@ class LifeController extends Controller
             'billsBurnPerMonth', 'assetCostsPerMonth', 'loanPaymentsPerMonth', 'totalExpenses',
             'netMonthly', 'savingsRate',
             'nextAsset', 'daysToNextAsset', 'progressToNextAsset',
-            'location', 'netWorth', 'lifeFeed', 'statement', 'statementFilter',
+            'location', 'chapterBg', 'netWorth', 'lifeFeed', 'statement', 'statementFilter',
             'creditHistory', 'lifeEvents', 'pendingPay'
         ));
     }

@@ -304,8 +304,10 @@
                         <x-help-tip text="Chapter name column: what players call this life stage everywhere in the game. The six stage keys underneath are fixed, so renaming is purely cosmetic — nothing breaks. Max 40 characters." example="Campus Hustler" />
                         <x-help-tip text="Tagline column: the one-line description shown under the name when a player enters the stage. Max 120 characters; leave blank for none." example="Small money, big lessons." />
                         <x-help-tip text="From Ksh column: the net worth (cash + assets + savings − debts) that moves a player into this chapter. Stage 1 is locked at 0 and every stage must be strictly higher than the one above it, or saving is rejected. Raise them all if you raise salaries or asset yields." example="Defaults ascend 0 / 50,000 / 200,000 / 1M / 5M / 20M" />
+                        <x-help-tip text="Location: the neighbourhood shown next to the player's name on the Life HQ header for this chapter — purely flavor text, doesn't affect gameplay." example="Kilimani, Nairobi" />
+                        <x-help-tip text="Backdrop image URL: shown behind the character card on the Life HQ header while a player is in this chapter — a skyline, street or scene that matches the stage. Leave blank to use the plain gradient background instead." example="https://example.com/img/kilimani-sunset.jpg" />
                     </h2>
-                    <p class="text-gray-400 text-sm mt-1">The six life stages every player climbs through, triggered by <b class="text-gray-300">net worth</b> (cash + assets + savings − debts). Rename them, restyle them and set the net-worth trigger for each.</p>
+                    <p class="text-gray-400 text-sm mt-1">The six life stages every player climbs through, triggered by <b class="text-gray-300">net worth</b> (cash + assets + savings − debts). Rename them, restyle them, give each a location + backdrop, and set the net-worth trigger for each.</p>
                 </div>
                 <button type="button" @click="save()" :disabled="saving" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition-colors">
                     <span x-show="!saving">💾 Save Chapters</span>
@@ -318,22 +320,32 @@
 
             <div class="space-y-2">
                 <template x-for="(ch, i) in chapters" :key="ch.key">
-                    <div class="flex flex-wrap gap-2 items-center p-3 rounded-xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
-                        <span class="text-[10px] font-black w-16 text-center px-2 py-1 rounded-full flex-shrink-0" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;" x-text="'Stage ' + (i+1)"></span>
-                        <input type="text" x-model="ch.icon" maxlength="4"
-                               class="w-12 text-center rounded-lg px-1 py-2 text-lg flex-shrink-0"
-                               style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;outline:none;" title="Icon">
-                        <input type="text" x-model="ch.name" maxlength="40" placeholder="Chapter name"
-                               class="rounded-lg px-3 py-2 text-sm font-bold" style="flex:1;min-width:9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;outline:none;">
-                        <input type="text" x-model="ch.tagline" maxlength="120" placeholder="Tagline players see"
-                               class="rounded-lg px-3 py-2 text-sm" style="flex:2;min-width:12rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#d1d5db;outline:none;">
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">from Ksh</span>
-                            <input type="number" min="0" step="1000" x-model.number="ch.min_net_worth" :disabled="i === 0"
-                                   class="w-32 rounded-lg px-3 py-2 text-sm font-bold text-right"
-                                   style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#34d399;outline:none;"
-                                   :style="i === 0 ? 'opacity:.5;' : ''"
-                                   :title="i === 0 ? 'The first stage always starts at 0' : 'Net worth that unlocks this chapter'">
+                    <div class="p-3 rounded-xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <span class="text-[10px] font-black w-16 text-center px-2 py-1 rounded-full flex-shrink-0" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;" x-text="'Stage ' + (i+1)"></span>
+                            <input type="text" x-model="ch.icon" maxlength="4"
+                                   class="w-12 text-center rounded-lg px-1 py-2 text-lg flex-shrink-0"
+                                   style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;outline:none;" title="Icon">
+                            <input type="text" x-model="ch.name" maxlength="40" placeholder="Chapter name"
+                                   class="rounded-lg px-3 py-2 text-sm font-bold" style="flex:1;min-width:9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;outline:none;">
+                            <input type="text" x-model="ch.tagline" maxlength="120" placeholder="Tagline players see"
+                                   class="rounded-lg px-3 py-2 text-sm" style="flex:2;min-width:12rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#d1d5db;outline:none;">
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">from Ksh</span>
+                                <input type="number" min="0" step="1000" x-model.number="ch.min_net_worth" :disabled="i === 0"
+                                       class="w-32 rounded-lg px-3 py-2 text-sm font-bold text-right"
+                                       style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#34d399;outline:none;"
+                                       :style="i === 0 ? 'opacity:.5;' : ''"
+                                       :title="i === 0 ? 'The first stage always starts at 0' : 'Net worth that unlocks this chapter'">
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center mt-2">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase w-16 text-center flex-shrink-0">📍 loc</span>
+                            <input type="text" x-model="ch.location" maxlength="60" placeholder="e.g. Kilimani, Nairobi"
+                                   class="rounded-lg px-3 py-1.5 text-xs" style="flex:1;min-width:9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#d1d5db;outline:none;">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase flex-shrink-0">🖼️ backdrop URL</span>
+                            <input type="text" x-model="ch.background_image" maxlength="500" placeholder="https://… (blank = plain gradient)"
+                                   class="rounded-lg px-3 py-1.5 text-xs" style="flex:2;min-width:12rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#d1d5db;outline:none;">
                         </div>
                     </div>
                 </template>

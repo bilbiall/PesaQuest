@@ -105,12 +105,14 @@ class GameSetController extends Controller
         $validKeys = array_column(\App\Models\UserProgress::CHAPTER_DEFAULTS, 'key');
 
         $data = $request->validate([
-            'chapters'                  => 'required|array|size:6',
-            'chapters.*.key'            => 'required|string|in:' . implode(',', $validKeys),
-            'chapters.*.name'           => 'required|string|max:40',
-            'chapters.*.icon'           => 'required|string|max:8',
-            'chapters.*.tagline'        => 'nullable|string|max:120',
-            'chapters.*.min_net_worth'  => 'required|integer|min:0|max:2000000000',
+            'chapters'                    => 'required|array|size:6',
+            'chapters.*.key'              => 'required|string|in:' . implode(',', $validKeys),
+            'chapters.*.name'             => 'required|string|max:40',
+            'chapters.*.icon'             => 'required|string|max:8',
+            'chapters.*.tagline'          => 'nullable|string|max:120',
+            'chapters.*.min_net_worth'    => 'required|integer|min:0|max:2000000000',
+            'chapters.*.location'         => 'nullable|string|max:60',
+            'chapters.*.background_image' => 'nullable|string|max:500',
         ]);
 
         // Every stage key exactly once

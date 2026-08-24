@@ -165,12 +165,12 @@ class UserProgress extends Model
      * GameSet Hub → Life Chapters (stored in the `life_chapters` Setting).
      */
     public const CHAPTER_DEFAULTS = [
-        ['key' => 'student',  'name' => 'The Student',  'icon' => '🎒', 'tagline' => 'Pocket money, savings goals, small hustles',       'min_net_worth' => 0],
-        ['key' => 'graduate', 'name' => 'The Graduate', 'icon' => '🎓', 'tagline' => 'First job, renting, starting from zero',           'min_net_worth' => 50_000],
-        ['key' => 'hustler',  'name' => 'The Hustler',  'icon' => '💪', 'tagline' => 'Career growth, first investment, first loan',      'min_net_worth' => 200_000],
-        ['key' => 'settler',  'name' => 'The Settler',  'icon' => '🏠', 'tagline' => 'Mortgage, family costs, business stakes',          'min_net_worth' => 1_000_000],
-        ['key' => 'builder',  'name' => 'The Builder',  'icon' => '📊', 'tagline' => 'Passive income, portfolio, wealth transfer',       'min_net_worth' => 5_000_000],
-        ['key' => 'elder',    'name' => 'The Elder',    'icon' => '🌟', 'tagline' => 'Retirement planning, legacy',                      'min_net_worth' => 20_000_000],
+        ['key' => 'student',  'name' => 'The Student',  'icon' => '🎒', 'tagline' => 'Pocket money, savings goals, small hustles',       'min_net_worth' => 0,          'location' => 'Eastleigh, Nairobi', 'background_image' => null],
+        ['key' => 'graduate', 'name' => 'The Graduate', 'icon' => '🎓', 'tagline' => 'First job, renting, starting from zero',           'min_net_worth' => 50_000,     'location' => 'Embakasi, Nairobi',  'background_image' => null],
+        ['key' => 'hustler',  'name' => 'The Hustler',  'icon' => '💪', 'tagline' => 'Career growth, first investment, first loan',      'min_net_worth' => 200_000,    'location' => 'Kasarani, Nairobi',  'background_image' => null],
+        ['key' => 'settler',  'name' => 'The Settler',  'icon' => '🏠', 'tagline' => 'Mortgage, family costs, business stakes',          'min_net_worth' => 1_000_000,  'location' => 'Kilimani, Nairobi',  'background_image' => null],
+        ['key' => 'builder',  'name' => 'The Builder',  'icon' => '📊', 'tagline' => 'Passive income, portfolio, wealth transfer',       'min_net_worth' => 5_000_000,  'location' => 'Westlands, Nairobi', 'background_image' => null],
+        ['key' => 'elder',    'name' => 'The Elder',    'icon' => '🌟', 'tagline' => 'Retirement planning, legacy',                      'min_net_worth' => 20_000_000, 'location' => 'Karen, Nairobi',     'background_image' => null],
     ];
 
     private static ?array $chaptersCache = null;
@@ -191,11 +191,13 @@ class UserProgress extends Model
         $chapters = array_map(function ($def) use ($savedByKey) {
             $s = $savedByKey->get($def['key'], []);
             return [
-                'key'           => $def['key'],
-                'name'          => trim((string) ($s['name'] ?? '')) !== ''    ? $s['name']    : $def['name'],
-                'icon'          => trim((string) ($s['icon'] ?? '')) !== ''    ? $s['icon']    : $def['icon'],
-                'tagline'       => trim((string) ($s['tagline'] ?? '')) !== '' ? $s['tagline'] : $def['tagline'],
-                'min_net_worth' => max(0, (int) ($s['min_net_worth'] ?? $def['min_net_worth'])),
+                'key'              => $def['key'],
+                'name'             => trim((string) ($s['name'] ?? '')) !== ''             ? $s['name']             : $def['name'],
+                'icon'             => trim((string) ($s['icon'] ?? '')) !== ''             ? $s['icon']             : $def['icon'],
+                'tagline'          => trim((string) ($s['tagline'] ?? '')) !== ''          ? $s['tagline']          : $def['tagline'],
+                'min_net_worth'    => max(0, (int) ($s['min_net_worth'] ?? $def['min_net_worth'])),
+                'location'         => trim((string) ($s['location'] ?? '')) !== ''         ? $s['location']         : $def['location'],
+                'background_image' => trim((string) ($s['background_image'] ?? '')) !== '' ? $s['background_image'] : $def['background_image'],
             ];
         }, self::CHAPTER_DEFAULTS);
 
@@ -211,7 +213,7 @@ class UserProgress extends Model
         foreach (self::chapters() as $c) {
             if ($c['key'] === $key) return $c;
         }
-        return ['key' => $key, 'name' => ucfirst($key), 'icon' => '⭐', 'tagline' => '', 'min_net_worth' => 0];
+        return ['key' => $key, 'name' => ucfirst($key), 'icon' => '⭐', 'tagline' => '', 'min_net_worth' => 0, 'location' => null, 'background_image' => null];
     }
 
     /** key => [band_start, band_end] map for progress bars (last band closes on itself). */
