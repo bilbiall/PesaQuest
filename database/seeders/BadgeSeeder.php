@@ -55,12 +55,35 @@ class BadgeSeeder extends Seeder
         }
 
         // Legacy pre-slug duplicates (created before the `slug` column existed)
-        // sit alongside the correctly-slugged rows above with an empty slug —
-        // deactivate them rather than delete, so any user_badges history that
-        // points at their IDs stays intact.
-        $names = collect($badges)->pluck('name')->all();
-        \App\Models\Badge::whereIn('name', $names)
+        // sit alongside the correctly-slugged rows above with an empty slug.
+        // Merely deactivating them (the old behaviour) left every player who'd
+        // already earned one of these permanently stuck looking at a badge no
+        // admin edit — icon, image, description — could ever reach again,
+        // since GameSet only ever edits the canonical slugged row. Move their
+        // award to the canonical badge of the same name first, then the
+        // duplicate really is dead weight and can go.
+        $names      = collect($badges)->pluck('name')->all();
+        $canonical  = \App\Models\Badge::whereIn('slug', collect($badges)->pluck('slug'))->get()->keyBy('name');
+        $duplicates = \App\Models\Badge::whereIn('name', $names)
             ->where(fn ($q) => $q->whereNull('slug')->orWhere('slug', ''))
-            ->update(['is_active' => false]);
+            ->get();
+
+        foreach ($duplicates as $legacy) {
+            $canon = $canonical->get($legacy->name);
+            if (!$canon) continue;
+
+            // Re-point every award to the canonical badge, except for a
+            // player who (via some earlier odd path) already has both —
+            // the user_badges unique(user_id, badge_id) constraint would
+            // reject that move, so just drop the now-redundant duplicate
+            // award for them instead.
+            $alreadyHasCanonical = \App\Models\UserBadge::where('badge_id', $canon->id)->pluck('user_id');
+            \App\Models\UserBadge::where('badge_id', $legacy->id)
+                ->whereNotIn('user_id', $alreadyHasCanonical)
+                ->update(['badge_id' => $canon->id]);
+            \App\Models\UserBadge::where('badge_id', $legacy->id)->delete();
+
+            $legacy->delete();
+        }
     }
 }
