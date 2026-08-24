@@ -19,8 +19,9 @@ $ltInitials = strtoupper(substr($ltUser->name, 0, 1)) . strtoupper(substr(explod
     .lt-top { max-width:80rem; margin:0 auto; padding:.55rem 1rem; display:flex; align-items:center; gap:.6rem; }
     .lt-logo img { height:2.1rem; width:auto; border-radius:.6rem; display:block; }
     .lt-avatar { width:2rem; height:2rem; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:auto;
-                 font-size:.68rem; font-weight:900; color:#fff; text-decoration:none; flex-shrink:0;
+                 font-size:.68rem; font-weight:900; color:#fff; text-decoration:none; flex-shrink:0; overflow:hidden;
                  background:linear-gradient(135deg,#6366f1,#a78bfa); }
+    .lt-avatar img { width:100%; height:100%; object-fit:cover; }
     .lt-tabs { max-width:80rem; margin:0 auto; padding:0 1rem .5rem; display:flex; gap:.35rem; overflow-x:auto; scrollbar-width:none; }
     .lt-tabs::-webkit-scrollbar { display:none; }
     .lt-tab { display:flex; align-items:center; gap:.4rem; flex-shrink:0; padding:.5rem .9rem; border-radius:.75rem;
@@ -35,7 +36,13 @@ $ltInitials = strtoupper(substr($ltUser->name, 0, 1)) . strtoupper(substr(explod
             <img src="{{ asset('moski-logo.png') }}" alt="Moski">
         </a>
         @include('partials.game-calendar', ['inline' => true])
-        <a href="{{ route('profile.edit') }}" class="lt-avatar" title="Profile">{{ $ltInitials }}</a>
+        <a href="{{ route('profile.edit') }}" class="lt-avatar" title="Profile">
+            @if($ltUser->profile_photo)
+            <img src="{{ $ltUser->profile_photo }}" alt="{{ $ltUser->name }}">
+            @else
+            {{ $ltInitials }}
+            @endif
+        </a>
     </div>
     <div class="lt-tabs">
         @foreach($ltTabs as $t)
