@@ -264,7 +264,7 @@ class LifeEventMixer
                 'key' => 'market-rally', 'title' => 'Markets On The Up!', 'icon' => '📊',
                 'chapters' => ['hustler', 'settler', 'builder', 'all'], 'is_positive' => true,
                 'effect_type' => 'market_event',
-                'effect_data' => ['market_categories' => [['category' => 'investment', 'pct' => 8]]],
+                'effect_data' => ['market_categories' => [['category' => 'investment', 'pct' => 0.08]]],
                 'probability' => 0.07,
                 'description' => 'Good economic news lifted investment values.',
                 'flavors' => [
@@ -282,7 +282,7 @@ class LifeEventMixer
                 'key' => 'market-dip', 'title' => 'Market Wobble', 'icon' => '📉',
                 'chapters' => ['hustler', 'settler', 'builder', 'all'], 'is_positive' => false,
                 'effect_type' => 'market_event',
-                'effect_data' => ['market_categories' => [['category' => 'investment', 'pct' => -7]]],
+                'effect_data' => ['market_categories' => [['category' => 'investment', 'pct' => -0.07]]],
                 'probability' => 0.07,
                 'description' => 'Jittery news knocked investment values down a notch.',
                 'flavors' => [
@@ -300,7 +300,7 @@ class LifeEventMixer
                 'key' => 'property-boom', 'title' => 'Plot Prices Climbing', 'icon' => '🏘️',
                 'chapters' => ['settler', 'builder', 'elder'], 'is_positive' => true, 'asset_category' => 'property',
                 'effect_type' => 'market_event',
-                'effect_data' => ['market_categories' => [['category' => 'property', 'pct' => 6]]],
+                'effect_data' => ['market_categories' => [['category' => 'property', 'pct' => 0.06]]],
                 'probability' => 0.06,
                 'description' => 'A new road project pushed property values up.',
                 'flavors' => [
@@ -316,7 +316,7 @@ class LifeEventMixer
                 'key' => 'boda-demand', 'title' => 'Boda Business Booming', 'icon' => '🏍️',
                 'chapters' => ['hustler', 'settler', 'all'], 'is_positive' => true, 'asset_category' => 'vehicle',
                 'effect_type' => 'market_event',
-                'effect_data' => ['market_categories' => [['category' => 'vehicle', 'pct' => 5]]],
+                'effect_data' => ['market_categories' => [['category' => 'vehicle', 'pct' => 0.05]]],
                 'probability' => 0.06,
                 'description' => 'Delivery demand spiked — vehicles are earning more.',
                 'flavors' => [

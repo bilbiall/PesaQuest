@@ -57,7 +57,10 @@ class PortfolioController extends Controller
 
         $totalSharesValue    = (int) $myShares->sum(fn ($h) => $h->currentValue());
         $totalSharesInvested = (int) $myShares->sum(fn ($h) => $h->quantity * $h->avg_cost);
-        $sharesUnrealisedPL  = $totalSharesValue - $totalSharesInvested;
+        // Sum of gainLoss() (sell-price based), not totalValue - totalInvested
+        // (mid-price based) -- so this header always equals the sum of the
+        // per-holding Gain/Loss cards rendered right below it.
+        $sharesUnrealisedPL  = (int) $myShares->sum(fn ($h) => $h->gainLoss());
 
         /* ── Realised share trades (sells only — profit/loss booked) ── */
         $shareTradeHistory = ShareTrade::where('user_id', $user->id)
