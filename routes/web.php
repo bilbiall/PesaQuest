@@ -510,6 +510,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/marketplace/{asset}/buy',           [MarketplaceController::class, 'buy'])->name('marketplace.buy');
     Route::get('/portfolio',                          [\App\Http\Controllers\PortfolioController::class, 'index'])->name('portfolio');
     Route::post('/portfolio/{playerAsset}/sell',      [MarketplaceController::class, 'sell'])->name('portfolio.sell');
+
+    // Money Market Funds — dedicated invest/top-up/withdraw flow (variable
+    // amount, one position per fund, 1-3 game-day withdrawal delay)
+    Route::post('/mmf/{asset}/invest',                [\App\Http\Controllers\MmfController::class, 'invest'])->name('mmf.invest');
+    Route::post('/mmf/{playerAsset}/topup',           [\App\Http\Controllers\MmfController::class, 'topup'])->name('mmf.topup');
+    Route::post('/mmf/{playerAsset}/withdraw',        [\App\Http\Controllers\MmfController::class, 'withdraw'])->name('mmf.withdraw');
 });
 
 // P2P Trade Market
@@ -612,6 +618,15 @@ Route::middleware(['auth', 'gameset'])->prefix('gameset')->name('gameset.')->gro
     Route::put('/courses/{course}',                 [\App\Http\Controllers\GamesetCourseController::class, 'update'])->name('courses.update');
     Route::delete('/courses/{course}',              [\App\Http\Controllers\GamesetCourseController::class, 'destroy'])->name('courses.destroy');
     Route::post('/courses/{course}/toggle-active',  [\App\Http\Controllers\GamesetCourseController::class, 'toggleActive'])->name('courses.toggle-active');
+
+    // Course Series — admin grouping of courses into learning paths
+    Route::get('/course-series',                          [\App\Http\Controllers\GamesetCourseSeriesController::class, 'index'])->name('course-series.index');
+    Route::get('/course-series/create',                   [\App\Http\Controllers\GamesetCourseSeriesController::class, 'create'])->name('course-series.create');
+    Route::post('/course-series',                         [\App\Http\Controllers\GamesetCourseSeriesController::class, 'store'])->name('course-series.store');
+    Route::get('/course-series/{series}/edit',            [\App\Http\Controllers\GamesetCourseSeriesController::class, 'edit'])->name('course-series.edit');
+    Route::put('/course-series/{series}',                 [\App\Http\Controllers\GamesetCourseSeriesController::class, 'update'])->name('course-series.update');
+    Route::delete('/course-series/{series}',              [\App\Http\Controllers\GamesetCourseSeriesController::class, 'destroy'])->name('course-series.destroy');
+    Route::post('/course-series/{series}/toggle-active',  [\App\Http\Controllers\GamesetCourseSeriesController::class, 'toggleActive'])->name('course-series.toggle-active');
 
     Route::get('/jobs',                             [\App\Http\Controllers\GamesetJobController::class, 'index'])->name('jobs.index');
     Route::get('/jobs/create',                      [\App\Http\Controllers\GamesetJobController::class, 'create'])->name('jobs.create');

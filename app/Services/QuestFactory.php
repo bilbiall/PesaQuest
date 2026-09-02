@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CityCourse;
 use App\Models\CityJob;
+use App\Models\CourseSeries;
 use App\Models\Quest;
 use App\Models\QuestBlueprint;
 use App\Models\Setting;
@@ -57,6 +58,8 @@ class QuestFactory
                                 'label' => 'Reach Level {value} ⭐'],
         'take_course'       => ['value' => 'pick',  'arch' => 'study_up',        'name' => 'Complete a course',
                                 'label' => 'Complete the "{value}" course 📚',   'anyLabel' => 'Complete any course at Skill Campus 📚'],
+        'complete_series'   => ['value' => 'pick',  'arch' => 'study_up',        'name' => 'Complete an entire course series',
+                                'label' => 'Complete the whole "{value}" series 🧭'],
         'get_job'           => ['value' => 'pick',  'arch' => 'get_hired',       'name' => 'Get hired',
                                 'label' => 'Land the {value} job 💼',            'anyLabel' => 'Get hired for any job 💼'],
         'buy_item_category' => ['value' => 'pick',  'arch' => 'first_brick',     'name' => 'Buy from a marketplace category',
@@ -116,6 +119,36 @@ class QuestFactory
             'trigger_type'   => 'take_course',
             'trigger_value'  => $course->slug,
             'trigger_label'  => $copy['label'],
+        ]);
+    }
+
+    public function draftForSeries(CourseSeries $series): ?Quest
+    {
+        if (!self::enabled() || !$series->slug) return null;
+        if ($this->alreadyCovered('complete_series', $series->slug)) return null;
+
+        $ageGroup = $series->age_group ?: 'all';
+
+        $copy = PesaVoice::compose('study_up', $ageGroup === 'all' ? null : $ageGroup,
+            ['course' => $series->title, 'n' => 1, 'name' => 'rafiki'], targeted: true);
+        if (!$copy) return null;
+
+        $label = str_replace('{value}', $series->title, self::TRIGGER_META['complete_series']['label']);
+
+        return $this->createDraft([
+            'title'          => mb_substr($copy['title'] . ': ' . $series->title, 0, 150),
+            'description'    => $copy['intro'],
+            'instructions'   => $label,
+            'lesson'         => trim($copy['lesson'] . ' ' . $copy['signoff']),
+            'icon'           => $series->icon ?: '🧭',
+            'age_group'      => $ageGroup,
+            'level_required' => 1,
+            'xp_reward'      => 250,
+            'kes_reward'     => 150,
+            'triggers'       => [['type' => 'complete_series', 'values' => [$series->slug], 'label' => $label]],
+            'trigger_type'   => 'complete_series',
+            'trigger_value'  => $series->slug,
+            'trigger_label'  => $label,
         ]);
     }
 
@@ -299,6 +332,7 @@ class QuestFactory
         try {
             return match ($type) {
                 'take_course'   => (string) (DB::table('city_courses')->where('slug', $value)->value('title') ?: $value),
+                'complete_series' => (string) (DB::table('course_series')->where('slug', $value)->value('title') ?: $value),
                 'get_job'       => (string) (DB::table('city_jobs')->where('id', $value)->value('title') ?: $value),
                 'buy_item_slug' => (string) (DB::table('assets')->where('slug', $value)->value('name') ?: $value),
                 'earn_badge'    => (string) (DB::table('badges')->where('slug', $value)->value('name') ?: $value),

@@ -244,9 +244,64 @@
             <p class="text-sm mt-2">Check back soon — the Gameset team is adding content!</p>
         </div>
         @else
-        {{-- Group by track --}}
+
+        {{-- ── Learning Path: strict-order series ladder ── --}}
+        @if($learningPath->isNotEmpty())
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-lg" style="background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.3);">🧭</div>
+                <h2 class="text-base font-black text-white/90">Learning Path</h2>
+                <span class="text-xs font-bold text-white/30">Take these in order for the full picture</span>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                @foreach($learningPath as $group)
+                @php
+                    $s = $group['series']; $prog = $group['progress'];
+                    $seriesLocked = $group['topics']->isNotEmpty() && $group['topics']->first()['locked'];
+                @endphp
+                <div class="rounded-2xl p-4" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);">
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-lg">{{ $s->icon ?? '🧭' }}</span>
+                            <h3 class="font-black text-white text-sm truncate">{{ $s->title }}</h3>
+                            @if($seriesLocked)
+                            <span class="text-white/30 text-xs">🔒</span>
+                            @endif
+                        </div>
+                        <span class="text-[11px] font-bold flex-shrink-0" style="color:{{ $s->color ?? '#a78bfa' }};">{{ $prog['completed'] }}/{{ $prog['total'] }}</span>
+                    </div>
+                    @if($s->description)
+                    <p class="text-white/40 text-xs mb-3">{{ $s->description }}</p>
+                    @endif
+                    <div class="h-1.5 rounded-full bg-white/5 overflow-hidden mb-3">
+                        <div class="h-full rounded-full" style="width:{{ $prog['total'] > 0 ? round($prog['completed']/$prog['total']*100) : 0 }}%;background:{{ $s->color ?? '#a78bfa' }};"></div>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        @foreach($group['topics'] as $t)
+                        @php $tc = $t['course']; @endphp
+                        <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs {{ $t['locked'] ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-white/5' }}"
+                             style="{{ $t['locked'] ? 'opacity:.45;' : '' }}"
+                             @if(!$t['locked']) @click="openCourse({{ $tc->id }})" @endif
+                             title="{{ $t['locked'] ? 'Complete the previous topic first' : '' }}">
+                            <span class="w-5 text-center flex-shrink-0">
+                                @if($t['completed']) ✅
+                                @elseif($t['locked']) 🔒
+                                @else {{ $tc->topic_number }}
+                                @endif
+                            </span>
+                            <span class="flex-1 truncate {{ $t['completed'] ? 'text-white/50' : 'text-white/85 font-semibold' }}">{{ $tc->title }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Group by track (non-ladder courses only — series topics live in Learning Path above) --}}
         @foreach($tracks as $trackKey => $track)
-        @php $trackCourses = $courses->where('career_track', $trackKey); @endphp
+        @php $trackCourses = $courses->where('career_track', $trackKey)->whereNull('series_id'); @endphp
         @if($trackCourses->isNotEmpty())
         <div x-show="!trackFilter || trackFilter === '{{ $trackKey }}'" class="mb-10" data-oh-group>
             <div class="flex items-center gap-3 mb-5">
@@ -296,6 +351,14 @@
                         <span class="text-yellow-400 flex-shrink-0">🎯</span>
                         <span class="line-clamp-1">{{ $course->outcome }}</span>
                     </div>
+
+                    @if($course->series)
+                    @php $sp = $seriesProgress[$course->series_id] ?? ['completed' => 0, 'total' => 0]; @endphp
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold" style="color:{{ $course->series->color ?? '#a78bfa' }};">
+                        <span>{{ $course->series->icon ?? '🧭' }} {{ $course->series->title }}</span>
+                        <span class="text-white/30">· {{ $sp['completed'] }}/{{ $sp['total'] }} complete</span>
+                    </div>
+                    @endif
 
                     {{-- Footer meta --}}
                     <div class="flex items-center justify-between pt-1 border-t border-white/5">
@@ -486,10 +549,18 @@
                             </div>
                         </div>
 
+                        <template x-if="modal.data.is_locked">
+                            <div class="flex items-start gap-3 px-4 py-3 rounded-xl" style="background:rgba(107,114,128,.1);border:1px solid rgba(107,114,128,.25);">
+                                <span class="text-white/40 text-xl flex-shrink-0">🔒</span>
+                                <div class="text-sm text-white/50 font-semibold">Locked — complete the previous topic in this series first.</div>
+                            </div>
+                        </template>
+                        <template x-if="!modal.data.is_locked">
                         <button class="btn-primary w-full" style="background:linear-gradient(135deg,#4DA8F7,#6366f1);" @click="enrollCourse(modal.data.id)" :disabled="modal.loading">
                             <span x-show="!modal.loading">📚 Enroll &amp; Start Learning</span>
                             <span x-show="modal.loading">Enrolling…</span>
                         </button>
+                        </template>
                     </div>
                 </template>
 

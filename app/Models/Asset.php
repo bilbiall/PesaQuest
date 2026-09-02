@@ -17,7 +17,19 @@ class Asset extends Model
         'creates_bill_slug', 'max_per_player', 'is_active', 'is_luxury',
         'badge', 'featured_section', 'mmf_sponsor_id', 'rate_updated_at',
         'maturity_ticks', 'locked', 'early_exit_penalty_pct', 'maturity_bonus_pct',
+        'mmf_min_rate', 'mmf_max_rate',
     ];
+
+    /** Annual rate band this MMF fluctuates within — falls back to the
+     *  global admin-tunable Setting when the fund doesn't set its own,
+     *  so every sponsor can keep a distinct feel (see MmfSponsorSeeder). */
+    public function mmfRateBand(): array
+    {
+        return [
+            (float) ($this->mmf_min_rate ?? \App\Models\Setting::get('mmf_min_rate_annual', 8)),
+            (float) ($this->mmf_max_rate ?? \App\Models\Setting::get('mmf_max_rate_annual', 16)),
+        ];
+    }
 
     /** Returns the best available image URL for this asset */
     public function imageUrl(): ?string
@@ -30,6 +42,8 @@ class Asset extends Model
         'is_luxury'          => 'boolean',
         'appreciation_rate'  => 'float',
         'volatility'         => 'float',
+        'mmf_min_rate'       => 'float',
+        'mmf_max_rate'       => 'float',
         'locked'             => 'boolean',
         'early_exit_penalty_pct' => 'float',
         'maturity_bonus_pct' => 'float',

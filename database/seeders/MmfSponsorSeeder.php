@@ -23,14 +23,16 @@ class MmfSponsorSeeder extends Seeder
     {
         $sponsors = [
             [
-                'name'    => 'Horizon Trust',
-                'tagline' => 'Grow your money, steadily.',
-                'rate'    => 11.0, // % p.a. — placeholder, edit in GameSet Hub once real
+                'name'     => 'Horizon Trust',
+                'tagline'  => 'Grow your money, steadily.',
+                'min_rate' => 9.0, // % p.a. — daily rate fluctuates inside this band, edit in GameSet Hub once real
+                'max_rate' => 13.0,
             ],
             [
-                'name'    => 'Nexa Capital',
-                'tagline' => 'Smart investing, made simple.',
-                'rate'    => 10.4,
+                'name'     => 'Nexa Capital',
+                'tagline'  => 'Smart investing, made simple.',
+                'min_rate' => 8.5,
+                'max_rate' => 12.0,
             ],
         ];
 
@@ -39,8 +41,6 @@ class MmfSponsorSeeder extends Seeder
                 ['name' => $s['name']],
                 ['tagline' => $s['tagline'], 'is_active' => true]
             );
-
-            $monthlyIncome = (int) round(5000 * ($s['rate'] / 100) / 12);
 
             Asset::updateOrCreate(
                 ['slug' => \Illuminate\Support\Str::slug($s['name']) . '-mmf'],
@@ -51,23 +51,25 @@ class MmfSponsorSeeder extends Seeder
                     'product_type'        => 'money_market_fund',
                     'tier'                => 1,
                     'age_group'           => 'all',
-                    'base_price'          => 5000,
-                    'monthly_income'      => $monthlyIncome,
+                    'base_price'          => 1000, // suggested first deposit — actual amount is player-chosen
+                    'monthly_income'      => 0,    // unused: MMF compounds daily via LifeSimulator::settleMmfInterest()
                     'monthly_cost'        => 0,
-                    'income_description'  => "~{$s['rate']}% p.a. (net of fund fees), paid monthly",
+                    'income_description'  => "{$s['min_rate']}%–{$s['max_rate']}% p.a. (net of fund fees), compounding daily",
                     'cost_description'    => '',
                     'appreciation_rate'   => 0,
                     'volatility'          => 0,
                     'risk_level'          => 1,
                     'icon'                => '💰',
-                    'description'         => "A Money Market Fund run by {$s['name']}. Pools your cash with thousands of others and lends it out safely, paying you a share of the return every month.",
+                    'description'         => "A Money Market Fund run by {$s['name']}. Pools your cash with thousands of others and lends it out safely, paying you daily interest — invest any amount, top up anytime, withdraw whenever you like.",
                     'flavor_text'         => $s['tagline'],
-                    'educational_note'    => 'Money Market Funds beat a plain bank savings account while staying easy to access — no lock-in, unlike a T-Bill or T-Bond. Different providers pay slightly different rates, so comparing before you commit is always worth it.',
+                    'educational_note'    => 'Money Market Funds beat a plain bank savings account while staying easy to access — no lock-in, unlike a T-Bill or T-Bond. The rate moves daily, so different providers pay slightly different (and slightly variable) returns — comparing before you commit is always worth it.',
                     'creates_bill_slug'   => null,
-                    'max_per_player'      => 10,
+                    'max_per_player'      => 1,
                     'is_active'           => true,
                     'badge'               => 'new',
                     'mmf_sponsor_id'      => $sponsor->id,
+                    'mmf_min_rate'        => $s['min_rate'],
+                    'mmf_max_rate'        => $s['max_rate'],
                     'rate_updated_at'     => now(),
                 ]
             );

@@ -12,6 +12,9 @@ class PlayerAsset extends Model
         'quantity', 'purchased_at_tick', 'last_valued_tick',
         'income_paid_to_tick', 'upkeep_paid_to_tick',
         'status', 'sold_at_tick', 'sold_price', 'condition',
+        'mmf_principal', 'mmf_interest_earned', 'mmf_interest_taxed',
+        'mmf_last_interest_tick', 'mmf_pending_topup_amount', 'mmf_topup_ready_tick',
+        'mmf_pending_withdrawal_amount', 'mmf_withdrawal_ready_tick',
     ];
 
     protected $casts = [
@@ -19,6 +22,11 @@ class PlayerAsset extends Model
         'current_value'    => 'integer',
         'quantity'         => 'integer',
         'purchased_at_tick'=> 'integer',
+        'mmf_principal'                 => 'integer',
+        'mmf_interest_earned'           => 'integer',
+        'mmf_interest_taxed'            => 'integer',
+        'mmf_pending_topup_amount'      => 'integer',
+        'mmf_pending_withdrawal_amount' => 'integer',
     ];
 
     public function user(): BelongsTo
@@ -122,5 +130,19 @@ class PlayerAsset extends Model
     public function isLockedForSale(int $nowTick): bool
     {
         return ($this->asset->locked ?? false) && !$this->isMatured($nowTick);
+    }
+
+    /** True for a Money Market Fund position — drives the invest/top-up/
+     *  withdraw flow (MmfController) instead of the generic buy/sell one. */
+    public function isMmf(): bool
+    {
+        return ($this->asset->product_type ?? null) === 'money_market_fund';
+    }
+
+    /** Untaxed lifetime interest still sitting in the fund — the base the
+     *  15% withholding tax is prorated against on withdrawal. */
+    public function mmfUntaxedInterest(): int
+    {
+        return max(0, (int) ($this->mmf_interest_earned ?? 0) - (int) ($this->mmf_interest_taxed ?? 0));
     }
 }

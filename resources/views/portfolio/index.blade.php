@@ -349,6 +349,9 @@
                     $maturesIn  = $pa->ticksUntilMaturity($tick);
                     $isLocked   = $pa->isLockedForSale($tick);
                     $exitPenalty= $pa->asset->early_exit_penalty_pct ?? 0;
+                    $isMmfPa    = $pa->isMmf();
+                    $mmfTopupDaysLeft      = $pa->mmf_topup_ready_tick !== null ? max(0, $pa->mmf_topup_ready_tick - $tick) : null;
+                    $mmfWithdrawDaysLeft   = $pa->mmf_withdrawal_ready_tick !== null ? max(0, $pa->mmf_withdrawal_ready_tick - $tick) : null;
                 @endphp
                 <div class="pf-card pf-appear rounded-2xl overflow-hidden" id="pf-asset-{{ $pa->id }}"
                      style="background:linear-gradient(160deg,rgba(12,18,38,0.95),rgba(20,16,52,0.85));border-color:rgba(139,92,246,0.2);">
@@ -392,6 +395,49 @@
                             </span>
                         </div>
 
+                        @if($isMmfPa)
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="rounded-xl p-2.5" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+                                <p class="text-[9px] text-gray-500 font-black uppercase tracking-wider mb-0.5">Principal</p>
+                                <p class="text-xs font-black text-gray-300">Ksh {{ number_format($pa->mmf_principal ?? 0) }}</p>
+                            </div>
+                            <div class="rounded-xl p-2.5" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);">
+                                <p class="text-[9px] text-gray-500 font-black uppercase tracking-wider mb-0.5">Balance</p>
+                                <p class="text-xs font-black text-emerald-400">Ksh {{ number_format($pa->current_value) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] mb-3">
+                            <span class="text-gray-500">Interest earned to date <span class="text-emerald-400 font-bold">Ksh {{ number_format($pa->mmf_interest_earned ?? 0) }}</span></span>
+                        </div>
+
+                        @if($mmfTopupDaysLeft !== null)
+                        <div class="mb-3 rounded-xl px-2.5 py-2 text-[11px] font-bold text-cyan-300" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);">
+                            ⏳ Ksh {{ number_format($pa->mmf_pending_topup_amount) }} top-up starts earning in {{ $mmfTopupDaysLeft }} game day(s)
+                        </div>
+                        @endif
+                        @if($mmfWithdrawDaysLeft !== null && $pa->mmf_pending_withdrawal_amount > 0)
+                        <div class="mb-3 rounded-xl px-2.5 py-2 text-[11px] font-bold text-amber-300" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+                            ⏳ Ksh {{ number_format($pa->mmf_pending_withdrawal_amount) }} withdrawal lands in {{ $mmfWithdrawDaysLeft }} game day(s)
+                        </div>
+                        @endif
+
+                        <div class="flex gap-2">
+                            <button
+                                @click="openTopup({{ json_encode(['id' => $pa->id, 'name' => $pa->asset->name]) }})"
+                                class="flex-1 py-2 rounded-xl text-[11px] font-black text-center transition-all hover:scale-[1.02]"
+                                style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);color:#67e8f9;">
+                                Top Up
+                            </button>
+                            <button
+                                @click="openWithdraw({{ json_encode(['id' => $pa->id, 'name' => $pa->asset->name, 'balance' => (int) $pa->current_value]) }})"
+                                :disabled="{{ $pa->current_value }} <= 0"
+                                class="flex-1 py-2 rounded-xl text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-40"
+                                style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);color:#fca5a5;">
+                                Withdraw
+                            </button>
+                        </div>
+                        @else
                         <div class="grid grid-cols-2 gap-2 mb-3">
                             <div class="rounded-xl p-2.5" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
                                 <p class="text-[9px] text-gray-500 font-black uppercase tracking-wider mb-0.5">Bought At</p>
@@ -454,6 +500,7 @@
                             </button>
                             @endif
                         </div>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -517,6 +564,90 @@
                                         style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#fca5a5;">
                                     <span x-show="!isSelling">Confirm Sale</span>
                                     <span x-show="isSelling" x-cloak>Selling…</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        {{-- ── MMF Top Up modal ── --}}
+        <div x-show="toppingUp" x-cloak
+             class="fixed inset-0 flex items-center justify-center p-4"
+             style="z-index:9990;background:rgba(0,0,0,0.85);overflow-y:auto;overscroll-behavior:contain;" @click.self="toppingUp = null">
+            <div x-show="toppingUp"
+                 x-transition:enter="transition ease-out duration-250"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-6"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="w-full max-w-sm rounded-3xl overflow-hidden"
+                 style="background:linear-gradient(160deg,rgba(12,18,38,0.99),rgba(20,16,52,0.97));border:1px solid rgba(6,182,212,0.25);">
+                <template x-if="toppingUp">
+                    <div>
+                        <div class="p-4 sm:p-6 border-b border-white/5">
+                            <p class="font-black text-white text-sm sm:text-base truncate" x-text="'Top up ' + toppingUp.name"></p>
+                            <p class="text-[.7rem] sm:text-xs text-gray-400 leading-snug">Deposit before 11am to start earning tomorrow — after 11am, it starts a day later.</p>
+                        </div>
+                        <div class="p-4 sm:p-6">
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-400 mb-1.5">Amount (Ksh)</label>
+                            <input type="number" x-model.number="topupAmount" min="1" step="100"
+                                   class="w-full rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-white mb-3"
+                                   style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);" placeholder="e.g. 500">
+                            <div x-show="mmfMsg" class="rounded-xl px-3 py-2 sm:px-4 text-[.7rem] sm:text-xs font-bold text-center mb-3"
+                                 :class="mmfOk ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'"
+                                 x-text="mmfMsg"></div>
+                            <div class="flex gap-2 sm:gap-3">
+                                <button @click="toppingUp = null; mmfMsg = '';"
+                                        class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                                        style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">Cancel</button>
+                                <button @click="confirmTopup()" :disabled="mmfBusy || !topupAmount"
+                                        class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
+                                        style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#67e8f9;">
+                                    <span x-show="!mmfBusy">Confirm Top Up</span>
+                                    <span x-show="mmfBusy" x-cloak>Processing…</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        {{-- ── MMF Withdraw modal ── --}}
+        <div x-show="withdrawing" x-cloak
+             class="fixed inset-0 flex items-center justify-center p-4"
+             style="z-index:9990;background:rgba(0,0,0,0.85);overflow-y:auto;overscroll-behavior:contain;" @click.self="withdrawing = null">
+            <div x-show="withdrawing"
+                 x-transition:enter="transition ease-out duration-250"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-6"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="w-full max-w-sm rounded-3xl overflow-hidden"
+                 style="background:linear-gradient(160deg,rgba(12,18,38,0.99),rgba(20,16,52,0.97));border:1px solid rgba(248,113,113,0.25);">
+                <template x-if="withdrawing">
+                    <div>
+                        <div class="p-4 sm:p-6 border-b border-white/5">
+                            <p class="font-black text-white text-sm sm:text-base truncate" x-text="'Withdraw from ' + withdrawing.name"></p>
+                            <p class="text-[.7rem] sm:text-xs text-gray-400 leading-snug">Takes 1–3 game days to land. 15% withholding tax applies only to the interest portion of what you withdraw.</p>
+                        </div>
+                        <div class="p-4 sm:p-6">
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-400 mb-1.5">
+                                Amount (Ksh) — balance: <span x-text="withdrawing.balance.toLocaleString()"></span>
+                            </label>
+                            <input type="number" x-model.number="withdrawAmount" min="1" :max="withdrawing.balance" step="100"
+                                   class="w-full rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-white mb-3"
+                                   style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);" placeholder="e.g. 500">
+                            <div x-show="mmfMsg" class="rounded-xl px-3 py-2 sm:px-4 text-[.7rem] sm:text-xs font-bold text-center mb-3"
+                                 :class="mmfOk ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'"
+                                 x-text="mmfMsg"></div>
+                            <div class="flex gap-2 sm:gap-3">
+                                <button @click="withdrawing = null; mmfMsg = '';"
+                                        class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                                        style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">Cancel</button>
+                                <button @click="confirmWithdraw()" :disabled="mmfBusy || !withdrawAmount"
+                                        class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
+                                        style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#fca5a5;">
+                                    <span x-show="!mmfBusy">Confirm Withdrawal</span>
+                                    <span x-show="mmfBusy" x-cloak>Processing…</span>
                                 </button>
                             </div>
                         </div>
@@ -750,10 +881,94 @@ function pfSell() {
         sellMsg: '',
         sellOk: true,
 
+        toppingUp: null,
+        withdrawing: null,
+        topupAmount: null,
+        withdrawAmount: null,
+        mmfBusy: false,
+        mmfMsg: '',
+        mmfOk: true,
+
         openSell(asset) {
             this.selling = asset;
             this.sellMsg = '';
             this.isSelling = false;
+        },
+
+        openTopup(asset) {
+            this.toppingUp   = asset;
+            this.topupAmount = null;
+            this.mmfMsg      = '';
+            this.mmfBusy     = false;
+        },
+
+        openWithdraw(asset) {
+            this.withdrawing    = asset;
+            this.withdrawAmount = asset.balance;
+            this.mmfMsg         = '';
+            this.mmfBusy        = false;
+        },
+
+        async confirmTopup() {
+            if (!this.toppingUp || this.mmfBusy || !this.topupAmount) return;
+            this.mmfBusy = true;
+            this.mmfMsg  = '';
+            try {
+                const res = await fetch(`/mmf/${this.toppingUp.id}/topup`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ amount: this.topupAmount }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    this.mmfOk  = true;
+                    this.mmfMsg = '🎉 Ksh ' + Number(this.topupAmount).toLocaleString() + ' added!';
+                    setTimeout(() => { this.toppingUp = null; window.location.reload(); }, 1500);
+                } else {
+                    this.mmfOk  = false;
+                    this.mmfMsg = data.error || 'Top up failed.';
+                    this.mmfBusy = false;
+                }
+            } catch (e) {
+                this.mmfOk  = false;
+                this.mmfMsg = 'Network error. Please retry.';
+                this.mmfBusy = false;
+            }
+        },
+
+        async confirmWithdraw() {
+            if (!this.withdrawing || this.mmfBusy || !this.withdrawAmount) return;
+            this.mmfBusy = true;
+            this.mmfMsg  = '';
+            try {
+                const res = await fetch(`/mmf/${this.withdrawing.id}/withdraw`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ amount: this.withdrawAmount }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    this.mmfOk  = true;
+                    this.mmfMsg = '⏳ Ksh ' + Number(data.net_payout).toLocaleString() + ' will land in ' + data.ready_in + ' game day(s).';
+                    setTimeout(() => { this.withdrawing = null; window.location.reload(); }, 2200);
+                } else {
+                    this.mmfOk  = false;
+                    this.mmfMsg = data.error || 'Withdrawal failed.';
+                    this.mmfBusy = false;
+                }
+            } catch (e) {
+                this.mmfOk  = false;
+                this.mmfMsg = 'Network error. Please retry.';
+                this.mmfBusy = false;
+            }
         },
 
         async confirmSell() {

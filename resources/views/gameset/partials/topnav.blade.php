@@ -13,6 +13,7 @@ $gsnGroups = [
     ]],
     'learning' => ['label' => 'Learning', 'icon' => '🎓', 'items' => [
         ['key' => 'courses', 'icon' => '🎓', 'label' => 'Courses', 'route' => 'gameset.courses.index'],
+        ['key' => 'course-series', 'icon' => '🧭', 'label' => 'Course Series', 'route' => 'gameset.course-series.index'],
         ['key' => 'jobs',    'icon' => '💼', 'label' => 'Jobs',    'route' => 'gameset.jobs.index'],
         ['key' => 'quests',  'icon' => '📜', 'label' => 'Quests',  'route' => 'gameset.quests.index'],
         ['key' => 'badges',  'icon' => '🏅', 'label' => 'Badges',  'route' => 'gameset.badges.index'],

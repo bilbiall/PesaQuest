@@ -134,7 +134,10 @@ class GamesetAssetController extends Controller
             'locked'                 => 'boolean',
             'early_exit_penalty_pct' => 'required|numeric|min:0|max:100',
             'maturity_bonus_pct'     => 'required|numeric|min:0|max:100',
+            'mmf_min_rate'           => 'nullable|numeric|min:0|max:100',
+            'mmf_max_rate'           => 'nullable|numeric|min:0|max:100',
         ]);
+
         $data['is_active'] = $request->boolean('is_active');
         $data['is_luxury'] = $request->boolean('is_luxury');
         $data['locked']    = $request->boolean('locked');
@@ -143,6 +146,15 @@ class GamesetAssetController extends Controller
         $data['featured_section'] = $request->input('featured_section') ?: null;
         $data['maturity_ticks']   = $request->input('maturity_ticks') ?: null;
         $data['product_type']     = $request->input('product_type') ?: null;
+        $data['mmf_min_rate']     = $request->input('mmf_min_rate') !== '' ? $request->input('mmf_min_rate') : null;
+        $data['mmf_max_rate']     = $request->input('mmf_max_rate') !== '' ? $request->input('mmf_max_rate') : null;
+
+        if ($data['mmf_min_rate'] !== null && $data['mmf_max_rate'] !== null && (float) $data['mmf_max_rate'] < (float) $data['mmf_min_rate']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'mmf_max_rate' => 'MMF max rate must be greater than or equal to the min rate.',
+            ]);
+        }
+
         return $data;
     }
 

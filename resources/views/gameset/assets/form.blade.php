@@ -256,6 +256,18 @@
                             @endif
                         </div>
                         <div>
+                            <label class="form-label">MMF Rate Band (% p.a.) <span class="text-gray-600 font-normal normal-case">— Money Market Fund only</span>
+                                <x-help-tip text="The annual rate this fund fluctuates within — a fresh rate is rolled every game day between these two numbers, so returns vary daily like a real MMF. Leave blank to fall back to the global default band set in Game Clock Speed." example="9.0 – 13.0" />
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" name="mmf_min_rate" class="form-input" step="0.1" min="0" max="100"
+                                       value="{{ old('mmf_min_rate', $asset?->mmf_min_rate ?? '') }}" placeholder="Min e.g. 9.0">
+                                <span class="text-gray-500">–</span>
+                                <input type="number" name="mmf_max_rate" class="form-input" step="0.1" min="0" max="100"
+                                       value="{{ old('mmf_max_rate', $asset?->mmf_max_rate ?? '') }}" placeholder="Max e.g. 13.0">
+                            </div>
+                        </div>
+                        <div>
                             <label class="form-label">Age Group *
                                 <x-help-tip text="Restricts which players can see and buy this asset in the marketplace. Choose 'All Ages' unless the item only makes sense for a specific age bracket." example="18-25" />
                             </label>

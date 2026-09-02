@@ -172,6 +172,15 @@
                         @if($course->is_free)
                         <span class="ml-2 text-[10px] font-black text-emerald-400">FREE</span>
                         @endif
+                        @if($course->topic_number)
+                        <span class="ml-2 badge" style="background:rgba(139,92,246,.12);color:#c4b5fd;">Topic #{{ $course->topic_number }}</span>
+                        @endif
+                        @if($course->series)
+                        <span class="ml-1 badge" style="background:rgba(99,102,241,.12);color:#a5b4fc;">{{ $course->series->icon ?? '🧭' }} {{ $course->series->title }}</span>
+                        @endif
+                        @if($course->age_group)
+                        <span class="ml-1 badge" style="background:rgba(245,158,11,.12);color:#fbbf24;">{{ $course->age_group }}</span>
+                        @endif
                     </td>
                     <td>
                         <span class="badge diff-{{ $course->difficulty ?? 'beginner' }}">{{ ucfirst($course->difficulty ?? 'beginner') }}</span>

@@ -225,6 +225,14 @@ class GamesetQuestController extends Controller
                 ->map(fn($c) => ['value' => $c->slug, 'label' => $c->title])
                 ->values(),
 
+            'complete_series' => DB::table('course_series')
+                ->where('is_active', true)
+                ->select('slug', 'title')
+                ->orderBy('title')
+                ->get()
+                ->map(fn($s) => ['value' => $s->slug, 'label' => $s->title])
+                ->values(),
+
             'get_job' => DB::table('city_jobs')
                 ->where('is_active', true)
                 ->select('id', 'title', 'employer_name')

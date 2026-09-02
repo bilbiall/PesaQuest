@@ -25,10 +25,16 @@ class OpportunityController extends Controller
     {
         $user = auth()->user();
         $recommendedTrack = $this->recommendedTrack($user);
+        $ageGroup = $user->age_group ?? '18-25';
 
-        $courses = CityCourse::active()->orderBy('career_track')->orderBy('title')->get();
+        $courses = CityCourse::active()->with('series')->orderBy('career_track')->orderBy('title')->get()
+            ->filter(fn (CityCourse $c) => $c->matchesAgeGroup($ageGroup))->values();
         $jobs    = CityJob::active()->orderBy('salary_kes_month')->get()
-            ->filter(fn ($j) => $j->matchesAgeGroup($user->age_group ?? '18-25'))->values();
+            ->filter(fn ($j) => $j->matchesAgeGroup($ageGroup))->values();
+
+        // Series progress chips ("2/4 complete") for every series with an active course
+        $seriesProgress = $courses->pluck('series')->filter()->unique('id')
+            ->mapWithKeys(fn ($s) => [$s->id => $s->progressFor($user)]);
 
         $completedIds = PlayerCityCourse::where('user_id', $user->id)->where('status', 'completed')->pluck('city_course_id');
         $enrolledIds  = PlayerCityCourse::where('user_id', $user->id)->where('status', 'enrolled')->pluck('city_course_id');
@@ -36,7 +42,24 @@ class OpportunityController extends Controller
 
         $tracks = \App\Services\CareerService::tracksByKey();
 
-        return view('opportunities.index', compact('user', 'courses', 'jobs', 'completedIds', 'enrolledIds', 'employedId', 'tracks', 'recommendedTrack'));
+        // Learning Path: series-linked topics only, in strict ladder order,
+        // annotated with lock state for this player specifically.
+        $learningPath = \App\Models\CourseSeries::active()->orderBy('sort_order')->get()
+            ->map(function ($series) use ($user, $completedIds, $ageGroup) {
+                $topics = $series->courses()->where('is_active', true)->get()
+                    ->filter(fn (CityCourse $c) => $c->matchesAgeGroup($ageGroup))
+                    ->values()
+                    ->map(fn (CityCourse $c) => [
+                        'course'    => $c,
+                        'completed' => $completedIds->contains($c->id),
+                        'locked'    => $c->isLockedFor($user),
+                    ]);
+                return ['series' => $series, 'progress' => $series->progressFor($user), 'topics' => $topics];
+            })
+            ->filter(fn ($group) => $group['topics']->isNotEmpty())
+            ->values();
+
+        return view('opportunities.index', compact('user', 'courses', 'jobs', 'completedIds', 'enrolledIds', 'employedId', 'tracks', 'recommendedTrack', 'seriesProgress', 'learningPath'));
     }
 
     public function courses(): JsonResponse
@@ -44,7 +67,8 @@ class OpportunityController extends Controller
         $user    = auth()->user();
         $recommendedTrack = $this->recommendedTrack($user);
 
-        $courses = CityCourse::active()->orderBy('career_track')->get()
+        $courses = CityCourse::active()->with('series')->orderBy('career_track')->get()
+            ->filter(fn (CityCourse $c) => $c->matchesAgeGroup($user->age_group ?? '18-25'))
             ->sortByDesc(fn ($c) => $c->career_track === $recommendedTrack)
             ->values();
 
@@ -72,6 +96,10 @@ class OpportunityController extends Controller
                 'is_free'        => $c->is_free,
                 'cost_kes'       => $c->cost_kes ?? 0,
                 'player_status'  => $playerMap->get($c->id)?->status ?? 'not_enrolled',
+                'series_title'   => $c->series?->title,
+                'series_icon'    => $c->series?->icon,
+                'topic_number'   => $c->topic_number,
+                'is_locked'      => $c->isLockedFor($user),
             ])
         );
     }
@@ -86,6 +114,14 @@ class OpportunityController extends Controller
             ->where('city_course_id', $id)->first();
         if ($existing?->status === 'completed') {
             return response()->json(['status' => 'completed', 'already' => true]);
+        }
+
+        // Ladder gate — topic-numbered courses must be taken in order
+        if ($course->isLockedFor($user)) {
+            $prev = $course->previousTopic($user->age_group ?? null);
+            return response()->json([
+                'error' => $prev ? "Complete \"{$prev->title}\" first." : 'This topic is locked until an earlier one is completed.',
+            ], 422);
         }
 
         // KES gate — deduct balance if paid course
@@ -159,6 +195,11 @@ class OpportunityController extends Controller
 
         // Quest auto-trigger: fire for this specific course slug
         app(QuestTriggerService::class)->fire($user, 'take_course', ['slug' => $course->slug ?? '']);
+
+        // If this completion finished the course's whole series, fire that too
+        if ($course->series_id && $course->series && $course->series->isCompletedBy($user)) {
+            app(QuestTriggerService::class)->fire($user, 'complete_series', ['series_slug' => $course->series->slug]);
+        }
 
         return response()->json([
             'status'         => 'completed',

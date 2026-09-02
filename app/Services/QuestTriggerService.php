@@ -404,6 +404,8 @@ class QuestTriggerService
 
             // Exact match or empty = any
             'take_course'       => isset($ctx['slug']) && strtolower($ctx['slug']) === strtolower($questValue),
+            // Fired once every active course in a series is completed — value is the series slug
+            'complete_series'   => isset($ctx['series_slug']) && strtolower($ctx['series_slug']) === strtolower($questValue),
             // get_job value is job ID (string)
             'get_job'           => (isset($ctx['id'])   && (string)$ctx['id']   === (string)$questValue)
                                 || (isset($ctx['slug']) && strtolower($ctx['slug']) === strtolower($questValue)),

@@ -198,6 +198,11 @@ class LifeSimulator
             // Pay bank interest into savings schemes (monthly, compounding)
             $this->settleSavingsInterest($user, $progress, $events);
 
+            // Compound daily MMF interest, then release any withdrawals whose
+            // 1-3 game-day delay has elapsed
+            $this->settleMmfInterest($user, $progress, $events);
+            $this->settleMmfWithdrawals($user, $progress, $events);
+
             // Pay Pesa City job salaries
             $this->settleJobSalaries($user, $progress, $ticks, $events);
 
@@ -600,6 +605,125 @@ class LifeSimulator
         }
     }
 
+    // ── MMF settlement ───────────────────────────────────────────────────────
+
+    /**
+     * Compound one MMF position's daily interest up to the current tick,
+     * merging any pending top-up whose cutoff-delayed start day has arrived.
+     * Public so MmfController can settle a position on-demand right before a
+     * top-up/withdraw, using the exact same math as the bulk per-login pass
+     * below — Daily Rate = Yearly Rate / 365, applied once per elapsed game
+     * day with a freshly-rolled rate each day (real MMF returns vary day to
+     * day; a fixed rate would just be another savings account).
+     */
+    public function settleMmfPosition(PlayerAsset $pa, UserProgress $progress, array &$events = []): void
+    {
+        $asset = $pa->asset;
+        if (!$asset || ($asset->product_type ?? null) !== 'money_market_fund') return;
+
+        $now = (int) ($progress->tick_count ?? 0);
+
+        if (($pa->mmf_pending_topup_amount ?? 0) > 0 && $pa->mmf_topup_ready_tick !== null && $now >= $pa->mmf_topup_ready_tick) {
+            $pa->mmf_principal            = ($pa->mmf_principal ?? 0) + $pa->mmf_pending_topup_amount;
+            $pa->current_value            = ($pa->current_value ?? 0) + $pa->mmf_pending_topup_amount;
+            $pa->mmf_pending_topup_amount = 0;
+            $pa->mmf_topup_ready_tick     = null;
+        }
+
+        $anchor = $pa->mmf_last_interest_tick ?? $now;
+        $days   = max(0, $now - $anchor);
+
+        if ($days > 0 && $pa->current_value > 0) {
+            [$minRate, $maxRate] = $asset->mmfRateBand();
+            $value         = (float) $pa->current_value;
+            $totalInterest = 0.0;
+
+            for ($d = 0; $d < $days; $d++) {
+                $annualRate   = $minRate + lcg_value() * max(0, $maxRate - $minRate);
+                $dayInterest  = $value * ($annualRate / 100 / self::TICKS_PER_YEAR);
+                $value        += $dayInterest;
+                $totalInterest += $dayInterest;
+            }
+
+            $totalInterest = (int) round($totalInterest);
+            if ($totalInterest > 0) {
+                $pa->current_value       = (int) round($value);
+                $pa->mmf_interest_earned = ($pa->mmf_interest_earned ?? 0) + $totalInterest;
+
+                $avgRate = round(($minRate + $maxRate) / 2, 1);
+                $events[] = [
+                    'icon'        => $asset->icon ?? '💰',
+                    'type'        => 'mmf_interest',
+                    'text'        => "{$asset->name}: daily interest",
+                    'sub'         => 'Ksh ' . number_format($totalInterest) . " over {$days} game day(s), ~{$avgRate}% p.a. average",
+                    'delta'       => 0, // stays inside the fund, not the wallet
+                    'is_positive' => true,
+                    'edu'         => 'MMFs compound daily — interest earns interest every single day, including weekends.',
+                ];
+            }
+        }
+
+        $pa->mmf_last_interest_tick = $now;
+        $pa->save();
+    }
+
+    private function settleMmfInterest(User $user, UserProgress $progress, array &$events): void
+    {
+        if (!Schema::hasColumn('player_assets', 'mmf_last_interest_tick')) return;
+
+        PlayerAsset::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with('asset')
+            ->get()
+            ->filter(fn ($pa) => $pa->isMmf())
+            ->each(fn ($pa) => $this->settleMmfPosition($pa, $progress, $events));
+    }
+
+    /** Credits any MMF withdrawal whose 1-3 game-day delay has elapsed. */
+    private function settleMmfWithdrawals(User $user, UserProgress $progress, array &$events): void
+    {
+        if (!Schema::hasColumn('player_assets', 'mmf_pending_withdrawal_amount')) return;
+
+        $now = (int) ($progress->tick_count ?? 0);
+
+        $due = PlayerAsset::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('mmf_pending_withdrawal_amount', '>', 0)
+            ->where('mmf_withdrawal_ready_tick', '<=', $now)
+            ->with('asset')
+            ->get();
+
+        foreach ($due as $pa) {
+            $payout = (int) $pa->mmf_pending_withdrawal_amount;
+            $progress->balance += $payout;
+
+            $pa->mmf_pending_withdrawal_amount = 0;
+            $pa->mmf_withdrawal_ready_tick     = null;
+            if ((int) $pa->current_value <= 0) {
+                $pa->status       = 'sold';
+                $pa->sold_price   = 0;
+                $pa->sold_at_tick = $now;
+            }
+            $pa->save();
+
+            GameNotification::create([
+                'user_id' => $user->id,
+                'type'    => 'mmf_withdrawal_settled',
+                'title'   => "✅ MMF withdrawal landed",
+                'body'    => "Ksh " . number_format($payout) . " from {$pa->asset->name} is now in your wallet.",
+                'icon'    => '✅',
+                'data'    => ['asset_id' => $pa->asset_id, 'amount' => $payout],
+            ]);
+
+            $events[] = [
+                'icon'  => '✅', 'type' => 'mmf_withdrawal_settled',
+                'text'  => "{$pa->asset->name}: withdrawal landed",
+                'sub'   => 'Ksh ' . number_format($payout),
+                'delta' => $payout,
+            ];
+        }
+    }
+
     private function checkCreditSignals(User $user, UserProgress $progress, array &$events): void
     {
         $tick = $progress->tick_count ?? 0;
@@ -718,6 +842,10 @@ class LifeSimulator
         foreach ($playerAssets as $pa) {
             $asset = $pa->asset;
             if (!$asset) continue;
+
+            // MMF positions compound daily via settleMmfInterest() instead of
+            // the flat monthly_income path below — skip to avoid double-paying.
+            if (($asset->product_type ?? null) === 'money_market_fund') continue;
 
             // Persistent accrual anchors (same pattern as job unpaid_ticks).
             // The old floor(window / period) discarded the remainder on every

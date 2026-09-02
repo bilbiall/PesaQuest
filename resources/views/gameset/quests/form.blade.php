@@ -304,6 +304,7 @@
                                     ['play_scenario / scenario_completed', 'scenario id', '1'],
                                     ['reach_level / level_reached', 'level number', '5'],
                                     ['take_course', 'course slug', 'personal-finance-101'],
+                                    ['complete_series', 'course series slug — fires once every active course in the series is completed', 'money-basics'],
                                     ['get_job', 'job id or slug', '1'],
                                     ['join_chama', '(none)', '—'],
                                 ] as [$type, $value, $example])
@@ -380,6 +381,7 @@
                                 </optgroup>
                                 <optgroup label="Career & Skills">
                                     <option value="take_course">Complete a course</option>
+                                    <option value="complete_series">Complete an entire course series</option>
                                     <option value="get_job">Get a job</option>
                                 </optgroup>
                                 <optgroup label="Community">

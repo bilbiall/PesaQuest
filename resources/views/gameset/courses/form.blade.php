@@ -156,9 +156,37 @@
                 </div>
                 <div>
                     <label class="form-label">Age Group
-                        <x-help-tip text="Restricts which player age band sees this course. Leave blank or use 'all' so every player can enroll." example="18+" />
+                        <x-help-tip text="Restricts which player age band sees this course — an exact match, so use this to author a separate version of the same topic per age group. Choose 'All Ages' so every player can enroll." example="13-17" />
                     </label>
-                    <input type="text" name="age_group" value="{{ old('age_group', $course?->age_group) }}" class="form-input" placeholder="all / 13-17 / 18+">
+                    <select name="age_group" class="form-input">
+                        <option value="" {{ !old('age_group', $course?->age_group) ? 'selected' : '' }}>All Ages</option>
+                        @foreach(\App\Models\CityJob::AGE_GROUPS as $key => $ag)
+                        <option value="{{ $key }}" {{ old('age_group', $course?->age_group) === $key ? 'selected' : '' }}>{{ $ag['icon'] }} {{ $ag['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Series <span class="font-normal normal-case text-white/30">(optional)</span>
+                        <x-help-tip text="Groups this course into a learning path shown together in the Opportunity Hub. Series are managed in GameSet Hub → Course Series, and a whole series can be targeted as a quest's completion condition." example="Money Basics" />
+                    </label>
+                    <select name="series_id" class="form-input">
+                        <option value="">— None —</option>
+                        @foreach(\App\Models\CourseSeries::active()->orderBy('sort_order')->orderBy('title')->get() as $s)
+                        <option value="{{ $s->id }}" {{ (string) old('series_id', $course?->series_id) === (string) $s->id ? 'selected' : '' }}>{{ $s->icon ?? '🧭' }} {{ $s->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Topic Number <span class="font-normal normal-case text-white/30">(optional — powers the learning ladder)</span>
+                        <x-help-tip text="The topic's position in the whole program (1, 2, 3...), shared by every age-group version of the same topic. Players can't open topic N until topic N-1 (their own age's version) is completed — leave blank for a course that isn't part of a strict ladder." example="5" />
+                    </label>
+                    <input type="number" name="topic_number" value="{{ old('topic_number', $course?->topic_number) }}" class="form-input" min="1" placeholder="e.g. 5">
+                </div>
+                <div>
+                    <label class="form-label">Order within Series
+                        <x-help-tip text="Where this course sits within its series, lowest first. Ignored when Topic Number is set (topic number becomes the order)." example="1" />
+                    </label>
+                    <input type="number" name="sort_order" value="{{ old('sort_order', $course?->sort_order ?? 0) }}" class="form-input" min="0">
                 </div>
             </div>
             <div class="flex items-center gap-6 mt-4">

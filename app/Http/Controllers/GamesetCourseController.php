@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CityCourse;
+use App\Models\CityJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -10,7 +11,7 @@ class GamesetCourseController extends Controller
 {
     public function index()
     {
-        $courses = CityCourse::orderBy('career_track')->orderBy('title')->get();
+        $courses = CityCourse::with('series')->orderBy('career_track')->orderBy('title')->get();
         return view('gameset.courses.index', compact('courses'));
     }
 
@@ -64,7 +65,7 @@ class GamesetCourseController extends Controller
 
     private function validated(Request $request, ?CityCourse $course = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'title'          => 'required|string|max:120',
             'description'    => 'required|string|max:500',
             'content'        => 'nullable|string|max:8000',
@@ -79,8 +80,14 @@ class GamesetCourseController extends Controller
             'outcome'        => 'required|string|max:200',
             'financial_tip'  => 'nullable|string|max:2000',
             'jobs_intro'     => 'nullable|string|max:300',
-            'age_group'      => 'nullable|string|max:30',
+            'age_group'      => 'nullable|in:' . implode(',', array_keys(CityJob::AGE_GROUPS)),
             'is_active'      => 'sometimes|boolean',
+            'series_id'      => 'nullable|exists:course_series,id',
+            'sort_order'     => 'nullable|integer|min:0',
+            'topic_number'   => 'nullable|integer|min:1',
         ]);
+        $data['series_id']    = $request->input('series_id') !== '' ? $request->input('series_id') : null;
+        $data['topic_number'] = $request->input('topic_number') !== '' ? $request->input('topic_number') : null;
+        return $data;
     }
 }

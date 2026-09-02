@@ -620,6 +620,9 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                      'afford_color' => $affordColor, 'afford_bar' => $affordBar,
                      'financing' => ($finQuote = app(\App\Services\AssetFinancingService::class)->quote($asset)),
                      'canFinanceDeposit' => $finQuote ? ($progress->balance ?? 0) >= $finQuote['deposit'] : false,
+                     'is_mmf' => $asset->product_type === 'money_market_fund',
+                     'mmf_rate' => $asset->mmfRateBand(),
+                     'mmf_min_deposit' => (int) \App\Models\Setting::get('mmf_min_deposit', 1000),
                  ]) }})">
 
                 {{-- Image --}}
@@ -663,6 +666,19 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                         <div class="card-desc">{{ $asset->description }}</div>
                     </div>
                     <div class="card-bottom">
+                        @if($asset->product_type === 'money_market_fund')
+                        @php [$mmfMin, $mmfMax] = $asset->mmfRateBand(); @endphp
+                        <div class="card-stats">
+                            <div>
+                                <div class="card-stat-lbl">Rate (p.a.)</div>
+                                <div class="card-stat-val pos">{{ rtrim(rtrim(number_format($mmfMin, 1), '0'), '.') }}%–{{ rtrim(rtrim(number_format($mmfMax, 1), '0'), '.') }}%</div>
+                            </div>
+                            <div>
+                                <div class="card-stat-lbl">Min Deposit</div>
+                                <div class="card-stat-val neutral">Ksh {{ number_format($asset->base_price) }}</div>
+                            </div>
+                        </div>
+                        @else
                         <div class="card-stats">
                             <div>
                                 <div class="card-stat-lbl">Net/Mo</div>
@@ -675,6 +691,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                                 <div class="card-stat-val neutral">Ksh {{ number_format($asset->base_price) }}</div>
                             </div>
                         </div>
+                        @endif
                         <div class="card-view-btn">View Details →</div>
                     </div>
                 </div>
@@ -766,6 +783,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                         <p class="text-xs sm:text-sm text-indigo-300/80 italic mt-2" x-text="'&quot;' + inspecting.flavor + '&quot;'"></p>
                     </div>
 
+                    <template x-if="!inspecting.is_mmf">
                     <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-5">
                         <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
                             <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Buy Price</p>
@@ -784,7 +802,43 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                                x-text="inspecting.rate > 0 ? '📈 Growth' : (inspecting.rate < 0 ? '📉 Depreciating' : '➡️ Stable')"></p>
                         </div>
                     </div>
+                    </template>
 
+                    {{-- ═══ MMF: explainer + amount-based invest (replaces fixed-price buy) ═══ --}}
+                    <template x-if="inspecting.is_mmf">
+                        <div>
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-5">
+                                <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);">
+                                    <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Rate (p.a., varies daily)</p>
+                                    <p class="text-xs sm:text-sm font-black text-emerald-400 mt-1" x-text="inspecting.mmf_rate[0] + '%–' + inspecting.mmf_rate[1] + '%'"></p>
+                                </div>
+                                <div class="rounded-2xl p-2 sm:p-3 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+                                    <p class="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Minimum First Deposit</p>
+                                    <p class="text-xs sm:text-sm font-black text-white mt-1" x-text="'Ksh ' + inspecting.mmf_min_deposit.toLocaleString()"></p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 sm:mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(99,102,241,.25);">
+                                <div class="px-3 py-1.5 sm:px-4 sm:py-2" style="background:rgba(99,102,241,.08);border-bottom:1px solid rgba(99,102,241,.15);">
+                                    <p class="text-[11px] sm:text-xs font-black text-indigo-300 inline-flex items-center gap-1">💡 How a Money Market Fund works</p>
+                                </div>
+                                <div class="p-3 sm:p-4 space-y-1.5 text-[11px] sm:text-xs text-gray-300 leading-relaxed">
+                                    <p>Your money is pooled with everyone else's and invested in safe, short-term places (T-Bills, bank fixed deposits). It earns interest <strong class="text-white">every single day, including weekends</strong> — that's daily compounding.</p>
+                                    <p>Deposit before 11am and it starts earning the next game day; after 11am, it starts the day after. Withdrawals take 1–3 game days to land, and Kenya's government charges 15% withholding tax — only on the interest you earned, never on your capital.</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 sm:mb-5">
+                                <label class="block text-[11px] sm:text-xs font-bold text-gray-400 mb-1.5">Amount to invest (Ksh)</label>
+                                <input type="number" x-model.number="mmfAmount" :min="inspecting.mmf_min_deposit" step="100"
+                                       class="w-full rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-white"
+                                       style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);"
+                                       :placeholder="'Min Ksh ' + inspecting.mmf_min_deposit.toLocaleString()">
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="!inspecting.is_mmf">
                     <div class="mb-4 sm:mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
                         <div class="px-3 py-1.5 sm:px-4 sm:py-2" style="background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);">
                             <p class="text-[11px] sm:text-xs font-black text-white inline-flex items-center gap-1"><x-icon name="coin" class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> How this works financially</p>
@@ -836,6 +890,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                             </template>
                         </div>
                     </div>
+                    </template>
 
                     <template x-if="inspecting.afford_pct > 0">
                         <div class="mb-4 sm:mb-5 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,.08);">
@@ -893,7 +948,18 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                      style="border-top:1px solid rgba(255,255,255,.08);">
                     <button @click="inspecting=null;buyMsg='';" class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition-colors"
                             style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);min-width:90px;">Cancel</button>
-                    <template x-if="inspecting && !inspecting.maxed && inspecting.canAfford">
+                    <template x-if="inspecting && inspecting.is_mmf && !inspecting.maxed">
+                        <button @click="confirmMmfInvest()" :disabled="buying || !mmfAmount || mmfAmount < inspecting.mmf_min_deposit"
+                                class="flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
+                                style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 4px 20px rgba(16,185,129,.4);min-width:140px;">
+                            <span x-show="!buying">💰 Invest</span>
+                            <span x-show="buying" class="flex items-center justify-center gap-2">
+                                <svg class="animate-spin w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-linecap="round"/></svg>
+                                Investing…
+                            </span>
+                        </button>
+                    </template>
+                    <template x-if="inspecting && !inspecting.is_mmf && !inspecting.maxed && inspecting.canAfford">
                         <button @click="confirmBuy(false)" :disabled="buying"
                                 class="flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
                                 style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.45);min-width:140px;">
@@ -904,7 +970,7 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                             </span>
                         </button>
                     </template>
-                    <template x-if="inspecting && !inspecting.maxed && inspecting.financing && inspecting.canFinanceDeposit">
+                    <template x-if="inspecting && !inspecting.is_mmf && !inspecting.maxed && inspecting.financing && inspecting.canFinanceDeposit">
                         <button @click="confirmBuy(true)" :disabled="buying"
                                 class="flex-1 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-black transition-all hover:scale-[1.02] disabled:opacity-50"
                                 style="background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;box-shadow:0 4px 20px rgba(245,158,11,.4);min-width:140px;">
@@ -914,9 +980,9 @@ body{background:#080712;font-family:'Figtree',sans-serif;color:#fff;min-height:1
                     </template>
                     <template x-if="inspecting && inspecting.maxed">
                         <div class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black text-center"
-                             style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#c4b5fd;">✓ Already owned</div>
+                             style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#c4b5fd;" x-text="inspecting.is_mmf ? '✓ Already invested — top up from Portfolio' : '✓ Already owned'"></div>
                     </template>
-                    <template x-if="inspecting && !inspecting.maxed && !inspecting.canAfford && !(inspecting.financing && inspecting.canFinanceDeposit)">
+                    <template x-if="inspecting && !inspecting.is_mmf && !inspecting.maxed && !inspecting.canAfford && !(inspecting.financing && inspecting.canFinanceDeposit)">
                         <div class="flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-center text-gray-500"
                              style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">Insufficient balance</div>
                     </template>
@@ -943,6 +1009,7 @@ function allMarketplace() {
         buying: false,
         buyMsg: '',
         buyOk: true,
+        mmfAmount: null,
         sort: '{{ request('sort','featured') }}',
         viewMode: 'grid',
 
@@ -956,6 +1023,7 @@ function allMarketplace() {
             this.inspecting = asset;
             this.buyMsg = '';
             this.buying = false;
+            this.mmfAmount = asset.is_mmf ? asset.mmf_min_deposit : null;
         },
 
         badgeColor(badge) {
@@ -993,6 +1061,38 @@ function allMarketplace() {
                 } else {
                     this.buyOk  = false;
                     this.buyMsg = data.error || 'Purchase failed.';
+                    this.buying = false;
+                }
+            } catch {
+                this.buyOk  = false;
+                this.buyMsg = 'Network error. Try again.';
+                this.buying = false;
+            }
+        },
+
+        async confirmMmfInvest() {
+            if (!this.inspecting || this.buying || !this.mmfAmount) return;
+            this.buying = true;
+            this.buyMsg = '';
+            try {
+                const res = await fetch(`/mmf/${this.inspecting.id}/invest`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ amount: this.mmfAmount }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    this.buyOk  = true;
+                    this.buyMsg = '🎉 Ksh ' + Number(this.mmfAmount).toLocaleString() + ' invested!';
+                    pesaMarketSound('purchase');
+                    setTimeout(() => window.location.reload(), 1800);
+                } else {
+                    this.buyOk  = false;
+                    this.buyMsg = data.error || 'Investment failed.';
                     this.buying = false;
                 }
             } catch {
