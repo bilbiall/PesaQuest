@@ -105,6 +105,14 @@
     <link rel="icon" href="{{ asset('moski-logo.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('moski-logo.png') }}">
 
+    {{-- PWA --}}
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PesaQuest">
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
@@ -1023,6 +1031,12 @@
                     });
                 }
             }
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function(){
+                navigator.serviceWorker.register('/sw.js', {scope:'/'}).catch(function(){});
+            });
         }
     </script>
 </body>
