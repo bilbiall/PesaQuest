@@ -39,11 +39,39 @@
   ],
   "screenshots": [
     {
-      "src": "/img/game/pwa-og.jpg",
-      "sizes": "1200x1200",
+      "src": "/img/game/pwa-screenshot-dashboard.png",
+      "sizes": "720x1600",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Your dashboard — track chapter progress, weekly cash flow, and city contracts"
+    },
+    {
+      "src": "/img/game/pwa-screenshot-city.jpg",
+      "sizes": "490x1090",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Pesa City — your virtual financial world"
+    },
+    {
+      "src": "/img/game/pwa-screenshot-report-card.png",
+      "sizes": "720x1600",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Monthly Report Card — see your savings rate and net income"
+    },
+    {
+      "src": "/img/game/pwa-screenshot-wywa.png",
+      "sizes": "720x1600",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "While You Were Away — your virtual life keeps moving"
+    },
+    {
+      "src": "/img/game/pwa-screenshot-pesatrail.jpg",
+      "sizes": "618x1372",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Pesa Trail — a snakes-and-ladders money adventure"
     }
   ],
   "shortcuts": [
