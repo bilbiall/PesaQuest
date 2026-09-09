@@ -1,10 +1,12 @@
-const CACHE_NAME = 'pesaquest-v4';
+const CACHE_NAME = 'pesaquest-v5';
 const OFFLINE_URL = '/offline';
 
 const PRECACHE = [
     '/manifest.json',
     '/img/game/pwa-192.png',
+    '/img/game/pwa-192-maskable.png',
     '/img/game/pwa-512.png',
+    '/img/game/pwa-512-maskable.png',
     '/img/game/screenloader.png',
 ];
 
