@@ -544,7 +544,7 @@ class ArcadeSnakesService
             throw new \RuntimeException('Resolve your pending strategy decision first.');
         }
         if (!$this->powersEligible($session)) {
-            throw new \RuntimeException('Strategy powers are only available in 1v1 rounds.');
+            throw new \RuntimeException('Strategy powers are only available in matches with an opponent.');
         }
 
         $match = $session->arcade_match_id ? ArcadeMatch::find($session->arcade_match_id) : null;
@@ -568,16 +568,20 @@ class ArcadeSnakesService
         return $this->powersPayload($session);
     }
 
-    /** Are strategy powers offered at all for this session? Gated to matches with
-     *  exactly 2 sessions — covers solo-vs-bot AND 1v1 Rivals Trail, excludes
-     *  N-player lobbies and (rare, currently-unrouted) match-less solo sessions.
-     *  See docs/PESA-TRAIL-POWERS.md §2/§8 — this is the single choke point for
-     *  that scope decision, nothing else should re-implement this check. */
+    /** Are strategy powers offered at all for this session? Gated to any real
+     *  match (solo-vs-bot, 1v1, or 2-8 player standard/wager lobbies) — excludes
+     *  only the rare, currently-unrouted match-less solo session, which has no
+     *  opponent for Protect/Boost/Reroll/Bank's dynamics to mean anything
+     *  against. Originally scoped to 1v1-only for the first playtest (see
+     *  docs/PESA-TRAIL-POWERS.md §2), relaxed to any size once the settlement/
+     *  turn-advance code was confirmed to already handle N players uniformly —
+     *  this is the single choke point for that gate, nothing else should
+     *  re-implement this check. */
     public function powersEligible(ArcadeSession $session, ?ArcadeMatch $match = null): bool
     {
         if (!$session->arcade_match_id) return false;
         $match ??= ArcadeMatch::find($session->arcade_match_id);
-        return (bool) $match && (int) $match->max_players === 2;
+        return (bool) $match;
     }
 
     /** Remaining-use counters + banked balance, for both the play view's power

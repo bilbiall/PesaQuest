@@ -730,10 +730,10 @@
                      instead of as a permanent line of text crowding the die controls. --}}
             </div>
 
-            {{-- Strategy powers — only ever offered in a 1v1 (see ArcadeSnakesService::
-                 powersEligible()). Boost is the only one manually triggered here; Reroll/
-                 Protect/Bank are offered automatically as a decision pause mid-roll — see
-                 docs/PESA-TRAIL-POWERS.md. --}}
+            {{-- Strategy powers — offered in any real match, any size (see
+                 ArcadeSnakesService::powersEligible()). Boost is the only one manually
+                 triggered here; Reroll/Protect/Bank are offered automatically as a
+                 decision pause mid-roll — see docs/PESA-TRAIL-POWERS.md. --}}
             @if($powers['eligible'])
             <div class="power-tray" id="powerTray">
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Strategy Powers</p>
@@ -830,7 +830,7 @@
                 <div class="htp-row"><span class="htp-icon">🚀</span> Boost before rolling — your next gain lands 50% bigger</div>
                 <div class="htp-row"><span class="htp-icon">🎲</span> Reroll after seeing your number, before you move</div>
                 <div class="htp-row"><span class="htp-icon">🛡️</span> Protect after landing on a loss, before it's taken</div>
-                <div class="htp-row"><span class="htp-icon">🏦</span> Bank after a gain — up to 20% moves to a balance nothing can touch, not even your opponent's claim</div>
+                <div class="htp-row"><span class="htp-icon">🏦</span> Bank after a gain — up to 20% moves to a balance nothing can touch, not even the winner's claim</div>
                 <div class="htp-row" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);">
                     <span class="htp-icon">🧠</span>
                     <span>Luck decides what happens to you. These decide how well you handle it — use them wisely, each one is limited.</span>
@@ -1946,7 +1946,7 @@
                 return `
                     <p class="text-3xl mb-2">🏦</p>
                     <p class="text-xl font-black text-emerald-300 mb-1">Bank some savings?</p>
-                    <p class="text-sm text-gray-300 mb-4">Secure up to <b>KES ${Number(cap).toLocaleString()}</b> — safe from tiles and your opponent's claim.</p>
+                    <p class="text-sm text-gray-300 mb-4">Secure up to <b>KES ${Number(cap).toLocaleString()}</b> — safe from tiles and the winner's claim.</p>
                     <div class="bank-presets">${presets}</div>
                     <button type="button" class="roll-btn decision-skip" style="margin-top:.6rem;" onclick="submitDecision('skip')">Skip</button>`;
             }

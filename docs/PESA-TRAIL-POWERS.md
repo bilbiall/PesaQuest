@@ -38,9 +38,12 @@ player reacts to a result that already happened (or is about to be rolled, for B
 
 1. **Full pause-and-resume turn flow** — not a simplified pre-declare version. A roll can
    pause mid-resolution waiting for a human decision.
-2. **1v1 only** — powers are gated to matches with exactly 2 sessions. This covers both
-   solo-vs-bot (`startSoloWithBot()`) and 1v1 Rivals Trail wager rounds. N-player (3-8) wager
-   lobbies are untouched and keep today's no-powers behavior.
+2. **1v1 only for the first playtest build (Sept 22), relaxed to any match size same day.**
+   Powers were initially gated to matches with exactly 2 sessions to keep the first build's
+   surface area small. Once N-player settlement/turn-advance code was confirmed to already
+   handle more than 2 sessions uniformly (the wager cut loop iterates "every other active
+   session," not "the one opponent" — see §8), the gate was relaxed. Powers now apply to
+   solo-vs-bot, 1v1, and 2-8 player standard/wager lobbies alike.
 3. **Decision timeouts always default to "skip", never "use".** A stuck/expired decision
    must never auto-consume a power or auto-apply an effect the player didn't confirm. This is
    the single most important fairness rule in the whole feature — if you're debugging a bug
@@ -174,16 +177,35 @@ Deliberately *not* raw wallet balance — that would mix in non-arcade income an
 point of a Pesa-Trail-specific leaderboard. Wins / games played / win rate are already
 derivable from `arcade_sessions.status` per user, no new tracking needed for those.
 
-## 8. Gating powers to 1v1 only
+## 8. Gating powers (1v1-only → any match size, both Sept 22)
 
-Simplest implementation: a session-count check (`ArcadeMatch::sessions()->count() === 2`) at
-the point powers are offered/checked, not a change to lobby creation. This means:
+**First build**: a session-count check (`ArcadeMatch::sessions()->count() === 2`) at the
+point powers are offered/checked, not a change to lobby creation.
 
-- Solo-vs-bot matches (`startSoloWithBot()`) always qualify — good low-risk testbed.
-- 1v1 Rivals Trail wager rounds qualify once both seats are filled.
-- 3-8 player wager lobbies never see `pending_decision`, never get power counters seeded (or
-  get them seeded but inert — cheaper to just seed them everywhere and gate on the count check
-  at the point of *use*, since an unused counter is harmless).
+**Same-day extension to N-player**: `powersEligible()` was relaxed from
+`(int) $match->max_players === 2` to just `(bool) $match` — any real match qualifies,
+regardless of size. This was safe to do without touching anything else because:
+
+- `settleMatchIfDecided()`'s wager cut loop already iterated "every other active session,"
+  not "the one opponent" — it predates the powers work and was never 2-player-specific.
+- The pause/resume pipeline (`pauseDecision`/`resumeFromDecision`/`expireDecisionIfNeeded`)
+  only ever touches the CURRENT turn holder's own session — it has no N-player-specific
+  logic to add or remove.
+- `autoPlayBotTurn()`'s bot heuristics only ever run for `is_bot` sessions, which only ever
+  exist in solo-vs-bot matches (always exactly 2 seats) — N-player lobbies never seat a bot,
+  so nothing there needed to change either.
+- Power counters were already seeded on every session regardless of match size (see below),
+  so no seeding change was needed.
+
+Verified via a 4-player wager simulation (see §12) — 45 rolls, all four sessions eligible,
+8 reroll/8 protect/9 bank uses across the table, settled as 1 winner + 3 losers with each
+loser's banked amount intact.
+
+- Solo-vs-bot matches (`startSoloWithBot()`) qualify — good low-risk testbed, and still the
+  easiest way to test alone.
+- Any 1v1 or N-player (2-8) standard/wager lobby qualifies once populated.
+- Power counters are seeded on every session unconditionally (cheap, harmless if unused) —
+  `powersEligible()` at the point of *use* was always the real gate, not the seeding.
 
 ## 9. Build phases
 
@@ -249,8 +271,8 @@ power tray UI, and running the migration on the live cPanel server (see
 - Leaderboard period scope (global/weekly/monthly/all-time) defaults to whatever periods the
   existing leaderboard already supports — no new decision needed unless that turns out to be
   wrong in practice.
-- Extending powers to N-player free-for-all Rivals Trail rounds was explicitly deferred, not
-  ruled out — see decision #2 above if that's revisited later.
+- ~~Extending powers to N-player free-for-all Rivals Trail rounds was explicitly deferred~~
+  — done same day, see decision #2 and §8. No longer open.
 - A session created **before** this migration/deploy has no power counters in its
   `session_assets` — `usesLeft()`'s `?? 0` fallback means it silently offers zero uses of
   everything rather than erroring, so an in-progress game survives the deploy without a
@@ -280,6 +302,11 @@ hunting later.
   (both components) to the wallet.
 - **Money Mined query**: the live aggregate query runs against real data without SQL
   errors and returns sensible rows.
+- **N-player extension**: a 4-player wager match (4 real, non-bot users) showed
+  `powersEligible() === true` for all four sessions; a 45-roll simulation exercised 8
+  Rerolls, 8 Protects, and 9 Banks across the table and settled as 1 winner + 3 losers,
+  each loser's `banked_amount` intact and excluded from the winner's cut, matching the
+  1v1 settlement math exactly, just applied per-opponent in a loop.
 - **Compile/lint**: `ArcadeSnakesService.php` and `ArcadeSnakesController.php` pass
   `php -l`; both edited Blade views pass a full `artisan view:cache` compile; the rendered
   `play.blade.php` inline `<script>` block (with real server-side values substituted,

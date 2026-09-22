@@ -32,8 +32,9 @@ The number under each icon is how many uses you have **left this game**. They do
 mid-game and don't carry over to your next game — every fresh round starts you back at the
 full amounts above.
 
-Powers only appear in **1v1 games**. Standard multiplayer matches with 3 or more players
-don't get them (yet) — the dice-only economy stays exactly as it's always been there.
+Powers show up in **every real match** — whether that's you against Robo, a 1v1 head-to-head,
+or a bigger table with up to 8 players. Each player at the table gets their own full set of
+uses, completely independent of everyone else's.
 
 ## 3. The four powers, one at a time
 
@@ -80,8 +81,8 @@ don't get them (yet) — the dice-only economy stays exactly as it's always been
 - Banked money moves to a separate **Banked Balance** (shown as its own 🏦 chip at the top
   of the screen). From that moment on, it:
   - can never be reduced by a future tile — good or bad tiles alike leave it untouched;
-  - is **completely protected from your opponent's claim** if they win the race (see
-    below) — this is the entire point of banking;
+  - is **completely protected from the winner's claim** if someone else wins the race
+    (see below) — this is the entire point of banking;
   - is yours for good once the game ends, added straight on top of whatever's left in your
     Active Balance.
 - The trade-off: money you bank stops being exposed to *future* gains too. It's safety,
@@ -103,14 +104,15 @@ accidentally burn one of your limited uses or apply an effect you never agreed t
 When someone reaches the finish tile, the race ends immediately (the dice still decide
 *when* that happens — powers never change that). Then:
 
-- The winner keeps their **entire Active Balance**, plus **60% of the loser's Active
-  Balance**.
-- The loser keeps the other 40% of their Active Balance.
-- **Everyone's Banked Balance is untouched by any of this** — winner or loser, whatever
-  you banked during the game is yours, in full, on top of the above.
+- The winner keeps their **entire Active Balance**, plus **60% of the Active Balance of
+  every other player still in the game** (in a bigger table, that's 60% from each one of
+  them, not just one opponent).
+- Everyone else keeps the other 40% of their own Active Balance.
+- **Everyone's Banked Balance is untouched by any of this** — winner or not, whatever you
+  banked during the game is yours, in full, on top of the above.
 
 So banking isn't just "safer growth" — in a real wager round, it's the one part of your
-balance your opponent's win can never touch.
+balance the eventual winner can never touch, no matter how many people are at the table.
 
 ## 6. A quick strategy cheat sheet
 
