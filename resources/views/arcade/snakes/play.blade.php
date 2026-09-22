@@ -467,6 +467,53 @@
         .overlay-card { background:#14121f; border:1px solid rgba(255,255,255,.15); border-radius:1.5rem; padding:2rem; text-align:center; max-width:320px; }
         .confetti-piece { position:fixed; top:-10px; width:8px; height:14px; z-index:9999; pointer-events:none; }
 
+        /* Strategy powers — the persistent tray and the mid-turn decision modal.
+           See docs/PESA-TRAIL-POWERS.md for the design these visualize. */
+        .power-tray { margin-top:.7rem; margin-bottom:.5rem; }
+        .power-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; }
+        .power-badge {
+            display:flex; flex-direction:column; align-items:center; gap:.15rem;
+            padding:.5rem .3rem; border-radius:.8rem; background:rgba(255,255,255,.05);
+            border:1px solid rgba(255,255,255,.12); font-family:inherit; cursor:default;
+            transition:transform .15s, box-shadow .2s; position:relative;
+        }
+        .power-badge .power-icon { font-size:1.15rem; }
+        .power-badge .power-name { font-size:.58rem; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:#d1d5db; }
+        .power-badge .power-count { font-size:.85rem; font-weight:900; color:#fff; }
+        .power-badge.power-empty { opacity:.35; }
+        button.power-badge { cursor:pointer; }
+        button.power-badge:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.35); }
+        button.power-badge:disabled { cursor:not-allowed; }
+        .power-badge.power-armed {
+            background:rgba(245,158,11,.18); border-color:rgba(245,158,11,.5);
+            box-shadow:0 0 14px rgba(245,158,11,.4); animation:powerArmedPulse 1.1s infinite;
+        }
+        @keyframes powerArmedPulse { 0%,100% { box-shadow:0 0 10px rgba(245,158,11,.35); } 50% { box-shadow:0 0 20px rgba(245,158,11,.65); } }
+
+        #hudBankedChip.banked-pulse { animation:bankedPulse .7s ease; }
+        @keyframes bankedPulse { 0% { transform:scale(1); } 35% { transform:scale(1.18); background:rgba(16,185,129,.32); } 100% { transform:scale(1); } }
+
+        .token.shield-flash { filter:drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 18px #38bdf8); }
+
+        .decision-card { max-width:360px; }
+        .decision-actions { display:flex; gap:.5rem; }
+        .decision-actions .roll-btn { flex:1; }
+        .decision-skip { background:rgba(255,255,255,.06)!important; border:1px solid rgba(255,255,255,.15)!important; color:#d1d5db!important; }
+        .decision-countdown { margin-top:1rem; font-size:.7rem; font-weight:700; color:#6b7280; }
+        .bank-presets { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; margin-bottom:.4rem; }
+        .bank-preset-btn {
+            display:flex; flex-direction:column; align-items:center; gap:.1rem; padding:.55rem .2rem;
+            border-radius:.7rem; background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.35);
+            color:#6ee7b7; font-family:inherit; cursor:pointer; transition:transform .12s;
+        }
+        .bank-preset-btn:hover { transform:translateY(-2px); background:rgba(16,185,129,.24); }
+        .bank-preset-btn:active { transform:scale(.95); }
+        .bank-preset-btn b { font-size:.85rem; }
+        .bank-preset-btn span { font-size:.62rem; opacity:.85; }
+        @media (max-width:400px) {
+            .bank-presets { grid-template-columns:repeat(2,1fr); }
+        }
+
         .sparkle { position:fixed; font-size:1rem; z-index:9990; pointer-events:none; animation: sparkleUp 1.1s ease-out forwards; }
         @keyframes sparkleUp { 0% { transform:translate(0,0) scale(.4) rotate(0deg); opacity:1; } 100% { transform:translate(var(--sx,0),-46px) scale(1.1) rotate(90deg); opacity:0; } }
 
@@ -560,6 +607,9 @@
         <img src="{{ asset('moski-logo.png') }}" class="w-7 h-7 rounded-lg">
         <span class="font-black text-sm title-text">🐍 Pesa Trail</span>
         <div class="chip">💰 KES <span id="hudPot">{{ number_format($session->pot_amount) }}</span></div>
+        @if($powers['eligible'])
+        <div class="chip" id="hudBankedChip" style="background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.35);color:#6ee7b7;">🏦 KES <span id="hudBanked">{{ number_format($session->banked_amount) }}</span></div>
+        @endif
         <div class="chip">⭐ Lv {{ $progress->level }}</div>
         @if($session->match && $session->match->join_code)
         <button type="button" class="chip invite-chip" style="cursor:pointer;background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.35);color:#a5b4fc;" onclick="shareInvite('{{ $session->match->join_code }}')">📨 <span class="invite-label">Invite ({{ $session->match->join_code }})</span></button>
@@ -680,6 +730,30 @@
                      instead of as a permanent line of text crowding the die controls. --}}
             </div>
 
+            {{-- Strategy powers — only ever offered in a 1v1 (see ArcadeSnakesService::
+                 powersEligible()). Boost is the only one manually triggered here; Reroll/
+                 Protect/Bank are offered automatically as a decision pause mid-roll — see
+                 docs/PESA-TRAIL-POWERS.md. --}}
+            @if($powers['eligible'])
+            <div class="power-tray" id="powerTray">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Strategy Powers</p>
+                <div class="power-grid">
+                    <button type="button" class="power-badge {{ $powers['boost_left'] <= 0 && !$powers['boost_active'] ? 'power-empty' : '' }} {{ $powers['boost_active'] ? 'power-armed' : '' }}" id="powerBoost" onclick="armBoost()" title="Arm before rolling — your next gain is 50% bigger" {{ ($powers['boost_left'] <= 0 || $powers['boost_active'] || !$isMyTurn || $session->status !== 'active') ? 'disabled' : '' }}>
+                        <span class="power-icon">🚀</span><span class="power-name">Boost</span><span class="power-count">{{ $powers['boost_left'] }}</span>
+                    </button>
+                    <div class="power-badge {{ $powers['reroll_left'] <= 0 ? 'power-empty' : '' }}" id="powerReroll" title="Offered automatically right after you see your roll">
+                        <span class="power-icon">🎲</span><span class="power-name">Reroll</span><span class="power-count">{{ $powers['reroll_left'] }}</span>
+                    </div>
+                    <div class="power-badge {{ $powers['protect_left'] <= 0 ? 'power-empty' : '' }}" id="powerProtect" title="Offered automatically when you land on a loss">
+                        <span class="power-icon">🛡️</span><span class="power-name">Protect</span><span class="power-count">{{ $powers['protect_left'] }}</span>
+                    </div>
+                    <div class="power-badge {{ $powers['bank_left'] <= 0 ? 'power-empty' : '' }}" id="powerBank" title="Offered automatically when you land on a gain">
+                        <span class="power-icon">🏦</span><span class="power-name">Bank</span><span class="power-count">{{ $powers['bank_left'] }}</span>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             @if($opponents->isNotEmpty())
             <div class="reaction-bar" id="reactionBar">
                 @foreach(['😂', '😮', '😤', '🔥', '👏', '😅', '💪', '😬'] as $emoji)
@@ -750,12 +824,31 @@
                     <span>This round settles automatically the instant it ends — no manual cash-out.</span>
                 </div>
                 @endif
+
+                @if($powers['eligible'])
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Strategy Powers</p>
+                <div class="htp-row"><span class="htp-icon">🚀</span> Boost before rolling — your next gain lands 50% bigger</div>
+                <div class="htp-row"><span class="htp-icon">🎲</span> Reroll after seeing your number, before you move</div>
+                <div class="htp-row"><span class="htp-icon">🛡️</span> Protect after landing on a loss, before it's taken</div>
+                <div class="htp-row"><span class="htp-icon">🏦</span> Bank after a gain — up to 20% moves to a balance nothing can touch, not even your opponent's claim</div>
+                <div class="htp-row" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);">
+                    <span class="htp-icon">🧠</span>
+                    <span>Luck decides what happens to you. These decide how well you handle it — use them wisely, each one is limited.</span>
+                </div>
+                @endif
             </div>
         </div>
         </div>{{-- /mobile-drawer --}}
     </div>
 
     <div id="eventToast" class="event-toast"></div>
+
+    {{-- Strategy-power decision pause — see docs/PESA-TRAIL-POWERS.md §4. Same
+         overlay layer as the end-of-round cards; only one is ever shown at a time. --}}
+    <div id="decisionOverlay" class="overlay"><div class="overlay-card decision-card">
+        <div id="decisionCard"></div>
+        <p class="decision-countdown">⏱ Auto-skip in <span id="decisionCountdown">{{ \App\Services\ArcadeSnakesService::DECISION_TIMEOUT_SECONDS }}</span>s</p>
+    </div></div>
 
     <div id="winOverlay" class="overlay"><div class="overlay-card">
         <p class="text-3xl mb-2">🏁🎉</p>
@@ -812,8 +905,11 @@
         const TILE_POSITIONS = {!! json_encode($positions) !!};
         const TILE_COUNT = {{ $game->tile_count }};
         const ROLL_URL = "{{ route('arcade.snakes.roll', $session) }}";
+        const DECIDE_URL = "{{ route('arcade.snakes.decide', $session) }}";
+        const BOOST_URL = "{{ route('arcade.snakes.boost', $session) }}";
         const CASH_OUT_URL = "{{ route('arcade.snakes.cash-out', $session) }}";
         const REACT_URL = "{{ route('arcade.snakes.react', $session) }}";
+        const DECISION_TIMEOUT_SECONDS = {{ \App\Services\ArcadeSnakesService::DECISION_TIMEOUT_SECONDS }};
         const MY_SESSION_ID = {{ $session->id }};
         const MY_NAME = {!! json_encode(auth()->user()->name ?? 'You') !!};
         const MY_TURN_ORDER = {{ $session->turn_order }};
@@ -1041,6 +1137,12 @@
                 case 'overshoot': return `<div class="toast-headline">Rolled ${ev.roll}, needed ${ev.needed} exactly — bounced back to tile ${ev.bounced_to}</div>`;
                 case 'bust': return `<div class="toast-headline" style="color:#fca5a5;">💥 Out of savings!</div>`;
                 case 'win': return `<div class="toast-headline" style="color:#fbbf24;">🏁 You reached the finish! +KES ${ev.bonus} bonus</div>`;
+                case 'reroll_used': return `<div class="toast-headline" style="color:#a5b4fc;">🎲 Rerolled ${ev.original} → ${ev.new}</div>`;
+                case 'reroll_skipped': return '';
+                case 'protect_used': return `<div class="toast-headline" style="color:#7dd3fc;">🛡️ Protect blocked a KES ${ev.amount_saved} loss!</div>`;
+                case 'bank_used': return `<div class="toast-headline" style="color:#6ee7b7;">🏦 Banked KES ${ev.amount} — safe from here on</div>`;
+                case 'bank_skipped': return '';
+                case 'boost_consumed': return `<div class="toast-headline" style="color:#fcd34d;">🚀 Boost kicked in! +50%</div>`;
                 default: return '';
             }
         }
@@ -1441,6 +1543,18 @@
             if (!res.success) return;
 
             myTurn = res.my_turn;
+            updatePowerTray(res.powers);
+            updateBankedHud(res.powers ? res.powers.banked_amount : null);
+
+            // A decision the timeout sweep skipped server-side while this tab was
+            // in the background — never resolves as "use" (see docs/PESA-TRAIL-POWERS.md
+            // §2), so the only thing left to do here is dismiss a stale modal.
+            if (!res.pending_decision && currentDecision && document.getElementById('decisionOverlay').style.display === 'flex') {
+                hideDecisionModal();
+                rolling = false;
+                if (res.session) updateHud(res.session.pot, res.session.position);
+                updateRollButtonState();
+            }
 
             // Registered BEFORE updateTurnBanner()/the countdown resync below (not
             // after, as this used to be ordered) — a bot's roll arrives in this same
@@ -1597,81 +1711,317 @@
             cube.style.transform = `rotateX(${720 + DIE_TILT_X + target.x}deg) rotateY(${1080 + DIE_TILT_Y + target.y}deg)`;
             showDieValue(res.roll);
 
-            setTimeout(() => processRollResult(res), 580);
+            setTimeout(() => handleRollResponse(res), 580);
+        }
+
+        // Whether THIS roll cycle's token hop has already played — a Protect/Bank
+        // decision pause arrives AFTER movement is already resolved server-side, so
+        // the hop must play once (right when that pause first appears), and must
+        // NOT play again when the decision resolves and the pipeline continues.
+        // A Reroll pause arrives BEFORE movement, so no hop exists yet at that point.
+        let hopDone = false;
+
+        // The single entry point for anything roll()/decide() can hand back — a
+        // finished roll (pending:false) or a strategy-power decision pause
+        // (pending:true). See docs/PESA-TRAIL-POWERS.md §4 for the server-side
+        // pause/resume design this mirrors.
+        function handleRollResponse(res) {
+            updatePowerTray(res.powers);
+            updateBankedHud(res.banked);
+
+            if (res.pending) {
+                if (res.hop_path && res.hop_path.length && !hopDone) {
+                    document.getElementById('dieScene').classList.remove('spinning');
+                    ArcadeSound.play('move');
+                    hopDone = true;
+                    animateHopPath(document.getElementById('tokenMe'), res.hop_path, () => showDecisionModal(res));
+                } else {
+                    document.getElementById('dieScene').classList.remove('spinning');
+                    showDecisionModal(res);
+                }
+                return;
+            }
+
+            if (hopDone) {
+                applyRollEffects(res);
+            } else {
+                processRollResult(res);
+            }
+            hopDone = false;
         }
 
         function processRollResult(res) {
             document.getElementById('dieScene').classList.remove('spinning');
-            const tokenMe = document.getElementById('tokenMe');
             ArcadeSound.play('move');
-
-            let moveEvent = null;
-            let overshootEvent = null;
-            res.events.forEach(ev => {
-                if (ev.type === 'move') moveEvent = ev;
-                if (ev.type === 'overshoot') overshootEvent = ev;
-            });
-
-            const finish = () => {
-                disarmRollWatchdog();
-                status = res.status;
-                updateHud(res.pot, res.position);
-                if (status === 'won') {
-                    rolling = false;
-                    setTimeout(() => { ArcadeSound.play('win'); showWinOverlay(res); }, 600);
-                } else if (status === 'busted') {
-                    rolling = false;
-                    setTimeout(() => { ArcadeSound.play('bust'); showBustOverlay(); }, 600);
-                } else {
-                    const cashOutBtn = document.getElementById('cashOutBtn'); // absent for Rivals Trail sessions — see below
-                    if (cashOutBtn) cashOutBtn.disabled = false;
-                    rolling = false;
-                    updateRollButtonState();
-                    updateTurnBanner();
-                    // Pick up the turn change (and, for Rivals Trail, a possible
-                    // instant settlement) right away instead of waiting for the
-                    // next scheduled poll tick.
-                    pollState();
-                }
-            };
-
-            // Once the token has visibly hopped to where the FIRST tile's effect
-            // actually applies, fire that tile's sound/toast/sparkle — not before,
-            // which is what used to make a multi-tile roll's coin chime/toast land
-            // audibly before the token had even finished moving there.
-            const afterFirstLanding = () => {
-                const lines = [];
-                let netChange = 0;
-                res.events.forEach(ev => {
-                    lines.push(eventLine(ev));
-                    if (ev.type === 'reward') { ArcadeSound.play('coinGain'); sparkleBurst(tokenMe); netChange += ev.amount; }
-                    if (ev.type === 'expense') { ArcadeSound.play('coinLoss'); netChange -= ev.amount; }
-                    if (ev.type === 'mystery') { ArcadeSound.play('mystery'); netChange += ev.effect === 'gift' ? ev.amount : -ev.amount; }
-                    if (ev.type === 'golden_first') glowGold(tokenMe);
-                    if (ev.type === 'golden_boost') { ArcadeSound.play('coinGain'); glowGold(tokenMe); sparkleBurst(tokenMe); netChange += ev.amount; }
-                });
-                if (lines.length) showToast(lines);
-                // One combined floating +/-KES number for the whole roll (not
-                // one per event) — a roll landing on multiple effects at once
-                // reads as a single net result, not a pile-up of separate flights.
-                if (netChange !== 0) floatMoneyToBalance(netChange, tokenMe, res.pot);
-
-                if (moveEvent) {
-                    setTimeout(() => {
-                        placeToken(tokenMe, moveEvent.to);
-                        ArcadeSound.play(moveEvent.via === 'snake_head' ? 'snake' : 'ladder');
-                        setTimeout(finish, 900);
-                    }, 400);
-                } else {
-                    // Overshoot's bounce-back is already the tail end of hop_path
-                    // (see ArcadeSnakesService::roll()) — the token is already
-                    // sitting on bounced_to, no extra placeToken needed here.
-                    setTimeout(finish, 500);
-                }
-            };
-
             const path = (res.hop_path && res.hop_path.length) ? res.hop_path : [res.first_landing];
-            animateHopPath(tokenMe, path, afterFirstLanding);
+            animateHopPath(document.getElementById('tokenMe'), path, () => applyRollEffects(res));
+        }
+
+        // Once the token has visibly hopped to where the FIRST tile's effect
+        // actually applies, fire that tile's sound/toast/sparkle — not before,
+        // which is what used to make a multi-tile roll's coin chime/toast land
+        // audibly before the token had even finished moving there.
+        function applyRollEffects(res) {
+            const tokenMe = document.getElementById('tokenMe');
+            let moveEvent = null;
+            res.events.forEach(ev => { if (ev.type === 'move') moveEvent = ev; });
+
+            const lines = [];
+            let netChange = 0;
+            res.events.forEach(ev => {
+                const line = eventLine(ev);
+                if (line) lines.push(line);
+                if (ev.type === 'reward') { ArcadeSound.play('coinGain'); sparkleBurst(tokenMe); netChange += ev.amount; }
+                if (ev.type === 'expense') { ArcadeSound.play('coinLoss'); netChange -= ev.amount; }
+                if (ev.type === 'mystery') { ArcadeSound.play('mystery'); netChange += ev.effect === 'gift' ? ev.amount : -ev.amount; }
+                if (ev.type === 'golden_first') glowGold(tokenMe);
+                if (ev.type === 'golden_boost') { ArcadeSound.play('coinGain'); glowGold(tokenMe); sparkleBurst(tokenMe); netChange += ev.amount; }
+                if (ev.type === 'protect_used') { ArcadeSound.play('shieldUp'); glowShield(tokenMe); }
+                if (ev.type === 'bank_used') { ArcadeSound.play('bankVault'); netChange -= ev.amount; pulseBankedHud(); }
+                if (ev.type === 'reroll_used') { ArcadeSound.play('dicePulse'); }
+            });
+            if (lines.length) showToast(lines);
+            // One combined floating +/-KES number for the whole roll (not
+            // one per event) — a roll landing on multiple effects at once
+            // reads as a single net result, not a pile-up of separate flights.
+            if (netChange !== 0) floatMoneyToBalance(netChange, tokenMe, res.pot);
+
+            if (moveEvent) {
+                setTimeout(() => {
+                    placeToken(tokenMe, moveEvent.to);
+                    ArcadeSound.play(moveEvent.via === 'snake_head' ? 'snake' : 'ladder');
+                    setTimeout(() => finishRoll(res), 900);
+                }, 400);
+            } else {
+                // Overshoot's bounce-back is already the tail end of hop_path
+                // (see ArcadeSnakesService::roll()) — the token is already
+                // sitting on bounced_to, no extra placeToken needed here.
+                setTimeout(() => finishRoll(res), 500);
+            }
+        }
+
+        function finishRoll(res) {
+            disarmRollWatchdog();
+            status = res.status;
+            updateHud(res.pot, res.position);
+            if (status === 'won') {
+                rolling = false;
+                setTimeout(() => { ArcadeSound.play('win'); showWinOverlay(res); }, 600);
+            } else if (status === 'busted') {
+                rolling = false;
+                setTimeout(() => { ArcadeSound.play('bust'); showBustOverlay(); }, 600);
+            } else {
+                const cashOutBtn = document.getElementById('cashOutBtn'); // absent for Rivals Trail sessions — see below
+                if (cashOutBtn) cashOutBtn.disabled = false;
+                rolling = false;
+                updateRollButtonState();
+                updateTurnBanner();
+                // Pick up the turn change (and, for Rivals Trail, a possible
+                // instant settlement) right away instead of waiting for the
+                // next scheduled poll tick.
+                pollState();
+            }
+        }
+
+        // ─── Strategy powers: tray, Boost arming, and the Reroll/Protect/Bank
+        //     decision modal — see docs/PESA-TRAIL-POWERS.md for the design. ───
+
+        let POWERS = @json($powers);
+        let currentDecision = null;
+        let decisionTimer = null;
+
+        function normalizePendingDecision(pd) {
+            if (!pd) return null;
+            if (pd.type === 'reroll')  return { type: 'reroll', roll: pd.roll };
+            if (pd.type === 'protect') return { type: 'protect', amount: pd.amount };
+            if (pd.type === 'bank')    return { type: 'bank', cap: pd.cap };
+            return null;
+        }
+
+        // A page reload while a decision was left unresolved (e.g. the player
+        // switched tabs) restores the same modal instead of losing track of it —
+        // the token is already at its post-movement position from the fresh
+        // page render, so no hop animation is needed here, just the prompt.
+        (function restorePendingDecisionOnLoad() {
+            const decision = normalizePendingDecision(@json($pendingDecision));
+            if (!decision) return;
+            rolling = true;
+            currentDecision = decision;
+            document.getElementById('decisionCard').innerHTML = buildDecisionHtml(decision);
+            document.getElementById('decisionOverlay').style.display = 'flex';
+            startDecisionCountdown();
+            updateRollButtonState();
+        })();
+
+        function updatePowerTray(powers) {
+            if (!powers) return;
+            POWERS = powers;
+            const tray = document.getElementById('powerTray');
+            if (!tray) return; // not eligible for powers this session — tray was never rendered
+
+            const setCount = (id, left) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.querySelector('.power-count').textContent = left;
+                el.classList.toggle('power-empty', left <= 0);
+            };
+            setCount('powerProtect', powers.protect_left);
+            setCount('powerReroll', powers.reroll_left);
+            setCount('powerBank', powers.bank_left);
+
+            const boostBtn = document.getElementById('powerBoost');
+            if (boostBtn) {
+                boostBtn.querySelector('.power-count').textContent = powers.boost_left;
+                boostBtn.classList.toggle('power-empty', powers.boost_left <= 0 && !powers.boost_active);
+                boostBtn.classList.toggle('power-armed', !!powers.boost_active);
+                boostBtn.disabled = powers.boost_left <= 0 || powers.boost_active || rolling || status !== 'active' || (TURN_MODE === 'turns' && !myTurn);
+            }
+        }
+
+        function updateBankedHud(banked) {
+            if (banked == null) return;
+            const el = document.getElementById('hudBanked');
+            if (el) el.textContent = Number(banked).toLocaleString();
+        }
+
+        function pulseBankedHud() {
+            const chip = document.getElementById('hudBankedChip');
+            if (!chip) return;
+            chip.classList.remove('banked-pulse');
+            void chip.offsetWidth;
+            chip.classList.add('banked-pulse');
+        }
+
+        function glowShield(el) {
+            if (!el) return;
+            el.classList.remove('shield-flash');
+            void el.offsetWidth;
+            el.classList.add('shield-flash');
+            setTimeout(() => el.classList.remove('shield-flash'), 700);
+        }
+
+        async function armBoost() {
+            if (!POWERS || POWERS.boost_left <= 0 || POWERS.boost_active) return;
+            if (rolling || status !== 'active' || (TURN_MODE === 'turns' && !myTurn)) {
+                showToast(['⏳ Wait for your turn to arm Boost.']);
+                return;
+            }
+            try {
+                const r = await fetch(BOOST_URL, { method: 'POST', headers: HEADERS });
+                const res = await r.json();
+                if (!res.success) { showToast([res.message || 'Could not activate Boost.']); return; }
+                ArcadeSound.play('boostArm');
+                updatePowerTray(res.powers);
+                showToast(['🚀 Boost armed — your next gain is 50% bigger!']);
+            } catch (e) { showToast(['Network error — try again.']); }
+        }
+
+        function buildDecisionHtml(decision) {
+            if (decision.type === 'reroll') {
+                return `
+                    <p class="text-3xl mb-2">🎲</p>
+                    <p class="text-xl font-black text-indigo-300 mb-1">Reroll?</p>
+                    <p class="text-sm text-gray-300 mb-4">You rolled a <b>${decision.roll}</b>. Spend a Reroll to try again?</p>
+                    <div class="decision-actions">
+                        <button type="button" class="roll-btn" onclick="submitDecision('use')">🎲 Reroll</button>
+                        <button type="button" class="roll-btn decision-skip" onclick="submitDecision('skip')">Keep ${decision.roll}</button>
+                    </div>`;
+            }
+            if (decision.type === 'protect') {
+                return `
+                    <p class="text-3xl mb-2">🛡️</p>
+                    <p class="text-xl font-black text-sky-300 mb-1">Protect?</p>
+                    <p class="text-sm text-gray-300 mb-4">This tile costs <b>KES ${Number(decision.amount).toLocaleString()}</b>. Use a Protect to block it?</p>
+                    <div class="decision-actions">
+                        <button type="button" class="roll-btn" onclick="submitDecision('use')">🛡️ Protect</button>
+                        <button type="button" class="roll-btn decision-skip" onclick="submitDecision('skip')">Accept the loss</button>
+                    </div>`;
+            }
+            if (decision.type === 'bank') {
+                const cap = decision.cap;
+                const presets = [25, 50, 75, 100].map(pct => {
+                    const amt = Math.round(cap * pct / 100);
+                    return `<button type="button" class="bank-preset-btn" onclick="submitDecision('use', ${amt})"><b>${pct}%</b><span>KES ${Number(amt).toLocaleString()}</span></button>`;
+                }).join('');
+                return `
+                    <p class="text-3xl mb-2">🏦</p>
+                    <p class="text-xl font-black text-emerald-300 mb-1">Bank some savings?</p>
+                    <p class="text-sm text-gray-300 mb-4">Secure up to <b>KES ${Number(cap).toLocaleString()}</b> — safe from tiles and your opponent's claim.</p>
+                    <div class="bank-presets">${presets}</div>
+                    <button type="button" class="roll-btn decision-skip" style="margin-top:.6rem;" onclick="submitDecision('skip')">Skip</button>`;
+            }
+            return '';
+        }
+
+        function showDecisionModal(res) {
+            disarmRollWatchdog();
+            updateHud(res.pot, res.position);
+            ArcadeSound.play('decisionPing');
+            currentDecision = res.decision;
+            document.getElementById('decisionCard').innerHTML = buildDecisionHtml(res.decision);
+            document.getElementById('decisionOverlay').style.display = 'flex';
+            startDecisionCountdown();
+        }
+
+        function hideDecisionModal() {
+            clearInterval(decisionTimer);
+            document.getElementById('decisionOverlay').style.display = 'none';
+        }
+
+        function startDecisionCountdown() {
+            let remaining = DECISION_TIMEOUT_SECONDS;
+            const el = document.getElementById('decisionCountdown');
+            if (el) el.textContent = remaining;
+            clearInterval(decisionTimer);
+            decisionTimer = setInterval(() => {
+                remaining--;
+                if (el) el.textContent = Math.max(remaining, 0);
+                // Client-side courtesy only — the server's own DECISION_TIMEOUT_SECONDS
+                // sweep (expireDecisionIfNeeded()) is what's actually authoritative;
+                // this just makes an idle decision feel responsive instead of waiting
+                // for the next poll tick to notice the server already skipped it.
+                if (remaining <= 0) {
+                    clearInterval(decisionTimer);
+                    submitDecision('skip');
+                }
+            }, 1000);
+        }
+
+        async function submitDecision(choice, amount) {
+            const decisionType = currentDecision ? currentDecision.type : null;
+            hideDecisionModal();
+            armRollWatchdog();
+
+            let res;
+            try {
+                const r = await fetch(DECIDE_URL, {
+                    method: 'POST',
+                    headers: { ...HEADERS, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ choice, amount: amount ?? null }),
+                });
+                res = await r.json();
+            } catch (e) {
+                showToast(['Network error — try again.']);
+                return;
+            }
+            if (!res.success) {
+                showToast([res.message || 'Could not process that decision.']);
+                return;
+            }
+
+            if (decisionType === 'reroll' && choice === 'use') {
+                const cube = document.getElementById('dieCube');
+                const scene = document.getElementById('dieScene');
+                scene.classList.add('spinning');
+                cube.style.transition = 'transform 0.45s cubic-bezier(.25,1,.5,1)';
+                const target = DIE_ROTATIONS[res.roll];
+                cube.style.transform = `rotateX(${720 + DIE_TILT_X + target.x}deg) rotateY(${1080 + DIE_TILT_Y + target.y}deg)`;
+                showDieValue(res.roll);
+                setTimeout(() => { scene.classList.remove('spinning'); handleRollResponse(res); }, 460);
+                return;
+            }
+
+            handleRollResponse(res);
         }
 
         function animateOpponent(botResult, label) {

@@ -99,6 +99,32 @@
             <div class="sc-card p-2.5 sm:p-4 text-center"><p class="text-lg sm:text-2xl font-black text-amber-400">{{ number_format($stats['best_pot']) }}</p><p class="text-[9px] sm:text-[10px] text-gray-500 uppercase font-bold tracking-wider mt-1">Best Savings (KES)</p></div>
         </div>
 
+        {{-- Money Mined leaderboard — see docs/PESA-TRAIL-POWERS.md §7. Ranks by
+             closing balance (pot + banked savings) across completed games, not
+             raw win count, so a strong money-manager who wins less often still
+             shows up: "you're not just racing, you're mining money while you race." --}}
+        @if($moneyMined->isNotEmpty())
+        <details class="sc-card sc-accordion mb-6" open>
+            <summary class="p-4 flex items-center justify-between">
+                <span class="text-sm font-bold">💰 Money Mined Leaderboard</span>
+                <span class="chevron text-gray-500 text-xs">▼</span>
+            </summary>
+            <div class="px-4 pb-4">
+                <p class="text-[11px] text-gray-500 mb-3">Ranked by total savings kept across every finished round — growing your balance and banking it matters as much as winning the race.</p>
+                <div class="space-y-1.5">
+                    @foreach($moneyMined as $row)
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl" style="background:{{ $row['is_me'] ? 'rgba(245,158,11,.12)' : 'rgba(255,255,255,.02)' }};{{ $row['is_me'] ? 'border:1px solid rgba(245,158,11,.3);' : '' }}">
+                        <span class="font-black text-sm w-6 text-center {{ $row['rank'] <= 3 ? 'text-amber-400' : 'text-gray-500' }}">{{ $row['rank'] === 1 ? '🥇' : ($row['rank'] === 2 ? '🥈' : ($row['rank'] === 3 ? '🥉' : $row['rank'])) }}</span>
+                        <span class="flex-1 text-xs font-bold truncate">{{ $row['name'] }}{{ $row['is_me'] ? ' (you)' : '' }}</span>
+                        <span class="text-[10px] text-gray-500">{{ $row['wins'] }}W / {{ $row['games'] }}G · {{ $row['win_rate'] }}%</span>
+                        <span class="text-xs font-black text-emerald-400 whitespace-nowrap">KES {{ number_format($row['money_mined']) }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </details>
+        @endif
+
         <div class="sc-card p-4 mb-4">
             <p class="text-sm font-bold mb-1">Your starting savings</p>
             <p class="text-xs text-gray-400 mb-3">Pick how much to bring into this round — it leaves your wallet and becomes your in-game savings; grow it by playing well and bank it anytime. If it runs out, the round ends early.</p>

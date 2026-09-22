@@ -184,6 +184,55 @@ const ArcadeSound = (() => {
       [784, 988].forEach((f, i) => _bell(f, t + i * 0.08, 0.3, 0.2));
     },
 
+    // Boost armed — a rising "power up" whoosh, distinct from coinGain's bell tone
+    // so arming the power reads differently from actually earning money.
+    boostArm() {
+      const ctx = _ctx_(); if (!ctx) return;
+      const t = ctx.currentTime;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(0.24, t + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      g.connect(ctx.destination);
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(180, t);
+      o.frequency.exponentialRampToValueAtTime(720, t + 0.35);
+      o.connect(g); o.start(t); o.stop(t + 0.42);
+    },
+
+    // Protect used — a short metallic shield "clang".
+    shieldUp() {
+      const ctx = _ctx_(); if (!ctx) return;
+      const t = ctx.currentTime;
+      _bell(392, t, 0.3, 0.24);
+      _noise(t, 0.08, 0.14, 1800);
+    },
+
+    // Reroll used — a quick double dice-rattle, shorter than the full roll() sound.
+    dicePulse() {
+      const ctx = _ctx_(); if (!ctx) return;
+      const t = ctx.currentTime;
+      _noise(t, 0.05, 0.2, 3200);
+      _noise(t + 0.08, 0.05, 0.2, 3600);
+    },
+
+    // Bank used — a satisfying vault-door thunk followed by a soft chime.
+    bankVault() {
+      const ctx = _ctx_(); if (!ctx) return;
+      const t = ctx.currentTime;
+      _osc('sine', 90, t, 0.18, 0.26);
+      _bell(660, t + 0.1, 0.4, 0.2);
+    },
+
+    // A strategy decision arriving — a light urgent tick, used for the decision
+    // modal appearing so a mid-turn pause is felt, not just seen.
+    decisionPing() {
+      const ctx = _ctx_(); if (!ctx) return;
+      const t = ctx.currentTime;
+      [988, 784].forEach((f, i) => _bell(f, t + i * 0.07, 0.25, 0.18));
+    },
+
     // An emoji reaction/taunt landing on the opponent's screen — a playful little "boing".
     reaction() {
       const ctx = _ctx_(); if (!ctx) return;

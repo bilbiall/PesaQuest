@@ -492,6 +492,8 @@ Route::middleware(['auth'])->prefix('arcade/snakes-and-cash')->name('arcade.snak
     Route::get('/play/{session}',       [\App\Http\Controllers\ArcadeSnakesController::class, 'play'])->name('play');
     Route::get('/play/{session}/state', [\App\Http\Controllers\ArcadeSnakesController::class, 'state'])->name('state');
     Route::post('/play/{session}/roll', [\App\Http\Controllers\ArcadeSnakesController::class, 'roll'])->name('roll');
+    Route::post('/play/{session}/decide',    [\App\Http\Controllers\ArcadeSnakesController::class, 'decide'])->name('decide');
+    Route::post('/play/{session}/boost',     [\App\Http\Controllers\ArcadeSnakesController::class, 'activateBoost'])->name('boost');
     Route::post('/play/{session}/cash-out',  [\App\Http\Controllers\ArcadeSnakesController::class, 'cashOut'])->name('cash-out');
     Route::post('/play/{session}/react',     [\App\Http\Controllers\ArcadeSnakesController::class, 'sendReaction'])->name('react');
 });

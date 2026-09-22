@@ -9,16 +9,19 @@ class ArcadeSession extends Model
 {
     protected $fillable = [
         'arcade_game_id', 'arcade_match_id', 'user_id', 'is_bot', 'turn_order', 'missed_turns', 'stake_amount', 'pot_amount',
-        'position', 'status', 'last_roll', 'last_event', 'session_assets',
+        'banked_amount', 'position', 'status', 'last_roll', 'last_event', 'session_assets',
+        'pending_decision', 'decision_started_at',
         'xp_awarded', 'started_at', 'ended_at',
     ];
 
     protected $casts = [
-        'is_bot'         => 'boolean',
-        'last_event'     => 'array',
-        'session_assets' => 'array',
-        'started_at'     => 'datetime',
-        'ended_at'       => 'datetime',
+        'is_bot'               => 'boolean',
+        'last_event'           => 'array',
+        'session_assets'       => 'array',
+        'pending_decision'     => 'array',
+        'decision_started_at'  => 'datetime',
+        'started_at'           => 'datetime',
+        'ended_at'             => 'datetime',
     ];
 
     public function game(): BelongsTo

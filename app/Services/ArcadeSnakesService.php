@@ -57,6 +57,20 @@ class ArcadeSnakesService
 
     private const GOLDEN_BOOST_PERCENT = 25; // % of the ORIGINAL stake, added to the pot on every golden landing after the first
 
+    /**
+     * Strategy powers (Protect / Boost / Reroll / Bank) — see docs/PESA-TRAIL-POWERS.md
+     * for the full design and troubleshooting reference. Deliberately named with a
+     * "_POWER"/"POWER_" prefix on anything that could otherwise collide with the
+     * unrelated GOLDEN_BOOST_PERCENT tile mechanic above.
+     */
+    public const PROTECT_USES = 3;
+    public const POWER_BOOST_USES = 3;
+    public const REROLL_USES = 2;
+    public const BANK_USES = 4;
+    public const BANK_LIMIT_PERCENT = 20;      // of current pot_amount, per Bank use
+    public const POWER_BOOST_MULTIPLIER = 1.5; // applies once to the next reward/mystery-gift gain
+    public const DECISION_TIMEOUT_SECONDS = 8; // separate clock from TURN_SECONDS — how long a pending decision waits before auto-skipping
+
     /** Dead-pool safety net ONLY — see flavorText(). The real, admin-editable,
      *  randomly-picked pool lives in arcade_flavor_texts (GameSet Arcade →
      *  Flavor Text), seeded from these exact lines. These constants stay only
@@ -177,13 +191,73 @@ class ArcadeSnakesService
 
             if ($match->turn_started_at->diffInSeconds(now()) < self::BOT_THINK_SECONDS) return null;
 
+            // Boost is a pre-roll commitment (per spec timing) — the bot has to
+            // "decide" before it knows what it'll land on, same as a human would.
+            $this->maybeBotActivateBoost($holder);
+
             $result = $this->roll($holder);
+            $result = $this->resolveBotDecisionsIfAny($holder, $result);
             $result['session_id'] = $holder->id;
 
             return $result;
         } finally {
             Cache::forget($lockKey);
         }
+    }
+
+    /** Bots never expose a pending_decision pause to the UI — they resolve their
+     *  own Reroll/Protect/Bank choices synchronously via simple heuristics
+     *  (see docs/PESA-TRAIL-POWERS.md §5), inline within this same autoPlayBotTurn()
+     *  call, so a human opponent never sees a bot "thinking" about a power. */
+    private function maybeBotActivateBoost(ArcadeSession $session): void
+    {
+        if (!$this->powersEligible($session)) return;
+        if ($this->usesLeft($session, 'boost') <= 0) return;
+        if (!empty(($session->session_assets ?? [])['boost_active'])) return;
+        if (random_int(1, 100) > 40) return; // roughly 40% of turns while uses remain
+        $this->activateBoost($session);
+    }
+
+    private function resolveBotDecisionsIfAny(ArcadeSession $session, array $result): array
+    {
+        $guard = 0; // hard ceiling — a turn only ever has at most 2 real pauses (reroll, then protect-or-bank)
+        while (($result['pending'] ?? false) && $guard < 5) {
+            $guard++;
+            $session->refresh();
+            [$choice, $amount] = $this->botDecisionFor($session, $session->pending_decision);
+            $result = $this->decide($session, $choice, $amount);
+        }
+        return $result;
+    }
+
+    private function botDecisionFor(ArcadeSession $session, array $decision): array
+    {
+        if ($decision['type'] === 'reroll') {
+            return [$this->botWantsReroll($session, $decision['roll'], $decision['from']) ? 'use' : 'skip', null];
+        }
+        if ($decision['type'] === 'protect') {
+            $threshold = (int) round($session->pot_amount * 0.08); // "is this loss big enough to spend a Protect on"
+            return [$decision['amount'] > $threshold ? 'use' : 'skip', null];
+        }
+        if ($decision['type'] === 'bank') {
+            $bankLeft = $this->usesLeft($session, 'bank');
+            if ($bankLeft > 2) return ['use', $decision['cap']]; // eager early, more conservative once low
+            return [random_int(1, 100) <= 30 ? 'use' : 'skip', $decision['cap']];
+        }
+        return ['skip', null];
+    }
+
+    private function botWantsReroll(ArcadeSession $session, int $roll, int $from): bool
+    {
+        $game = ArcadeGame::find($session->arcade_game_id);
+        if (!$game) return false;
+        $target = $from + $roll;
+        if ($target >= $game->tile_count) return false; // never reroll away from a win or near-finish
+        $tile = ArcadeTile::where('arcade_game_id', $game->id)->where('number', $target)->first();
+        if (!$tile) return false;
+        if ($tile->movement_role === 'snake_head') return true;
+        if ($tile->money_effect === 'expense' && $tile->money_percent >= 15) return true;
+        return false;
     }
 
     /** Every match is turn-based — waiting your turn isn't a choice, it's how the
@@ -361,18 +435,36 @@ class ArcadeSnakesService
                 'turn_order'      => $turnOrder,
                 'stake_amount'    => $stake,
                 'pot_amount'      => $stake,
+                'banked_amount'   => 0,
                 'position'        => 0,
                 'status'          => 'active',
                 'started_at'      => now(),
+                // Seeded on every session regardless of match size — cheap, and
+                // powersEligible() is what actually gates whether they're ever
+                // offered, not whether the counters exist (see docs/PESA-TRAIL-POWERS.md).
+                'session_assets'  => [
+                    'protect_left' => self::PROTECT_USES,
+                    'boost_left'   => self::POWER_BOOST_USES,
+                    'reroll_left'  => self::REROLL_USES,
+                    'bank_left'    => self::BANK_USES,
+                    'boost_active' => false,
+                ],
             ]);
         });
     }
 
-    /** Roll the die and resolve the landing. Returns a small event log for the UI to animate. */
+    /** Roll the die and resolve the landing. Returns a small event log for the UI to
+     *  animate — OR, if a strategy power decision point is hit (Reroll before movement,
+     *  Protect before a loss, Bank after a gain), a `pending: true` payload describing
+     *  the decision instead, with the turn left un-advanced until decide() resolves it.
+     *  See docs/PESA-TRAIL-POWERS.md §4 for the full pause/resume design. */
     public function roll(ArcadeSession $session): array
     {
         if (!$session->isActive()) {
             throw new \RuntimeException('This session has already ended.');
+        }
+        if ($session->pending_decision) {
+            throw new \RuntimeException('Resolve your pending strategy decision before rolling again.');
         }
 
         // A double-tap, a retried slow request, or a browser somehow firing the
@@ -380,39 +472,245 @@ class ArcadeSnakesService
         // board/turn twice for one real action and leave two players' clients
         // disagreeing about whose turn it even is. Auto-expires after 10s (far
         // longer than a real roll takes) so a mid-roll exception can never wedge
-        // this open beyond a few seconds.
+        // this open beyond a few seconds. Held across the WHOLE pipeline (through
+        // decide() too, see below) rather than just this method, since a paused
+        // roll is still "in progress" from the double-submission-guard's point of view.
         $lockKey = "arcade_roll_lock_{$session->id}";
         if (!Cache::add($lockKey, true, 10)) {
             throw new \RuntimeException("You're already rolling — hang on a second.");
         }
 
-        $match = $session->arcade_match_id ? ArcadeMatch::find($session->arcade_match_id) : null;
-        if ($match && $match->isWager() && $match->status === 'open') {
-            throw new \RuntimeException('Waiting for at least one more player to join before this round can start.');
+        try {
+            $match = $session->arcade_match_id ? ArcadeMatch::find($session->arcade_match_id) : null;
+            if ($match && $match->isWager() && $match->status === 'open') {
+                throw new \RuntimeException('Waiting for at least one more player to join before this round can start.');
+            }
+            if ($match) {
+                $this->expireTurnIfNeeded($match);
+            }
+            if ($match && $match->isTurnBased() && $match->current_turn_session_id && $match->current_turn_session_id !== $session->id) {
+                throw new \RuntimeException("It's not your turn yet — wait for the other player(s) to roll.");
+            }
+
+            $rollValue = random_int(1, 6);
+            $from = $session->position;
+
+            if ($this->powersEligible($session, $match) && $this->usesLeft($session, 'reroll') > 0) {
+                $this->pauseDecision($session, ['type' => 'reroll', 'roll' => $rollValue, 'from' => $from]);
+                return $this->pendingPayload($session, []);
+            }
+
+            return $this->continueAfterReroll($session, $match, $rollValue, $from, []);
+        } finally {
+            Cache::forget($lockKey);
         }
-        if ($match) {
-            $this->expireTurnIfNeeded($match);
+    }
+
+    /** Resolves a pending Reroll/Protect/Bank decision and resumes the roll pipeline
+     *  from exactly where it paused. $amount is only meaningful for a Bank decision
+     *  (how much of the current pot to secure, capped server-side regardless of what's sent). */
+    public function decide(ArcadeSession $session, string $choice, ?int $amount = null): array
+    {
+        if (!$session->pending_decision) {
+            throw new \RuntimeException('There is no decision waiting to be made.');
         }
-        if ($match && $match->isTurnBased() && $match->current_turn_session_id && $match->current_turn_session_id !== $session->id) {
-            throw new \RuntimeException("It's not your turn yet — wait for the other player(s) to roll.");
+        if (!in_array($choice, ['use', 'skip'], true)) {
+            throw new \RuntimeException('Invalid decision.');
         }
 
+        $lockKey = "arcade_roll_lock_{$session->id}";
+        if (!Cache::add($lockKey, true, 10)) {
+            throw new \RuntimeException("Still processing your last action — hang on a second.");
+        }
+
+        try {
+            $match = $session->arcade_match_id ? ArcadeMatch::find($session->arcade_match_id) : null;
+            return $this->resumeFromDecision($session, $match, $choice, $amount);
+        } finally {
+            Cache::forget($lockKey);
+        }
+    }
+
+    /** Activates Boost for the player's NEXT roll — must happen before roll() is
+     *  called, per the spec's timing table (the player doesn't yet know what tile
+     *  they'll land on). Consumed on the next reward/mystery-gift gain regardless
+     *  of the outcome, same as a human committing to it blind. */
+    public function activateBoost(ArcadeSession $session): array
+    {
+        if (!$session->isActive()) {
+            throw new \RuntimeException('This session has already ended.');
+        }
+        if ($session->pending_decision) {
+            throw new \RuntimeException('Resolve your pending strategy decision first.');
+        }
+        if (!$this->powersEligible($session)) {
+            throw new \RuntimeException('Strategy powers are only available in 1v1 rounds.');
+        }
+
+        $match = $session->arcade_match_id ? ArcadeMatch::find($session->arcade_match_id) : null;
+        if ($match && $match->isTurnBased() && $match->current_turn_session_id && $match->current_turn_session_id !== $session->id) {
+            throw new \RuntimeException("It's not your turn yet.");
+        }
+
+        $assets = $session->session_assets ?? [];
+        if (($assets['boost_left'] ?? 0) <= 0) {
+            throw new \RuntimeException('No Boost uses left.');
+        }
+        if (!empty($assets['boost_active'])) {
+            throw new \RuntimeException('Boost is already armed for your next roll.');
+        }
+
+        $assets['boost_active'] = true;
+        $assets['boost_left'] = $assets['boost_left'] - 1;
+        $session->session_assets = $assets;
+        $session->save();
+
+        return $this->powersPayload($session);
+    }
+
+    /** Are strategy powers offered at all for this session? Gated to matches with
+     *  exactly 2 sessions — covers solo-vs-bot AND 1v1 Rivals Trail, excludes
+     *  N-player lobbies and (rare, currently-unrouted) match-less solo sessions.
+     *  See docs/PESA-TRAIL-POWERS.md §2/§8 — this is the single choke point for
+     *  that scope decision, nothing else should re-implement this check. */
+    public function powersEligible(ArcadeSession $session, ?ArcadeMatch $match = null): bool
+    {
+        if (!$session->arcade_match_id) return false;
+        $match ??= ArcadeMatch::find($session->arcade_match_id);
+        return (bool) $match && (int) $match->max_players === 2;
+    }
+
+    /** Remaining-use counters + banked balance, for both the play view's power
+     *  tray and state() polling. Public — the controller reads this directly. */
+    public function powersPayload(ArcadeSession $session): array
+    {
+        $a = $session->session_assets ?? [];
+        return [
+            'protect_left'  => (int) ($a['protect_left'] ?? 0),
+            'boost_left'    => (int) ($a['boost_left'] ?? 0),
+            'reroll_left'   => (int) ($a['reroll_left'] ?? 0),
+            'bank_left'     => (int) ($a['bank_left'] ?? 0),
+            'boost_active'  => (bool) ($a['boost_active'] ?? false),
+            'banked_amount' => $session->banked_amount,
+            'eligible'      => $this->powersEligible($session),
+        ];
+    }
+
+    private function usesLeft(ArcadeSession $session, string $key): int
+    {
+        return (int) (($session->session_assets ?? [])["{$key}_left"] ?? 0);
+    }
+
+    private function decrementUse(ArcadeSession $session, string $key): void
+    {
+        $assets = $session->session_assets ?? [];
+        $assets["{$key}_left"] = max(0, ($assets["{$key}_left"] ?? 0) - 1);
+        $session->session_assets = $assets;
+    }
+
+    private function pauseDecision(ArcadeSession $session, array $decision): void
+    {
+        $session->pending_decision = $decision;
+        $session->decision_started_at = now();
+        $session->save();
+    }
+
+    /** The envelope returned to the client whenever roll()/decide() pauses instead
+     *  of completing — always carries the current (already-persisted) position/pot/
+     *  banked amount, so the client can animate up to this point before showing the
+     *  decision prompt. */
+    private function pendingPayload(ArcadeSession $session, array $events, ?int $from = null, ?int $firstLanding = null, array $hopPath = []): array
+    {
+        $decision = $session->pending_decision;
+
+        return [
+            'pending' => true,
+            'decision' => match ($decision['type']) {
+                'reroll'  => ['type' => 'reroll', 'roll' => $decision['roll']],
+                'protect' => ['type' => 'protect', 'amount' => $decision['amount']],
+                'bank'    => ['type' => 'bank', 'cap' => $decision['cap']],
+                default   => ['type' => $decision['type']],
+            },
+            'roll' => $decision['roll'] ?? null,
+            'from' => $from, 'first_landing' => $firstLanding, 'hop_path' => $hopPath,
+            'events' => $events, 'position' => $session->position, 'pot' => $session->pot_amount,
+            'banked' => $session->banked_amount, 'status' => $session->status,
+            'powers' => $this->powersPayload($session),
+        ];
+    }
+
+    /** Applies the player's choice for whichever decision is currently pending, then
+     *  resumes the roll pipeline from exactly that point — a decision resolves within
+     *  the SAME call that raised it (via decide() or the timeout sweep), it never
+     *  needs a third round trip. */
+    private function resumeFromDecision(ArcadeSession $session, ?ArcadeMatch $match, string $choice, ?int $amount): array
+    {
+        $pending = $session->pending_decision;
+        $session->pending_decision = null;
+        $session->decision_started_at = null;
+
+        if ($pending['type'] === 'reroll') {
+            $rollValue = $pending['roll'];
+            $events = [];
+            if ($choice === 'use') {
+                $this->decrementUse($session, 'reroll');
+                $rollValue = random_int(1, 6);
+                $events[] = ['type' => 'reroll_used', 'original' => $pending['roll'], 'new' => $rollValue];
+            } else {
+                $events[] = ['type' => 'reroll_skipped'];
+            }
+            // No second reroll offer this turn regardless of the new value — the
+            // reroll gate only lives at the top of roll(), never re-entered here.
+            return $this->continueAfterReroll($session, $match, $rollValue, $pending['from'], $events);
+        }
+
+        if ($pending['type'] === 'protect') {
+            $events = $pending['events'] ?? [];
+            if ($choice === 'use') {
+                $this->decrementUse($session, 'protect');
+                $events[] = ['type' => 'protect_used', 'amount_saved' => $pending['amount'], 'tile' => $pending['tile_number']];
+            } else {
+                $session->pot_amount = max(0, $session->pot_amount - $pending['amount']);
+                $events[] = $pending['loss_event'];
+            }
+            return $this->resumePrimaryEffectFromContext($session, $match, $pending, $events);
+        }
+
+        if ($pending['type'] === 'bank') {
+            $events = $pending['events'] ?? [];
+            $bankAmount = $choice === 'use' ? max(0, min($amount ?? 0, $pending['cap'])) : 0;
+            if ($bankAmount > 0) {
+                $this->decrementUse($session, 'bank');
+                $session->pot_amount -= $bankAmount;
+                $session->banked_amount += $bankAmount;
+                $events[] = ['type' => 'bank_used', 'amount' => $bankAmount];
+            } else {
+                $events[] = ['type' => 'bank_skipped'];
+            }
+            return $this->resumePrimaryEffectFromContext($session, $match, $pending, $events);
+        }
+
+        throw new \RuntimeException('Unknown pending decision.');
+    }
+
+    private function resumePrimaryEffectFromContext(ArcadeSession $session, ?ArcadeMatch $match, array $pending, array $events): array
+    {
+        $game = ArcadeGame::findOrFail($session->arcade_game_id);
+        $tile = ArcadeTile::where('arcade_game_id', $game->id)->where('number', $pending['tile_number'])->first();
+
+        return $this->continueAfterPrimaryEffect(
+            $session, $match, $tile, $pending['from'], $pending['roll'], $pending['first_landing'], $pending['hop_path'], $events, $game
+        );
+    }
+
+    /** Movement + primary-landing-tile resolution — runs fresh from roll(), or resumed
+     *  (with a possibly-changed $rollValue) after a Reroll decision. */
+    private function continueAfterReroll(ArcadeSession $session, ?ArcadeMatch $match, int $rollValue, int $from, array $events): array
+    {
         $game      = ArcadeGame::findOrFail($session->arcade_game_id);
         $tileCount = $game->tile_count;
-        $tiles     = ArcadeTile::where('arcade_game_id', $game->id)->get()->keyBy('number');
-
-        $rollValue = random_int(1, 6);
-        $from      = $session->position;
         $target    = $from + $rollValue;
-        $events    = [];
         $firstLanding = $target;
-
-        // The real, sequential tile numbers the token visibly hops through on its
-        // way to $firstLanding — lets the client animate a genuine tile-by-tile
-        // hop instead of one long diagonal glide. Only covers this first segment;
-        // a snake/ladder jump afterward (via the 'move' event) isn't a sequential
-        // hop — target_number can be anywhere on the board — so it stays a plain
-        // two-point glide on the client, same as today.
         $hopPath = [];
 
         if ($target > $tileCount) {
@@ -423,7 +721,10 @@ class ArcadeSnakesService
             $events[] = ['type' => 'overshoot', 'roll' => $rollValue, 'needed' => $needed, 'bounced_to' => $newPosition];
             $session->position = $newPosition;
             $hopPath = array_merge(range($from + 1, $tileCount), range($tileCount - 1, $newPosition, -1));
-        } elseif ($target === $tileCount) {
+            return $this->finalizeRoll($session, $match, $rollValue, $from, $firstLanding, $hopPath, $events);
+        }
+
+        if ($target === $tileCount) {
             $session->position = $tileCount;
             $bonus = (int) round($session->pot_amount * $game->finish_bonus_percent / 100);
             $session->pot_amount += $bonus;
@@ -437,26 +738,97 @@ class ArcadeSnakesService
             if (!$match || !$match->isWager()) {
                 $this->awardXp($session);
             }
-        } else {
-            $session->position = $target;
-            $hopPath = range($from + 1, $target);
-            $tile = $tiles->get($target);
-            if ($tile) {
-                $this->applyTileEffect($session, $tile, $events, $game);
-                if ($session->isActive() && $tile->movement_role !== 'none' && $tile->target_number) {
-                    $events[] = ['type' => 'move', 'via' => $tile->movement_role, 'from' => $target, 'to' => $tile->target_number];
-                    $session->position = $tile->target_number;
-                    $destTile = $tiles->get($tile->target_number);
-                    if ($destTile) {
-                        $this->applyTileEffect($session, $destTile, $events, $game);
-                    }
-                }
+            return $this->finalizeRoll($session, $match, $rollValue, $from, $firstLanding, $hopPath, $events);
+        }
+
+        $session->position = $target;
+        $hopPath = range($from + 1, $target);
+        $tile = ArcadeTile::where('arcade_game_id', $game->id)->where('number', $target)->first();
+
+        if (!$tile) {
+            return $this->finalizeRoll($session, $match, $rollValue, $from, $firstLanding, $hopPath, $events);
+        }
+
+        $preview  = $this->previewTileOutcome($session, $tile);
+        $powersOn = $this->powersEligible($session, $match);
+
+        if ($preview['kind'] === 'loss') {
+            if ($powersOn && $this->usesLeft($session, 'protect') > 0) {
+                $this->pauseDecision($session, [
+                    'type' => 'protect', 'tile_number' => $tile->number, 'amount' => $preview['amount'],
+                    'loss_event' => $this->buildEffectEvent($tile, $preview, $preview['amount'], $game),
+                    'events' => $events, 'from' => $from, 'roll' => $rollValue,
+                    'first_landing' => $firstLanding, 'hop_path' => $hopPath,
+                ]);
+                return $this->pendingPayload($session, $events, $from, $firstLanding, $hopPath);
+            }
+
+            $session->pot_amount = max(0, $session->pot_amount - $preview['amount']);
+            $events[] = $this->buildEffectEvent($tile, $preview, $preview['amount'], $game);
+            return $this->continueAfterPrimaryEffect($session, $match, $tile, $from, $rollValue, $firstLanding, $hopPath, $events, $game);
+        }
+
+        if ($preview['kind'] === 'gain') {
+            $amount = $preview['amount'];
+            $assets = $session->session_assets ?? [];
+            $boosted = !empty($assets['boost_active']);
+            if ($boosted) {
+                $amount = (int) round($amount * self::POWER_BOOST_MULTIPLIER);
+                $assets['boost_active'] = false;
+                $session->session_assets = $assets;
+            }
+            $session->pot_amount += $amount;
+            $events[] = $this->buildEffectEvent($tile, $preview, $amount, $game);
+            if ($boosted) $events[] = ['type' => 'boost_consumed', 'amount' => $amount];
+
+            if ($powersOn && $this->usesLeft($session, 'bank') > 0) {
+                $this->pauseDecision($session, [
+                    'type' => 'bank', 'tile_number' => $tile->number,
+                    'cap' => (int) round($session->pot_amount * self::BANK_LIMIT_PERCENT / 100),
+                    'events' => $events, 'from' => $from, 'roll' => $rollValue,
+                    'first_landing' => $firstLanding, 'hop_path' => $hopPath,
+                ]);
+                return $this->pendingPayload($session, $events, $from, $firstLanding, $hopPath);
+            }
+            return $this->continueAfterPrimaryEffect($session, $match, $tile, $from, $rollValue, $firstLanding, $hopPath, $events, $game);
+        }
+
+        return $this->continueAfterPrimaryEffect($session, $match, $tile, $from, $rollValue, $firstLanding, $hopPath, $events, $game);
+    }
+
+    /** Golden-tile + bust checks for the primary landing tile, then the automatic
+     *  (never paused — see docs/PESA-TRAIL-POWERS.md §4) snake/ladder chain tile,
+     *  then hands off to finalizeRoll(). */
+    private function continueAfterPrimaryEffect(ArcadeSession $session, ?ArcadeMatch $match, ?ArcadeTile $tile, int $from, int $rollValue, int $firstLanding, array $hopPath, array $events, ArcadeGame $game): array
+    {
+        if (!$tile) {
+            return $this->finalizeRoll($session, $match, $rollValue, $from, $firstLanding, $hopPath, $events);
+        }
+
+        $this->applyGoldenIfNeeded($session, $tile, $events);
+        $this->checkBust($session, $game, $events);
+
+        if ($session->isActive() && $tile->movement_role !== 'none' && $tile->target_number) {
+            $events[] = ['type' => 'move', 'via' => $tile->movement_role, 'from' => $tile->number, 'to' => $tile->target_number];
+            $session->position = $tile->target_number;
+            $destTile = ArcadeTile::where('arcade_game_id', $game->id)->where('number', $tile->target_number)->first();
+            if ($destTile) {
+                $this->applyTileEffect($session, $destTile, $events, $game);
             }
         }
 
+        return $this->finalizeRoll($session, $match, $rollValue, $from, $firstLanding, $hopPath, $events);
+    }
+
+    /** Persists the roll, advances the turn, and settles the match if this roll
+     *  decided it — the tail end every path through the pipeline funnels into. */
+    private function finalizeRoll(ArcadeSession $session, ?ArcadeMatch $match, int $rollValue, int $from, int $firstLanding, array $hopPath, array $events): array
+    {
         $session->last_roll = $rollValue;
         $session->last_event = $events;
         $session->missed_turns = 0; // a completed roll clears any prior missed-turn count
+        $session->pending_decision = null;
+        $session->decision_started_at = null;
         $session->save();
 
         $settlement = null;
@@ -476,15 +848,16 @@ class ArcadeSnakesService
             }
         }
 
-        Cache::forget($lockKey);
-
         $wonHere = $settlement && $settlement['winner_session_id'] === $session->id;
 
         return [
+            'pending' => false,
             'roll' => $rollValue, 'from' => $from, 'first_landing' => $firstLanding, 'hop_path' => $hopPath,
-            'events' => $events, 'position' => $session->position, 'pot' => $session->pot_amount, 'status' => $session->status,
+            'events' => $events, 'position' => $session->position, 'pot' => $session->pot_amount,
+            'banked' => $session->banked_amount, 'status' => $session->status,
             'winner_gain' => $wonHere ? $settlement['winner_gain'] : null,
             'forfeit_bonus' => $wonHere ? $settlement['forfeit_bonus'] : null,
+            'powers' => $this->powersPayload($session),
         ];
     }
 
@@ -523,14 +896,24 @@ class ArcadeSnakesService
     public function expireTurnIfNeeded(ArcadeMatch $match): void
     {
         if (!$match->isTurnBased() || !$match->current_turn_session_id || !$match->turn_started_at) return;
+
+        $holder = ArcadeSession::find($match->current_turn_session_id);
+
+        // A player mid-decision (Reroll/Protect/Bank) still legitimately holds
+        // the turn — their own decision-timeout clock governs them, not the
+        // outer turn clock, so a poll landing here must never force-advance the
+        // turn away from someone who's actively deciding.
+        if ($holder && $holder->pending_decision) {
+            $this->expireDecisionIfNeeded($holder, $match);
+            return;
+        }
+
         // Still covering the previous roll's animation delay (see advanceTurn())
         // — diffInSeconds() is an ABSOLUTE difference, so without this guard a
         // still-future turn_started_at could read as "already expired" instead
         // of "hasn't even started counting down yet".
         if ($match->turn_started_at->isFuture()) return;
         if ($match->turn_started_at->diffInSeconds(now()) < self::TURN_SECONDS) return;
-
-        $holder = ArcadeSession::find($match->current_turn_session_id);
 
         if ($holder && $match->isWager() && $holder->isActive()) {
             $holder->increment('missed_turns');
@@ -542,6 +925,25 @@ class ArcadeSnakesService
         }
 
         $this->advanceTurn($match);
+    }
+
+    /** Auto-resolves a stale pending decision as a skip once DECISION_TIMEOUT_SECONDS
+     *  has passed — the fail-safe from docs/PESA-TRAIL-POWERS.md §2: a timeout must
+     *  NEVER resolve as "use", only ever as "skip", so a dropped connection can't
+     *  accidentally burn a power use or apply an effect the player never confirmed. */
+    private function expireDecisionIfNeeded(ArcadeSession $session, ?ArcadeMatch $match): void
+    {
+        if (!$session->pending_decision || !$session->decision_started_at) return;
+        if ($session->decision_started_at->diffInSeconds(now()) < self::DECISION_TIMEOUT_SECONDS) return;
+
+        $lockKey = "arcade_roll_lock_{$session->id}";
+        if (!Cache::add($lockKey, true, 10)) return; // a real decide() call is already resolving it
+
+        try {
+            $this->resumeFromDecision($session, $match, 'skip', null);
+        } finally {
+            Cache::forget($lockKey);
+        }
     }
 
     /** Withdraws a player from a Rivals Trail round after too many missed turns:
@@ -556,8 +958,13 @@ class ArcadeSnakesService
 
             if (!$lockedSession || !$lockedSession->isActive()) return; // already resolved by a concurrent request
 
+            // The 30% forfeit cut only ever comes off pot_amount — banked_amount
+            // stays untouchable here too, same rule as the 60% winner's claim
+            // (see settleMatchIfDecided()), so Bank protects a player even when
+            // THEY are the one leaving early, not just when they win.
             $cut = (int) round($lockedSession->pot_amount * self::FORFEIT_CUT_PERCENT / 100);
             $remaining = $lockedSession->pot_amount - $cut;
+            $keptTotal = $remaining + $lockedSession->banked_amount;
 
             $lockedMatch->forfeit_pool_amount += $cut;
             $lockedMatch->save();
@@ -569,7 +976,7 @@ class ArcadeSnakesService
             $lockedSession->save();
 
             $progress = $lockedSession->user->getOrCreateProgress();
-            $progress->balance += $remaining;
+            $progress->balance += $keptTotal;
             $progress->recalculateNetWorth();
             $progress->save();
 
@@ -577,7 +984,7 @@ class ArcadeSnakesService
                 'user_id' => $lockedSession->user_id,
                 'type'    => 'arcade_forfeit_penalty',
                 'title'   => '🚪 Left a Rivals Trail round early',
-                'body'    => 'You missed too many turns and were withdrawn — you kept KES ' . number_format($remaining) . ' of your in-round savings.',
+                'body'    => 'You missed too many turns and were withdrawn — you kept KES ' . number_format($keptTotal) . ' of your in-round savings.',
                 'icon'    => '🚪',
                 // No 'amount' key here on purpose: this notification sits in the
                 // neutral/event statement bucket (not income or expense), and the
@@ -660,11 +1067,16 @@ class ArcadeSnakesService
             foreach ($sessions as $s) {
                 if ($s->id === $winner->id || $s->status !== 'active') continue;
 
+                // The cut is computed off pot_amount ONLY — banked_amount is never
+                // part of this arithmetic. That's the entire point of Bank (see
+                // docs/PESA-TRAIL-POWERS.md §6): money a player secured is
+                // protected from the opponent's claim.
                 $cut = (int) round($s->pot_amount * self::WINNER_CUT_PERCENT / 100);
                 $s->pot_amount -= $cut;
                 $s->status = 'lost';
                 $s->ended_at = now();
                 $this->awardXp($s);
+                $keptTotal = $s->pot_amount + $s->banked_amount;
                 // Persisted (not just used for the notification below) so a loser
                 // who learns about this via a later poll — the decisive roll was
                 // someone else's, or the match ended by an opponent's forfeit —
@@ -677,7 +1089,7 @@ class ArcadeSnakesService
                 $s->save();
 
                 $loserProgress = $s->user->getOrCreateProgress();
-                $loserProgress->balance += $s->pot_amount;
+                $loserProgress->balance += $keptTotal;
                 $loserProgress->recalculateNetWorth();
                 $loserProgress->save();
 
@@ -685,7 +1097,7 @@ class ArcadeSnakesService
                     'user_id' => $s->user_id,
                     'type'    => 'arcade_stake_lost',
                     'title'   => '📉 Lost a Rivals Trail round',
-                    'body'    => 'You kept KES ' . number_format($s->pot_amount) . ' of your in-round savings.',
+                    'body'    => 'You kept KES ' . number_format($keptTotal) . ' of your in-round savings.',
                     'icon'    => '📉',
                     'data'    => ['url' => route('arcade.snakes.lobby'), 'amount' => $cut],
                 ]);
@@ -711,7 +1123,7 @@ class ArcadeSnakesService
             $winner->save();
 
             $winnerProgress = $winner->user->getOrCreateProgress();
-            $winnerProgress->balance += $winner->pot_amount;
+            $winnerProgress->balance += $winner->pot_amount + $winner->banked_amount;
             $winnerProgress->recalculateNetWorth();
             $winnerProgress->save();
 
@@ -758,45 +1170,81 @@ class ArcadeSnakesService
                 : self::EXPENSE_LESSONS[$tileNumber % count(self::EXPENSE_LESSONS)]);
     }
 
+    /** Auto-applies a tile's effect with no strategy-power pause — used ONLY for the
+     *  chained snake/ladder destination tile (see continueAfterPrimaryEffect()). The
+     *  PRIMARY landing tile goes through previewTileOutcome()/buildEffectEvent()
+     *  instead so Protect/Bank can pause before this same math runs — see
+     *  docs/PESA-TRAIL-POWERS.md §4 for why the chain tile is deliberately excluded. */
     private function applyTileEffect(ArcadeSession $session, ArcadeTile $tile, array &$events, ArcadeGame $game): void
     {
         if (!$session->isActive()) return;
 
-        if ($tile->is_mystery) {
-            $outcome = $this->pickMysteryOutcome($game->id);
-            if ($outcome) {
-                $amount = (int) round($session->pot_amount * $outcome->percent / 100);
-                if ($outcome->effect === 'gift') {
-                    $session->pot_amount += $amount;
-                } else {
-                    $session->pot_amount = max(0, $session->pot_amount - $amount);
-                }
-                $events[] = ['type' => 'mystery', 'effect' => $outcome->effect, 'label' => $outcome->label, 'amount' => $amount, 'tile' => $tile->number];
-            }
-        } elseif ($tile->money_effect === 'reward') {
-            $amount = (int) round($session->pot_amount * $tile->money_percent / 100);
-            $session->pot_amount += $amount;
-            $events[] = ['type' => 'reward', 'amount' => $amount, 'tile' => $tile->number, 'icon' => $tile->icon, 'label' => $tile->label ?: $this->flavorText($game->id, 'reward', $tile->number)];
-        } elseif ($tile->money_effect === 'expense') {
-            $amount = (int) round($session->pot_amount * $tile->money_percent / 100);
-            $session->pot_amount = max(0, $session->pot_amount - $amount);
-            $events[] = ['type' => 'expense', 'amount' => $amount, 'tile' => $tile->number, 'icon' => $tile->icon, 'label' => $tile->label ?: $this->flavorText($game->id, 'expense', $tile->number)];
+        $preview = $this->previewTileOutcome($session, $tile);
+        if ($preview['kind'] === 'gain') {
+            $session->pot_amount += $preview['amount'];
+            $events[] = $this->buildEffectEvent($tile, $preview, $preview['amount'], $game);
+        } elseif ($preview['kind'] === 'loss') {
+            $session->pot_amount = max(0, $session->pot_amount - $preview['amount']);
+            $events[] = $this->buildEffectEvent($tile, $preview, $preview['amount'], $game);
         }
 
-        if ($tile->is_golden) {
-            $assets = $session->session_assets ?? [];
-            if (empty($assets['golden_seen'])) {
-                $assets['golden_seen'] = true;
-                $session->session_assets = $assets;
-                $events[] = ['type' => 'golden_first', 'tile' => $tile->number];
-            } else {
-                $boost = (int) round($session->stake_amount * self::GOLDEN_BOOST_PERCENT / 100);
-                $session->pot_amount += $boost;
-                $events[] = ['type' => 'golden_boost', 'amount' => $boost, 'tile' => $tile->number];
-            }
-        }
-
+        $this->applyGoldenIfNeeded($session, $tile, $events);
         $this->checkBust($session, $game, $events);
+    }
+
+    /** Computes what a tile WOULD do (including rolling a mystery outcome, so the
+     *  player is shown a concrete amount — see spec: "the player knows exactly what
+     *  they are protecting themselves from") without mutating pot_amount. Callers
+     *  decide whether to pause for Protect/Bank before applying it via buildEffectEvent(). */
+    private function previewTileOutcome(ArcadeSession $session, ArcadeTile $tile): array
+    {
+        if ($tile->is_mystery) {
+            $outcome = $this->pickMysteryOutcome($session->arcade_game_id);
+            if (!$outcome) return ['kind' => 'none'];
+            $amount = (int) round($session->pot_amount * $outcome->percent / 100);
+            return [
+                'kind' => $outcome->effect === 'gift' ? 'gain' : 'loss',
+                'amount' => $amount,
+                'mystery' => ['effect' => $outcome->effect, 'label' => $outcome->label],
+            ];
+        }
+        if ($tile->money_effect === 'reward') {
+            return ['kind' => 'gain', 'amount' => (int) round($session->pot_amount * $tile->money_percent / 100)];
+        }
+        if ($tile->money_effect === 'expense') {
+            return ['kind' => 'loss', 'amount' => (int) round($session->pot_amount * $tile->money_percent / 100)];
+        }
+        return ['kind' => 'none'];
+    }
+
+    /** Builds the event log entry for a preview, using the FINAL amount (which may
+     *  differ from $preview['amount'] if Boost multiplied a gain) so the event log
+     *  always reflects what actually happened to pot_amount. */
+    private function buildEffectEvent(ArcadeTile $tile, array $preview, int $amount, ArcadeGame $game): array
+    {
+        if (!empty($preview['mystery'])) {
+            return ['type' => 'mystery', 'effect' => $preview['mystery']['effect'], 'label' => $preview['mystery']['label'], 'amount' => $amount, 'tile' => $tile->number];
+        }
+        if ($preview['kind'] === 'gain') {
+            return ['type' => 'reward', 'amount' => $amount, 'tile' => $tile->number, 'icon' => $tile->icon, 'label' => $tile->label ?: $this->flavorText($game->id, 'reward', $tile->number)];
+        }
+        return ['type' => 'expense', 'amount' => $amount, 'tile' => $tile->number, 'icon' => $tile->icon, 'label' => $tile->label ?: $this->flavorText($game->id, 'expense', $tile->number)];
+    }
+
+    private function applyGoldenIfNeeded(ArcadeSession $session, ArcadeTile $tile, array &$events): void
+    {
+        if (!$session->isActive() || !$tile->is_golden) return;
+
+        $assets = $session->session_assets ?? [];
+        if (empty($assets['golden_seen'])) {
+            $assets['golden_seen'] = true;
+            $session->session_assets = $assets;
+            $events[] = ['type' => 'golden_first', 'tile' => $tile->number];
+        } else {
+            $boost = (int) round($session->stake_amount * self::GOLDEN_BOOST_PERCENT / 100);
+            $session->pot_amount += $boost;
+            $events[] = ['type' => 'golden_boost', 'amount' => $boost, 'tile' => $tile->number];
+        }
     }
 
     private function checkBust(ArcadeSession $session, ArcadeGame $game, array &$events): void
@@ -859,7 +1307,11 @@ class ArcadeSnakesService
             }
         }
 
-        $payout = $session->pot_amount;
+        // banked_amount is included here too — it's the only other code path
+        // (besides settleMatchIfDecided()) that ever converts a session's money
+        // back into real wallet balance, so leaving it out would strand a
+        // standard-mode player's banked savings forever.
+        $payout = $session->pot_amount + $session->banked_amount;
 
         return DB::transaction(function () use ($session, $payout) {
             $progress = $session->user->getOrCreateProgress();
@@ -869,7 +1321,7 @@ class ArcadeSnakesService
 
             $session->save();
 
-            return ['payout' => $payout, 'xp_awarded' => $session->xp_awarded, 'balance' => $progress->balance, 'status' => $session->status];
+            return ['payout' => $payout, 'banked' => $session->banked_amount, 'xp_awarded' => $session->xp_awarded, 'balance' => $progress->balance, 'status' => $session->status];
         });
     }
 

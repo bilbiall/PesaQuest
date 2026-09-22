@@ -120,9 +120,32 @@ class ArcadeSnakesController extends Controller
             'best_pot'     => (int) $ended->max('pot_amount'),
         ];
 
+        // Money Mined leaderboard — see docs/PESA-TRAIL-POWERS.md §7. A completed
+        // session's pot_amount + banked_amount already IS its closing balance
+        // (settlement writes the post-cut/post-claim values straight onto the
+        // row), so this needs no separate accumulator — just sum what's there.
+        $moneyMinedRows = ArcadeSession::query()
+            ->selectRaw('user_id, SUM(pot_amount + banked_amount) as total_mined, COUNT(*) as games, SUM(CASE WHEN status = "won" THEN 1 ELSE 0 END) as wins')
+            ->where('arcade_game_id', $game->id)
+            ->whereIn('status', ['won', 'lost', 'busted', 'forfeited', 'cashed_out'])
+            ->groupBy('user_id')
+            ->orderByDesc('total_mined')
+            ->limit(10)
+            ->get();
+        $moneyMinedNames = User::whereIn('id', $moneyMinedRows->pluck('user_id'))->pluck('name', 'id');
+        $moneyMined = $moneyMinedRows->values()->map(fn ($row, $i) => [
+            'rank'        => $i + 1,
+            'name'        => $moneyMinedNames[$row->user_id] ?? 'Player',
+            'is_me'       => (int) $row->user_id === $user->id,
+            'money_mined' => (int) $row->total_mined,
+            'wins'        => (int) $row->wins,
+            'games'       => (int) $row->games,
+            'win_rate'    => $row->games > 0 ? (int) round($row->wins / $row->games * 100) : 0,
+        ]);
+
         return view('arcade.snakes.lobby', [
             'game' => $game, 'tier' => $tier, 'activeSession' => $activeSession, 'openMatches' => $openMatches, 'stats' => $stats,
-            'openWagerMatches' => $openWagerMatches, 'myInvites' => $myInvites, 'friends' => $friends,
+            'openWagerMatches' => $openWagerMatches, 'myInvites' => $myInvites, 'friends' => $friends, 'moneyMined' => $moneyMined,
             'minWagerStake' => ArcadeSnakesService::MIN_WAGER_STAKE,
         ]);
     }
@@ -415,8 +438,10 @@ class ArcadeSnakesController extends Controller
         $turnMode  = $match->turn_mode ?? 'free';
         $isMyTurn  = !$match || !$match->isTurnBased() || $match->current_turn_session_id === $session->id;
         $turnSecondsRemaining = $this->turnSecondsRemaining($match);
+        $powers    = $service->powersPayload($session);
+        $pendingDecision = $session->pending_decision;
 
-        return view('arcade.snakes.play', compact('session', 'game', 'tiles', 'opponents', 'progress', 'positions', 'turnMode', 'isMyTurn', 'turnSecondsRemaining', 'match'));
+        return view('arcade.snakes.play', compact('session', 'game', 'tiles', 'opponents', 'progress', 'positions', 'turnMode', 'isMyTurn', 'turnSecondsRemaining', 'match', 'powers', 'pendingDecision'));
     }
 
     private function turnSecondsRemaining(?ArcadeMatch $match): ?int
@@ -513,6 +538,8 @@ class ArcadeSnakesController extends Controller
             'opponents'             => $opponents,
             'bot_roll'              => $botRoll,
             'reaction'              => $match ? Cache::get("arcade_match_{$match->id}_reaction") : null,
+            'powers'                => $service->powersPayload($session),
+            'pending_decision'      => $session->pending_decision,
         ]);
     }
 
@@ -557,6 +584,40 @@ class ArcadeSnakesController extends Controller
         }
 
         return response()->json(['success' => true] + $result);
+    }
+
+    /** Resolves a pending Reroll/Protect/Bank decision — see
+     *  docs/PESA-TRAIL-POWERS.md §4 for the pause/resume design this resumes. */
+    public function decide(Request $request, ArcadeSession $session, ArcadeSnakesService $service)
+    {
+        abort_if($session->user_id !== auth()->id(), 403);
+
+        $data = $request->validate([
+            'choice' => 'required|in:use,skip',
+            'amount' => 'nullable|integer|min:0',
+        ]);
+
+        try {
+            $result = $service->decide($session, $data['choice'], $data['amount'] ?? null);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true] + $result);
+    }
+
+    /** Arms Boost for the player's next roll — must be called BEFORE roll(). */
+    public function activateBoost(ArcadeSession $session, ArcadeSnakesService $service)
+    {
+        abort_if($session->user_id !== auth()->id(), 403);
+
+        try {
+            $powers = $service->activateBoost($session);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true, 'powers' => $powers]);
     }
 
     public function cashOut(ArcadeSession $session, ArcadeSnakesService $service)
