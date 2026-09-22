@@ -134,6 +134,18 @@ as `use`.
 using the heuristics below — a bot's decision is never exposed as a `pending_decision` pause
 that a human has to watch or wait on.
 
+**Client UI (Sept 22)**: a pending decision renders as `#decisionToast`
+(`resources/views/arcade/snakes/play.blade.php`) — a small card anchored in the exact same
+spot/style as the reward/expense `#eventToast` (both driven by `positionToastOverBoard()`),
+**not** a full-screen dimming `.overlay`. The board and roll button stay visible; only
+`cashOutBtn` is explicitly disabled for the pending window (in `doRoll()`, re-enabled in
+`finishRoll()` and the `pollState()` stale-decision path) since the old overlay's backdrop
+isn't there anymore to block clicks. Mobile also relocates `#powerTray` (remaining
+Reroll/Protect/Boost/Bank counts) from the sidebar into the always-visible floating die widget
+via `relocatePowerTray()` — it was previously buried inside the collapsed drawer with no
+glanceable mobile view. Do not re-introduce a full-screen blocking modal for decisions without
+re-adding an equivalent guard on cash-out.
+
 ## 5. Bot heuristics
 
 - **Boost**: activate ~40% of turns while `boost_left > 0`. No real judgment needed — just

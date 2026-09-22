@@ -211,7 +211,7 @@
         @media (max-width:1023px) {
             .die-panel {
                 position:fixed; z-index:70; top:0; left:0; /* JS sets real left/top, over the board, on load */
-                margin:0; padding:.3rem; gap:.3rem; width:80px;
+                margin:0; padding:.3rem; gap:.3rem; width:96px;
             }
             .die-panel .die-badge { width:78px; height:78px; touch-action:none; cursor:grab; }
             .die-panel .die-badge.dragging { cursor:grabbing; }
@@ -227,10 +227,32 @@
             .die-panel .cashout-btn { font-size:.6rem; padding:.35rem .2rem; }
             .die-panel.thrown .die-badge { animation:dieThrow .45s ease; }
 
+            /* Strategy-power counts, moved (via relocatePowerTray(), not
+               duplicated) into this always-visible floating widget — left in
+               their natural sidebar spot they were buried inside the collapsed
+               drawer, so a mobile player had no glanceable way to see remaining
+               Reroll/Protect/Boost/Bank uses without opening the hamburger menu
+               mid-game. Icon + tiny count badge only; the full label and
+               "Strategy Powers" heading stay for the desktop sidebar layout. */
+            .die-panel .power-tray { margin:0; width:100%; }
+            .die-panel .power-tray > p { display:none; }
+            .die-panel .power-grid { grid-template-columns:repeat(2,1fr); gap:.25rem; }
+            .die-panel .power-badge { position:relative; padding:.32rem .1rem; border-radius:.55rem; gap:0; }
+            .die-panel .power-badge .power-icon { font-size:.85rem; }
+            .die-panel .power-badge .power-name { display:none; }
+            .die-panel .power-badge .power-count {
+                position:absolute; top:-5px; right:-3px; min-width:15px; height:15px; padding:0 2px;
+                border-radius:999px; background:#1a1a2e; border:1.5px solid rgba(255,255,255,.3);
+                font-size:.56rem; display:flex; align-items:center; justify-content:center;
+            }
+
             /* These three float above the board and were sized for a roomy
                desktop screen — on a phone they covered so much of the board
                that the game underneath became hard to see while they were up. */
             .event-toast { max-width:230px; padding:.6rem .75rem; font-size:.68rem; border-radius:.8rem; line-height:1.4; }
+            .decision-toast { width:min(92vw, 280px); padding:.6rem .7rem .55rem; }
+            .decision-toast .decision-headline { font-size:.74rem; }
+            .decision-toast .decision-sub { font-size:.6rem; }
             .notif-panel { width:250px; max-height:280px; }
             .notif-row { padding:.6rem .7rem; }
             .overlay-card { padding:1.3rem; max-width:250px; border-radius:1.1rem; }
@@ -241,11 +263,13 @@
         /* Still too large on small phones even after the shrink above — the
          * board itself needs the screen space more than the die does there. */
         @media (max-width:480px) {
-            .die-panel { width:64px; }
+            .die-panel { width:80px; }
             .die-panel .die-badge { width:54px; height:54px; }
             .die-panel .die-scene { transform:scale(.56); }
             .die-panel .die-label { font-size:.46rem; letter-spacing:0; }
             .die-panel .cashout-btn { font-size:.52rem; padding:.28rem .15rem; border-radius:.55rem; }
+            .die-panel .power-badge .power-icon { font-size:.75rem; }
+            .die-panel .power-badge .power-count { min-width:13px; height:13px; font-size:.5rem; }
         }
         @keyframes dieThrow { 0% { transform:scale(1); } 35% { transform:scale(1.22) rotate(10deg); } 65% { transform:scale(.92) rotate(-6deg); } 100% { transform:scale(1) rotate(0); } }
         .die-value-badge {
@@ -495,24 +519,50 @@
 
         .token.shield-flash { filter:drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 18px #38bdf8); }
 
-        .decision-card { max-width:360px; }
-        .decision-actions { display:flex; gap:.5rem; }
-        .decision-actions .roll-btn { flex:1; }
-        .decision-skip { background:rgba(255,255,255,.06)!important; border:1px solid rgba(255,255,255,.15)!important; color:#d1d5db!important; }
-        .decision-countdown { margin-top:1rem; font-size:.7rem; font-weight:700; color:#6b7280; }
-        .bank-presets { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; margin-bottom:.4rem; }
-        .bank-preset-btn {
-            display:flex; flex-direction:column; align-items:center; gap:.1rem; padding:.55rem .2rem;
-            border-radius:.7rem; background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.35);
+        /* Strategy-power decisions (Reroll/Protect/Bank) — a mild, toast-style
+           card anchored in the SAME spot the reward/expense event-toast already
+           uses (see docs/PESA-TRAIL-POWERS.md), not a full-screen dimming
+           overlay — the board and controls stay visible/tappable the whole
+           time a decision is pending. Mirrors .event-toast's own positioning
+           rules (base/mobile/desktop/rotated) below so the two read as one
+           consistent notification family rather than two different UI
+           languages; see positionToastOverBoard() (JS) for the rotated-mode
+           anchor these two classes share via --toast-left/--toast-top. */
+        .decision-toast {
+            position:fixed; left:50%; bottom:170px; transform:translateX(-50%) translateY(14px) scale(.94);
+            width:min(92vw, 340px); background:rgba(10,9,20,.85); border:1px solid rgba(165,180,252,.4);
+            border-radius:1.1rem; padding:.75rem .9rem .65rem; z-index:9999; opacity:0; pointer-events:none;
+            transition:opacity .35s cubic-bezier(.34,1.56,.64,1), transform .35s cubic-bezier(.34,1.56,.64,1);
+            box-shadow:0 14px 34px rgba(0,0,0,.5); text-shadow:0 1px 3px rgba(0,0,0,.7); box-sizing:border-box;
+        }
+        .decision-toast.show { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0) scale(1); }
+        .decision-toast .decision-row { display:flex; align-items:center; gap:.6rem; }
+        .decision-toast .decision-icon { font-size:1.4rem; flex-shrink:0; }
+        .decision-toast .decision-text { flex-grow:1; min-width:0; }
+        .decision-toast .decision-headline { font-size:.8rem; font-weight:900; color:#e5e7eb; }
+        .decision-toast .decision-sub { font-size:.66rem; color:#9ca3af; font-weight:600; margin-top:.1rem; }
+        .decision-toast .decision-ring {
+            width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+            font-weight:900; font-size:.7rem; color:#04140c; flex-shrink:0; background:#34d399; transition:background .3s ease;
+        }
+        .decision-toast .decision-actions { display:flex; gap:.4rem; margin-top:.55rem; }
+        .decision-toast .decision-actions button { flex:1; font-weight:900; border-radius:.65rem; padding:.45rem .3rem; font-size:.72rem; cursor:pointer; border:none; color:#fff; font-family:inherit; }
+        .decision-toast .decision-use { background:linear-gradient(135deg,#f59e0b,#d97706); }
+        .decision-toast .decision-skip { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15); color:#d1d5db; }
+        .decision-toast .bank-presets { display:grid; grid-template-columns:repeat(4,1fr); gap:.35rem; margin-top:.55rem; }
+        .decision-toast .bank-preset-btn {
+            display:flex; flex-direction:column; align-items:center; gap:.05rem; padding:.4rem .15rem;
+            border-radius:.6rem; background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.35);
             color:#6ee7b7; font-family:inherit; cursor:pointer; transition:transform .12s;
         }
-        .bank-preset-btn:hover { transform:translateY(-2px); background:rgba(16,185,129,.24); }
-        .bank-preset-btn:active { transform:scale(.95); }
-        .bank-preset-btn b { font-size:.85rem; }
-        .bank-preset-btn span { font-size:.62rem; opacity:.85; }
+        .decision-toast .bank-preset-btn:hover { transform:translateY(-2px); background:rgba(16,185,129,.24); }
+        .decision-toast .bank-preset-btn:active { transform:scale(.95); }
+        .decision-toast .bank-preset-btn b { font-size:.72rem; }
+        .decision-toast .bank-preset-btn span { font-size:.56rem; opacity:.85; }
         @media (max-width:400px) {
-            .bank-presets { grid-template-columns:repeat(2,1fr); }
+            .decision-toast .bank-presets { grid-template-columns:repeat(2,1fr); }
         }
+        @media (min-width:1024px) { .decision-toast { bottom:40px; } }
 
         .sparkle { position:fixed; font-size:1rem; z-index:9990; pointer-events:none; animation: sparkleUp 1.1s ease-out forwards; }
         @keyframes sparkleUp { 0% { transform:translate(0,0) scale(.4) rotate(0deg); opacity:1; } 100% { transform:translate(var(--sx,0),-46px) scale(1.1) rotate(90deg); opacity:0; } }
@@ -587,6 +637,17 @@
             .event-toast .toast-headline, .event-toast .toast-lesson {
                 display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
             }
+            /* Same reasoning as .event-toast just above — read text, deliberately
+               NOT rotated like .overlay-card, re-anchored off the same
+               --toast-left/--toast-top point (positionToastOverBoard() sets both
+               toasts from the same board rect). */
+            .decision-toast {
+                left:var(--toast-left, 50%); top:var(--toast-top, 92%); bottom:auto;
+                transform:translate(-50%,-100%) scale(.94);
+                width:min(90vw, 300px);
+                background:rgba(10,9,20,.82);
+            }
+            .decision-toast.show { transform:translate(-50%,-100%) scale(1); }
             .overlay-card { transform:rotate(90deg); }
             /* The drawer itself is a full-height edge panel — rotating it like the
                small die/banner/toast above would need the same dimension-swapping
@@ -730,10 +791,20 @@
                      instead of as a permanent line of text crowding the die controls. --}}
             </div>
 
+            {{-- Anchor for relocatePowerTray() (JS) — marks #powerTray's natural
+                 desktop position so it can be moved into the always-visible
+                 floating die widget on mobile (see .die-panel .power-tray CSS)
+                 and moved back here on a resize up to desktop, without ever
+                 duplicating the node (duplicate ids would break every
+                 getElementById() call updatePowerTray() makes). --}}
+            <div id="powerTrayAnchor"></div>
+
             {{-- Strategy powers — offered in any real match, any size (see
                  ArcadeSnakesService::powersEligible()). Boost is the only one manually
                  triggered here; Reroll/Protect/Bank are offered automatically as a
-                 decision pause mid-roll — see docs/PESA-TRAIL-POWERS.md. --}}
+                 decision pause mid-roll — see docs/PESA-TRAIL-POWERS.md. Each of the
+                 three passive badges is also tappable to explain itself via a toast —
+                 the title="" hover tooltip alone never reaches a touchscreen player. --}}
             @if($powers['eligible'])
             <div class="power-tray" id="powerTray">
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Strategy Powers</p>
@@ -741,15 +812,15 @@
                     <button type="button" class="power-badge {{ $powers['boost_left'] <= 0 && !$powers['boost_active'] ? 'power-empty' : '' }} {{ $powers['boost_active'] ? 'power-armed' : '' }}" id="powerBoost" onclick="armBoost()" title="Arm before rolling — your next gain is 50% bigger" {{ ($powers['boost_left'] <= 0 || $powers['boost_active'] || !$isMyTurn || $session->status !== 'active') ? 'disabled' : '' }}>
                         <span class="power-icon">🚀</span><span class="power-name">Boost</span><span class="power-count">{{ $powers['boost_left'] }}</span>
                     </button>
-                    <div class="power-badge {{ $powers['reroll_left'] <= 0 ? 'power-empty' : '' }}" id="powerReroll" title="Offered automatically right after you see your roll">
+                    <button type="button" class="power-badge {{ $powers['reroll_left'] <= 0 ? 'power-empty' : '' }}" id="powerReroll" title="Offered automatically right after you see your roll" onclick="showToast(['🎲 Reroll — offered automatically right after you see your roll, before you move.'])">
                         <span class="power-icon">🎲</span><span class="power-name">Reroll</span><span class="power-count">{{ $powers['reroll_left'] }}</span>
-                    </div>
-                    <div class="power-badge {{ $powers['protect_left'] <= 0 ? 'power-empty' : '' }}" id="powerProtect" title="Offered automatically when you land on a loss">
+                    </button>
+                    <button type="button" class="power-badge {{ $powers['protect_left'] <= 0 ? 'power-empty' : '' }}" id="powerProtect" title="Offered automatically when you land on a loss" onclick="showToast(['🛡️ Protect — offered automatically when you land on a loss, to block it.'])">
                         <span class="power-icon">🛡️</span><span class="power-name">Protect</span><span class="power-count">{{ $powers['protect_left'] }}</span>
-                    </div>
-                    <div class="power-badge {{ $powers['bank_left'] <= 0 ? 'power-empty' : '' }}" id="powerBank" title="Offered automatically when you land on a gain">
+                    </button>
+                    <button type="button" class="power-badge {{ $powers['bank_left'] <= 0 ? 'power-empty' : '' }}" id="powerBank" title="Offered automatically when you land on a gain" onclick="showToast(['🏦 Bank — offered automatically when you land on a gain, to secure some of it.'])">
                         <span class="power-icon">🏦</span><span class="power-name">Bank</span><span class="power-count">{{ $powers['bank_left'] }}</span>
-                    </div>
+                    </button>
                 </div>
             </div>
             @endif
@@ -843,12 +914,12 @@
 
     <div id="eventToast" class="event-toast"></div>
 
-    {{-- Strategy-power decision pause — see docs/PESA-TRAIL-POWERS.md §4. Same
-         overlay layer as the end-of-round cards; only one is ever shown at a time. --}}
-    <div id="decisionOverlay" class="overlay"><div class="overlay-card decision-card">
-        <div id="decisionCard"></div>
-        <p class="decision-countdown">⏱ Auto-skip in <span id="decisionCountdown">{{ \App\Services\ArcadeSnakesService::DECISION_TIMEOUT_SECONDS }}</span>s</p>
-    </div></div>
+    {{-- Strategy-power decision pause — see docs/PESA-TRAIL-POWERS.md §4. A
+         mild, non-blocking toast (NOT the full-screen .overlay the end-of-round
+         cards below use) — same spot/style as the reward/expense event-toast,
+         so the board and roll/cash-out controls stay visible and tappable the
+         whole time a decision is pending (see PESA-TRAIL-POWERS.md §4). --}}
+    <div id="decisionToast" class="decision-toast"><div id="decisionCard"></div></div>
 
     <div id="winOverlay" class="overlay"><div class="overlay-card">
         <p class="text-3xl mb-2">🏁🎉</p>
@@ -1298,13 +1369,32 @@
                 diePanel.parentElement.insertBefore(turnBanner, diePanel);
             }
         }
+        // Moves (not duplicates — same reasoning as relocateGameHud() above)
+        // the strategy-powers tray between its natural sidebar spot (desktop,
+        // and mobile once the drawer is opened) and the always-visible
+        // floating die widget (mobile) — buried in the sidebar alone, a
+        // mobile player had no glanceable way to see remaining Reroll/
+        // Protect/Boost/Bank uses without opening the hamburger menu
+        // mid-game. #powerTrayAnchor marks where it belongs when moved back.
+        function relocatePowerTray() {
+            const tray = document.getElementById('powerTray');
+            const anchor = document.getElementById('powerTrayAnchor');
+            const diePanel = document.querySelector('.die-panel');
+            if (!tray || !anchor || !diePanel) return;
+            if (window.innerWidth < 1024) {
+                if (tray.parentElement !== diePanel) diePanel.appendChild(tray);
+            } else if (tray.previousElementSibling !== anchor) {
+                anchor.parentElement.insertBefore(tray, anchor.nextSibling);
+            }
+        }
         relocateGameHud();
+        relocatePowerTray();
         let hudResizeTimer = null;
         window.addEventListener('resize', () => {
             clearTimeout(hudResizeTimer);
-            hudResizeTimer = setTimeout(relocateGameHud, 150);
+            hudResizeTimer = setTimeout(() => { relocateGameHud(); relocatePowerTray(); }, 150);
         });
-        window.addEventListener('orientationchange', () => setTimeout(relocateGameHud, 250));
+        window.addEventListener('orientationchange', () => setTimeout(() => { relocateGameHud(); relocatePowerTray(); }, 250));
 
         // Anchors the event toast near the BOTTOM of the ROTATED board's true
         // on-screen rect — see the .event-toast rule's comment for why a plain
@@ -1315,19 +1405,25 @@
         // sat the toast right on top of active gameplay in the board's middle.
         // No-ops outside the forced-landscape case, clearing any inline
         // override so the plain (already bottom-anchored) CSS rule takes over.
+        // Positions BOTH the event-toast and the decision-toast — they share
+        // the same anchor point on purpose (see .decision-toast's comment) so
+        // a strategy-power decision reads as the same notification family as
+        // a reward/expense toast, not a separate UI language.
         function positionToastOverBoard() {
-            const toast = document.getElementById('eventToast');
             const board = document.getElementById('boardWrap');
-            if (!toast || !board) return;
+            const targets = [document.getElementById('eventToast'), document.getElementById('decisionToast')];
+            if (!board) return;
             const isRotated = window.innerWidth < 1024 && window.matchMedia('(orientation: portrait)').matches;
             if (!isRotated) {
-                toast.style.removeProperty('--toast-left');
-                toast.style.removeProperty('--toast-top');
+                targets.forEach(t => { if (t) { t.style.removeProperty('--toast-left'); t.style.removeProperty('--toast-top'); } });
                 return;
             }
             const r = board.getBoundingClientRect();
-            toast.style.setProperty('--toast-left', (r.left + r.width / 2) + 'px');
-            toast.style.setProperty('--toast-top', (r.top + r.height - 18) + 'px');
+            targets.forEach(t => {
+                if (!t) return;
+                t.style.setProperty('--toast-left', (r.left + r.width / 2) + 'px');
+                t.style.setProperty('--toast-top', (r.top + r.height - 18) + 'px');
+            });
         }
         positionToastOverBoard();
         window.addEventListener('load', positionToastOverBoard);
@@ -1549,9 +1645,10 @@
             // A decision the timeout sweep skipped server-side while this tab was
             // in the background — never resolves as "use" (see docs/PESA-TRAIL-POWERS.md
             // §2), so the only thing left to do here is dismiss a stale modal.
-            if (!res.pending_decision && currentDecision && document.getElementById('decisionOverlay').style.display === 'flex') {
+            if (!res.pending_decision && currentDecision && document.getElementById('decisionToast').classList.contains('show')) {
                 hideDecisionModal();
                 rolling = false;
+                const cob = document.getElementById('cashOutBtn'); if (cob) cob.disabled = false;
                 if (res.session) updateHud(res.session.pot, res.session.position);
                 updateRollButtonState();
             }
@@ -1669,6 +1766,11 @@
             rolling = true;
             armRollWatchdog();
             document.getElementById('rollBtn').disabled = true;
+            // The decision-toast (Reroll/Protect/Bank) no longer blocks clicks the
+            // way the old full-screen overlay did, so cash-out needs its own guard
+            // for the whole roll→(possible decision)→resolve window — re-enabled in
+            // finishRoll() and in pollState()'s stale-decision dismiss above.
+            const cob = document.getElementById('cashOutBtn'); if (cob) cob.disabled = true;
             document.getElementById('dieScene').classList.add('spinning');
             ArcadeSound.play('roll');
 
@@ -1848,7 +1950,9 @@
             rolling = true;
             currentDecision = decision;
             document.getElementById('decisionCard').innerHTML = buildDecisionHtml(decision);
-            document.getElementById('decisionOverlay').style.display = 'flex';
+            const cob = document.getElementById('cashOutBtn'); if (cob) cob.disabled = true;
+            if (typeof positionToastOverBoard === 'function') positionToastOverBoard();
+            document.getElementById('decisionToast').classList.add('show');
             startDecisionCountdown();
             updateRollButtonState();
         })();
@@ -1916,25 +2020,37 @@
             } catch (e) { showToast(['Network error — try again.']); }
         }
 
+        // Compact row (icon + short headline/sub + countdown ring) shared by
+        // all three decision types, matching the reward/expense toast's own
+        // terse "headline + lesson" shape instead of a paragraph — see
+        // .decision-toast's CSS comment for why. #decisionCountdown here is
+        // the small ring badge startDecisionCountdown() repaints, NOT a
+        // sentence — rebuilt fresh each time a decision opens.
+        function decisionRow(icon, headline, sub) {
+            return `
+                <div class="decision-row">
+                    <div class="decision-icon">${icon}</div>
+                    <div class="decision-text">
+                        <div class="decision-headline">${headline}</div>
+                        <div class="decision-sub">${sub}</div>
+                    </div>
+                    <div class="decision-ring" id="decisionCountdown" aria-label="Auto-skip countdown">${DECISION_TIMEOUT_SECONDS}</div>
+                </div>`;
+        }
+
         function buildDecisionHtml(decision) {
             if (decision.type === 'reroll') {
-                return `
-                    <p class="text-3xl mb-2">🎲</p>
-                    <p class="text-xl font-black text-indigo-300 mb-1">Reroll?</p>
-                    <p class="text-sm text-gray-300 mb-4">You rolled a <b>${decision.roll}</b>. Spend a Reroll to try again?</p>
+                return decisionRow('🎲', `Rolled ${decision.roll} — reroll it?`, 'Spend a Reroll to try again') + `
                     <div class="decision-actions">
-                        <button type="button" class="roll-btn" onclick="submitDecision('use')">🎲 Reroll</button>
-                        <button type="button" class="roll-btn decision-skip" onclick="submitDecision('skip')">Keep ${decision.roll}</button>
+                        <button type="button" class="decision-use" onclick="submitDecision('use')">🎲 Reroll</button>
+                        <button type="button" class="decision-skip" onclick="submitDecision('skip')">Keep ${decision.roll}</button>
                     </div>`;
             }
             if (decision.type === 'protect') {
-                return `
-                    <p class="text-3xl mb-2">🛡️</p>
-                    <p class="text-xl font-black text-sky-300 mb-1">Protect?</p>
-                    <p class="text-sm text-gray-300 mb-4">This tile costs <b>KES ${Number(decision.amount).toLocaleString()}</b>. Use a Protect to block it?</p>
+                return decisionRow('🛡️', `This tile costs KES ${Number(decision.amount).toLocaleString()}`, 'Use a Protect to block it?') + `
                     <div class="decision-actions">
-                        <button type="button" class="roll-btn" onclick="submitDecision('use')">🛡️ Protect</button>
-                        <button type="button" class="roll-btn decision-skip" onclick="submitDecision('skip')">Accept the loss</button>
+                        <button type="button" class="decision-use" onclick="submitDecision('use')">🛡️ Protect</button>
+                        <button type="button" class="decision-skip" onclick="submitDecision('skip')">Accept loss</button>
                     </div>`;
             }
             if (decision.type === 'bank') {
@@ -1943,12 +2059,9 @@
                     const amt = Math.round(cap * pct / 100);
                     return `<button type="button" class="bank-preset-btn" onclick="submitDecision('use', ${amt})"><b>${pct}%</b><span>KES ${Number(amt).toLocaleString()}</span></button>`;
                 }).join('');
-                return `
-                    <p class="text-3xl mb-2">🏦</p>
-                    <p class="text-xl font-black text-emerald-300 mb-1">Bank some savings?</p>
-                    <p class="text-sm text-gray-300 mb-4">Secure up to <b>KES ${Number(cap).toLocaleString()}</b> — safe from tiles and the winner's claim.</p>
+                return decisionRow('🏦', 'Bank some savings?', `Up to KES ${Number(cap).toLocaleString()} — safe from tiles`) + `
                     <div class="bank-presets">${presets}</div>
-                    <button type="button" class="roll-btn decision-skip" style="margin-top:.6rem;" onclick="submitDecision('skip')">Skip</button>`;
+                    <button type="button" class="decision-skip" style="width:100%;margin-top:.4rem;" onclick="submitDecision('skip')">Skip</button>`;
             }
             return '';
         }
@@ -1959,23 +2072,35 @@
             ArcadeSound.play('decisionPing');
             currentDecision = res.decision;
             document.getElementById('decisionCard').innerHTML = buildDecisionHtml(res.decision);
-            document.getElementById('decisionOverlay').style.display = 'flex';
+            const cob = document.getElementById('cashOutBtn'); if (cob) cob.disabled = true;
+            if (typeof positionToastOverBoard === 'function') positionToastOverBoard();
+            const el = document.getElementById('decisionToast');
+            el.classList.remove('show');
+            void el.offsetWidth;
+            el.classList.add('show');
             startDecisionCountdown();
         }
 
         function hideDecisionModal() {
             clearInterval(decisionTimer);
-            document.getElementById('decisionOverlay').style.display = 'none';
+            document.getElementById('decisionToast').classList.remove('show');
         }
 
         function startDecisionCountdown() {
             let remaining = DECISION_TIMEOUT_SECONDS;
             const el = document.getElementById('decisionCountdown');
-            if (el) el.textContent = remaining;
+            const paint = () => {
+                if (!el) return;
+                el.textContent = Math.max(remaining, 0);
+                // Same green/amber/red urgency language as the turn-seconds badge
+                // elsewhere on this page — a familiar cue rather than a new one.
+                el.style.background = remaining <= 2 ? '#f87171' : remaining <= 4 ? '#fbbf24' : '#34d399';
+            };
+            paint();
             clearInterval(decisionTimer);
             decisionTimer = setInterval(() => {
                 remaining--;
-                if (el) el.textContent = Math.max(remaining, 0);
+                paint();
                 // Client-side courtesy only — the server's own DECISION_TIMEOUT_SECONDS
                 // sweep (expireDecisionIfNeeded()) is what's actually authoritative;
                 // this just makes an idle decision feel responsive instead of waiting
