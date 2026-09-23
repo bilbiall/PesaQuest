@@ -329,6 +329,22 @@
         .token.glow-gold { animation: tokenGlowGold 1.4s ease; }
         @keyframes tokenGlowGold { 0%,100% { box-shadow:0 2px 8px rgba(0,0,0,.5); } 40% { box-shadow:0 0 0 10px rgba(251,191,36,.55), 0 0 26px 8px rgba(251,191,36,.6); } }
         .token-op { background:#6366f1; border:2px solid #fff; opacity:.9; }
+        /* Shown only while a Reroll decision is pending, over the tile the current
+           (unrolled-back) roll would land on — placed with tokenPos(), same as a
+           token, so it already lands correctly on both desktop and the rotated
+           mobile-landscape board with no rotation-specific CSS of its own needed
+           (a plain circle reads the same either way, unlike a token's glyph). z-index
+           sits BELOW both token classes (20/21) so a token already on that tile
+           still reads on top of the ring rather than being covered by it. */
+        .tile-glow {
+            position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%);
+            pointer-events:none; z-index:15; opacity:0; transition:opacity .25s ease;
+        }
+        .tile-glow.show { opacity:1; animation: tileGlowPulse 1.6s ease-in-out infinite; }
+        @keyframes tileGlowPulse {
+            0%,100% { box-shadow:0 0 10px 4px rgba(245,158,11,.5), 0 0 20px 9px rgba(245,158,11,.25); }
+            50%     { box-shadow:0 0 16px 7px rgba(245,158,11,.85), 0 0 30px 14px rgba(245,158,11,.45); }
+        }
         /* A token showing a real profile picture fills the same circle the emoji
            fallback sits inside of, rather than the photo floating as a separate
            square badge next to it. */
@@ -649,6 +665,38 @@
             }
             .decision-toast.show { transform:translate(-50%,-100%) scale(1); }
             .overlay-card { transform:rotate(90deg); }
+            /* Unlike the event/decision toasts just above (deliberately left
+               upright — see their own comments on why rotated wrapped text reads
+               worse), the notif dropdown is rotated like the overlay cards: it's
+               a real board-game surface (a scrollable LIST, not a single ephemeral
+               sentence), and its own trigger (the bell, inside the un-rotated
+               topbar) is a plain tap target that doesn't care about rotation
+               either way — only the popped-open panel's CONTENT needs to match
+               the board's landscape orientation. Detached to position:fixed (it's
+               normally position:absolute against .notif-wrap) so JS can anchor it
+               at an exact screen point via positionNotifPanel() below, the same
+               way dockOverBoard() anchors the draggable die — a plain CSS
+               right:0/top:100% anchor rotates around the WRONG point (its own
+               center) and drifts off-screen. transform-origin:top left makes the
+               anchor point exactly the fixed left/top JS sets, matching
+               .panel-board's own corner-pivot technique. Width/max-height are
+               swapped via dvh/dvw (not plain width/height) for the same reason
+               board-wrap's are: the rotated box's CSS width becomes its final
+               on-screen VERTICAL extent, its max-height the on-screen HORIZONTAL
+               extent. */
+            .notif-panel {
+                position:fixed; right:auto; left:0; top:0; margin:0;
+                transform-origin:top left; transform:rotate(90deg);
+                width:min(80vh, 320px); width:min(80dvh, 320px);
+                max-width:none; max-height:min(70vw, 420px); max-height:min(70dvw, 420px);
+            }
+            /* Same reasoning as .event-toast's own line-clamp above — a rotated
+               box lays out its text using its PRE-rotation width, so an
+               unclamped multi-line notification body could still grow past the
+               narrow rotated strip's available on-screen space. */
+            .notif-panel .notif-row .notif-body {
+                display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+            }
             /* The drawer itself is a full-height edge panel — rotating it like the
                small die/banner/toast above would need the same dimension-swapping
                corner-pivot .panel-board uses (a naive center-rotate would blow its
@@ -702,6 +750,7 @@
         <div class="panel panel-board">
             <div class="board-wrap" id="boardWrap">
                 <img src="{{ asset('img/game/arcade/pesatrail.webp') }}" alt="Pesa Trail board">
+                <div id="landingGlow" class="tile-glow"></div>
                 <div id="tokenMe" class="token token-me" style="left:{{ $positions[$session->position]['left'] ?? $positions[1]['left'] }}%; top:{{ $positions[$session->position]['top'] ?? $positions[1]['top'] }}%;">
                     🧑
                     @if(auth()->user()->avatar_url)
@@ -1027,6 +1076,27 @@
                 void el.offsetWidth; // restart the animation
                 el.classList.add('landed');
             }, 850);
+        }
+
+        /** The Reroll decision's "which tile would this land on" glow — a light
+         *  gold pulse over the target tile so the player doesn't have to count
+         *  tiles by eye to judge whether keeping the roll is worth it. Positioned
+         *  with tokenPos() (stored on the element so repositionAllTokens() can
+         *  re-place it after a mid-decision rotation), shown only for as long as
+         *  the Reroll decision itself is on screen. */
+        function showLandingGlow(n) {
+            const el = document.getElementById('landingGlow');
+            if (!el || !n) return;
+            el.dataset.tile = n;
+            const p = tokenPos(n);
+            el.style.left = p.left + '%'; el.style.top = p.top + '%';
+            el.classList.add('show');
+        }
+        function hideLandingGlow() {
+            const el = document.getElementById('landingGlow');
+            if (!el) return;
+            el.classList.remove('show');
+            delete el.dataset.tile;
         }
 
         /** Hops a token through every real tile in `path` (one placeToken() call
@@ -1430,6 +1500,29 @@
         window.addEventListener('resize', positionToastOverBoard);
         window.addEventListener('orientationchange', () => setTimeout(positionToastOverBoard, 200));
 
+        /** Anchors the (rotated, see .notif-panel's rule) notif dropdown at an
+         *  exact screen point just below the bell — same reasoning as
+         *  dockOverBoard()'s die anchor: a plain CSS right:0/top:100% rotates
+         *  around the wrong point once transform:rotate(90deg) is involved, so
+         *  this sets real fixed left/top instead, off the bell's own (un-rotated,
+         *  since the topbar itself never rotates) on-screen rect. No-ops outside
+         *  forced-landscape, clearing the inline override so the plain CSS
+         *  right:0/top:100% anchor (relative to .notif-wrap) takes over again. */
+        function positionNotifPanel() {
+            const panel = document.getElementById('notifPanel');
+            const bell = document.getElementById('notifBell');
+            if (!panel || !bell) return;
+            if (!isRotatedMobile()) {
+                panel.style.left = ''; panel.style.top = '';
+                return;
+            }
+            const r = bell.getBoundingClientRect();
+            panel.style.left = r.left + 'px';
+            panel.style.top = (r.bottom + 8) + 'px';
+        }
+        window.addEventListener('resize', positionNotifPanel);
+        window.addEventListener('orientationchange', () => setTimeout(positionNotifPanel, 200));
+
         // Re-snaps every visible token to the correct (desktop vs mobile-landscape)
         // position set the instant the phone is physically rotated mid-game —
         // tokenPos() already picks the right set, this just re-applies it.
@@ -1445,6 +1538,10 @@
                 const currentPos = parseInt(posLabel.textContent, 10);
                 if (!isNaN(currentPos)) placeToken(el, currentPos);
             });
+            const glow = document.getElementById('landingGlow');
+            if (glow && glow.classList.contains('show') && glow.dataset.tile) {
+                showLandingGlow(parseInt(glow.dataset.tile, 10));
+            }
         }
         window.addEventListener('orientationchange', () => setTimeout(repositionAllTokens, 250));
 
@@ -1934,7 +2031,7 @@
 
         function normalizePendingDecision(pd) {
             if (!pd) return null;
-            if (pd.type === 'reroll')  return { type: 'reroll', roll: pd.roll };
+            if (pd.type === 'reroll')  return { type: 'reroll', roll: pd.roll, preview_tile: pd.preview_tile };
             if (pd.type === 'protect') return { type: 'protect', amount: pd.amount };
             if (pd.type === 'bank')    return { type: 'bank', cap: pd.cap };
             return null;
@@ -1953,6 +2050,7 @@
             const cob = document.getElementById('cashOutBtn'); if (cob) cob.disabled = true;
             if (typeof positionToastOverBoard === 'function') positionToastOverBoard();
             document.getElementById('decisionToast').classList.add('show');
+            if (decision.type === 'reroll' && decision.preview_tile) showLandingGlow(decision.preview_tile);
             startDecisionCountdown();
             updateRollButtonState();
         })();
@@ -2078,12 +2176,15 @@
             el.classList.remove('show');
             void el.offsetWidth;
             el.classList.add('show');
+            if (res.decision.type === 'reroll' && res.decision.preview_tile) showLandingGlow(res.decision.preview_tile);
+            else hideLandingGlow();
             startDecisionCountdown();
         }
 
         function hideDecisionModal() {
             clearInterval(decisionTimer);
             document.getElementById('decisionToast').classList.remove('show');
+            hideLandingGlow();
         }
 
         function startDecisionCountdown() {
@@ -2393,6 +2494,7 @@
 
         function toggleNotifPanel() {
             notifPanelOpen = !notifPanelOpen;
+            if (notifPanelOpen && typeof positionNotifPanel === 'function') positionNotifPanel();
             document.getElementById('notifPanel').classList.toggle('show', notifPanelOpen);
             ArcadeSound.play('toggle');
             if (notifPanelOpen) {

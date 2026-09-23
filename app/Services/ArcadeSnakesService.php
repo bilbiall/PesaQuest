@@ -496,7 +496,11 @@ class ArcadeSnakesService
             $from = $session->position;
 
             if ($this->powersEligible($session, $match) && $this->usesLeft($session, 'reroll') > 0) {
-                $this->pauseDecision($session, ['type' => 'reroll', 'roll' => $rollValue, 'from' => $from]);
+                $game = ArcadeGame::findOrFail($session->arcade_game_id);
+                $this->pauseDecision($session, [
+                    'type' => 'reroll', 'roll' => $rollValue, 'from' => $from,
+                    'preview_tile' => $this->previewLandingTile($from, $rollValue, $game->tile_count),
+                ]);
                 return $this->pendingPayload($session, []);
             }
 
@@ -630,7 +634,7 @@ class ArcadeSnakesService
         return [
             'pending' => true,
             'decision' => match ($decision['type']) {
-                'reroll'  => ['type' => 'reroll', 'roll' => $decision['roll']],
+                'reroll'  => ['type' => 'reroll', 'roll' => $decision['roll'], 'preview_tile' => $decision['preview_tile'] ?? null],
                 'protect' => ['type' => 'protect', 'amount' => $decision['amount']],
                 'bank'    => ['type' => 'bank', 'cap' => $decision['cap']],
                 default   => ['type' => $decision['type']],
@@ -705,6 +709,22 @@ class ArcadeSnakesService
         return $this->continueAfterPrimaryEffect(
             $session, $match, $tile, $pending['from'], $pending['roll'], $pending['first_landing'], $pending['hop_path'], $events, $game
         );
+    }
+
+    /** Where a raw roll would land, applying only the overshoot bounce-back rule
+     *  (never the win/loss/gain tile effects, or the snake/ladder chain hop after
+     *  it — those all still depend on decisions/state continueAfterReroll() hasn't
+     *  reached yet). Used purely to tell the client which tile to highlight while
+     *  a Reroll decision is pending, so a player isn't stuck counting tiles by eye
+     *  to judge whether to keep the roll — not authoritative for anything else. */
+    private function previewLandingTile(int $from, int $rollValue, int $tileCount): int
+    {
+        $target = $from + $rollValue;
+        if ($target > $tileCount) {
+            $overshoot = $rollValue - ($tileCount - $from);
+            return $tileCount - $overshoot;
+        }
+        return $target;
     }
 
     /** Movement + primary-landing-tile resolution — runs fresh from roll(), or resumed
