@@ -108,6 +108,10 @@ class ForumController extends Controller
             $query->where('category', $category);
         } else {
             $category = null;
+            // Auto-posted Pesa City News threads (Market Watch) stay out of the
+            // default "All" feed — they're system noise, not player discussion —
+            // and only appear once the player deliberately picks that pill.
+            $query->where('category', '!=', 'market-watch');
         }
 
         if ($q !== '') {
@@ -244,6 +248,11 @@ class ForumController extends Controller
 
         if ($category && array_key_exists($category, self::CATEGORIES)) {
             $query->where('category', $category);
+        } else {
+            // Mirrors index()'s default-feed exclusion — otherwise the "new
+            // discussions" pill would pop for Market Watch threads that never
+            // actually appear in the (Market-Watch-excluded) feed it refreshes.
+            $query->where('category', '!=', 'market-watch');
         }
 
         $newTopics = $query->orderByDesc('created_at')->limit(20)->get();
