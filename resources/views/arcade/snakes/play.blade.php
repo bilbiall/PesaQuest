@@ -1479,21 +1479,42 @@
         // the same anchor point on purpose (see .decision-toast's comment) so
         // a strategy-power decision reads as the same notification family as
         // a reward/expense toast, not a separate UI language.
+        //
+        // decisionActive tracks whether the decision-toast is currently up —
+        // set true in showDecisionModal()/false in hideDecisionModal(), declared
+        // here (not down by those functions) since this function's first call
+        // below runs during initial page load, before that code further down
+        // the script has executed.
+        let decisionActive = false;
         function positionToastOverBoard() {
             const board = document.getElementById('boardWrap');
-            const targets = [document.getElementById('eventToast'), document.getElementById('decisionToast')];
+            const eventToast = document.getElementById('eventToast');
+            const decisionToast = document.getElementById('decisionToast');
             if (!board) return;
             const isRotated = window.innerWidth < 1024 && window.matchMedia('(orientation: portrait)').matches;
             if (!isRotated) {
-                targets.forEach(t => { if (t) { t.style.removeProperty('--toast-left'); t.style.removeProperty('--toast-top'); } });
+                [eventToast, decisionToast].forEach(t => { if (t) { t.style.removeProperty('--toast-left'); t.style.removeProperty('--toast-top'); } });
                 return;
             }
             const r = board.getBoundingClientRect();
-            targets.forEach(t => {
-                if (!t) return;
-                t.style.setProperty('--toast-left', (r.left + r.width / 2) + 'px');
-                t.style.setProperty('--toast-top', (r.top + r.height - 18) + 'px');
-            });
+            const left = r.left + r.width / 2;
+            const baseTop = r.top + r.height - 18;
+            if (decisionToast) {
+                decisionToast.style.setProperty('--toast-left', left + 'px');
+                decisionToast.style.setProperty('--toast-top', baseTop + 'px');
+            }
+            if (eventToast) {
+                // Both toasts share the same board-bottom anchor point by default
+                // (see their shared CSS comment) — fine when only one is up at a
+                // time, but an opponent's roll notification (polled in on its own
+                // timer) can land WHILE the player's own decision card is open,
+                // and growing from the identical point rendered it bleeding out
+                // from behind the card. Reserve the card's own height + a gap so
+                // the event toast stacks cleanly above it instead.
+                const clearance = decisionActive ? decisionToast.offsetHeight + 14 : 0;
+                eventToast.style.setProperty('--toast-left', left + 'px');
+                eventToast.style.setProperty('--toast-top', (baseTop - clearance) + 'px');
+            }
         }
         positionToastOverBoard();
         window.addEventListener('load', positionToastOverBoard);
@@ -2171,6 +2192,7 @@
             currentDecision = res.decision;
             document.getElementById('decisionCard').innerHTML = buildDecisionHtml(res.decision);
             const cob = document.getElementById('cashOutBtn'); if (cob) cob.disabled = true;
+            decisionActive = true;
             if (typeof positionToastOverBoard === 'function') positionToastOverBoard();
             const el = document.getElementById('decisionToast');
             el.classList.remove('show');
@@ -2185,6 +2207,8 @@
             clearInterval(decisionTimer);
             document.getElementById('decisionToast').classList.remove('show');
             hideLandingGlow();
+            decisionActive = false;
+            if (typeof positionToastOverBoard === 'function') positionToastOverBoard();
         }
 
         function startDecisionCountdown() {
